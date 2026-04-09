@@ -41,6 +41,7 @@ body.dark {
   display: grid;
   grid-template-columns: 280px 1fr;
   min-height: 100vh;
+  align-items: start;
 }
 
 /* SIDEBAR */
@@ -51,6 +52,9 @@ body.dark {
   height: 100vh;
   position: sticky;
   top: 0;
+
+  grid-column: 1;
+  grid-row: 1;
 }
 
 .side-nav {
@@ -76,19 +80,26 @@ body.dark {
 
 /* MAIN CONTENT */
 .main {
+  grid-column: 2;
+  grid-row: 1;
+
+  min-width: 0;
+  min-height: 100vh;
+
   padding: 25px;
   margin: 0;
+
+  display: block;
 }
 
-/* REMOVE QUALQUER ESPAÇO EXTRA */
-.topbar {
-  display: none;
-}
-
-/* PÁGINAS */
+/* GARANTE QUE NÃO HÁ ESPAÇO NO TOPO */
 .page {
   margin: 0;
   padding: 0;
+}
+
+.topbar {
+  display: none !important;
 }
 
 .hidden {
