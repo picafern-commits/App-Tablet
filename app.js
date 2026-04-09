@@ -89,6 +89,8 @@ window.disponivel = async function() {
   document.getElementById("localizacao").value = "";
   document.getElementById("cor").value = "";
   document.getElementById("data").value = "";
+
+  mostrarPagina("stock");
 };
 
 window.usar = async function(docId) {
@@ -101,8 +103,8 @@ window.usar = async function(docId) {
 
   await db.collection("historico").add({
     ...snap.data(),
-    usadoEm: new Date().toISOString(),
-    created: new Date()
+    created: new Date(),
+    usadoEm: new Date().toISOString()
   });
 
   await ref.delete();
