@@ -352,50 +352,41 @@ button.secondary,
   .cards-list {
     grid-template-columns: 1fr;
   }
-  /* ===== FIX TABLET: conteúdo encostado ao topo ===== */
+/* ===== FIX FINAL TABLET ===== */
 
 .app-shell {
   display: grid;
   grid-template-columns: 290px 1fr;
-  min-height: 100vh;
   align-items: start;
 }
 
-.mobile-main,
-.main-content,
-.content-area,
-.page-content {
-  padding-top: 24px !important;
-  margin-top: 0 !important;
-  align-self: start !important;
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
 }
 
-.mobile-page,
-.page,
-.panel-page,
-.section-page {
+/* ESTE É O FIX PRINCIPAL */
+.main {
+  display: block;
+  padding: 20px;
+  margin: 0;
+}
+
+/* REMOVE QUALQUER ESPAÇO FANTASMA */
+.topbar {
   margin-top: 0 !important;
   padding-top: 0 !important;
 }
 
-.mobile-header,
-.page-header,
-.top-header {
-  margin-bottom: 18px !important;
-}
-
-/* se houver algum espaço fantasma no topo */
-.spacer,
-.top-spacer,
-.header-spacer {
-  display: none !important;
-  height: 0 !important;
-}
-
-/* garantir que os cards começam logo no topo */
-.cards-list,
-.dashboard-grid,
-.content-grid {
+.page {
   margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* GARANTE QUE OS CARDS COMEÇAM LOGO EM CIMA */
+.stats-grid {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
 }
 }
