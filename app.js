@@ -1,21 +1,299 @@
+// =========================
+// FIREBASE
+// =========================
 const firebaseConfig = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
   authDomain: "toner-manager-756c4.firebaseapp.com",
   projectId: "toner-manager-756c4"
 };
-if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+
+firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-var pages = ["dashboard", "registo", "stock", "historico", "computadores", "config"];
-var subtitles = {
-  dashboard: "Resumo geral",
-  registo: "Adicionar toner",
-  stock: "Toners disponíveis",
-  historico: "Toners usados",
-  computadores: "Checklist de instalação",
-  config: "Preferências"
+// =========================
+// HELPERS
+// =========================
+const $ = (id) => document.getElementById(id);
+
+function exists(id) {
+  return !!$(id);
+}
+
+function safeSetHTML(id, html) {
+  const el = $(id);
+  if (el) el.innerHTML = html;
+}
+
+function safeSetText(id, text) {
+  const el = $(id);
+  if (el) el.innerText = text;
+}
+
+// =========================
+// NAVEGAÇÃO
+// =========================
+const pageIds = [
+  "dashboard",
+  "impressoras",
+  "registo",
+  "registo-toners",
+  "stock",
+  "historico",
+  "computadores",
+  "config",
+  "configuracoes",
+  "manutencao",
+  "pistolas",
+  "ck65",
+  "portas",
+  "rede",
+  "users"
+];
+
+function getExistingPages() {
+  return pageIds.filter(id => exists(id));
+}
+
+window.mostrarPagina = function (id) {
+  const pages = getExistingPages();
+  pages.forEach(pageId => {
+    $(pageId).style.display = "none";
+  });
+
+  if (exists(id)) {
+    $(id).style.display = "block";
+  } else if (pages.length) {
+    $(pages[0]).style.display = "block";
+  }
+
+  if (id === "computadores") carregarChecklist();
 };
-var passos = [
+
+window.mudarPagina = window.mostrarPagina;
+
+// Tenta ligar sidebar/menu por data attribute se existir
+function ligarBotoesSidebar() {
+  document.querySelectorAll("[data-page-target]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const target = btn.getAttribute("data-page-target");
+      window.mostrarPagina(target);
+    });
+  });
+}
+
+// =========================
+// DARK MODE
+// =========================
+function aplicarDarkMode(ativo) {
+  document.body.classList.toggle("dark", !!ativo);
+}
+
+function initDarkMode() {
+  const sw = $("darkSwitch") || $("darkMode") || $("modoEscuro");
+
+  const saved = localStorage.getItem("modo");
+  if (saved === "dark") {
+    aplicarDarkMode(true);
+    if (sw) sw.checked = true;
+  } else {
+    aplicarDarkMode(false);
+    if (sw) sw.checked = false;
+  }
+
+  if (sw) {
+    sw.addEventListener("change", function () {
+      aplicarDarkMode(this.checked);
+      localStorage.setItem("modo", this.checked ? "dark" : "light");
+    });
+  }
+}
+
+// =========================
+// TONERS
+// =========================
+let stockGlobal = [];
+
+// Gera ID global TON-0001
+async function gerarID() {
+  const ref = db.collection("config").doc("contador");
+
+  return db.runTransaction(async (t) => {
+    const doc = await t.get(ref);
+    const n = doc.exists ? (doc.data().valor || 0) + 1 : 1;
+    t.set(ref, { valor: n });
+    return "TON-" + String(n).padStart(4, "0");
+  });
+}
+
+window.disponivel = async function () {
+  try {
+    const equipamento = $("equipamento")?.value || "";
+    const localizacao = $("localizacao")?.value || "";
+    const cor = $("cor")?.value || "";
+    const data = $("data")?.value || "";
+
+    if (!equipamento || !cor) {
+      alert("Preenche equipamento e cor.");
+      return;
+    }
+
+    const idInterno = await gerarID();
+
+    await db.collection("stock").add({
+      idInterno,
+      equipamento,
+      localizacao: localizacao || "Sem Localização",
+      cor,
+      data: data || "Não tem Data",
+      created: new Date()
+    });
+
+    // limpar campos
+    if ($("equipamento")) $("equipamento").value = "";
+    if ($("localizacao")) $("localizacao").value = "";
+    if ($("cor")) $("cor").value = "";
+    if ($("data")) $("data").value = "";
+  } catch (e) {
+    console.error("Erro ao adicionar toner:", e);
+    alert("Erro ao adicionar toner.");
+  }
+};
+
+window.usar = async function (docId) {
+  try {
+    const confirmar = window.confirm("Marcar este toner como usado?");
+    if (!confirmar) return;
+
+    const ref = db.collection("stock").doc(docId);
+    const snap = await ref.get();
+
+    if (!snap.exists) {
+      alert("Toner não encontrado.");
+      return;
+    }
+
+    const dados = snap.data();
+
+    await db.collection("historico").add({
+      ...dados,
+      usadoEm: new Date().toISOString()
+    });
+
+    await ref.delete();
+  } catch (e) {
+    console.error("Erro ao mover para histórico:", e);
+    alert("Erro ao marcar toner como usado.");
+  }
+};
+
+window.apagarHistorico = async function (docId) {
+  try {
+    const confirmar = window.confirm("Apagar este registo do histórico?");
+    if (!confirmar) return;
+    await db.collection("historico").doc(docId).delete();
+  } catch (e) {
+    console.error("Erro ao apagar histórico:", e);
+    alert("Erro ao apagar registo.");
+  }
+};
+
+// compatibilidade com versões antigas
+window.apagar = window.apagarHistorico;
+
+window.filtrar = function () {
+  const termo = ($("search")?.value || "").toLowerCase().trim();
+
+  if (!termo) {
+    renderStock(stockGlobal);
+    return;
+  }
+
+  const filtrado = stockGlobal.filter(t =>
+    (t.localizacao || "").toLowerCase().includes(termo)
+  );
+
+  renderStock(filtrado);
+};
+
+function renderStock(lista) {
+  const el = $("listaStock");
+  if (!el) return;
+
+  el.innerHTML = "";
+
+  lista.forEach(t => {
+    el.innerHTML += `
+      <div class="card">
+        <input type="checkbox" onchange="usar('${t.idDoc}')">
+        <b>${t.idInterno || ""}</b><br>
+        ${(t.equipamento || "")} - ${(t.cor || "")}<br>
+        ${(t.localizacao || "")}<br>
+        ${(t.data || "")}
+      </div>
+    `;
+  });
+}
+
+function initStockListener() {
+  db.collection("stock")
+    .orderBy("created", "desc")
+    .onSnapshot(
+      (snap) => {
+        stockGlobal = [];
+
+        safeSetText("countStock", snap.size);
+
+        snap.forEach(doc => {
+          const t = doc.data();
+          stockGlobal.push({
+            ...t,
+            idDoc: doc.id
+          });
+        });
+
+        renderStock(stockGlobal);
+      },
+      (err) => {
+        console.error("Erro no stock listener:", err);
+      }
+    );
+}
+
+function initHistoricoListener() {
+  db.collection("historico")
+    .onSnapshot(
+      (snap) => {
+        safeSetText("countUsados", snap.size);
+
+        const el = $("listaHistorico");
+        if (!el) return;
+
+        el.innerHTML = "";
+
+        snap.forEach(doc => {
+          const t = doc.data();
+
+          el.innerHTML += `
+            <div class="card">
+              <b>${t.idInterno || ""}</b><br>
+              ${(t.equipamento || "")} - ${(t.cor || "")}<br>
+              ${(t.localizacao || "")}<br>
+              ${(t.data || "")}
+              <button class="delete" onclick="apagarHistorico('${doc.id}')">❌</button>
+            </div>
+          `;
+        });
+      },
+      (err) => {
+        console.error("Erro no histórico listener:", err);
+      }
+    );
+}
+
+// =========================
+// COMPUTADORES
+// =========================
+const passos = [
   "TEAMVIEWER HOST",
   "TEAMS",
   "DNS (192.168.0.204 & 192.168.0.205)",
@@ -29,228 +307,131 @@ var passos = [
   "Apagar User",
   "Criar novo user"
 ];
-var stockGlobal = [];
 
-function el(id){ return document.getElementById(id); }
+function carregarChecklist() {
+  const el = $("checklist");
+  if (!el) return;
 
-window.irParaPagina = function(page, btn){
-  for (var i=0;i<pages.length;i++) {
-    var node = el(pages[i]);
-    if (node) node.classList.add('hidden');
-  }
-  var current = el(page);
-  if (current) current.classList.remove('hidden');
+  let html = "";
 
-  var buttons = document.querySelectorAll('.side-nav button');
-  for (var j=0;j<buttons.length;j++) buttons[j].classList.remove('active');
-  if (btn) btn.classList.add('active');
-
-  if (el('pageTitle')) el('pageTitle').innerText = page.charAt(0).toUpperCase() + page.slice(1);
-  if (el('pageSub')) el('pageSub').innerText = subtitles[page] || '';
-
-  if (page === 'computadores') carregarChecklist();
-};
-
-window.preencherHoje = function(){
-  var hoje = new Date().toISOString().split('T')[0];
-  if (el('data')) el('data').value = hoje;
-  if (el('dataPC')) el('dataPC').value = hoje;
-};
-
-async function gerarID(){
-  var ref = db.collection('config').doc('contadorToner');
-  return db.runTransaction(async function(tx){
-    var snap = await tx.get(ref);
-    var valor = 1;
-    if (snap.exists) valor = (snap.data().valor || 0) + 1;
-    tx.set(ref, { valor: valor });
-    return 'TON-' + String(valor).padStart(4, '0');
-  });
-}
-
-window.disponivel = async function(){
-  var equipamento = el('equipamento').value || '';
-  var localizacao = el('localizacao').value || 'Sem Localização';
-  var cor = el('cor').value || '';
-  var data = el('data').value || 'Não tem Data';
-
-  if (!equipamento || !cor) {
-    alert('Preenche equipamento e cor.');
-    return;
-  }
-
-  var idInterno = await gerarID();
-  await db.collection('stock').add({
-    idInterno: idInterno,
-    equipamento: equipamento,
-    localizacao: localizacao,
-    cor: cor,
-    data: data,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  passos.forEach((passo, i) => {
+    html += `
+      <label class="checkItem">
+        <input type="checkbox" id="p${i}">
+        <span>${passo}</span>
+      </label>
+    `;
   });
 
-  el('equipamento').value = '';
-  el('localizacao').value = '';
-  el('cor').value = '';
-  el('data').value = '';
-};
-
-function renderStock(lista){
-  var target = el('listaStock');
-  var dash = el('dashboardStock');
-  if (target) target.innerHTML = '';
-  if (dash) dash.innerHTML = '';
-
-  for (var i=0;i<lista.length;i++) {
-    var item = lista[i];
-    var html = '' +
-      '<div class="card">' +
-        '<div class="card-top">' +
-          '<div>' +
-            '<strong>' + (item.idInterno || '') + '</strong>' +
-            '<div>' + (item.equipamento || '') + ' - ' + (item.cor || '') + '</div>' +
-            '<small>📍 ' + (item.localizacao || 'Sem Localização') + '</small>' +
-            '<small>📅 ' + (item.data || 'Não tem Data') + '</small>' +
-          '</div>' +
-          '<input class="inline-check" type="checkbox" onchange="usar(\'' + item.idDoc + '\')">' +
-        '</div>' +
-      '</div>';
-    if (target) target.insertAdjacentHTML('beforeend', html);
-    if (dash) dash.insertAdjacentHTML('beforeend', html.replace('onchange="usar(\'' + item.idDoc + '\')"', 'disabled'));
-  }
+  el.innerHTML = html;
 }
 
-window.filtrarStock = function(){
-  var txt = (el('searchStock').value || '').toLowerCase();
-  var filtrado = stockGlobal.filter(function(t){ return (t.localizacao || '').toLowerCase().includes(txt); });
-  renderStock(filtrado);
-};
+window.guardarPC = async function () {
+  try {
+    const nome = $("nomePC")?.value || "";
+    let data = $("dataPC")?.value || "";
 
-window.filtrarDashboard = function(){
-  var txt = (el('dashboardSearch').value || '').toLowerCase();
-  var filtrado = stockGlobal.filter(function(t){ return (t.localizacao || '').toLowerCase().includes(txt); });
-  renderStock(filtrado);
-};
+    if (!nome.trim()) {
+      alert("Nome do computador é obrigatório.");
+      return;
+    }
 
-window.usar = async function(id){
-  if (!window.confirm('Marcar este toner como usado?')) return;
-  var ref = db.collection('stock').doc(id);
-  var snap = await ref.get();
-  if (!snap.exists) return;
-  await db.collection('historico').add(Object.assign({}, snap.data(), {
-    usadoEm: firebase.firestore.FieldValue.serverTimestamp()
-  }));
-  await ref.delete();
-};
+    if (!data) data = "Sem Data";
 
-window.apagarHistorico = async function(id){
-  if (!window.confirm('Apagar este registo do histórico?')) return;
-  await db.collection('historico').doc(id).delete();
-};
+    const dados = passos.map((passo, i) => ({
+      passo,
+      feito: !!$(`p${i}`)?.checked
+    }));
 
-function carregarChecklist(){
-  var target = el('checklist');
-  if (!target) return;
-  var html = '';
-  for (var i=0;i<passos.length;i++) {
-    html += '<label class="check-item">' +
-      '<input type="checkbox" id="p' + i + '">' +
-      '<span>' + passos[i] + '</span>' +
-    '</label>';
-  }
-  target.innerHTML = html;
-}
-
-window.guardarPC = async function(){
-  var nome = (el('nomePC').value || '').trim();
-  var data = el('dataPC').value || 'Sem Data';
-  if (!nome) {
-    alert('Nome do computador obrigatório.');
-    return;
-  }
-  var dados = [];
-  for (var i=0;i<passos.length;i++) {
-    dados.push({ passo: passos[i], feito: !!el('p'+i).checked });
-  }
-  await db.collection('pcs').add({
-    nome: nome,
-    data: data,
-    passos: dados,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
-  el('nomePC').value = '';
-  el('dataPC').value = '';
-  carregarChecklist();
-};
-
-window.apagarPC = async function(id){
-  if (!window.confirm('Apagar este registo do computador?')) return;
-  await db.collection('pcs').doc(id).delete();
-};
-
-function aplicarDark(ativo){
-  document.body.classList.toggle('dark', !!ativo);
-  if (el('darkSwitch')) el('darkSwitch').checked = !!ativo;
-  localStorage.setItem('modo', ativo ? 'dark' : 'light');
-}
-
-function bindRealtime(){
-  db.collection('stock').orderBy('createdAt', 'desc').onSnapshot(function(snap){
-    stockGlobal = [];
-    snap.forEach(function(doc){ stockGlobal.push(Object.assign({ idDoc: doc.id }, doc.data())); });
-    if (el('countStock')) el('countStock').innerText = String(snap.size);
-    renderStock(stockGlobal);
-  }, function(){ if (el('countStock')) el('countStock').innerText = '0'; });
-
-  db.collection('historico').orderBy('usadoEm', 'desc').onSnapshot(function(snap){
-    if (el('countUsados')) el('countUsados').innerText = String(snap.size);
-    var target = el('listaHistorico');
-    if (!target) return;
-    target.innerHTML = '';
-    snap.forEach(function(doc){
-      var item = doc.data();
-      target.insertAdjacentHTML('beforeend', '' +
-        '<div class="card">' +
-          '<strong>' + (item.idInterno || '') + '</strong>' +
-          '<div>' + (item.equipamento || '') + ' - ' + (item.cor || '') + '</div>' +
-          '<small>📍 ' + (item.localizacao || 'Sem Localização') + '</small>' +
-          '<small>📅 ' + (item.data || 'Não tem Data') + '</small>' +
-          '<button class="delete-btn" onclick="apagarHistorico(\'' + doc.id + '\')">❌ Apagar</button>' +
-        '</div>');
+    await db.collection("pcs").add({
+      nome: nome.trim(),
+      data,
+      passos: dados,
+      created: new Date()
     });
-  });
 
-  db.collection('pcs').orderBy('createdAt', 'desc').onSnapshot(function(snap){
-    if (el('countPCs')) el('countPCs').innerText = String(snap.size);
-    var target = el('listaPC');
-    if (!target) return;
-    target.innerHTML = '';
-    snap.forEach(function(doc){
-      var item = doc.data();
-      var passosHtml = '';
-      var list = item.passos || [];
-      for (var i=0;i<list.length;i++) {
-        passosHtml += '<div>' + (list[i].feito ? '✔' : '❌') + ' ' + list[i].passo + '</div>';
+    if ($("nomePC")) $("nomePC").value = "";
+    if ($("dataPC")) $("dataPC").value = "";
+    carregarChecklist();
+  } catch (e) {
+    console.error("Erro ao guardar PC:", e);
+    alert("Erro ao guardar instalação.");
+  }
+};
+
+window.apagarPC = async function (docId) {
+  try {
+    const confirmar = window.confirm("Apagar este registo?");
+    if (!confirmar) return;
+    await db.collection("pcs").doc(docId).delete();
+  } catch (e) {
+    console.error("Erro ao apagar PC:", e);
+    alert("Erro ao apagar registo.");
+  }
+};
+
+function initPCsListener() {
+  db.collection("pcs")
+    .orderBy("created", "desc")
+    .onSnapshot(
+      (snap) => {
+        const el = $("listaPC");
+        if (!el) return;
+
+        el.innerHTML = "";
+
+        snap.forEach(doc => {
+          const d = doc.data();
+
+          let passosHtml = "";
+          (d.passos || []).forEach(p => {
+            passosHtml += `<div>${p.feito ? "✔" : "❌"} ${p.passo}</div>`;
+          });
+
+          el.innerHTML += `
+            <div class="card">
+              <b>${d.nome || ""}</b><br>
+              📅 ${d.data || "Sem Data"}<br>
+              ${passosHtml}
+              <button class="delete" onclick="apagarPC('${doc.id}')">❌</button>
+            </div>
+          `;
+        });
+      },
+      (err) => {
+        console.error("Erro no listener dos PCs:", err);
       }
-      target.insertAdjacentHTML('beforeend', '' +
-        '<div class="card">' +
-          '<strong>' + (item.nome || '') + '</strong>' +
-          '<small>📅 ' + (item.data || 'Sem Data') + '</small>' +
-          passosHtml +
-          '<button class="delete-btn" onclick="apagarPC(\'' + doc.id + '\')">❌ Apagar</button>' +
-        '</div>');
-    });
-  });
+    );
 }
 
-window.onload = function(){
-  var dark = localStorage.getItem('modo') === 'dark';
-  aplicarDark(dark);
-  if (el('darkSwitch')) {
-    el('darkSwitch').addEventListener('change', function(e){ aplicarDark(e.target.checked); });
+// =========================
+// INIT
+// =========================
+window.onload = function () {
+  try {
+    ligarBotoesSidebar();
+    initDarkMode();
+    carregarChecklist();
+    initStockListener();
+    initHistoricoListener();
+    initPCsListener();
+
+    // mostrar primeira página existente
+    const primeira =
+      exists("dashboard") ? "dashboard" :
+      exists("impressoras") ? "impressoras" :
+      exists("registo") ? "registo" :
+      exists("stock") ? "stock" :
+      exists("historico") ? "historico" :
+      exists("computadores") ? "computadores" :
+      exists("config") ? "config" :
+      null;
+
+    if (primeira) {
+      window.mostrarPagina(primeira);
+    }
+  } catch (e) {
+    console.error("Erro no arranque da app:", e);
+    alert("Erro ao arrancar a app.");
   }
-  carregarChecklist();
-  bindRealtime();
-  var firstBtn = document.querySelector('.side-nav button');
-  window.irParaPagina('dashboard', firstBtn);
 };
