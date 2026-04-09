@@ -15,9 +15,10 @@
 </head>
 <body>
   <div class="app-shell">
+    
     <aside class="sidebar">
       <div class="brand">
-        <img src="icon.png" alt="App Braga" class="brand-logo">
+        <img src="icon.png" class="brand-logo" alt="Logo">
         <div>
           <h1>App Braga</h1>
           <p>Tablet</p>
@@ -25,40 +26,41 @@
       </div>
 
       <nav class="side-nav">
-        <button onclick="irParaPagina('dashboard', this)" class="active">🏠 Dashboard</button>
-        <button onclick="irParaPagina('registo', this)">🧾 Registo</button>
-        <button onclick="irParaPagina('stock', this)">📦 Stock</button>
-        <button onclick="irParaPagina('historico', this)">🕘 Histórico</button>
-        <button onclick="irParaPagina('computadores', this)">💻 Computadores</button>
-        <button onclick="irParaPagina('config', this)">⚙️ Configurações</button>
+        <button onclick="mostrarPagina('dashboard')">🏠 Dashboard</button>
+        <button onclick="mostrarPagina('registo')">🧾 Registo Toners</button>
+        <button onclick="mostrarPagina('stock')">📦 Stock</button>
+        <button onclick="mostrarPagina('historico')">🕘 Histórico</button>
+        <button onclick="mostrarPagina('computadores')">💻 Computadores</button>
+        <button onclick="mostrarPagina('config')">⚙️ Configurações</button>
       </nav>
     </aside>
 
     <main class="main">
-      <header class="topbar">
-        <div>
-          <h2 id="pageTitle">Dashboard</h2>
-          <p id="pageSub">Resumo geral</p>
-        </div>
-      </header>
+      <div class="topbar">
+        <h2>App Braga</h2>
+        <p>Gestão interna</p>
+      </div>
 
       <section id="dashboard" class="page">
         <div class="stats-grid">
-          <div class="stat-card"><span>Stock</span><strong id="countStock">0</strong></div>
-          <div class="stat-card"><span>Usados</span><strong id="countUsados">0</strong></div>
-          <div class="stat-card"><span>PCs</span><strong id="countPCs">0</strong></div>
-        </div>
-
-        <div class="panel">
-          <input id="dashboardSearch" type="text" placeholder="Pesquisar por localização..." oninput="filtrarDashboard()">
-          <div id="dashboardStock" class="cards-list"></div>
+          <div class="stat-card">
+            <span>Stock</span>
+            <strong id="countStock">0</strong>
+          </div>
+          <div class="stat-card">
+            <span>Usados</span>
+            <strong id="countUsados">0</strong>
+          </div>
+          <div class="stat-card">
+            <span>Reserva</span>
+            <strong>0</strong>
+          </div>
         </div>
       </section>
 
       <section id="registo" class="page hidden">
         <div class="panel">
-          <h3>Adicionar toner</h3>
-
+          <h3>Registo Toners</h3>
           <select id="equipamento">
             <option value="">Equipamento</option>
             <option>P3155DN</option>
@@ -93,19 +95,14 @@
             <option>Azul</option>
           </select>
 
-          <div class="date-row">
-            <input id="data" type="date">
-            <button class="secondary" onclick="preencherHoje()">Hoje</button>
-          </div>
-
-          <button class="primary" onclick="disponivel()">Adicionar ao stock</button>
+          <input type="date" id="data">
+          <button class="primary" onclick="disponivel()">Adicionar</button>
         </div>
       </section>
 
       <section id="stock" class="page hidden">
         <div class="panel">
           <h3>Stock</h3>
-          <input id="searchStock" type="text" placeholder="Pesquisar por localização..." oninput="filtrarStock()">
           <div id="listaStock" class="cards-list"></div>
         </div>
       </section>
@@ -120,14 +117,14 @@
       <section id="computadores" class="page hidden">
         <div class="panel">
           <h3>Instalação Computador</h3>
-          <input id="nomePC" type="text" placeholder="Nome do Computador">
-          <input id="dataPC" type="date">
+          <input id="nomePC" placeholder="Nome do Computador">
+          <input type="date" id="dataPC">
           <div id="checklist" class="checklist-list"></div>
-          <button class="primary" onclick="guardarPC()">Guardar instalação</button>
+          <button class="primary" onclick="guardarPC()">Guardar</button>
         </div>
 
         <div class="panel">
-          <h3>Histórico de Computadores</h3>
+          <h3>Histórico PCs</h3>
           <div id="listaPC" class="cards-list"></div>
         </div>
       </section>
@@ -135,20 +132,16 @@
       <section id="config" class="page hidden">
         <div class="panel">
           <h3>Configurações</h3>
-          <label class="toggle-row">
+          <div class="toggle-row">
             <span>Dark mode</span>
-            <input id="darkSwitch" type="checkbox">
-          </label>
+            <input type="checkbox" id="darkSwitch">
+          </div>
         </div>
       </section>
     </main>
+
   </div>
 
   <script src="app.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function(){ navigator.serviceWorker.register('./sw.js'); });
-    }
-  </script>
 </body>
 </html>
