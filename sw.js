@@ -1,16 +1,8 @@
-self.addEventListener("install", (event) => {
-  self.skipWaiting();
-});
+const firebaseConfig = {
+  apiKey: "AQUI",
+  authDomain: "AQUI",
+  projectId: "AQUI"
+};
 
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.map((key) => caches.delete(key)))
-    )
-  );
-  self.clients.claim();
-});
-
-self.addEventListener("fetch", (event) => {
-  event.respondWith(fetch(event.request));
-});
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
