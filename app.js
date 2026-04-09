@@ -3,12 +3,11 @@ const firebaseConfig = {
   authDomain: "toner-manager-756c4.firebaseapp.com",
   projectId: "toner-manager-756c4"
 };
-
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-const pages = ["dashboard", "registo", "stock", "historico", "computadores", "config"];
-const subtitles = {
+var pages = ["dashboard", "registo", "stock", "historico", "computadores", "config"];
+var subtitles = {
   dashboard: "Resumo geral",
   registo: "Adicionar toner",
   stock: "Toners disponíveis",
@@ -16,7 +15,7 @@ const subtitles = {
   computadores: "Checklist de instalação",
   config: "Preferências"
 };
-const passos = [
+var passos = [
   "TEAMVIEWER HOST",
   "TEAMS",
   "DNS (192.168.0.204 & 192.168.0.205)",
@@ -30,60 +29,66 @@ const passos = [
   "Apagar User",
   "Criar novo user"
 ];
-let stockGlobal = [];
+var stockGlobal = [];
 
 function el(id){ return document.getElementById(id); }
-function abrirMenu(){ el('sidebar')?.classList.add('open'); el('overlay')?.classList.add('show'); }
-function fecharMenu(){ el('sidebar')?.classList.remove('open'); el('overlay')?.classList.remove('show'); }
-window.abrirMenu = abrirMenu;
-window.fecharMenu = fecharMenu;
 
 window.irParaPagina = function(page, btn){
-  pages.forEach(id => el(id)?.classList.add('hidden'));
-  el(page)?.classList.remove('hidden');
-  document.querySelectorAll('.side-nav button').forEach(b => b.classList.remove('active'));
-  const target = btn || document.querySelector(`.side-nav button[data-page="${page}"]`);
-  if (target) target.classList.add('active');
-  if (el('pageTitle')) el('pageTitle').innerText = target?.innerText.replace(/^\S+\s/, '') || 'App Braga';
+  for (var i=0;i<pages.length;i++) {
+    var node = el(pages[i]);
+    if (node) node.classList.add('hidden');
+  }
+  var current = el(page);
+  if (current) current.classList.remove('hidden');
+
+  var buttons = document.querySelectorAll('.side-nav button');
+  for (var j=0;j<buttons.length;j++) buttons[j].classList.remove('active');
+  if (btn) btn.classList.add('active');
+
+  if (el('pageTitle')) el('pageTitle').innerText = page.charAt(0).toUpperCase() + page.slice(1);
   if (el('pageSub')) el('pageSub').innerText = subtitles[page] || '';
+
   if (page === 'computadores') carregarChecklist();
-  fecharMenu();
 };
 
 window.preencherHoje = function(){
-  const hoje = new Date().toISOString().split('T')[0];
+  var hoje = new Date().toISOString().split('T')[0];
   if (el('data')) el('data').value = hoje;
   if (el('dataPC')) el('dataPC').value = hoje;
 };
 
 async function gerarID(){
-  const ref = db.collection('config').doc('contadorToner');
-  return db.runTransaction(async tx => {
-    const snap = await tx.get(ref);
-    const valor = snap.exists ? (snap.data().valor || 0) + 1 : 1;
-    tx.set(ref, { valor });
-    return `TON-${String(valor).padStart(4,'0')}`;
+  var ref = db.collection('config').doc('contadorToner');
+  return db.runTransaction(async function(tx){
+    var snap = await tx.get(ref);
+    var valor = 1;
+    if (snap.exists) valor = (snap.data().valor || 0) + 1;
+    tx.set(ref, { valor: valor });
+    return 'TON-' + String(valor).padStart(4, '0');
   });
 }
 
 window.disponivel = async function(){
-  const equipamento = el('equipamento')?.value || '';
-  const localizacao = el('localizacao')?.value || 'Sem Localização';
-  const cor = el('cor')?.value || '';
-  const data = el('data')?.value || 'Não tem Data';
+  var equipamento = el('equipamento').value || '';
+  var localizacao = el('localizacao').value || 'Sem Localização';
+  var cor = el('cor').value || '';
+  var data = el('data').value || 'Não tem Data';
+
   if (!equipamento || !cor) {
     alert('Preenche equipamento e cor.');
     return;
   }
-  const idInterno = await gerarID();
+
+  var idInterno = await gerarID();
   await db.collection('stock').add({
-    idInterno,
-    equipamento,
-    localizacao: localizacao || 'Sem Localização',
-    cor,
-    data,
+    idInterno: idInterno,
+    equipamento: equipamento,
+    localizacao: localizacao,
+    cor: cor,
+    data: data,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
+
   el('equipamento').value = '';
   el('localizacao').value = '';
   el('cor').value = '';
@@ -91,50 +96,50 @@ window.disponivel = async function(){
 };
 
 function renderStock(lista){
-  const target = el('listaStock');
-  const dash = el('dashboardStock');
+  var target = el('listaStock');
+  var dash = el('dashboardStock');
   if (target) target.innerHTML = '';
   if (dash) dash.innerHTML = '';
-  lista.forEach(item => {
-    const html = `
-      <div class="card">
-        <div class="card-top">
-          <div>
-            <strong>${item.idInterno || ''}</strong>
-            <div>${item.equipamento || ''} - ${item.cor || ''}</div>
-            <small>📍 ${item.localizacao || 'Sem Localização'}</small>
-            <small>📅 ${item.data || 'Não tem Data'}</small>
-          </div>
-          <input class="inline-check" type="checkbox" onchange="usar('${item.idDoc}')">
-        </div>
-      </div>`;
+
+  for (var i=0;i<lista.length;i++) {
+    var item = lista[i];
+    var html = '' +
+      '<div class="card">' +
+        '<div class="card-top">' +
+          '<div>' +
+            '<strong>' + (item.idInterno || '') + '</strong>' +
+            '<div>' + (item.equipamento || '') + ' - ' + (item.cor || '') + '</div>' +
+            '<small>📍 ' + (item.localizacao || 'Sem Localização') + '</small>' +
+            '<small>📅 ' + (item.data || 'Não tem Data') + '</small>' +
+          '</div>' +
+          '<input class="inline-check" type="checkbox" onchange="usar(\'' + item.idDoc + '\')">' +
+        '</div>' +
+      '</div>';
     if (target) target.insertAdjacentHTML('beforeend', html);
-    if (dash) dash.insertAdjacentHTML('beforeend', html.replace(`onchange="usar('${item.idDoc}')"`, 'disabled'));
-  });
+    if (dash) dash.insertAdjacentHTML('beforeend', html.replace('onchange="usar(\'' + item.idDoc + '\')"', 'disabled'));
+  }
 }
 
 window.filtrarStock = function(){
-  const txt = (el('searchStock')?.value || '').toLowerCase();
-  const filtrado = stockGlobal.filter(t => (t.localizacao || '').toLowerCase().includes(txt));
+  var txt = (el('searchStock').value || '').toLowerCase();
+  var filtrado = stockGlobal.filter(function(t){ return (t.localizacao || '').toLowerCase().includes(txt); });
   renderStock(filtrado);
 };
+
 window.filtrarDashboard = function(){
-  const txt = (el('dashboardSearch')?.value || '').toLowerCase();
-  const filtrado = stockGlobal.filter(t => (t.localizacao || '').toLowerCase().includes(txt));
+  var txt = (el('dashboardSearch').value || '').toLowerCase();
+  var filtrado = stockGlobal.filter(function(t){ return (t.localizacao || '').toLowerCase().includes(txt); });
   renderStock(filtrado);
 };
 
 window.usar = async function(id){
-  const ok = window.confirm('Marcar este toner como usado?');
-  if (!ok) return;
-  const ref = db.collection('stock').doc(id);
-  const snap = await ref.get();
+  if (!window.confirm('Marcar este toner como usado?')) return;
+  var ref = db.collection('stock').doc(id);
+  var snap = await ref.get();
   if (!snap.exists) return;
-  const dados = snap.data();
-  await db.collection('historico').add({
-    ...dados,
+  await db.collection('historico').add(Object.assign({}, snap.data(), {
     usadoEm: firebase.firestore.FieldValue.serverTimestamp()
-  });
+  }));
   await ref.delete();
 };
 
@@ -144,29 +149,32 @@ window.apagarHistorico = async function(id){
 };
 
 function carregarChecklist(){
-  const target = el('checklist');
+  var target = el('checklist');
   if (!target) return;
-  target.innerHTML = passos.map((p, i) => `
-    <label class="check-item">
-      <input type="checkbox" id="p${i}">
-      <span>${p}</span>
-    </label>`).join('');
+  var html = '';
+  for (var i=0;i<passos.length;i++) {
+    html += '<label class="check-item">' +
+      '<input type="checkbox" id="p' + i + '">' +
+      '<span>' + passos[i] + '</span>' +
+    '</label>';
+  }
+  target.innerHTML = html;
 }
 
 window.guardarPC = async function(){
-  const nome = el('nomePC')?.value?.trim() || '';
-  const data = el('dataPC')?.value || 'Sem Data';
+  var nome = (el('nomePC').value || '').trim();
+  var data = el('dataPC').value || 'Sem Data';
   if (!nome) {
     alert('Nome do computador obrigatório.');
     return;
   }
-  const dados = passos.map((passo, i) => ({
-    passo,
-    feito: !!el(`p${i}`)?.checked
-  }));
+  var dados = [];
+  for (var i=0;i<passos.length;i++) {
+    dados.push({ passo: passos[i], feito: !!el('p'+i).checked });
+  }
   await db.collection('pcs').add({
-    nome,
-    data,
+    nome: nome,
+    data: data,
     passos: dados,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
@@ -187,61 +195,62 @@ function aplicarDark(ativo){
 }
 
 function bindRealtime(){
-  db.collection('stock').orderBy('createdAt', 'desc').onSnapshot(snap => {
+  db.collection('stock').orderBy('createdAt', 'desc').onSnapshot(function(snap){
     stockGlobal = [];
-    snap.forEach(doc => {
-      stockGlobal.push({ idDoc: doc.id, ...doc.data() });
-    });
+    snap.forEach(function(doc){ stockGlobal.push(Object.assign({ idDoc: doc.id }, doc.data())); });
     if (el('countStock')) el('countStock').innerText = String(snap.size);
     renderStock(stockGlobal);
-  }, () => {
-    if (el('countStock')) el('countStock').innerText = '0';
-  });
+  }, function(){ if (el('countStock')) el('countStock').innerText = '0'; });
 
-  db.collection('historico').orderBy('usadoEm', 'desc').onSnapshot(snap => {
+  db.collection('historico').orderBy('usadoEm', 'desc').onSnapshot(function(snap){
     if (el('countUsados')) el('countUsados').innerText = String(snap.size);
-    const target = el('listaHistorico');
+    var target = el('listaHistorico');
     if (!target) return;
     target.innerHTML = '';
-    snap.forEach(doc => {
-      const item = doc.data();
-      target.insertAdjacentHTML('beforeend', `
-        <div class="card">
-          <strong>${item.idInterno || ''}</strong>
-          <div>${item.equipamento || ''} - ${item.cor || ''}</div>
-          <small>📍 ${item.localizacao || 'Sem Localização'}</small>
-          <small>📅 ${item.data || 'Não tem Data'}</small>
-          <button class="delete-btn" onclick="apagarHistorico('${doc.id}')">❌ Apagar</button>
-        </div>`);
+    snap.forEach(function(doc){
+      var item = doc.data();
+      target.insertAdjacentHTML('beforeend', '' +
+        '<div class="card">' +
+          '<strong>' + (item.idInterno || '') + '</strong>' +
+          '<div>' + (item.equipamento || '') + ' - ' + (item.cor || '') + '</div>' +
+          '<small>📍 ' + (item.localizacao || 'Sem Localização') + '</small>' +
+          '<small>📅 ' + (item.data || 'Não tem Data') + '</small>' +
+          '<button class="delete-btn" onclick="apagarHistorico(\'' + doc.id + '\')">❌ Apagar</button>' +
+        '</div>');
     });
   });
 
-  db.collection('pcs').orderBy('createdAt', 'desc').onSnapshot(snap => {
+  db.collection('pcs').orderBy('createdAt', 'desc').onSnapshot(function(snap){
     if (el('countPCs')) el('countPCs').innerText = String(snap.size);
-    const target = el('listaPC');
+    var target = el('listaPC');
     if (!target) return;
     target.innerHTML = '';
-    snap.forEach(doc => {
-      const item = doc.data();
-      const passosHtml = (item.passos || []).map(p => `<div>${p.feito ? '✔' : '❌'} ${p.passo}</div>`).join('');
-      target.insertAdjacentHTML('beforeend', `
-        <div class="card">
-          <strong>${item.nome || ''}</strong>
-          <small>📅 ${item.data || 'Sem Data'}</small>
-          ${passosHtml}
-          <button class="delete-btn" onclick="apagarPC('${doc.id}')">❌ Apagar</button>
-        </div>`);
+    snap.forEach(function(doc){
+      var item = doc.data();
+      var passosHtml = '';
+      var list = item.passos || [];
+      for (var i=0;i<list.length;i++) {
+        passosHtml += '<div>' + (list[i].feito ? '✔' : '❌') + ' ' + list[i].passo + '</div>';
+      }
+      target.insertAdjacentHTML('beforeend', '' +
+        '<div class="card">' +
+          '<strong>' + (item.nome || '') + '</strong>' +
+          '<small>📅 ' + (item.data || 'Sem Data') + '</small>' +
+          passosHtml +
+          '<button class="delete-btn" onclick="apagarPC(\'' + doc.id + '\')">❌ Apagar</button>' +
+        '</div>');
     });
   });
 }
 
 window.onload = function(){
-  const dark = localStorage.getItem('modo') === 'dark';
+  var dark = localStorage.getItem('modo') === 'dark';
   aplicarDark(dark);
   if (el('darkSwitch')) {
-    el('darkSwitch').addEventListener('change', e => aplicarDark(e.target.checked));
+    el('darkSwitch').addEventListener('change', function(e){ aplicarDark(e.target.checked); });
   }
   carregarChecklist();
   bindRealtime();
-  window.irParaPagina('dashboard');
+  var firstBtn = document.querySelector('.side-nav button');
+  window.irParaPagina('dashboard', firstBtn);
 };
