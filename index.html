@@ -22,9 +22,11 @@
 
       <nav class="side-nav">
         <button onclick="mostrarPagina('dashboard')" class="active">🏠 Dashboard</button>
-        <button onclick="mostrarPagina('registo')">🧾 Registo Toners</button>
-        <button onclick="mostrarPagina('stock')">📦 Stock</button>
-        <button onclick="mostrarPagina('historico')">🕘 Histórico</button>
+        <button onclick="mostrarPagina('impressoras')">🖨️ Impressoras</button>
+        <button onclick="mostrarPagina('manutencao')">🛠️ Manutenção</button>
+        <button onclick="mostrarPagina('pistolas')">📱 Pistolas CK65</button>
+        <button onclick="mostrarPagina('portas')">🌐 Portas Rede</button>
+        <button onclick="mostrarPagina('users')">👤 Users</button>
         <button onclick="mostrarPagina('computadores')">💻 Computadores</button>
         <button onclick="mostrarPagina('config')">⚙️ Configurações</button>
       </nav>
@@ -32,6 +34,7 @@
 
     <main class="main">
 
+      <!-- DASHBOARD -->
       <section id="dashboard" class="page">
         <img src="icon.png" class="dashboard-logo" alt="Logo Empresa">
 
@@ -54,7 +57,8 @@
         </div>
       </section>
 
-      <section id="registo" class="page hidden">
+      <!-- IMPRESSORAS -->
+      <section id="impressoras" class="page hidden">
         <div class="panel">
           <h3>Registo Toners</h3>
 
@@ -95,22 +99,51 @@
           <input type="date" id="data">
           <button class="primary" onclick="disponivel()">Adicionar Toner</button>
         </div>
-      </section>
 
-      <section id="stock" class="page hidden">
         <div class="panel">
           <h3>Stock</h3>
           <div id="listaStock" class="cards-list"></div>
         </div>
-      </section>
 
-      <section id="historico" class="page hidden">
         <div class="panel">
           <h3>Histórico</h3>
           <div id="listaHistorico" class="cards-list"></div>
         </div>
       </section>
 
+      <!-- MANUTENÇÃO -->
+      <section id="manutencao" class="page hidden">
+        <div class="panel">
+          <h3>Manutenção</h3>
+          <p class="subtitle">Página pronta para desenvolver.</p>
+        </div>
+      </section>
+
+      <!-- PISTOLAS -->
+      <section id="pistolas" class="page hidden">
+        <div class="panel">
+          <h3>Pistolas CK65</h3>
+          <p class="subtitle">Página pronta para desenvolver.</p>
+        </div>
+      </section>
+
+      <!-- PORTAS REDE -->
+      <section id="portas" class="page hidden">
+        <div class="panel">
+          <h3>Portas Rede</h3>
+          <p class="subtitle">Página pronta para desenvolver.</p>
+        </div>
+      </section>
+
+      <!-- USERS -->
+      <section id="users" class="page hidden">
+        <div class="panel">
+          <h3>Users</h3>
+          <p class="subtitle">Página pronta para desenvolver.</p>
+        </div>
+      </section>
+
+      <!-- COMPUTADORES -->
       <section id="computadores" class="page hidden">
         <div class="panel">
           <h3>Instalação Computador</h3>
@@ -129,6 +162,7 @@
         </div>
       </section>
 
+      <!-- CONFIG -->
       <section id="config" class="page hidden">
         <div class="panel">
           <h3>Configurações</h3>
