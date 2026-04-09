@@ -12,11 +12,8 @@
 
     <aside class="sidebar">
       <div class="brand">
-        <img src="icon.png" class="dashboard-logo">
-        <div>
-          <h1>App Braga</h1>
-          <p>Tablet</p>
-        </div>
+        <h1>App Braga</h1>
+        <p>Tablet</p>
       </div>
 
       <nav class="side-nav">
@@ -32,6 +29,11 @@
     <main class="main">
 
       <section id="dashboard" class="page">
+        <img src="logo.png" class="dashboard-logo" alt="Logo Empresa">
+
+        <h2>Dashboard Toners</h2>
+        <p class="subtitle">Gestão rápida de stock</p>
+
         <div class="stats-grid">
           <div class="stat-card">
             <span>Stock</span>
@@ -87,7 +89,7 @@
           </select>
 
           <input type="date" id="data">
-          <button class="primary" onclick="disponivel()">Adicionar</button>
+          <button class="primary" onclick="disponivel()">Adicionar Toner</button>
         </div>
       </section>
 
@@ -108,6 +110,7 @@
       <section id="computadores" class="page hidden">
         <div class="panel">
           <h3>Instalação Computador</h3>
+
           <input id="nomePC" placeholder="Nome do Computador">
           <input type="date" id="dataPC">
 
