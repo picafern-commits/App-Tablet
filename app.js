@@ -1,343 +1,251 @@
-:root {
-  --bg: #eef2f7;
-  --panel: #ffffff;
-  --text: #0f172a;
-  --muted: #64748b;
-  --border: #dbe4ee;
-  --primary: #2563eb;
-  --danger: #dc2626;
-  --success: #16a34a;
-  --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+const firebaseConfig = {
+  apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
+  authDomain: "toner-manager-756c4.firebaseapp.com",
+  projectId: "toner-manager-756c4"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const passos = [
+  "TEAMVIEWER HOST",
+  "TEAMS",
+  "DNS (192.168.0.204 & 192.168.0.205)",
+  "NOME DO SISTEMA",
+  "Atribuir Dominio",
+  "Desinstalar MCFee",
+  "Instalar Sophos",
+  "MICROSOFT 365",
+  "Instalar Impressora",
+  "Alterar Definições de Energia",
+  "Apagar User",
+  "Criar novo user"
+];
+
+window.mostrarPagina = function(id) {
+  document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
+
+  const alvo = document.getElementById(id);
+  if (alvo) alvo.classList.remove("hidden");
+
+  document.querySelectorAll(".side-nav button").forEach(b => b.classList.remove("active"));
+  const btn = Array.from(document.querySelectorAll(".side-nav button"))
+    .find(b => (b.getAttribute("onclick") || "").includes(`'${id}'`));
+  if (btn) btn.classList.add("active");
+
+  if (id === "computadores") carregarChecklist();
+};
+
+function carregarChecklist() {
+  const el = document.getElementById("checklist");
+  if (!el) return;
+
+  let html = "";
+  passos.forEach((passo, i) => {
+    html += `
+      <label class="check-item">
+        <input type="checkbox" id="p${i}">
+        <span>${passo}</span>
+      </label>
+    `;
+  });
+  el.innerHTML = html;
 }
 
-* {
-  box-sizing: border-box;
+async function gerarID() {
+  const ref = db.collection("config").doc("contador");
+
+  return db.runTransaction(async (t) => {
+    const doc = await t.get(ref);
+    const numero = doc.exists ? (doc.data().valor || 0) + 1 : 1;
+    t.set(ref, { valor: numero });
+    return "TON-" + String(numero).padStart(4, "0");
+  });
 }
 
-html,
-body {
-  margin: 0;
-  width: 100%;
-  min-height: 100%;
-  overflow-x: hidden;
-}
+window.disponivel = async function() {
+  const equipamento = document.getElementById("equipamento").value;
+  const localizacao = document.getElementById("localizacao").value;
+  const cor = document.getElementById("cor").value;
+  const data = document.getElementById("data").value;
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  touch-action: pan-y;
-}
-
-body.dark {
-  --bg: #0f172a;
-  --panel: #111827;
-  --text: #e5e7eb;
-  --muted: #94a3b8;
-  --border: #1f2937;
-  --primary: #3b82f6;
-  --shadow: none;
-}
-
-img {
-  max-width: 100%;
-  height: auto;
-}
-
-/* LAYOUT */
-.app-shell {
-  display: grid;
-  grid-template-columns: 290px 1fr;
-  min-height: 100vh;
-  align-items: start;
-  background: var(--bg);
-}
-
-.sidebar {
-  grid-column: 1;
-  grid-row: 1;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  background: #020617;
-  color: white;
-  border-right: 1px solid #0f172a;
-  padding: 20px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.main {
-  grid-column: 2;
-  grid-row: 1;
-  min-width: 0;
-  min-height: 100vh;
-  align-self: start;
-  padding: 24px;
-  margin: 0;
-  background: var(--bg);
-}
-
-/* SIDEBAR */
-.brand {
-  margin-bottom: 20px;
-}
-
-.brand h1 {
-  margin: 0;
-  font-size: 20px;
-  color: white;
-}
-
-.brand p {
-  margin: 4px 0 0;
-  font-size: 14px;
-  color: #94a3b8;
-}
-
-.side-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.side-nav button {
-  text-align: left;
-  border: none;
-  background: transparent;
-  color: white;
-  padding: 12px 14px;
-  border-radius: 12px;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.side-nav button.active,
-.side-nav button:hover {
-  background: rgba(59, 130, 246, 0.18);
-  color: #93c5fd;
-}
-
-/* PÁGINAS */
-.page {
-  margin: 0;
-  padding: 0;
-}
-
-.hidden {
-  display: none !important;
-}
-
-/* DASHBOARD */
-.dashboard-logo {
-  width: 220px;
-  max-width: 100%;
-  display: block;
-  margin: 0 0 20px 0;
-  border-radius: 18px;
-}
-
-h2 {
-  margin: 0 0 4px;
-  font-size: 22px;
-}
-
-.subtitle {
-  margin: 0 0 20px;
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  margin: 0 0 20px;
-}
-
-.stat-card {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  box-shadow: var(--shadow);
-  padding: 18px;
-}
-
-.stat-card span {
-  display: block;
-  color: var(--muted);
-  font-size: 14px;
-  margin-bottom: 8px;
-}
-
-.stat-card strong {
-  font-size: 22px;
-}
-
-/* PAINÉIS */
-.panel,
-.card,
-.check-item {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  box-shadow: var(--shadow);
-}
-
-.panel {
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.cards-list {
-  display: grid;
-  gap: 14px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.card {
-  padding: 14px 16px;
-}
-
-.card small {
-  display: block;
-  color: var(--muted);
-  margin-top: 4px;
-}
-
-.card-top {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: flex-start;
-}
-
-.inline-check {
-  width: 22px;
-  height: 22px;
-  margin: 0;
-  min-height: auto;
-}
-
-/* FORMULÁRIOS */
-input,
-select,
-button,
-textarea {
-  width: 100%;
-  min-height: 52px;
-  padding: 14px 16px;
-  margin-top: 10px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: var(--panel);
-  color: var(--text);
-  font-size: 16px;
-}
-
-button {
-  cursor: pointer;
-}
-
-button.primary,
-.primary {
-  background: var(--primary);
-  color: #fff;
-  border-color: transparent;
-}
-
-button.secondary,
-.secondary {
-  background: transparent;
-  color: var(--primary);
-}
-
-.delete-btn {
-  width: auto;
-  min-height: 40px;
-  padding: 8px 12px;
-  margin-top: 10px;
-  background: var(--danger);
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-}
-
-/* CHECKLIST */
-.checklist-list {
-  display: grid;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.check-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  border-radius: 16px;
-}
-
-.check-item input {
-  width: 22px;
-  height: 22px;
-  margin: 0;
-  min-height: auto;
-}
-
-.check-item input:checked + span {
-  color: var(--success);
-  font-weight: 700;
-}
-
-/* TOGGLE */
-.toggle-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
-
-.toggle-row input {
-  width: 22px;
-  height: 22px;
-  min-height: auto;
-  margin: 0;
-}
-
-/* RESPONSIVO */
-@media (min-width: 1200px) {
-  .cards-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 899px) {
-  .app-shell {
-    display: block;
+  if (!equipamento || !cor) {
+    alert("Preenche equipamento e cor.");
+    return;
   }
 
-  .sidebar {
-    position: static;
-    width: auto;
-    height: auto;
+  const idInterno = await gerarID();
+
+  await db.collection("stock").add({
+    idInterno,
+    equipamento,
+    localizacao: localizacao || "Sem Localização",
+    cor,
+    data: data || "Não tem Data",
+    created: new Date()
+  });
+
+  document.getElementById("equipamento").value = "";
+  document.getElementById("localizacao").value = "";
+  document.getElementById("cor").value = "";
+  document.getElementById("data").value = "";
+};
+
+window.usar = async function(docId) {
+  const confirmar = confirm("Marcar como usado?");
+  if (!confirmar) return;
+
+  const ref = db.collection("stock").doc(docId);
+  const snap = await ref.get();
+  if (!snap.exists) return;
+
+  await db.collection("historico").add({
+    ...snap.data(),
+    usadoEm: new Date().toISOString(),
+    created: new Date()
+  });
+
+  await ref.delete();
+};
+
+window.apagarHistorico = async function(docId) {
+  const confirmar = confirm("Apagar este registo?");
+  if (!confirmar) return;
+  await db.collection("historico").doc(docId).delete();
+};
+
+window.guardarPC = async function() {
+  const nome = document.getElementById("nomePC").value.trim();
+  const data = document.getElementById("dataPC").value || "Sem Data";
+
+  if (!nome) {
+    alert("Nome do computador é obrigatório.");
+    return;
   }
 
-  .main {
-    min-height: auto;
-    padding: 16px;
-  }
+  const dados = passos.map((passo, i) => ({
+    passo,
+    feito: !!document.getElementById(`p${i}`)?.checked
+  }));
 
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
+  await db.collection("pcs").add({
+    nome,
+    data,
+    passos: dados,
+    created: new Date()
+  });
 
-  .cards-list {
-    grid-template-columns: 1fr;
-  }
+  document.getElementById("nomePC").value = "";
+  document.getElementById("dataPC").value = "";
+  carregarChecklist();
+};
 
-  .dashboard-logo {
-    width: 180px;
-  }
+window.apagarPC = async function(docId) {
+  const confirmar = confirm("Apagar este registo?");
+  if (!confirmar) return;
+  await db.collection("pcs").doc(docId).delete();
+};
+
+function initDarkMode() {
+  const sw = document.getElementById("darkSwitch");
+  if (!sw) return;
+
+  const ativo = localStorage.getItem("modo") === "dark";
+  document.body.classList.toggle("dark", ativo);
+  sw.checked = ativo;
+
+  sw.addEventListener("change", function() {
+    document.body.classList.toggle("dark", this.checked);
+    localStorage.setItem("modo", this.checked ? "dark" : "light");
+  });
 }
+
+function initStock() {
+  db.collection("stock").orderBy("created", "desc").onSnapshot((snap) => {
+    const lista = document.getElementById("listaStock");
+    const count = document.getElementById("countStock");
+    if (count) count.innerText = snap.size;
+    if (!lista) return;
+
+    lista.innerHTML = "";
+
+    snap.forEach((doc) => {
+      const t = doc.data();
+      lista.innerHTML += `
+        <div class="card">
+          <div class="card-top">
+            <div>
+              <strong>${t.idInterno || ""}</strong><br>
+              ${t.equipamento || ""} - ${t.cor || ""}<br>
+              <small>${t.localizacao || ""}</small>
+              <small>${t.data || ""}</small>
+            </div>
+            <input class="inline-check" type="checkbox" onchange="usar('${doc.id}')">
+          </div>
+        </div>
+      `;
+    });
+  });
+}
+
+function initHistorico() {
+  db.collection("historico").orderBy("created", "desc").onSnapshot((snap) => {
+    const lista = document.getElementById("listaHistorico");
+    const count = document.getElementById("countUsados");
+    if (count) count.innerText = snap.size;
+    if (!lista) return;
+
+    lista.innerHTML = "";
+
+    snap.forEach((doc) => {
+      const t = doc.data();
+      lista.innerHTML += `
+        <div class="card">
+          <strong>${t.idInterno || ""}</strong><br>
+          ${t.equipamento || ""} - ${t.cor || ""}<br>
+          <small>${t.localizacao || ""}</small>
+          <small>${t.data || ""}</small>
+          <button class="delete-btn" onclick="apagarHistorico('${doc.id}')">❌ Apagar</button>
+        </div>
+      `;
+    });
+  });
+}
+
+function initPCs() {
+  db.collection("pcs").orderBy("created", "desc").onSnapshot((snap) => {
+    const lista = document.getElementById("listaPC");
+    const count = document.getElementById("countPCs");
+    if (count) count.innerText = snap.size;
+    if (!lista) return;
+
+    lista.innerHTML = "";
+
+    snap.forEach((doc) => {
+      const d = doc.data();
+      let passosHtml = "";
+
+      (d.passos || []).forEach((p) => {
+        passosHtml += `<div>${p.feito ? "✔" : "❌"} ${p.passo}</div>`;
+      });
+
+      lista.innerHTML += `
+        <div class="card">
+          <strong>${d.nome || ""}</strong><br>
+          <small>📅 ${d.data || "Sem Data"}</small>
+          <div style="margin-top:10px">${passosHtml}</div>
+          <button class="delete-btn" onclick="apagarPC('${doc.id}')">❌ Apagar</button>
+        </div>
+      `;
+    });
+  });
+}
+
+window.onload = function() {
+  carregarChecklist();
+  initDarkMode();
+  initStock();
+  initHistorico();
+  initPCs();
+  mostrarPagina("dashboard");
+};
