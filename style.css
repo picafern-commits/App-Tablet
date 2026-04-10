@@ -1073,3 +1073,135 @@ body.dark .app-version-mini {
     min-width: 180px;
   }
 }
+
+
+/* =========================
+   TABLET DASHBOARD PRO 5
+========================= */
+.dashboard-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0 14px;
+}
+
+.dashboard-section-title h3 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: -0.2px;
+}
+
+.dashboard-section-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dashboard-section-dot.critical {
+  background: #dc2626;
+  box-shadow: 0 0 0 6px rgba(239,68,68,0.12);
+}
+
+.dashboard-section-dot.warning {
+  background: #f59e0b;
+  box-shadow: 0 0 0 6px rgba(245,158,11,0.12);
+}
+
+.dashboard-critical-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.dashboard-critical-badges {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.dashboard-priority-box {
+  border: 1px solid rgba(239,68,68,0.14);
+  background: linear-gradient(135deg, rgba(239,68,68,0.06), rgba(245,158,11,0.06));
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.dashboard-priority-box.warning {
+  border-color: rgba(245,158,11,0.18);
+  background: linear-gradient(135deg, rgba(245,158,11,0.06), rgba(251,191,36,0.06));
+}
+
+.dashboard-priority-text {
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.dashboard-critical-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(120px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.dashboard-mini-card {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.45);
+}
+
+html.dark .dashboard-mini-card,
+body.dark .dashboard-mini-card {
+  background: rgba(15,23,42,0.45);
+}
+
+.dashboard-mini-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  margin-bottom: 5px;
+  font-weight: 800;
+}
+
+.dashboard-mini-card strong {
+  display: block;
+  font-size: 15px;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.dashboard-warning-card {
+  border: 1px solid rgba(245,158,11,0.24);
+  box-shadow: 0 14px 34px rgba(245,158,11,0.08), var(--glow);
+}
+
+.dashboard-warning-card::before {
+  background: #f59e0b !important;
+}
+
+.inline-priority-badge.warning {
+  background: rgba(245,158,11,0.16);
+  color: #d97706;
+}
+
+@media (max-width: 980px) {
+  .dashboard-critical-top {
+    flex-direction: column;
+  }
+  .dashboard-critical-badges {
+    justify-content: flex-start;
+  }
+  .dashboard-critical-grid {
+    grid-template-columns: 1fr;
+  }
+}

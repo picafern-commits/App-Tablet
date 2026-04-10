@@ -1387,19 +1387,7 @@ function renderDashboardCards(items) {
   if (!lista) return;
 
   const searchTxt = normalizarTexto(el("searchDashboard")?.value || "");
-
-  const criticas = impressorasData.map(item => {
-    const info = tonerInfoState[item.ip] || null;
-    const colors = Array.isArray(info?.colors) ? info.colors : [];
-    const residue = info?.residue || null;
-
-    const criticalColors = colors.filter(c => typeof c.percent === "number" && c.percent <= 25);
-    const monoPercent = typeof info?.percent === "number" ? info.percent : null;
-    const monoCritical = colors.length === 0 && monoPercent !== null && monoPercent <= 25;
-
-    const isCritical = criticalColors.length > 0 || monoCritical;
-    return { item, info, criticalColors, monoCritical, residue, isCritical };
-  }).filter(entry => entry.isCritical).filter(entry => {
+  const criticalPrinters = getDashboardCriticalPrinters().filter(entry => {
     if (!searchTxt) return true;
     const haystack = [
       entry.item.modelo,
@@ -1407,35 +1395,88 @@ function renderDashboardCards(items) {
       entry.item.ip,
       entry.item.localizacao,
       entry.item.armazem,
-      ...(entry.criticalColors || []).map(c => c.label),
-      entry.monoCritical ? "Preto" : ""
+      entry.priorityText
     ].join(" ");
     return normalizarTexto(haystack).includes(searchTxt);
   });
 
-  if (!criticas.length) {
-    lista.innerHTML = `<div class="panel empty-state"><h3>Sem impressoras críticas</h3><p>As impressoras com toner a 25% ou menos vão aparecer aqui automaticamente.</p></div>`;
+  const attentionPrinters = getDashboardAttentionPrinters().filter(entry => {
+    if (!searchTxt) return true;
+    const haystack = [
+      entry.item.modelo,
+      entry.item.serie,
+      entry.item.ip,
+      entry.item.localizacao,
+      entry.item.armazem,
+      entry.attentionText
+    ].join(" ");
+    return normalizarTexto(haystack).includes(searchTxt);
+  });
+
+  if (!criticalPrinters.length && !attentionPrinters.length) {
+    lista.innerHTML = `<div class="panel empty-state"><h3>Sem alertas</h3><p>Quando houver criticidade ou atenção operacional, os equipamentos aparecem aqui automaticamente.</p></div>`;
     return;
   }
 
-  lista.innerHTML = criticas.map(({ item, info, criticalColors, monoCritical, residue }) => {
-    const supplyHtml = criticalColors.length
-      ? criticalColors.map(c => gerarHTMLBarraToner(c.percent, c.label, c.key)).join("")
-      : (monoCritical ? gerarHTMLBarraToner(info.percent, "Preto", "black") : "");
+  let html = "";
 
-    const residueHtml = residue ? gerarHTMLBarraToner(residue.percent, residue.label || "Resíduo", "waste") : "";
+  if (criticalPrinters.length) {
+    html += `<div class="dashboard-section-title"><span class="dashboard-section-dot critical"></span><h3>Prioridade Máxima</h3></div>`;
+    html += criticalPrinters.map(({ item, info, priorityText, residueText }) => {
+      const estado = obterEstadoImpressora(item.ip);
+      return `
+        <div class="dashboard-card dashboard-critical-card">
+          <div class="dashboard-critical-top">
+            <div>
+              <div class="stock-id">${item.modelo}</div>
+              <div class="meta-line">Série: <span class="meta-value">${item.serie}</span></div>
+              <div class="meta-line">Local: <span class="meta-value">${item.localizacao} (${item.armazem})</span></div>
+            </div>
+            <div class="dashboard-critical-badges">
+              ${badgeEstado(estado)}
+              <span class="inline-priority-badge">Crítica</span>
+            </div>
+          </div>
+          <div class="dashboard-priority-box">
+            <div class="meta-line">Prioridade Máxima</div>
+            <div class="dashboard-priority-text">${priorityText}</div>
+          </div>
+          <div class="dashboard-critical-grid">
+            <div class="dashboard-mini-card"><span>IP</span><strong>${item.ip}</strong></div>
+            <div class="dashboard-mini-card"><span>Resíduo</span><strong>${residueText}</strong></div>
+          </div>
+          <div class="printer-toners-grid" style="margin-top:10px;">${info ? gerarHTMLToners(info) : gerarHTMLBarraToner(null)}</div>
+        </div>
+      `;
+    }).join("");
+  }
 
-    return `
-      <div class="dashboard-card dashboard-critical-card">
-        <div class="stock-id">${item.modelo}</div>
-        <div class="meta-line">Série: <span class="meta-value">${item.serie}</span></div>
-        <div class="meta-line">Local: <span class="meta-value">${item.localizacao} (${item.armazem})</span></div>
-        <div class="meta-line">IP: <span class="meta-value">${item.ip}</span></div>
-        <div class="printer-toners-grid" style="margin-top:10px;">${supplyHtml}${residueHtml}</div>
+  if (attentionPrinters.length) {
+    html += `<div class="dashboard-section-title"><span class="dashboard-section-dot warning"></span><h3>Atenção Operacional</h3></div>`;
+    html += attentionPrinters.map(({ item, info, attentionText }) => `
+      <div class="dashboard-card dashboard-warning-card">
+        <div class="dashboard-critical-top">
+          <div>
+            <div class="stock-id">${item.modelo}</div>
+            <div class="meta-line">Série: <span class="meta-value">${item.serie}</span></div>
+            <div class="meta-line">Local: <span class="meta-value">${item.localizacao} (${item.armazem})</span></div>
+          </div>
+          <div class="dashboard-critical-badges">
+            <span class="inline-priority-badge warning">Atenção</span>
+          </div>
+        </div>
+        <div class="dashboard-priority-box warning">
+          <div class="meta-line">Atenção Operacional</div>
+          <div class="dashboard-priority-text">${attentionText || "Toner entre 10% e 25%"}</div>
+        </div>
+        <div class="printer-toners-grid" style="margin-top:10px;">${info ? gerarHTMLToners(info) : gerarHTMLBarraToner(null)}</div>
       </div>
-    `;
-  }).join("");
+    `).join("");
+  }
+
+  lista.innerHTML = html;
 }
+
 
 function renderStockCards(items) {
   const lista = el("listaStock");
@@ -2583,3 +2624,67 @@ renderImpressoras = function(lista = impressorasData) {
 window.addEventListener("DOMContentLoaded", () => {
   bindPrintersFirebaseRealtime();
 });
+
+
+function getDashboardCriticalPrinters() {
+  return impressorasData
+    .map(item => {
+      const info = tonerInfoState[item.ip] || null;
+      const colors = Array.isArray(info?.colors) ? info.colors : [];
+      const residue = info?.residue || null;
+
+      const maxPriorityColors = colors.filter(c => typeof c.percent === "number" && c.percent < 10);
+      const monoPercent = typeof info?.percent === "number" ? info.percent : null;
+      const monoCritical = colors.length === 0 && monoPercent !== null && monoPercent < 10;
+      const residueCritical = residue && typeof residue.percent === "number" && residue.percent >= 90;
+
+      let priorityText = "";
+      if (maxPriorityColors.length) {
+        priorityText = maxPriorityColors.map(c => `${c.label} ${c.percent}%`).join(" · ");
+      } else if (monoCritical) {
+        priorityText = `Preto ${monoPercent}%`;
+      } else if (residueCritical) {
+        priorityText = `Resíduo ${residue.percent}%`;
+      }
+
+      return {
+        item,
+        info,
+        residue,
+        priorityText,
+        isCritical: !!priorityText,
+        residueText: residue && typeof residue.percent === "number" ? `${residue.percent}%` : "N/D"
+      };
+    })
+    .filter(entry => entry.isCritical);
+}
+
+function getDashboardAttentionPrinters() {
+  return impressorasData
+    .map(item => {
+      const info = tonerInfoState[item.ip] || null;
+      const colors = Array.isArray(info?.colors) ? info.colors : [];
+      const residue = info?.residue || null;
+
+      const attentionColors = colors.filter(c => typeof c.percent === "number" && c.percent >= 10 && c.percent <= 25);
+      const monoPercent = typeof info?.percent === "number" ? info.percent : null;
+      const monoAttention = colors.length === 0 && monoPercent !== null && monoPercent >= 10 && monoPercent <= 25;
+
+      let attentionText = "";
+      if (attentionColors.length) {
+        attentionText = attentionColors.map(c => `${c.label} ${c.percent}%`).join(" · ");
+      } else if (monoAttention) {
+        attentionText = `Preto ${monoPercent}%`;
+      }
+
+      return {
+        item,
+        info,
+        residue,
+        attentionText,
+        isAttention: !!attentionText,
+        residueText: residue && typeof residue.percent === "number" ? `${residue.percent}%` : "N/D"
+      };
+    })
+    .filter(entry => entry.isAttention);
+}
