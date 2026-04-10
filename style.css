@@ -1205,3 +1205,262 @@ body.dark .dashboard-mini-card {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* =========================
+   TABLET PRO LIMPO
+========================= */
+body {
+  touch-action: manipulation;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.main {
+  padding: 20px 18px 28px;
+}
+
+.topbar.premium-topbar {
+  margin-bottom: 20px;
+}
+
+.topbar-main h1 {
+  font-size: 28px;
+}
+
+.topbar .subtitle {
+  font-size: 13px;
+  max-width: 100%;
+}
+
+.toolbar-clean-tablet {
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.btn-clean-mode {
+  width: 100%;
+}
+
+#btnModoOperacao.active {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.stats-grid {
+  grid-template-columns: repeat(2, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.stat-card {
+  min-height: 104px;
+  padding: 18px;
+}
+
+.stat-card strong {
+  font-size: 34px;
+}
+
+.panel,
+.stock-card,
+.history-card,
+.pc-card,
+.dashboard-card,
+.card,
+.box {
+  padding: 18px;
+  border-radius: 18px;
+}
+
+.dashboard-card {
+  margin-bottom: 12px;
+}
+
+.dashboard-critical-card,
+.dashboard-warning-card {
+  box-shadow: var(--shadow), var(--glow);
+}
+
+.dashboard-critical-top {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.dashboard-critical-badges {
+  justify-content: flex-start;
+}
+
+.dashboard-priority-box,
+.dashboard-priority-box.warning {
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+.dashboard-priority-text {
+  font-size: 14px;
+}
+
+.dashboard-critical-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.dashboard-mini-card {
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
+.dashboard-mini-card strong {
+  font-size: 14px;
+}
+
+.dashboard-section-title {
+  margin: 8px 0 12px;
+}
+
+.dashboard-section-title h3 {
+  font-size: 17px;
+}
+
+.cards-list {
+  gap: 12px;
+}
+
+.small-btn,
+.action-btn,
+.primary-btn,
+.secondary-btn,
+.top-link {
+  min-height: 46px;
+  font-size: 14px;
+  border-radius: 12px;
+}
+
+.card-actions {
+  gap: 8px;
+}
+
+.global-priority-strip {
+  position: static;
+  min-width: unset;
+  max-width: unset;
+  margin-bottom: 14px;
+}
+
+.priority-strip-inner {
+  border-radius: 16px;
+  padding: 11px 12px;
+  box-shadow: var(--shadow);
+}
+
+.priority-strip-title {
+  font-size: 11px;
+}
+
+.priority-chip {
+  min-height: 28px;
+  padding: 0 10px;
+  font-size: 11px;
+}
+
+.table-panel {
+  padding: 0;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.pro-table,
+table {
+  min-width: 760px;
+}
+
+th,
+td {
+  padding: 12px 10px;
+  font-size: 13px;
+}
+
+.action-btn.ip,
+.action-btn.manut,
+.action-btn-toner {
+  box-shadow: none;
+}
+
+.sidebar {
+  width: 220px;
+  min-width: 220px;
+}
+
+@media (max-width: 980px) {
+  body {
+    display: block;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-width: 100%;
+    min-height: auto;
+    position: static;
+    padding: 16px 14px;
+  }
+
+  .sidebar a,
+  .menu-btn {
+    min-height: 44px;
+    margin-bottom: 8px;
+  }
+
+  .main {
+    margin-left: 0;
+    width: 100%;
+    padding: 16px 14px 24px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cards-grid,
+  .cards-grid-exec,
+  .form-grid,
+  .checklist-grid,
+  .toolbar,
+  .toolbar-clean-tablet,
+  .portas-stats-grid,
+  .pistolas-stats-grid,
+  .users-stats-grid,
+  .portas-toolbar,
+  .pistolas-toolbar,
+  .users-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar,
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .topbar-status {
+    justify-content: flex-start;
+  }
+
+  .dashboard-critical-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .small-btn,
+  .action-btn,
+  .primary-btn,
+  .secondary-btn,
+  .top-link {
+    width: 100%;
+  }
+}

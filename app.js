@@ -2071,16 +2071,26 @@ async function testarTodasAsImpressoras() {
   for (const item of impressorasData) {
     const alvoId = `toner-${item.ip.replace(/\./g, "-")}`;
 
-    if (el(alvoId)) {
-      await testarTonerImpressora(item.ip, alvoId);
-    } else {
-      const info = await obterTonerInfo(item.ip);
-      tonerInfoState[item.ip] = info || null;
-      if (info) maybeNotifyCriticalSupply(item.ip, info);
-    }
-  }
+    try {
+      if (el(alvoId)) {
+        await testarTonerImpressora(item.ip, alvoId);
+      } else {
+        const info = await obterTonerInfo(item.ip);
+        tonerInfoState[item.ip] = info || null;
 
-  renderDashboardCards();
+        if (info) {
+          maybeNotifyCriticalSupply(item.ip, info);
+        }
+      }
+    } catch (erro) {
+      console.error("Erro nesta impressora:", item.ip, erro);
+      tonerInfoState[item.ip] = null;
+    }
+
+    renderDashboardCards(stockGlobal);
+    renderDashboardInsights(stockGlobal, impressorasData);
+    renderGlobalPriorityStrip();
+  }
 }
 
 window.testarTonerImpressora = testarTonerImpressora;
@@ -2687,4 +2697,9 @@ function getDashboardAttentionPrinters() {
       };
     })
     .filter(entry => entry.isAttention);
+}
+
+
+function emitCriticalToast(message) {
+  mostrarMensagem(message, "erro");
 }
