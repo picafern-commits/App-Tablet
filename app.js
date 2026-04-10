@@ -2040,6 +2040,16 @@ async function obterTonerInfo(ip) {
   }
 }
 
+
+async function obterTonerComTimeout(ip, tempo = 4000) {
+  return Promise.race([
+    obterTonerInfo(ip),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("timeout")), tempo)
+    )
+  ]);
+}
+
 async function testarTonerImpressora(ip, outputId) {
   const output = el(outputId);
   if (output) {
@@ -2059,7 +2069,7 @@ async function testarTonerImpressora(ip, outputId) {
     `;
   }
 
-  const info = await obterTonerInfo(ip);
+  const info = await obterTonerComTimeout(ip);
   tonerInfoState[ip] = info || null;
 
   if (output) output.innerHTML = gerarHTMLToners(info);
@@ -2075,7 +2085,7 @@ async function testarTodasAsImpressoras() {
       if (el(alvoId)) {
         await testarTonerImpressora(item.ip, alvoId);
       } else {
-        const info = await obterTonerInfo(item.ip);
+        const info = await obterTonerComTimeout(item.ip);
         tonerInfoState[item.ip] = info || null;
 
         if (info) {
@@ -2702,4 +2712,22 @@ function getDashboardAttentionPrinters() {
 
 function emitCriticalToast(message) {
   mostrarMensagem(message, "erro");
+}
+
+
+function gerarHTMLSemResposta() {
+  return `
+    <div class="printer-toner-box printer-toner-box-error">
+      <div class="printer-toner-head">
+        <span class="printer-toner-title">Toner</span>
+        <span class="printer-toner-status is-error">Sem resposta</span>
+      </div>
+      <div class="printer-toner-bar-wrap">
+        <div class="printer-toner-bar printer-toner-bar-empty" style="width:100%;"></div>
+      </div>
+      <div class="printer-toner-foot">
+        <span class="printer-toner-value">Impressora não respondeu</span>
+      </div>
+    </div>
+  `;
 }

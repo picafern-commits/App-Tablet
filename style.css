@@ -1464,3 +1464,14 @@ td {
     width: 100%;
   }
 }
+
+
+.printer-toner-box-error {
+  border-color: rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.printer-toner-status.is-error {
+  background: rgba(239, 68, 68, 0.16);
+  color: #dc2626;
+}
