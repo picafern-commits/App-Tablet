@@ -2688,8 +2688,3 @@ function getDashboardAttentionPrinters() {
     })
     .filter(entry => entry.isAttention);
 }
-
-
-function emitCriticalToast(message) {
-  mostrarMensagem(message, "erro");
-}
