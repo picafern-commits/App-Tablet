@@ -1205,3 +1205,86 @@ body.dark .dashboard-mini-card {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* =========================
+   TABLET PACK
+========================= */
+body {
+  touch-action: manipulation;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: rgba(37, 99, 235, 0.20);
+}
+
+.toolbar-mobile-pro {
+  grid-template-columns: 1fr;
+}
+
+.cards-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scroll-snap-type: x proximity;
+}
+
+.cards-scroll > .dashboard-card {
+  min-width: 320px;
+  max-width: 360px;
+  scroll-snap-align: start;
+}
+
+.dashboard-mobile-card {
+  min-height: 100%;
+}
+
+.action-btn,
+.small-btn,
+.primary-btn,
+.secondary-btn,
+.top-link {
+  min-height: 52px;
+  font-size: 15px;
+}
+
+.fab {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  width: 62px;
+  height: 62px;
+  border: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 32px;
+  line-height: 1;
+  color: white;
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  box-shadow: 0 18px 32px rgba(37,99,235,0.32);
+  z-index: 5000;
+}
+
+#btnModoOperacao.active {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  border-color: transparent;
+}
+
+.global-priority-strip {
+  left: 14px;
+  right: 14px;
+  top: 10px;
+  min-width: unset;
+  max-width: unset;
+}
+
+.priority-strip-inner {
+  gap: 10px;
+}
+
+@media (min-width: 981px) {
+  .toolbar-mobile-pro {
+    grid-template-columns: 1fr 220px;
+  }
+}

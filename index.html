@@ -50,10 +50,12 @@
     <div class="stat-card"><span>PCs</span><strong id="countPCs">0</strong></div>
   </div>
   <div class="panel">
-    <div class="toolbar"><input id="searchDashboard" type="text" placeholder="Pesquisar toners..." oninput="filtrarDashboard()"></div>
+    <div class="toolbar toolbar-mobile-pro"><input id="searchDashboard" type="text" placeholder="Pesquisar alertas..." oninput="filtrarDashboard()"><button id="btnModoOperacao" class="secondary-btn" onclick="toggleModoOperacao()">Modo Operação</button></div>
     <div id="listaDashboardStock" class="cards-list"></div>
   </div>
 
+
+  <button class="fab" onclick="window.location.href='add-toner.html'">+</button>
 </main>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
