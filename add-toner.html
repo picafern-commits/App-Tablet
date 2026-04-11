@@ -54,14 +54,11 @@
     </div>
 
     <div class="card-actions" style="margin-bottom:14px;">
-      <button type="button" class="primary-btn" onclick="startScanner()">📷 Ler Código</button>
-      <button type="button" class="secondary-btn" onclick="abrirOCR()">🧠 Ler Folha (OCR)</button>
-      <input id="ocrInput" type="file" accept="image/*" capture="environment" style="display:none;" onchange="processarOCRInput(event)">
+      <button type="button" class="primary-btn" onclick="startScanner()">📷 Ler com Câmara</button>
       <button type="button" class="secondary-btn" onclick="stopScanner()">Fechar Câmara</button>
     </div>
 
     <div id="reader" class="scanner-box"></div>
-    <div id="ocrStatus" class="ocr-status" style="display:none;"></div>
 
     <div id="barcodeLearnBox" class="barcode-learn-box" style="display:none;">
       <div class="section-header">
@@ -102,28 +99,6 @@
     </div>
   </div>
 
-
-  <div id="serial3Box" class="barcode-learn-box" style="display:none;">
-    <div class="section-header">
-      <div>
-        <h3>Últimos 3 Dígitos da Série</h3>
-        <p class="section-subtitle">Introduza os 3 últimos dígitos para selecionar a localização automaticamente.</p>
-      </div>
-    </div>
-
-    <div class="form-grid">
-      <label>
-        <span>Últimos 3 dígitos</span>
-        <input id="serial3Input" type="text" maxlength="3" placeholder="Ex: 805">
-      </label>
-    </div>
-
-    <div class="card-actions" style="margin-top:12px;">
-      <button type="button" class="primary-btn" onclick="confirmarSerie3Digitos()">Confirmar Série</button>
-      <button type="button" class="secondary-btn" onclick="fecharSerie3Digitos()">Cancelar</button>
-    </div>
-  </div>
-
   <div class="panel form-grid">
     <label><span>Equipamento</span>
       <select id="equipamento">
@@ -156,8 +131,6 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 <script src="https://unpkg.com/html5-qrcode"></script>
-<script src="https://unpkg.com/html5-qrcode"></script>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
