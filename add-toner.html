@@ -44,6 +44,61 @@
 <main class="main">
 
   <div class="topbar premium-topbar"><div class="topbar-main"><h1>Adicionar Toner</h1><p class="subtitle">Novo toner para stock</p></div><div class="topbar-status"><span class="status-pill">Sistema Online</span><span class="version-pill">v1.3 Premium</span></div></div>
+
+  <div class="panel">
+    <div class="section-header">
+      <div>
+        <h3>Leitura por Câmara</h3>
+        <p class="section-subtitle">Ler código de barras ou QR e memorizar códigos novos automaticamente</p>
+      </div>
+    </div>
+
+    <div class="card-actions" style="margin-bottom:14px;">
+      <button type="button" class="primary-btn" onclick="startScanner()">📷 Ler com Câmara</button>
+      <button type="button" class="secondary-btn" onclick="stopScanner()">Fechar Câmara</button>
+    </div>
+
+    <div id="reader" class="scanner-box"></div>
+
+    <div id="barcodeLearnBox" class="barcode-learn-box" style="display:none;">
+      <div class="section-header">
+        <div>
+          <h3>Aprender Código</h3>
+          <p class="section-subtitle">Este código ainda não existe na base. Preencha uma vez e a app memoriza.</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <label><span>Código lido</span><input id="codigoLidoMap" type="text" readonly></label>
+        <label><span>Código toner</span><input id="codigoTonerMap" type="text" placeholder="Ex: TK-3190"></label>
+        <label>
+          <span>Equipamento</span>
+          <select id="equipamentoMap">
+            <option value="">Selecionar equipamento</option>
+            <option value="P3155DN">P3155DN</option>
+            <option value="TASKalfa_255ci">TASKalfa_255ci</option>
+            <option value="PA5500x">PA5500x</option>
+          </select>
+        </label>
+        <label>
+          <span>Cor</span>
+          <select id="corMap">
+            <option value="">Selecionar cor</option>
+            <option value="Preto">Preto</option>
+            <option value="Amarelo">Amarelo</option>
+            <option value="Vermelho">Vermelho</option>
+            <option value="Azul">Azul</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="card-actions" style="margin-top:12px;">
+        <button type="button" class="primary-btn" onclick="guardarMapeamentoCodigo()">Guardar Código</button>
+        <button type="button" class="secondary-btn" onclick="fecharAprendizagemCodigo()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
   <div class="panel form-grid">
     <label><span>Equipamento</span>
       <select id="equipamento">
@@ -75,6 +130,7 @@
 </main>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
 <script src="app.js"></script>
 </body>
 </html>
