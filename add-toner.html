@@ -45,11 +45,11 @@
 
   <div class="topbar premium-topbar"><div class="topbar-main"><h1>Adicionar Toner</h1><p class="subtitle">Novo toner para stock</p></div><div class="topbar-status"><span class="status-pill">Sistema Online</span><span class="version-pill">v1.3 Premium</span></div></div>
 
-  <div class="panel">
+  <div class="panel scanner-panel">
     <div class="section-header">
       <div>
-        <h3>Leitura por Câmara</h3>
-        <p class="section-subtitle">Ler código de barras ou QR para preencher automaticamente</p>
+        <h3>Scanner Inteligente</h3>
+        <p class="section-subtitle">Lê a impressora ou o toner. Quando os dados estiverem completos, entra automaticamente no stock.</p>
       </div>
     </div>
 
@@ -61,9 +61,14 @@
       <button type="button" class="secondary-btn" onclick="stopScanner()">
         Fechar Câmara
       </button>
+
+      <button type="button" class="secondary-btn" onclick="limparScannerAuto()">
+        Limpar Dados do Scanner
+      </button>
     </div>
 
     <div id="reader" class="scanner-box"></div>
+    <div id="scannerResumo" class="scanner-resumo">Aguardando leitura…</div>
   </div>
 
   <div class="panel form-grid">
