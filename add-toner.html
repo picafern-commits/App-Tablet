@@ -44,61 +44,6 @@
 <main class="main">
 
   <div class="topbar premium-topbar"><div class="topbar-main"><h1>Adicionar Toner</h1><p class="subtitle">Novo toner para stock</p></div><div class="topbar-status"><span class="status-pill">Sistema Online</span><span class="version-pill">v1.3 Premium</span></div></div>
-
-  <div class="panel">
-    <div class="section-header">
-      <div>
-        <h3>Leitura por Câmara</h3>
-        <p class="section-subtitle">Ler código de barras ou QR e memorizar códigos novos automaticamente</p>
-      </div>
-    </div>
-
-    <div class="card-actions" style="margin-bottom:14px;">
-      <button type="button" class="primary-btn" onclick="startScanner()">📷 Ler com Câmara</button>
-      <button type="button" class="secondary-btn" onclick="stopScanner()">Fechar Câmara</button>
-    </div>
-
-    <div id="reader" class="scanner-box"></div>
-
-    <div id="barcodeLearnBox" class="barcode-learn-box" style="display:none;">
-      <div class="section-header">
-        <div>
-          <h3>Aprender Código</h3>
-          <p class="section-subtitle">Este código ainda não existe na base. Preencha uma vez e a app memoriza.</p>
-        </div>
-      </div>
-
-      <div class="form-grid">
-        <label><span>Código lido</span><input id="codigoLidoMap" type="text" readonly></label>
-        <label><span>Código toner</span><input id="codigoTonerMap" type="text" placeholder="Ex: TK-3190"></label>
-        <label>
-          <span>Equipamento</span>
-          <select id="equipamentoMap">
-            <option value="">Selecionar equipamento</option>
-            <option value="P3155DN">P3155DN</option>
-            <option value="TASKalfa_255ci">TASKalfa_255ci</option>
-            <option value="PA5500x">PA5500x</option>
-          </select>
-        </label>
-        <label>
-          <span>Cor</span>
-          <select id="corMap">
-            <option value="">Selecionar cor</option>
-            <option value="Preto">Preto</option>
-            <option value="Amarelo">Amarelo</option>
-            <option value="Vermelho">Vermelho</option>
-            <option value="Azul">Azul</option>
-          </select>
-        </label>
-      </div>
-
-      <div class="card-actions" style="margin-top:12px;">
-        <button type="button" class="primary-btn" onclick="guardarMapeamentoCodigo()">Guardar Código</button>
-        <button type="button" class="secondary-btn" onclick="fecharAprendizagemCodigo()">Cancelar</button>
-      </div>
-    </div>
-  </div>
-
   <div class="panel form-grid">
     <label><span>Equipamento</span>
       <select id="equipamento">
@@ -108,15 +53,31 @@
         <option value="PA5500x">PA5500x</option>
       </select>
     </label>
-    <label><span>Localização</span>
-      <select id="localizacao">
-        <option value="">Selecionar localização</option>
-        <option value="Sem Localização">Sem Localização</option>
-        <option value="Ilha 01">Ilha 01</option><option value="Ilha 02">Ilha 02</option><option value="Ilha 03">Ilha 03</option><option value="Ilha 04">Ilha 04</option><option value="Ilha 05">Ilha 05</option>
-        <option value="Balcão 01">Balcão 01</option><option value="Balcão 02">Balcão 02</option>
-        <option value="Dep. Logistica">Dep. Logistica</option><option value="G/Encomendas">G/Encomendas</option><option value="Devoluções">Devoluções</option><option value="Escritorio">Escritorio</option>
-      </select>
-    </label>
+    
+<label><span>Localização</span>
+  <select id="localizacao">
+    <option value="">Selecionar localização</option>
+
+    <option value="R4B2229805 - Braga - Ilha 01">R4B2229805 - Braga - Ilha 01</option>
+    <option value="WD44336210 - Braga - Ilha 02">WD44336210 - Braga - Ilha 02</option>
+    <option value="R4B1395508 - Braga - Ilha 03">R4B1395508 - Braga - Ilha 03</option>
+    <option value="R4B1293179 - Braga - Ilha 04">R4B1293179 - Braga - Ilha 04</option>
+    <option value="R4B1293180 - Braga - Ilha 05">R4B1293180 - Braga - Ilha 05</option>
+    <option value="R4B1293183 - Braga - Balcão 01">R4B1293183 - Braga - Balcão 01</option>
+    <option value="R4B1293184 - Braga - Balcão 02">R4B1293184 - Braga - Balcão 02</option>
+    <option value="R4B2230012 - Braga - Dep. Logistica">R4B2230012 - Braga - Dep. Logistica</option>
+    <option value="R4B1293173 - Braga - G/Encomendas">R4B1293173 - Braga - G/Encomendas</option>
+    <option value="R4B1395261 - Braga - Devoluções">R4B1395261 - Braga - Devoluções</option>
+    <option value="RVP0Z03770 - Braga - Escritorio">RVP0Z03770 - Braga - Escritorio</option>
+
+    <option value="R4B1293169 - Vila Real - Ilha 01">R4B1293169 - Vila Real - Ilha 01</option>
+    <option value="R4B1293174 - Vila Real - Ilha 02">R4B1293174 - Vila Real - Ilha 02</option>
+    <option value="RVP0Z03715 - Vila Real - Ilha 03">RVP0Z03715 - Vila Real - Ilha 03</option>
+
+    <option value="Sem Localização">Sem Localização</option>
+  </select>
+</label>
+
     <label><span>Cor</span>
       <select id="cor">
         <option value="">Selecionar cor</option>
@@ -130,7 +91,6 @@
 </main>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-<script src="https://unpkg.com/html5-qrcode"></script>
 <script src="app.js"></script>
 </body>
 </html>
