@@ -2844,8 +2844,22 @@ async function guardarMapeamentoCodigo() {
 }
 
 function preencherFormularioPorCodigo(codigoLido) {
-  const codigo = normalizarCodigoScanner(codigoLido);
-  const toner = baseTonersAprendizagem[codigo];
+  const bruto = String(codigoLido || "");
+  const codigo = normalizarCodigoScanner(bruto);
+
+  const tkExtraido = extrairTonerDoTexto(bruto);
+
+  let toner = null;
+
+  if (tkExtraido) {
+    toner = Object.values(baseTonersAprendizagem).find(t => {
+      return normalizarCodigoScanner(t.codigo) === normalizarCodigoScanner(tkExtraido);
+    }) || null;
+  }
+
+  if (!toner) {
+    toner = baseTonersAprendizagem[codigo] || null;
+  }
 
   if (!toner) {
     abrirAprendizagemCodigo(codigo);
@@ -3028,7 +3042,7 @@ function montarTextoLocalizacao(item) {
   return `${item.serie} - ${item.armazem} - ${item.localizacao}`;
 }
 
-function confirmarSerie3Digitos() {
+async function confirmarSerie3Digitos() {
   const valor = ((el("serial3Input") && el("serial3Input").value) || "").trim().toUpperCase();
 
   if (valor.length !== 3) {
@@ -3043,12 +3057,22 @@ function confirmarSerie3Digitos() {
   }
 
   const localizacaoEl = el("localizacao");
+  const locText = montarTextoLocalizacao(printer);
+
   if (localizacaoEl) {
-    localizacaoEl.value = montarTextoLocalizacao(printer);
+    localizacaoEl.value = locText;
   }
 
   fecharSerie3Digitos();
   mostrarMensagem("Localização selecionada com sucesso.");
+
+  try {
+    if (typeof disponivel === "function") {
+      await disponivel();
+    }
+  } catch (e) {
+    console.error("Erro no auto stock:", e);
+  }
 }
 
 function aplicarTonerNoFormulario(toner) {
@@ -3062,3 +3086,13 @@ function aplicarTonerNoFormulario(toner) {
 
 window.confirmarSerie3Digitos = confirmarSerie3Digitos;
 window.fecharSerie3Digitos = fecharSerie3Digitos;
+
+
+function extrairTonerDoTexto(texto) {
+  const t = String(texto || "").toUpperCase();
+
+  const match = t.match(/TK-\d{4}[A-Z]?/);
+  if (match) return match[0];
+
+  return null;
+}
