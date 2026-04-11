@@ -2733,11 +2733,11 @@ function gerarHTMLSemResposta() {
 }
 
 
-
 /* =========================
-   SCANNER AUTO COMPLETO
+   SCANNER + APRENDIZAGEM
 ========================= */
-const baseToners = {
+const baseTonersAprendizagem = {
+  "8373034799": { equipamento: "P3155DN", cor: "Preto", codigo: "TK-3190" },
   "8373036523": { equipamento: "P3155DN", cor: "Preto", codigo: "TK-3190" },
   "1T02T60NLC": { equipamento: "P3155DN", cor: "Preto", codigo: "TK-3190" },
   "TK-3190": { equipamento: "P3155DN", cor: "Preto", codigo: "TK-3190" },
@@ -2748,162 +2748,94 @@ const baseToners = {
   "TK-8365K": { equipamento: "TASKalfa_255ci", cor: "Preto", codigo: "TK-8365K" }
 };
 
-const baseLocalizacoes = {
-  "R4B2229805": { armazem: "Braga", local: "Ilha 01" },
-  "WD44336210": { armazem: "Braga", local: "Ilha 02" },
-  "R4B1395508": { armazem: "Braga", local: "Ilha 03" },
-  "R4B1293179": { armazem: "Braga", local: "Ilha 04" },
-  "R4B1293180": { armazem: "Braga", local: "Ilha 05" },
-  "R4B1293183": { armazem: "Braga", local: "Balcão 01" },
-  "R4B1293184": { armazem: "Braga", local: "Balcão 02" },
-  "R4B2230012": { armazem: "Braga", local: "Dep. Logistica" },
-  "R4B1293173": { armazem: "Braga", local: "G/Encomendas" },
-  "R4B1395261": { armazem: "Braga", local: "Devoluções" },
-  "RVP0Z03770": { armazem: "Braga", local: "Escritorio" },
-  "R4B1293169": { armazem: "Vila Real", local: "Ilha 01" },
-  "R4B1293174": { armazem: "Vila Real", local: "Ilha 02" },
-  "RVP0Z03715": { armazem: "Vila Real", local: "Ilha 03" }
-};
-
 let scannerInstance = null;
 let scannerAtivo = false;
-let scannerEstado = {
-  codigoImpressora: "",
-  codigoToner: "",
-  armazem: "",
-  local: "",
-  equipamento: "",
-  cor: "",
-  codigo: ""
-};
+let ultimoCodigoLido = "";
 
 function normalizarCodigoScanner(valor) {
   return String(valor || "").trim().replace(/\s+/g, "").toUpperCase();
 }
 
-function updateScannerResumo(extra = "") {
-  const box = el("scannerResumo");
-  if (!box) return;
+async function carregarMapeamentosFirebase() {
+  if (!db) return;
+  try {
+    const snap = await db.collection("barcode_mappings").get();
+    snap.forEach(doc => {
+      const d = doc.data() || {};
+      const codigo = normalizarCodigoScanner(doc.id);
+      if (!codigo) return;
+      baseTonersAprendizagem[codigo] = {
+        equipamento: d.equipamento || "",
+        cor: d.cor || "",
+        codigo: d.codigo || ""
+      };
+    });
+  } catch (e) {
+    console.error("Erro ao carregar barcode_mappings:", e);
+  }
+}
 
-  const partes = [];
-  if (scannerEstado.codigoImpressora) partes.push(`Impressora: ${scannerEstado.codigoImpressora}`);
-  if (scannerEstado.local) partes.push(`Local: ${scannerEstado.local}`);
-  if (scannerEstado.codigoToner) partes.push(`Toner: ${scannerEstado.codigoToner}`);
-  if (scannerEstado.equipamento) partes.push(`Equipamento: ${scannerEstado.equipamento}`);
-  if (scannerEstado.cor) partes.push(`Cor: ${scannerEstado.cor}`);
+function aplicarTonerNoFormulario(toner) {
+  const equipamento = el("equipamento");
+  const cor = el("cor");
+  if (equipamento) equipamento.value = toner.equipamento || "";
+  if (cor) cor.value = toner.cor || "";
+}
 
-  if (!partes.length) {
-    box.className = "scanner-resumo";
-    box.innerText = extra || "Aguardando leitura…";
+function abrirAprendizagemCodigo(codigo) {
+  ultimoCodigoLido = codigo;
+  const box = el("barcodeLearnBox");
+  if (el("codigoLidoMap")) el("codigoLidoMap").value = codigo;
+  if (el("equipamentoMap")) el("equipamentoMap").value = "";
+  if (el("corMap")) el("corMap").value = "";
+  if (el("codigoTonerMap")) el("codigoTonerMap").value = "";
+  if (box) box.style.display = "block";
+  mostrarMensagem(`Código novo: ${codigo}. Preencha uma vez para memorizar.`, "erro");
+}
+
+function fecharAprendizagemCodigo() {
+  const box = el("barcodeLearnBox");
+  if (box) box.style.display = "none";
+}
+
+async function guardarMapeamentoCodigo() {
+  const codigo = normalizarCodigoScanner((el("codigoLidoMap") && el("codigoLidoMap").value) || ultimoCodigoLido);
+  const equipamento = (el("equipamentoMap") && el("equipamentoMap").value) || "";
+  const cor = (el("corMap") && el("corMap").value) || "";
+  const codigoToner = ((el("codigoTonerMap") && el("codigoTonerMap").value) || "").trim();
+
+  if (!codigo || !equipamento || !cor || !codigoToner) {
+    mostrarMensagem("Preencha código toner, equipamento e cor.", "erro");
     return;
   }
 
-  const pronto = !!(scannerEstado.equipamento && scannerEstado.cor && scannerEstado.local);
-  box.className = pronto ? "scanner-resumo ok" : "scanner-resumo warning";
-  box.innerText = partes.join(" | ") + (extra ? ` | ${extra}` : "");
-}
+  const payload = { equipamento, cor, codigo: codigoToner, created: new Date() };
 
-function limparScannerAuto() {
-  scannerEstado = {
-    codigoImpressora: "",
-    codigoToner: "",
-    armazem: "",
-    local: "",
-    equipamento: "",
-    cor: "",
-    codigo: ""
-  };
-
-  const equipamento = el("equipamento");
-  const cor = el("cor");
-  const localizacao = el("localizacao");
-
-  if (equipamento) equipamento.value = "";
-  if (cor) cor.value = "";
-  if (localizacao) localizacao.value = "";
-
-  updateScannerResumo("Dados limpos.");
-}
-
-function garantirDataHoje() {
-  const campoData = el("data");
-  if (!campoData) return;
-
-  if (!campoData.value) {
-    const hoje = new Date();
-    const yyyy = hoje.getFullYear();
-    const mm = String(hoje.getMonth() + 1).padStart(2, "0");
-    const dd = String(hoje.getDate()).padStart(2, "0");
-    campoData.value = `${yyyy}-${mm}-${dd}`;
-  }
-}
-
-function aplicarScannerAoFormulario() {
-  const equipamento = el("equipamento");
-  const cor = el("cor");
-  const localizacao = el("localizacao");
-
-  if (equipamento && scannerEstado.equipamento) equipamento.value = scannerEstado.equipamento;
-  if (cor && scannerEstado.cor) cor.value = scannerEstado.cor;
-  if (localizacao && scannerEstado.local) localizacao.value = scannerEstado.local;
-
-  garantirDataHoje();
-}
-
-function tentarAdicionarAutomaticamente() {
-  aplicarScannerAoFormulario();
-
-  if (!(scannerEstado.equipamento && scannerEstado.cor && scannerEstado.local)) {
-    updateScannerResumo("Faltam dados para entrada automática.");
-    return false;
-  }
-
-  garantirDataHoje();
-  updateScannerResumo("Dados completos. A adicionar automaticamente...");
-  setTimeout(() => {
-    try {
-      disponivel();
-    } catch (e) {
-      console.error("Erro auto adicionar:", e);
-      mostrarMensagem("Erro ao adicionar automaticamente.", "erro");
+  try {
+    if (db) {
+      await db.collection("barcode_mappings").doc(codigo).set(payload);
     }
-  }, 250);
-
-  return true;
+    baseTonersAprendizagem[codigo] = { equipamento, cor, codigo: codigoToner };
+    aplicarTonerNoFormulario(baseTonersAprendizagem[codigo]);
+    fecharAprendizagemCodigo();
+    mostrarMensagem(`Código ${codigo} guardado com sucesso.`);
+  } catch (e) {
+    console.error("Erro ao guardar mapeamento:", e);
+    mostrarMensagem("Erro ao guardar o código.", "erro");
+  }
 }
 
 function preencherFormularioPorCodigo(codigoLido) {
   const codigo = normalizarCodigoScanner(codigoLido);
-  let encontrou = false;
+  const toner = baseTonersAprendizagem[codigo];
 
-  const toner = baseToners[codigo];
-  if (toner) {
-    scannerEstado.codigoToner = codigo;
-    scannerEstado.equipamento = toner.equipamento || "";
-    scannerEstado.cor = toner.cor || "";
-    scannerEstado.codigo = toner.codigo || "";
-    encontrou = true;
-    mostrarMensagem(`Toner identificado: ${toner.codigo}`);
-  }
-
-  const localData = baseLocalizacoes[codigo];
-  if (localData) {
-    scannerEstado.codigoImpressora = codigo;
-    scannerEstado.local = localData.local || "";
-    scannerEstado.armazem = localData.armazem || "";
-    encontrou = true;
-    mostrarMensagem(`Localização: ${localData.local}`);
-  }
-
-  if (!encontrou) {
-    mostrarMensagem(`Código não reconhecido: ${codigo}`, "erro");
-    updateScannerResumo(`Código não reconhecido: ${codigo}`);
+  if (!toner) {
+    abrirAprendizagemCodigo(codigo);
     return false;
   }
 
-  aplicarScannerAoFormulario();
-  updateScannerResumo("Leitura concluída.");
-  tentarAdicionarAutomaticamente();
+  aplicarTonerNoFormulario(toner);
+  mostrarMensagem(`Toner identificado: ${toner.codigo}`);
   return true;
 }
 
@@ -2919,7 +2851,9 @@ function preencherFormularioPorQR(texto) {
   const dados = {};
 
   partes.forEach(parte => {
-    const [k, v] = parte.split("=");
+    const parts = parte.split("=");
+    const k = parts[0];
+    const v = parts.slice(1).join("=");
     if (!k || typeof v === "undefined") return;
     dados[k.trim().toUpperCase()] = v.trim();
   });
@@ -2929,25 +2863,20 @@ function preencherFormularioPorQR(texto) {
   const localValor = dados.LOCAL || dados.LOCALIZACAO || "";
   const codigoValor = dados.CODIGO || dados.ID || dados.MATERIAL || dados.MATERIALNO || "";
 
-  if (equipamentoValor) scannerEstado.equipamento = equipamentoValor;
-  if (corValor) scannerEstado.cor = corValor;
-  if (localValor) scannerEstado.local = localValor;
-  if (codigoValor) scannerEstado.codigo = codigoValor;
+  if (equipamentoValor && el("equipamento")) el("equipamento").value = equipamentoValor;
+  if (corValor && el("cor")) el("cor").value = corValor;
+  if (localValor && el("localizacao")) el("localizacao").value = localValor;
 
   if ((!equipamentoValor || !corValor) && codigoValor) {
     return preencherFormularioPorCodigo(codigoValor);
   }
 
-  if (!scannerEstado.equipamento || !scannerEstado.cor) {
+  if (!equipamentoValor || !corValor) {
     mostrarMensagem("QR sem dados suficientes para adicionar.", "erro");
-    updateScannerResumo("QR sem dados suficientes.");
     return false;
   }
 
-  aplicarScannerAoFormulario();
   mostrarMensagem("QR lido com sucesso.");
-  updateScannerResumo("QR lido com sucesso.");
-  tentarAdicionarAutomaticamente();
   return true;
 }
 
@@ -2982,20 +2911,16 @@ function startScanner() {
       ]
     },
     (decodedText) => {
-      let ok = false;
-
       if (decodedText.includes(";") || decodedText.includes("=")) {
-        ok = preencherFormularioPorQR(decodedText);
+        preencherFormularioPorQR(decodedText);
       } else {
-        ok = preencherFormularioPorCodigo(decodedText);
+        preencherFormularioPorCodigo(decodedText);
       }
-
-      if (ok) stopScanner();
+      stopScanner();
     },
     () => {}
   ).then(() => {
     scannerAtivo = true;
-    updateScannerResumo("Câmara iniciada.");
     mostrarMensagem("Câmara iniciada.");
   }).catch((error) => {
     console.error("Erro ao iniciar scanner:", error);
@@ -3026,10 +2951,10 @@ function stopScanner() {
     });
 }
 
-window.addEventListener("beforeunload", () => {
-  try { stopScanner(); } catch (e) { console.error(e); }
+window.addEventListener("DOMContentLoaded", () => {
+  try { carregarMapeamentosFirebase(); } catch (e) { console.error(e); }
 });
 
-window.addEventListener("DOMContentLoaded", () => {
-  setTimeout(() => updateScannerResumo(), 100);
+window.addEventListener("beforeunload", () => {
+  try { stopScanner(); } catch (e) { console.error(e); }
 });

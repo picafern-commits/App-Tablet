@@ -1477,13 +1477,9 @@ td {
 }
 
 
-.scanner-panel {
-  margin-bottom: 18px;
-}
-
 .scanner-box {
   width: 100%;
-  max-width: 520px;
+  max-width: 420px;
   min-height: 120px;
   margin-top: 12px;
   border: 1px dashed var(--border);
@@ -1497,29 +1493,6 @@ body.dark .scanner-box {
   background: rgba(15, 23, 42, 0.55);
 }
 
-.scanner-resumo {
-  margin-top: 12px;
-  padding: 12px 14px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: rgba(255,255,255,0.04);
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.scanner-resumo.ok {
-  border-color: rgba(34, 197, 94, 0.22);
-  background: rgba(34, 197, 94, 0.08);
-  color: var(--text);
-}
-
-.scanner-resumo.warning {
-  border-color: rgba(245, 158, 11, 0.22);
-  background: rgba(245, 158, 11, 0.08);
-  color: var(--text);
-}
-
 #reader video {
   width: 100% !important;
   border-radius: 14px;
@@ -1531,10 +1504,10 @@ body.dark .scanner-box {
   color: var(--text) !important;
 }
 
-#reader__dashboard_section_swaplink {
-  color: var(--primary) !important;
-  text-decoration: none;
-  font-weight: 700;
+.barcode-learn-box {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
 }
 
 #reader__dashboard_section_csr button,
