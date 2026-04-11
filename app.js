@@ -2778,12 +2778,8 @@ async function carregarMapeamentosFirebase() {
 function aplicarTonerNoFormulario(toner) {
   const equipamento = el("equipamento");
   const cor = el("cor");
-
   if (equipamento) equipamento.value = toner.equipamento || "";
   if (cor) cor.value = toner.cor || "";
-
-  preencherDataAtualSeVazia();
-  abrirSerie3Digitos();
 }
 
 function abrirAprendizagemCodigo(codigo) {
@@ -2820,21 +2816,28 @@ async function guardarMapeamentoCodigo() {
     return;
   }
 
-  const payload = { equipamento, cor, codigo: codigoToner, created: new Date() };
+  const payload = {
+    equipamento,
+    cor,
+    codigo: codigoToner,
+    created: new Date()
+  };
 
   try {
     if (db) {
       await db.collection("barcode_mappings").doc(codigo).set(payload);
     }
 
-    baseTonersAprendizagem[codigo] = { equipamento, cor, codigo: codigoToner };
+    baseTonersAprendizagem[codigo] = {
+      equipamento,
+      cor,
+      codigo: codigoToner
+    };
 
     if (el("equipamento")) el("equipamento").value = equipamento;
     if (el("cor")) el("cor").value = cor;
-    preencherDataAtualSeVazia();
 
     fecharAprendizagemCodigo();
-    abrirSerie3Digitos();
 
     mostrarMensagem(`Código ${codigo} guardado com sucesso.`);
   } catch (e) {
@@ -2844,22 +2847,8 @@ async function guardarMapeamentoCodigo() {
 }
 
 function preencherFormularioPorCodigo(codigoLido) {
-  const bruto = String(codigoLido || "");
-  const codigo = normalizarCodigoScanner(bruto);
-
-  const tkExtraido = extrairTonerDoTexto(bruto);
-
-  let toner = null;
-
-  if (tkExtraido) {
-    toner = Object.values(baseTonersAprendizagem).find(t => {
-      return normalizarCodigoScanner(t.codigo) === normalizarCodigoScanner(tkExtraido);
-    }) || null;
-  }
-
-  if (!toner) {
-    toner = baseTonersAprendizagem[codigo] || null;
-  }
+  const codigo = normalizarCodigoScanner(codigoLido);
+  const toner = baseTonersAprendizagem[codigo];
 
   if (!toner) {
     abrirAprendizagemCodigo(codigo);
@@ -2992,13 +2981,46 @@ window.addEventListener("beforeunload", () => {
 });
 
 
+
 /* =========================
-   SCAN À TUA MANEIRA
+   INTEGRAÇÃO OCR + SCANNER
 ========================= */
+const TONER_CODE_MAP = {
+  "TK-3190": { equipamento: "P3155DN", cor: "Preto", codigo: "TK-3190" },
+  "TK3190": { equipamento: "P3155DN", cor: "Preto", codigo: "TK-3190" },
+  "TK-8365Y": { equipamento: "TASKalfa_255ci", cor: "Amarelo", codigo: "TK-8365Y" },
+  "TK8365Y": { equipamento: "TASKalfa_255ci", cor: "Amarelo", codigo: "TK-8365Y" },
+  "TK-8365C": { equipamento: "TASKalfa_255ci", cor: "Azul", codigo: "TK-8365C" },
+  "TK8365C": { equipamento: "TASKalfa_255ci", cor: "Azul", codigo: "TK-8365C" },
+  "TK-8365M": { equipamento: "TASKalfa_255ci", cor: "Vermelho", codigo: "TK-8365M" },
+  "TK8365M": { equipamento: "TASKalfa_255ci", cor: "Vermelho", codigo: "TK-8365M" },
+  "TK-8365K": { equipamento: "TASKalfa_255ci", cor: "Preto", codigo: "TK-8365K" },
+  "TK8365K": { equipamento: "TASKalfa_255ci", cor: "Preto", codigo: "TK-8365K" },
+  "TK-3430": { equipamento: "PA5500x", cor: "Preto", codigo: "TK-3430" },
+  "TK3430": { equipamento: "PA5500x", cor: "Preto", codigo: "TK-3430" }
+};
+
+let scannerInstance = null;
+let scannerAtivo = false;
+
+function ocrNormalizar(texto) {
+  return String(texto || "")
+    .replace(/[\r\n]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toUpperCase();
+}
+
+function mostrarOCRStatus(texto) {
+  const box = el("ocrStatus");
+  if (!box) return;
+  box.style.display = "block";
+  box.innerText = texto;
+}
+
 function preencherDataAtualSeVazia() {
   const dataEl = el("data");
   if (!dataEl) return;
-
   if (!dataEl.value) {
     const hoje = new Date();
     const yyyy = hoje.getFullYear();
@@ -3011,30 +3033,29 @@ function preencherDataAtualSeVazia() {
 function abrirSerie3Digitos() {
   const box = el("serial3Box");
   if (box) box.style.display = "block";
-
   const input = el("serial3Input");
   if (input) {
     input.value = "";
-    setTimeout(() => input.focus(), 100);
+    setTimeout(() => input.focus(), 120);
   }
 }
 
 function fecharSerie3Digitos() {
   const box = el("serial3Box");
   if (box) box.style.display = "none";
-
   const input = el("serial3Input");
   if (input) input.value = "";
 }
 
-function procurarImpressoraPorUltimos3Digitos(final3) {
-  const alvo = String(final3 || "").trim();
-  if (alvo.length !== 3) return null;
+function procurarImpressoraPorSerieCompleta(serie) {
+  const s = String(serie || "").trim().toUpperCase();
+  return (impressorasData || []).find(item => String(item.serie || "").toUpperCase() === s) || null;
+}
 
-  return impressorasData.find(item => {
-    const serie = String(item.serie || "").trim().toUpperCase();
-    return serie.slice(-3) === alvo.toUpperCase();
-  }) || null;
+function procurarImpressoraPorUltimos3Digitos(final3) {
+  const alvo = String(final3 || "").trim().toUpperCase();
+  if (alvo.length !== 3) return null;
+  return (impressorasData || []).find(item => String(item.serie || "").toUpperCase().slice(-3) === alvo) || null;
 }
 
 function montarTextoLocalizacao(item) {
@@ -3042,9 +3063,124 @@ function montarTextoLocalizacao(item) {
   return `${item.serie} - ${item.armazem} - ${item.localizacao}`;
 }
 
+function limparFormularioAuto() {
+  ["equipamento","cor","data","localizacao"].forEach(id => {
+    if (el(id)) el(id).value = "";
+  });
+  fecharSerie3Digitos();
+  const ocr = el("ocrStatus");
+  if (ocr) ocr.style.display = "none";
+}
+
+function extrairTKDoTexto(texto) {
+  const t = ocrNormalizar(texto);
+  const match = t.match(/TK-\d{4}[A-Z]?/);
+  return match ? match[0] : "";
+}
+
+function extrairDataDoTexto(texto) {
+  const t = ocrNormalizar(texto);
+  const iso = t.match(/\d{4}-\d{2}-\d{2}/);
+  if (iso) return iso[0];
+  const euro = t.match(/\d{2}\/\d{2}\/\d{4}/);
+  if (euro) {
+    const [dd, mm, yyyy] = euro[0].split("/");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  return "";
+}
+
+function extrairSerieDaFrotaDoTexto(texto) {
+  const t = ocrNormalizar(texto);
+  for (const item of (impressorasData || [])) {
+    const serie = String(item.serie || "").toUpperCase();
+    if (serie && t.includes(serie)) return serie;
+  }
+  return "";
+}
+
+function aplicarTonerNoFormulario(toner) {
+  if (!toner) return;
+  if (el("equipamento")) el("equipamento").value = toner.equipamento || "";
+  if (el("cor")) el("cor").value = toner.cor || "";
+  preencherDataAtualSeVazia();
+}
+
+async function autoGuardarSeCompleto() {
+  const equipamento = el("equipamento")?.value || "";
+  const cor = el("cor")?.value || "";
+  const localizacao = el("localizacao")?.value || "";
+  if (!equipamento || !cor || !localizacao) return false;
+
+  if (typeof disponivel !== "function") return false;
+  await disponivel();
+  mostrarMensagem(`✔ ${equipamento} • ${cor} • ${localizacao} • guardado`);
+  limparFormularioAuto();
+  return true;
+}
+
+function resolverTonerPorTextoOuCodigo(textoBruto) {
+  const bruto = String(textoBruto || "");
+  const codigoNormal = typeof normalizarCodigoScanner === "function"
+    ? normalizarCodigoScanner(bruto)
+    : bruto.trim().toUpperCase();
+
+  const tk = extrairTKDoTexto(bruto);
+
+  if (tk && TONER_CODE_MAP[tk]) return TONER_CODE_MAP[tk];
+  if (codigoNormal && TONER_CODE_MAP[codigoNormal]) return TONER_CODE_MAP[codigoNormal];
+
+  if (typeof baseTonersAprendizagem !== "undefined") {
+    if (tk) {
+      const byTk = Object.values(baseTonersAprendizagem).find(t => {
+        const c = typeof normalizarCodigoScanner === "function"
+          ? normalizarCodigoScanner(t.codigo)
+          : String(t.codigo || "").trim().toUpperCase();
+        return c === (typeof normalizarCodigoScanner === "function" ? normalizarCodigoScanner(tk) : tk);
+      });
+      if (byTk) return byTk;
+    }
+    if (baseTonersAprendizagem[codigoNormal]) return baseTonersAprendizagem[codigoNormal];
+  }
+
+  return null;
+}
+
+async function preencherFormularioPorCodigo(codigoLido) {
+  const bruto = String(codigoLido || "");
+  const toner = resolverTonerPorTextoOuCodigo(bruto);
+
+  if (!toner) {
+    if (typeof abrirAprendizagemCodigo === "function") {
+      const codigoNormal = typeof normalizarCodigoScanner === "function"
+        ? normalizarCodigoScanner(bruto)
+        : bruto.trim().toUpperCase();
+      abrirAprendizagemCodigo(codigoNormal);
+    } else {
+      mostrarMensagem("Código não reconhecido.", "erro");
+    }
+    return false;
+  }
+
+  aplicarTonerNoFormulario(toner);
+  mostrarMensagem(`Toner identificado: ${toner.codigo}`);
+
+  const serie = extrairSerieDaFrotaDoTexto(bruto);
+  if (serie) {
+    const printer = procurarImpressoraPorSerieCompleta(serie);
+    if (printer && el("localizacao")) {
+      el("localizacao").value = montarTextoLocalizacao(printer);
+      await autoGuardarSeCompleto();
+      return true;
+    }
+  }
+
+  abrirSerie3Digitos();
+  return true;
+}
+
 async function confirmarSerie3Digitos() {
   const valor = ((el("serial3Input") && el("serial3Input").value) || "").trim().toUpperCase();
-
   if (valor.length !== 3) {
     mostrarMensagem("Introduza exatamente 3 dígitos.", "erro");
     return;
@@ -3056,43 +3192,159 @@ async function confirmarSerie3Digitos() {
     return;
   }
 
-  const localizacaoEl = el("localizacao");
-  const locText = montarTextoLocalizacao(printer);
+  if (el("localizacao")) el("localizacao").value = montarTextoLocalizacao(printer);
+  fecharSerie3Digitos();
+  await autoGuardarSeCompleto();
+}
 
-  if (localizacaoEl) {
-    localizacaoEl.value = locText;
+function abrirOCR() {
+  const input = el("ocrInput");
+  if (!input) {
+    mostrarMensagem("Input OCR não encontrado.", "erro");
+    return;
+  }
+  input.value = "";
+  input.click();
+}
+
+async function extrairDadosEtiquetaOCR(texto) {
+  const dados = {
+    textoNormalizado: ocrNormalizar(texto),
+    toner: extrairTKDoTexto(texto),
+    data: extrairDataDoTexto(texto),
+    serie: extrairSerieDaFrotaDoTexto(texto)
+  };
+
+  const toner = resolverTonerPorTextoOuCodigo(dados.toner || dados.textoNormalizado);
+  if (toner) {
+    dados.equipamento = toner.equipamento || "";
+    dados.cor = toner.cor || "";
+  } else {
+    dados.equipamento = "";
+    dados.cor = "";
   }
 
-  fecharSerie3Digitos();
-  mostrarMensagem("Localização selecionada com sucesso.");
+  return dados;
+}
+
+async function aplicarDadosOCRNoFormulario(dados) {
+  if (!dados) return false;
+
+  if (dados.equipamento && el("equipamento")) el("equipamento").value = dados.equipamento;
+  if (dados.cor && el("cor")) el("cor").value = dados.cor;
+  if (dados.data && el("data")) el("data").value = dados.data;
+  if (!dados.data) preencherDataAtualSeVazia();
+
+  if (dados.serie && el("localizacao")) {
+    const printer = procurarImpressoraPorSerieCompleta(dados.serie);
+    if (printer) {
+      el("localizacao").value = montarTextoLocalizacao(printer);
+      await autoGuardarSeCompleto();
+      return true;
+    }
+  }
+
+  if (dados.equipamento || dados.cor) abrirSerie3Digitos();
+  return true;
+}
+
+async function processarOCRInput(event) {
+  const file = event && event.target && event.target.files ? event.target.files[0] : null;
+  if (!file) return;
+
+  if (typeof Tesseract === "undefined") {
+    mostrarMensagem("Biblioteca OCR não carregada.", "erro");
+    return;
+  }
 
   try {
-    if (typeof disponivel === "function") {
-      await disponivel();
-    }
+    mostrarOCRStatus("A ler a folha... pode demorar alguns segundos.");
+    mostrarMensagem("A ler a folha...");
+    const result = await Tesseract.recognize(file, "eng");
+    const texto = result && result.data ? result.data.text : "";
+    const dados = await extrairDadosEtiquetaOCR(texto);
+
+    const resumo = [
+      dados.toner ? `Toner: ${dados.toner}` : "",
+      dados.equipamento ? `Equipamento: ${dados.equipamento}` : "",
+      dados.cor ? `Cor: ${dados.cor}` : "",
+      dados.data ? `Data: ${dados.data}` : "",
+      dados.serie ? `Série: ${dados.serie}` : ""
+    ].filter(Boolean).join(" | ");
+
+    mostrarOCRStatus(resumo || "A folha foi lida, mas não encontrei dados suficientes.");
+    await aplicarDadosOCRNoFormulario(dados);
   } catch (e) {
-    console.error("Erro no auto stock:", e);
+    console.error("Erro OCR:", e);
+    mostrarOCRStatus("Erro ao ler a folha.");
+    mostrarMensagem("Erro ao ler a folha.", "erro");
   }
 }
 
-function aplicarTonerNoFormulario(toner) {
-  const equipamento = el("equipamento");
-  const cor = el("cor");
-  if (equipamento) equipamento.value = toner.equipamento || "";
-  if (cor) cor.value = toner.cor || "";
-  preencherDataAtualSeVazia();
-  abrirSerie3Digitos();
+function startScanner() {
+  const reader = document.getElementById("reader");
+
+  if (!reader) {
+    mostrarMensagem("Zona do scanner não encontrada.", "erro");
+    return;
+  }
+
+  if (typeof Html5Qrcode === "undefined") {
+    mostrarMensagem("Biblioteca da câmara não carregada.", "erro");
+    return;
+  }
+
+  if (scannerAtivo) {
+    mostrarMensagem("A câmara já está aberta.", "erro");
+    return;
+  }
+
+  reader.innerHTML = "";
+  scannerInstance = new Html5Qrcode("reader");
+
+  scannerInstance.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: { width: 280, height: 180 } },
+    async (decodedText) => {
+      await preencherFormularioPorCodigo(decodedText);
+      stopScanner();
+    },
+    () => {}
+  ).then(() => {
+    scannerAtivo = true;
+    mostrarMensagem("Câmara iniciada.");
+  }).catch((error) => {
+    console.error("Erro ao iniciar scanner:", error);
+    mostrarMensagem("Não foi possível abrir a câmara.", "erro");
+  });
 }
 
+function stopScanner() {
+  const reader = document.getElementById("reader");
+  if (!scannerInstance || !scannerAtivo) {
+    if (reader) reader.innerHTML = "";
+    scannerAtivo = false;
+    return;
+  }
+
+  scannerInstance.stop()
+    .then(() => {
+      scannerInstance.clear();
+      scannerInstance = null;
+      scannerAtivo = false;
+      if (reader) reader.innerHTML = "";
+    })
+    .catch((error) => {
+      console.error("Erro ao fechar scanner:", error);
+      scannerAtivo = false;
+      if (reader) reader.innerHTML = "";
+    });
+}
+
+window.startScanner = startScanner;
+window.stopScanner = stopScanner;
+window.abrirOCR = abrirOCR;
+window.processarOCRInput = processarOCRInput;
 window.confirmarSerie3Digitos = confirmarSerie3Digitos;
 window.fecharSerie3Digitos = fecharSerie3Digitos;
-
-
-function extrairTonerDoTexto(texto) {
-  const t = String(texto || "").toUpperCase();
-
-  const match = t.match(/TK-\d{4}[A-Z]?/);
-  if (match) return match[0];
-
-  return null;
-}
+window.limparFormularioAuto = limparFormularioAuto;
