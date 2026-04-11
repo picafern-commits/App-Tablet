@@ -2816,28 +2816,21 @@ async function guardarMapeamentoCodigo() {
     return;
   }
 
-  const payload = {
-    equipamento,
-    cor,
-    codigo: codigoToner,
-    created: new Date()
-  };
+  const payload = { equipamento, cor, codigo: codigoToner, created: new Date() };
 
   try {
     if (db) {
       await db.collection("barcode_mappings").doc(codigo).set(payload);
     }
 
-    baseTonersAprendizagem[codigo] = {
-      equipamento,
-      cor,
-      codigo: codigoToner
-    };
+    baseTonersAprendizagem[codigo] = { equipamento, cor, codigo: codigoToner };
 
     if (el("equipamento")) el("equipamento").value = equipamento;
     if (el("cor")) el("cor").value = cor;
+    preencherDataAtualSeVazia();
 
     fecharAprendizagemCodigo();
+    abrirSerie3Digitos();
 
     mostrarMensagem(`Código ${codigo} guardado com sucesso.`);
   } catch (e) {
@@ -2909,12 +2902,6 @@ function startScanner() {
     return;
   }
 
-  if (typeof Html5Qrcode === "undefined") {
-    mostrarMensagem("Biblioteca da câmara não carregada.", "erro");
-    console.error("Html5Qrcode não existe.");
-    return;
-  }
-
   if (scannerAtivo) {
     mostrarMensagem("A câmara já está aberta.", "erro");
     return;
@@ -2927,7 +2914,15 @@ function startScanner() {
     { facingMode: "environment" },
     {
       fps: 10,
-      qrbox: { width: 280, height: 180 }
+      qrbox: { width: 280, height: 180 },
+      experimentalFeatures: { useBarCodeDetectorIfSupported: true },
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.QR_CODE,
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.CODE_39,
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8
+      ]
     },
     (decodedText) => {
       if (decodedText.includes(";") || decodedText.includes("=")) {
@@ -2979,5 +2974,85 @@ window.addEventListener("beforeunload", () => {
 });
 
 
-window.startScanner = startScanner;
-window.stopScanner = stopScanner;
+/* =========================
+   SCAN À TUA MANEIRA
+========================= */
+function preencherDataAtualSeVazia() {
+  const dataEl = el("data");
+  if (!dataEl) return;
+  if (!dataEl.value) {
+    const hoje = new Date();
+    const yyyy = hoje.getFullYear();
+    const mm = String(hoje.getMonth() + 1).padStart(2, "0");
+    const dd = String(hoje.getDate()).padStart(2, "0");
+    dataEl.value = `${yyyy}-${mm}-${dd}`;
+  }
+}
+
+function abrirSerie3Digitos() {
+  const box = el("serial3Box");
+  if (box) box.style.display = "block";
+  const input = el("serial3Input");
+  if (input) {
+    input.value = "";
+    setTimeout(() => input.focus(), 120);
+  }
+}
+
+function fecharSerie3Digitos() {
+  const box = el("serial3Box");
+  if (box) box.style.display = "none";
+  const input = el("serial3Input");
+  if (input) input.value = "";
+}
+
+function procurarImpressoraPorUltimos3Digitos(final3) {
+  const alvo = String(final3 || "").trim();
+  if (alvo.length !== 3) return null;
+
+  return impressorasData.find(item => {
+    const serie = String(item.serie || "").trim().toUpperCase();
+    return serie.slice(-3) === alvo.toUpperCase();
+  }) || null;
+}
+
+function montarTextoLocalizacao(item) {
+  if (!item) return "";
+  return `${item.serie} - ${item.armazem} - ${item.localizacao}`;
+}
+
+function confirmarSerie3Digitos() {
+  const valor = (el("serial3Input") && el("serial3Input").value || "").trim().toUpperCase();
+
+  if (valor.length !== 3) {
+    mostrarMensagem("Introduza exatamente 3 dígitos.", "erro");
+    return;
+  }
+
+  const printer = procurarImpressoraPorUltimos3Digitos(valor);
+  if (!printer) {
+    mostrarMensagem("Nenhuma impressora encontrada com esses 3 dígitos.", "erro");
+    return;
+  }
+
+  const locText = montarTextoLocalizacao(printer);
+  const localizacaoEl = el("localizacao");
+  if (localizacaoEl) {
+    localizacaoEl.value = locText;
+  }
+
+  fecharSerie3Digitos();
+  mostrarMensagem(`Localização selecionada: ${locText}`);
+}
+
+function aplicarTonerNoFormulario(toner) {
+  const equipamento = el("equipamento");
+  const cor = el("cor");
+  if (equipamento) equipamento.value = toner.equipamento || "";
+  if (cor) cor.value = toner.cor || "";
+  preencherDataAtualSeVazia();
+  abrirSerie3Digitos();
+}
+
+window.confirmarSerie3Digitos = confirmarSerie3Digitos;
+window.fecharSerie3Digitos = fecharSerie3Digitos;

@@ -99,6 +99,28 @@
     </div>
   </div>
 
+
+    <div id="serial3Box" class="barcode-learn-box" style="display:none;">
+      <div class="section-header">
+        <div>
+          <h3>Últimos 3 Dígitos da Série</h3>
+          <p class="section-subtitle">Introduza os 3 últimos dígitos da impressora para selecionar a localização automaticamente.</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <label>
+          <span>Últimos 3 dígitos</span>
+          <input id="serial3Input" type="text" maxlength="3" placeholder="Ex: 805">
+        </label>
+      </div>
+
+      <div class="card-actions" style="margin-top:12px;">
+        <button type="button" class="primary-btn" onclick="confirmarSerie3Digitos()">Confirmar Série</button>
+        <button type="button" class="secondary-btn" onclick="fecharSerie3Digitos()">Cancelar</button>
+      </div>
+    </div>
+
   <div class="panel form-grid">
     <label><span>Equipamento</span>
       <select id="equipamento">
@@ -108,15 +130,31 @@
         <option value="PA5500x">PA5500x</option>
       </select>
     </label>
+
     <label><span>Localização</span>
       <select id="localizacao">
         <option value="">Selecionar localização</option>
+
+        <option value="R4B2229805 - Braga - Ilha 01">R4B2229805 - Braga - Ilha 01</option>
+        <option value="WD44336210 - Braga - Ilha 02">WD44336210 - Braga - Ilha 02</option>
+        <option value="R4B1395508 - Braga - Ilha 03">R4B1395508 - Braga - Ilha 03</option>
+        <option value="R4B1293179 - Braga - Ilha 04">R4B1293179 - Braga - Ilha 04</option>
+        <option value="R4B1293180 - Braga - Ilha 05">R4B1293180 - Braga - Ilha 05</option>
+        <option value="R4B1293183 - Braga - Balcão 01">R4B1293183 - Braga - Balcão 01</option>
+        <option value="R4B1293184 - Braga - Balcão 02">R4B1293184 - Braga - Balcão 02</option>
+        <option value="R4B2230012 - Braga - Dep. Logistica">R4B2230012 - Braga - Dep. Logistica</option>
+        <option value="R4B1293173 - Braga - G/Encomendas">R4B1293173 - Braga - G/Encomendas</option>
+        <option value="R4B1395261 - Braga - Devoluções">R4B1395261 - Braga - Devoluções</option>
+        <option value="RVP0Z03770 - Braga - Escritorio">RVP0Z03770 - Braga - Escritorio</option>
+
+        <option value="R4B1293169 - Vila Real - Ilha 01">R4B1293169 - Vila Real - Ilha 01</option>
+        <option value="R4B1293174 - Vila Real - Ilha 02">R4B1293174 - Vila Real - Ilha 02</option>
+        <option value="RVP0Z03715 - Vila Real - Ilha 03">RVP0Z03715 - Vila Real - Ilha 03</option>
+
         <option value="Sem Localização">Sem Localização</option>
-        <option value="Ilha 01">Ilha 01</option><option value="Ilha 02">Ilha 02</option><option value="Ilha 03">Ilha 03</option><option value="Ilha 04">Ilha 04</option><option value="Ilha 05">Ilha 05</option>
-        <option value="Balcão 01">Balcão 01</option><option value="Balcão 02">Balcão 02</option>
-        <option value="Dep. Logistica">Dep. Logistica</option><option value="G/Encomendas">G/Encomendas</option><option value="Devoluções">Devoluções</option><option value="Escritorio">Escritorio</option>
       </select>
     </label>
+
     <label><span>Cor</span>
       <select id="cor">
         <option value="">Selecionar cor</option>

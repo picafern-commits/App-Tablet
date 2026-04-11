@@ -1521,3 +1521,13 @@ body.dark .scanner-box {
   font-weight: 700;
   cursor: pointer;
 }
+
+
+#serial3Input {
+  text-transform: uppercase;
+}
+
+.serial-hint {
+  color: var(--muted);
+  font-size: 13px;
+}
