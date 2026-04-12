@@ -27,6 +27,7 @@
 <a href="add-toner.html" class="active">Adicionar Toner</a>
 <a href="stock.html">Stock</a>
 <a href="historico.html">Histórico</a>
+<a href="etiquetas-word.html">Etiquetas Word</a>
 
   <div class="nav-group-label">Infraestrutura</div>
 <a href="impressoras.html">Impressoras</a>
@@ -43,13 +44,13 @@
 </aside>
 <main class="main">
 
-  <div class="topbar premium-topbar"><div class="topbar-main"><h1>Adicionar Toner</h1><p class="subtitle">Novo toner para stock</p></div><div class="topbar-status"><span class="status-pill">Sistema Online</span><span class="version-pill">v1.3 Premium</span></div></div>
+  <div class="topbar premium-topbar"><div class="topbar-main"><h1>Adicionar Toner</h1><p class="subtitle">Novo toner para stock</p></div><div class="topbar-status"><span class="status-pill">Sistema Online</span><span class="version-pill">v1.8 Premium</span></div></div>
 
   <div class="panel">
     <div class="section-header">
       <div>
         <h3>Leitura Inteligente</h3>
-        <p class="section-subtitle">Pode ler código de barras ou uma folha completa para preencher os campos automaticamente.</p>
+        <p class="section-subtitle">Use a câmara para ler código de barras ou a folha completa.</p>
       </div>
     </div>
 
@@ -125,6 +126,7 @@
     <label><span>Data da folha</span><input type="text" id="dataFolha" readonly placeholder="Data lida da folha"></label>
     <label><span>Data do scan</span><input type="date" id="data"></label>
     <button class="primary-btn" onclick="disponivel()">Adicionar ao stock</button>
+    <button class="secondary-btn" onclick="gerarWordEtiquetaFromForm()">Gerar Word Etiqueta</button>
   </div>
 
 </main>
@@ -132,6 +134,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
