@@ -1075,95 +1075,403 @@ body.dark .app-version-mini {
 }
 
 
-.scanner-box {
-  width: 100%;
-  max-width: 520px;
-  min-height: 120px;
-  margin-top: 12px;
-  border: 1px dashed var(--border);
-  border-radius: 18px;
-  padding: 10px;
-  background: var(--card);
-}
-
-#reader video {
-  width: 100% !important;
-  border-radius: 14px;
-}
-
-.ocr-status {
-  margin-top: 12px;
-  padding: 12px 14px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: rgba(59,130,246,0.08);
-  color: var(--text);
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.barcode-learn-box {
-  margin-bottom: 20px;
-}
-
-
-#dataFolha[readonly] {
-  opacity: 0.9;
-  background: rgba(148, 163, 184, 0.08);
-}
-
-
-.scanner-controls-panel {
-  margin-bottom: 18px;
-}
-
-.scanner-toggles {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.switch-row {
+/* =========================
+   TABLET DASHBOARD PRO 5
+========================= */
+.dashboard-section-title {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: 44px;
-  font-weight: 600;
+  margin: 12px 0 14px;
 }
 
-.switch-row input {
-  width: 18px;
-  height: 18px;
+.dashboard-section-title h3 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: -0.2px;
 }
 
-.alert-chip-critical,
-.alert-chip-warning,
-.alert-chip-ok {
-  display: inline-flex;
+.dashboard-section-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dashboard-section-dot.critical {
+  background: #dc2626;
+  box-shadow: 0 0 0 6px rgba(239,68,68,0.12);
+}
+
+.dashboard-section-dot.warning {
+  background: #f59e0b;
+  box-shadow: 0 0 0 6px rgba(245,158,11,0.12);
+}
+
+.dashboard-critical-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.dashboard-critical-badges {
+  display: flex;
+  gap: 8px;
   align-items: center;
-  gap: 6px;
-  min-height: 32px;
-  padding: 0 12px;
-  border-radius: 999px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.dashboard-priority-box {
+  border: 1px solid rgba(239,68,68,0.14);
+  background: linear-gradient(135deg, rgba(239,68,68,0.06), rgba(245,158,11,0.06));
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.dashboard-priority-box.warning {
+  border-color: rgba(245,158,11,0.18);
+  background: linear-gradient(135deg, rgba(245,158,11,0.06), rgba(251,191,36,0.06));
+}
+
+.dashboard-priority-text {
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.dashboard-critical-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(120px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.dashboard-mini-card {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.45);
+}
+
+html.dark .dashboard-mini-card,
+body.dark .dashboard-mini-card {
+  background: rgba(15,23,42,0.45);
+}
+
+.dashboard-mini-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  margin-bottom: 5px;
+  font-weight: 800;
+}
+
+.dashboard-mini-card strong {
+  display: block;
+  font-size: 15px;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.dashboard-warning-card {
+  border: 1px solid rgba(245,158,11,0.24);
+  box-shadow: 0 14px 34px rgba(245,158,11,0.08), var(--glow);
+}
+
+.dashboard-warning-card::before {
+  background: #f59e0b !important;
+}
+
+.inline-priority-badge.warning {
+  background: rgba(245,158,11,0.16);
+  color: #d97706;
+}
+
+@media (max-width: 980px) {
+  .dashboard-critical-top {
+    flex-direction: column;
+  }
+  .dashboard-critical-badges {
+    justify-content: flex-start;
+  }
+  .dashboard-critical-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* =========================
+   TABLET PRO LIMPO
+========================= */
+body {
+  touch-action: manipulation;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.main {
+  padding: 20px 18px 28px;
+}
+
+.topbar.premium-topbar {
+  margin-bottom: 20px;
+}
+
+.topbar-main h1 {
+  font-size: 28px;
+}
+
+.topbar .subtitle {
   font-size: 13px;
-  font-weight: 700;
+  max-width: 100%;
 }
 
-.alert-chip-critical {
-  background: rgba(239,68,68,0.14);
-  color: var(--danger);
+.toolbar-clean-tablet {
+  grid-template-columns: 1fr;
+  gap: 10px;
 }
 
-.alert-chip-warning {
-  background: rgba(245,158,11,0.14);
-  color: var(--warning);
+.btn-clean-mode {
+  width: 100%;
 }
 
-.alert-chip-ok {
-  background: rgba(34,197,94,0.14);
-  color: var(--success);
+#btnModoOperacao.active {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
 }
 
-.export-panel {
-  margin-top: 18px;
+.stats-grid {
+  grid-template-columns: repeat(2, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.stat-card {
+  min-height: 104px;
+  padding: 18px;
+}
+
+.stat-card strong {
+  font-size: 34px;
+}
+
+.panel,
+.stock-card,
+.history-card,
+.pc-card,
+.dashboard-card,
+.card,
+.box {
+  padding: 18px;
+  border-radius: 18px;
+}
+
+.dashboard-card {
+  margin-bottom: 12px;
+}
+
+.dashboard-critical-card,
+.dashboard-warning-card {
+  box-shadow: var(--shadow), var(--glow);
+}
+
+.dashboard-critical-top {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.dashboard-critical-badges {
+  justify-content: flex-start;
+}
+
+.dashboard-priority-box,
+.dashboard-priority-box.warning {
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+.dashboard-priority-text {
+  font-size: 14px;
+}
+
+.dashboard-critical-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.dashboard-mini-card {
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
+.dashboard-mini-card strong {
+  font-size: 14px;
+}
+
+.dashboard-section-title {
+  margin: 8px 0 12px;
+}
+
+.dashboard-section-title h3 {
+  font-size: 17px;
+}
+
+.cards-list {
+  gap: 12px;
+}
+
+.small-btn,
+.action-btn,
+.primary-btn,
+.secondary-btn,
+.top-link {
+  min-height: 46px;
+  font-size: 14px;
+  border-radius: 12px;
+}
+
+.card-actions {
+  gap: 8px;
+}
+
+.global-priority-strip {
+  position: static;
+  min-width: unset;
+  max-width: unset;
+  margin-bottom: 14px;
+}
+
+.priority-strip-inner {
+  border-radius: 16px;
+  padding: 11px 12px;
+  box-shadow: var(--shadow);
+}
+
+.priority-strip-title {
+  font-size: 11px;
+}
+
+.priority-chip {
+  min-height: 28px;
+  padding: 0 10px;
+  font-size: 11px;
+}
+
+.table-panel {
+  padding: 0;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.pro-table,
+table {
+  min-width: 760px;
+}
+
+th,
+td {
+  padding: 12px 10px;
+  font-size: 13px;
+}
+
+.action-btn.ip,
+.action-btn.manut,
+.action-btn-toner {
+  box-shadow: none;
+}
+
+.sidebar {
+  width: 220px;
+  min-width: 220px;
+}
+
+@media (max-width: 980px) {
+  body {
+    display: block;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-width: 100%;
+    min-height: auto;
+    position: static;
+    padding: 16px 14px;
+  }
+
+  .sidebar a,
+  .menu-btn {
+    min-height: 44px;
+    margin-bottom: 8px;
+  }
+
+  .main {
+    margin-left: 0;
+    width: 100%;
+    padding: 16px 14px 24px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cards-grid,
+  .cards-grid-exec,
+  .form-grid,
+  .checklist-grid,
+  .toolbar,
+  .toolbar-clean-tablet,
+  .portas-stats-grid,
+  .pistolas-stats-grid,
+  .users-stats-grid,
+  .portas-toolbar,
+  .pistolas-toolbar,
+  .users-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar,
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .topbar-status {
+    justify-content: flex-start;
+  }
+
+  .dashboard-critical-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .small-btn,
+  .action-btn,
+  .primary-btn,
+  .secondary-btn,
+  .top-link {
+    width: 100%;
+  }
+}
+
+
+.printer-toner-box-error {
+  border-color: rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.printer-toner-status.is-error {
+  background: rgba(239, 68, 68, 0.16);
+  color: #dc2626;
 }
