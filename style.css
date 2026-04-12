@@ -1194,3 +1194,21 @@ body.dark .app-version-mini {
   color: var(--muted);
   font-size: 13px;
 }
+
+
+.scan-continuo-panel {
+  margin-bottom: 18px;
+}
+
+.switch-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-weight: 700;
+}
+
+.switch-row input {
+  width: 18px;
+  height: 18px;
+}

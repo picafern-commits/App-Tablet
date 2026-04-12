@@ -3103,6 +3103,9 @@ async function processarOCRInputStable(event) {
     const texto = result && result.data ? result.data.text : "";
     const dados = extrairDadosEtiquetaOCRStable(texto);
     const ok = aplicarDadosOCRNoFormularioStable(dados);
+    if (ok && deveUsarScanContinuo()) {
+      setTimeout(() => { try { abrirOCRStable(); } catch (e) { console.error(e); } }, 700);
+    }
 
     const resumo = [
       dados.tonerCode ? `Toner: ${dados.tonerCode}` : "",
@@ -3294,3 +3297,84 @@ async function gerarWordEtiquetaFromForm(auto = false) {
 }
 
 window.gerarWordEtiquetaFromForm = gerarWordEtiquetaFromForm;
+
+
+
+/* =========================
+   SCAN CONTÍNUO ESTÁVEL
+========================= */
+let scanContinuoAtivo = false;
+
+function carregarPreferenciaScanContinuo() {
+  try {
+    scanContinuoAtivo = localStorage.getItem("appBraga_scanContinuo") === "1";
+    if (el("scanContinuoToggle")) {
+      el("scanContinuoToggle").checked = scanContinuoAtivo;
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function guardarPreferenciaScanContinuo() {
+  try {
+    scanContinuoAtivo = !!(el("scanContinuoToggle") && el("scanContinuoToggle").checked);
+    localStorage.setItem("appBraga_scanContinuo", scanContinuoAtivo ? "1" : "0");
+    mostrarMensagem(scanContinuoAtivo ? "Modo scan contínuo ligado." : "Modo scan contínuo desligado.");
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function deveUsarScanContinuo() {
+  return !!scanContinuoAtivo;
+}
+
+function reiniciarScannerSeContinuo() {
+  if (!deveUsarScanContinuo()) return;
+  setTimeout(() => {
+    try {
+      if (typeof startScanner === "function") {
+        startScanner();
+      }
+    } catch (e) {
+      console.error("Erro ao reiniciar scanner contínuo:", e);
+    }
+  }, 700);
+}
+
+const __originalProcessarTextoLidoStable = typeof processarTextoLidoStable === "function" ? processarTextoLidoStable : null;
+if (__originalProcessarTextoLidoStable) {
+  processarTextoLidoStable = function(textoLido) {
+    const resultado = __originalProcessarTextoLidoStable(textoLido);
+    if (resultado) {
+      reiniciarScannerSeContinuo();
+    }
+    return resultado;
+  };
+}
+
+const __originalConfirmarSerie3DigitosStable = typeof confirmarSerie3DigitosStable === "function" ? confirmarSerie3DigitosStable : null;
+if (__originalConfirmarSerie3DigitosStable) {
+  confirmarSerie3DigitosStable = function(...args) {
+    const resultado = __originalConfirmarSerie3DigitosStable.apply(this, args);
+    if (deveUsarScanContinuo()) {
+      setTimeout(() => {
+        const serialBox = el("serial3Box");
+        const aberto = serialBox && serialBox.style.display !== "none" && serialBox.style.display !== "";
+        if (!aberto) {
+          reiniciarScannerSeContinuo();
+        }
+      }, 700);
+    }
+    return resultado;
+  };
+}
+
+window.guardarPreferenciaScanContinuo = guardarPreferenciaScanContinuo;
+
+window.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => {
+    try { carregarPreferenciaScanContinuo(); } catch (e) { console.error(e); }
+  }, 100);
+});
