@@ -1196,10 +1196,19 @@ body.dark .app-version-mini {
 }
 
 
-#serial3Input {
-  text-transform: uppercase;
+.auto-stock-panel {
+  margin-bottom: 18px;
 }
 
-.barcode-learn-box {
-  margin-bottom: 18px;
+.switch-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-weight: 700;
+}
+
+.switch-row input {
+  width: 18px;
+  height: 18px;
 }

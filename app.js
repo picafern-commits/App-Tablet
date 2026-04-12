@@ -2913,25 +2913,40 @@ function aplicarDadosTonerStable(toner) {
 }
 
 function extrairDadosEtiquetaOCRStable(texto) {
-  const t = typeof normalizarTextoOCRStable === "function"
-    ? normalizarTextoOCRStable(texto)
-    : String(texto || "").toUpperCase();
+  const t = normalizarTextoOCRStable(texto);
 
   let tonerCode = "";
-  const tkMatch = t.match(/\bTK[\s-]?(\d{4}[A-Z]?)\b/);
+  const tkMatch = t.match(/TK[\s-]?(\d{4}[A-Z]?)/);
   if (tkMatch) tonerCode = `TK-${tkMatch[1]}`;
 
   let dataFolha = "";
-  if (typeof extrairDataDaFolhaRobustaStable === "function") {
-    dataFolha = extrairDataDaFolhaRobustaStable(t);
+  const dataISO = t.match(/\d{4}-\d{2}-\d{2}/);
+  const dataPTSlash = t.match(/\d{2}\/\d{2}\/\d{4}/);
+  const dataPTHyphen = t.match(/\d{2}-\d{2}-\d{4}/);
+
+  if (dataISO) {
+    dataFolha = dataISO[0];
+  } else if (dataPTSlash) {
+    const [dd, mm, yyyy] = dataPTSlash[0].split("/");
+    dataFolha = `${yyyy}-${mm}-${dd}`;
+  } else if (dataPTHyphen) {
+    const [dd, mm, yyyy] = dataPTHyphen[0].split("-");
+    dataFolha = `${yyyy}-${mm}-${dd}`;
   }
 
-  let serieEncontrada = extrairSerieDaFrotaProf(t);
+  let serieEncontrada = "";
+  for (const item of impressorasData) {
+    const s = String(item.serie || "").toUpperCase();
+    if (s && t.includes(s)) {
+      serieEncontrada = item.serie;
+      break;
+    }
+  }
 
   let equipamento = "";
   let cor = "";
 
-  if (tonerCode && typeof tonerMapStable !== "undefined" && tonerMapStable[tonerCode]) {
+  if (tonerCode && tonerMapStable[tonerCode]) {
     equipamento = tonerMapStable[tonerCode].equipamento || "";
     cor = tonerMapStable[tonerCode].cor || "";
   }
@@ -2954,8 +2969,7 @@ function extrairDadosEtiquetaOCRStable(texto) {
     equipamento,
     cor,
     dataFolha,
-    serie: serieEncontrada,
-    textoNormalizado: t
+    serie: serieEncontrada
   };
 }
 
@@ -2969,46 +2983,32 @@ function aplicarDadosOCRNoFormularioStable(dados) {
     el("dataFolha").value = dados.dataFolha || "";
   }
 
-  if (typeof preencherDataAtualSeVaziaStable === "function") {
-    preencherDataAtualSeVaziaStable();
+  preencherDataAtualSeVaziaStable();
+
+  if (dados.serie && el("localizacao")) {
+    const printer = impressorasData.find(p => p.serie === dados.serie);
+    if (printer) {
+      el("localizacao").value = montarTextoLocalizacaoStable(printer);
+    }
+  } else if (dados.equipamento || dados.cor) {
+    abrirSerie3DigitosStable();
   }
 
-  let localizacaoOk = false;
-  if (dados.serie) {
-    localizacaoOk = preencherLocalizacaoPorSerieProf(dados.serie);
-  }
-
-  if (!localizacaoOk && (dados.equipamento || dados.cor)) {
-    abrirSerie3DigitosProf();
-  }
-
-  return !!(dados.tonerCode || dados.equipamento || dados.cor || dados.dataFolha || localizacaoOk);
+  return !!(dados.tonerCode || dados.equipamento || dados.cor || dados.dataFolha || dados.serie);
 }
 
 function processarTextoLidoStable(textoLido) {
   const bruto = String(textoLido || "");
-  const normal = typeof normalizarTextoOCRStable === "function"
-    ? normalizarTextoOCRStable(bruto)
-    : bruto.toUpperCase();
+  const normal = normalizarTextoOCRStable(bruto);
 
-  const serieEncontrada = extrairSerieDaFrotaProf(normal);
-  if (serieEncontrada) {
-    const okLoc = preencherLocalizacaoPorSerieProf(serieEncontrada);
-    if (okLoc) return true;
-  }
-
-  const tkMatch = normal.match(/\bTK[\s-]?(\d{4}[A-Z]?)\b/);
+  const tkMatch = normal.match(/TK[\s-]?(\d{4}[A-Z]?)/);
   if (tkMatch) {
-    const codigo = `TK-${tkMatch[1]}`;
-    const toner = (typeof tonerMapStable !== "undefined" && tonerMapStable[codigo]) ? tonerMapStable[codigo] : null;
+    const tk = `TK-${tkMatch[1]}`;
+    const toner = tonerMapStable[tk] || null;
     if (toner) {
-      if (typeof aplicarDadosTonerStable === "function") {
-        aplicarDadosTonerStable(toner);
-      } else {
-        if (el("equipamento")) el("equipamento").value = toner.equipamento || "";
-        if (el("cor")) el("cor").value = toner.cor || "";
-      }
+      aplicarDadosTonerStable(toner);
       mostrarMensagem(`Toner identificado: ${toner.codigo}`);
+      abrirSerie3DigitosStable();
       return true;
     }
   }
@@ -3296,88 +3296,97 @@ async function gerarWordEtiquetaFromForm(auto = false) {
 window.gerarWordEtiquetaFromForm = gerarWordEtiquetaFromForm;
 
 
-function montarTextoLocalizacaoProf(item) {
-  if (!item) return "";
-  return `${item.serie} - ${item.armazem} - ${item.localizacao}`;
-}
 
+/* =========================
+   AUTO STOCK DIRETO
+========================= */
+let autoStockDiretoAtivo = false;
 
-function preencherLocalizacaoPorSerieProf(serieCompleta) {
-  const serie = String(serieCompleta || "").trim().toUpperCase();
-  if (!serie) return false;
-
-  const printer = Array.isArray(impressorasData)
-    ? impressorasData.find(p => String(p.serie || "").toUpperCase() === serie)
-    : null;
-
-  if (!printer) return false;
-
-  if (el("localizacao")) {
-    el("localizacao").value = montarTextoLocalizacaoProf(printer);
-  }
-
-  mostrarMensagem(`Localização automática: ${printer.localizacao}`);
-  return true;
-}
-
-
-function abrirSerie3DigitosProf() {
-  const box = el("serial3Box");
-  if (box) box.style.display = "block";
-  const input = el("serial3Input");
-  if (input) {
-    input.value = "";
-    setTimeout(() => input.focus(), 120);
+function carregarPreferenciaAutoStock() {
+  try {
+    autoStockDiretoAtivo = localStorage.getItem("appBraga_autoStockDireto") === "1";
+    if (el("autoStockToggle")) {
+      el("autoStockToggle").checked = autoStockDiretoAtivo;
+    }
+  } catch (e) {
+    console.error(e);
   }
 }
 
-
-function fecharSerie3DigitosProf() {
-  const box = el("serial3Box");
-  if (box) box.style.display = "none";
-  const input = el("serial3Input");
-  if (input) input.value = "";
+function guardarPreferenciaAutoStock() {
+  try {
+    autoStockDiretoAtivo = !!(el("autoStockToggle") && el("autoStockToggle").checked);
+    localStorage.setItem("appBraga_autoStockDireto", autoStockDiretoAtivo ? "1" : "0");
+    mostrarMensagem(autoStockDiretoAtivo ? "Auto stock ligado." : "Auto stock desligado.");
+  } catch (e) {
+    console.error(e);
+  }
 }
 
-
-function confirmarSerie3DigitosProf() {
-  const valor = ((el("serial3Input") && el("serial3Input").value) || "").trim().toUpperCase();
-
-  if (valor.length !== 3) {
-    mostrarMensagem("Introduza exatamente 3 dígitos.", "erro");
-    return;
-  }
-
-  const printer = Array.isArray(impressorasData)
-    ? impressorasData.find(p => String(p.serie || "").toUpperCase().slice(-3) === valor)
-    : null;
-
-  if (!printer) {
-    mostrarMensagem("Nenhuma impressora encontrada com esses 3 dígitos.", "erro");
-    return;
-  }
-
-  if (el("localizacao")) {
-    el("localizacao").value = montarTextoLocalizacaoProf(printer);
-  }
-
-  fecharSerie3DigitosProf();
-  mostrarMensagem(`Localização selecionada: ${printer.localizacao}`);
+function deveUsarAutoStockDireto() {
+  return !!autoStockDiretoAtivo;
 }
 
+async function tentarAutoStockDireto() {
+  if (!deveUsarAutoStockDireto()) return false;
 
-function extrairSerieDaFrotaProf(texto) {
-  const t = String(texto || "").toUpperCase();
+  const equipamento = el("equipamento");
+  const cor = el("cor");
+  const localizacao = el("localizacao");
+  const data = el("data");
 
-  if (!Array.isArray(impressorasData)) return "";
+  const eq = equipamento ? equipamento.value : "";
+  const c = cor ? cor.value : "";
+  const loc = localizacao ? localizacao.value : "";
+  const dt = data ? data.value : "";
 
-  for (const item of impressorasData) {
-    const serie = String(item.serie || "").toUpperCase();
-    if (serie && t.includes(serie)) return item.serie;
+  if (!eq || !c) return false;
+  if (!loc || loc === "Sem Localização" || !String(loc).trim()) return false;
+  if (!dt || !String(dt).trim()) return false;
+
+  try {
+    if (typeof disponivel === "function") {
+      await disponivel();
+      return true;
+    }
+  } catch (e) {
+    console.error("Erro no auto stock:", e);
   }
 
-  return "";
+  return false;
 }
 
-window.confirmarSerie3DigitosProf = confirmarSerie3DigitosProf;
-window.fecharSerie3DigitosProf = fecharSerie3DigitosProf;
+const __origAplicarDadosOCRNoFormularioStable = typeof aplicarDadosOCRNoFormularioStable === "function" ? aplicarDadosOCRNoFormularioStable : null;
+if (__origAplicarDadosOCRNoFormularioStable) {
+  aplicarDadosOCRNoFormularioStable = function(...args) {
+    const r = __origAplicarDadosOCRNoFormularioStable.apply(this, args);
+    setTimeout(() => { tentarAutoStockDireto(); }, 300);
+    return r;
+  };
+}
+
+const __origConfirmarSerie3DigitosProf = typeof confirmarSerie3DigitosProf === "function" ? confirmarSerie3DigitosProf : null;
+if (__origConfirmarSerie3DigitosProf) {
+  confirmarSerie3DigitosProf = function(...args) {
+    const r = __origConfirmarSerie3DigitosProf.apply(this, args);
+    setTimeout(() => { tentarAutoStockDireto(); }, 150);
+    return r;
+  };
+}
+
+const __origProcessarTextoLidoStable = typeof processarTextoLidoStable === "function" ? processarTextoLidoStable : null;
+if (__origProcessarTextoLidoStable) {
+  processarTextoLidoStable = function(...args) {
+    const r = __origProcessarTextoLidoStable.apply(this, args);
+    setTimeout(() => { tentarAutoStockDireto(); }, 300);
+    return r;
+  };
+}
+
+window.guardarPreferenciaAutoStock = guardarPreferenciaAutoStock;
+
+window.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => {
+    try { carregarPreferenciaAutoStock(); } catch (e) { console.error(e); }
+  }, 100);
+});
