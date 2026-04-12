@@ -2818,7 +2818,7 @@ window.addEventListener("DOMContentLoaded", () => {
 /* =========================
    VERSÃO / ONLINE-OFFLINE
 ========================= */
-const APP_BRAGA_VERSION = "v1.6 Premium";
+const APP_BRAGA_VERSION = "v1.8 Premium";
 
 function atualizarEstadoLigacaoAppBraga() {
   const online = navigator.onLine;
@@ -3116,7 +3116,7 @@ async function processarOCRInputStable(event) {
     mostrarOCRStatusStable(resumo || "A folha foi lida, mas não encontrei dados suficientes.");
     mostrarMensagem(ok ? "Folha lida com sucesso." : "Não encontrei dados suficientes na folha.", ok ? "sucesso" : "erro");
     if (ok && dados.serie && dados.equipamento) {
-      await gerarWordEtiquetaFromForm();
+      await gerarWordEtiquetaFromForm(true);
     }
   } catch (e) {
     console.error("Erro OCR:", e);
@@ -3202,7 +3202,7 @@ function extrairDadosEtiquetaWord() {
   };
 }
 
-async function gerarWordEtiquetaFromForm() {
+async function gerarWordEtiquetaFromForm(auto = false) {
   try {
     if (typeof docx === "undefined") {
       mostrarMensagem("Biblioteca Word não carregada.", "erro");
@@ -3284,147 +3284,7 @@ async function gerarWordEtiquetaFromForm() {
       a.remove();
     }, 1200);
 
-    mostrarMensagem("Etiqueta Word gerada com sucesso.");
-  } catch (error) {
-    console.error("Erro ao gerar Word:", error);
-    mostrarMensagem("Erro ao gerar a etiqueta Word.", "erro");
-  }
-}
-
-window.gerarWordEtiquetaFromForm = gerarWordEtiquetaFromForm;
-
-
-
-/* =========================
-   ETIQUETAS WORD v1.6
-========================= */
-function getHojePTAppBraga() {
-  const hoje = new Date();
-  const dd = String(hoje.getDate()).padStart(2, "0");
-  const mm = String(hoje.getMonth() + 1).padStart(2, "0");
-  const yyyy = hoje.getFullYear();
-  return `${dd}/${mm}/${yyyy}`;
-}
-
-function getHojeISOAppBraga() {
-  const hoje = new Date();
-  const dd = String(hoje.getDate()).padStart(2, "0");
-  const mm = String(hoje.getMonth() + 1).padStart(2, "0");
-  const yyyy = hoje.getFullYear();
-  return `${yyyy}-${mm}-${dd}`;
-}
-
-function extrairDadosEtiquetaWord() {
-  const loc = (el("localizacao") && el("localizacao").value) || "";
-  let serie = "";
-  let localCurto = "";
-  let armazem = "";
-
-  const parts = loc.split(" - ").map(v => v.trim()).filter(Boolean);
-  if (parts.length >= 3) {
-    serie = parts[0] || "";
-    armazem = parts[1] || "";
-    localCurto = parts.slice(2).join(" - ");
-  } else {
-    localCurto = loc || "Sem Localização";
-  }
-
-  return {
-    serie: serie || "SEM SÉRIE",
-    localCurto: localCurto || "Sem Localização",
-    armazem: armazem || "",
-    dataEtiqueta: getHojePTAppBraga(), // SEMPRE data do scan
-    dataScanISO: getHojeISOAppBraga()
-  };
-}
-
-async function guardarRegistoEtiquetaWord(meta) {
-  try {
-    if (!db) return;
-    await db.collection("etiquetasWord").add({
-      ...meta,
-      created: new Date()
-    });
-  } catch (error) {
-    console.error("Erro ao guardar etiqueta word:", error);
-  }
-}
-
-async function gerarWordEtiquetaFromMeta(meta, silent = false) {
-  try {
-    if (typeof docx === "undefined") {
-      mostrarMensagem("Biblioteca Word não carregada.", "erro");
-      return;
-    }
-
-    const {
-      Document,
-      Packer,
-      Paragraph,
-      AlignmentType,
-      TextRun
-    } = docx;
-
-    const doc = new Document({
-      creator: "App Braga",
-      title: "Etiqueta Toner",
-      description: "Etiqueta gerada automaticamente pelo scan OCR",
-      sections: [
-        {
-          properties: {},
-          children: [
-            new Paragraph({
-              alignment: AlignmentType.CENTER,
-              spacing: { before: 3200, after: 500 },
-              children: [
-                new TextRun({
-                  text: meta.localCurto || "Sem Localização",
-                  bold: true,
-                  size: 42
-                })
-              ]
-            }),
-            new Paragraph({
-              alignment: AlignmentType.CENTER,
-              spacing: { before: 200, after: 2800 },
-              children: [
-                new TextRun({
-                  text: meta.serie || "SEM SÉRIE",
-                  bold: true,
-                  size: 64
-                })
-              ]
-            }),
-            new Paragraph({
-              alignment: AlignmentType.CENTER,
-              spacing: { before: 0, after: 200 },
-              children: [
-                new TextRun({
-                  text: meta.dataEtiqueta || getHojePTAppBraga(),
-                  bold: true,
-                  size: 56
-                })
-              ]
-            })
-          ]
-        }
-      ]
-    });
-
-    const blob = await Packer.toBlob(doc);
-    const fileName = `Etiqueta_${String(meta.localCurto || "Local").replace(/\s+/g, "_")}_${meta.serie || "SEM_SERIE"}_${(meta.dataEtiqueta || getHojePTAppBraga()).replace(/\//g, "-")}.docx`;
-
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-      URL.revokeObjectURL(a.href);
-      a.remove();
-    }, 1500);
-
-    if (!silent) {
+    if (!auto) {
       mostrarMensagem("Etiqueta Word gerada com sucesso.");
     }
   } catch (error) {
@@ -3433,84 +3293,4 @@ async function gerarWordEtiquetaFromMeta(meta, silent = false) {
   }
 }
 
-async function gerarWordEtiquetaFromForm() {
-  const dados = extrairDadosEtiquetaWord();
-  if (!dados.localCurto || !dados.serie) {
-    mostrarMensagem("Faltam dados para gerar a etiqueta Word.", "erro");
-    return;
-  }
-  await gerarWordEtiquetaFromMeta(dados, false);
-  await guardarRegistoEtiquetaWord(dados);
-}
-
-let etiquetasWordGlobal = [];
-
-function renderEtiquetasWord(lista = etiquetasWordGlobal) {
-  const host = el("listaEtiquetasWord");
-  if (!host) return;
-
-  if (!lista.length) {
-    host.innerHTML = `<div class="panel empty-state"><h3>Sem etiquetas guardadas</h3><p>Quando o OCR gerar um Word, ele vai aparecer aqui.</p></div>`;
-    return;
-  }
-
-  host.innerHTML = lista.map(item => `
-    <div class="etiqueta-card">
-      <div class="stock-id">${item.localCurto || "Sem Localização"}</div>
-      <div class="meta-line">Série: <span class="meta-value">${item.serie || "-"}</span></div>
-      <div class="meta-line">Armazém: <span class="meta-value">${item.armazem || "-"}</span></div>
-      <div class="meta-line">Data da etiqueta: <span class="meta-value">${item.dataEtiqueta || "-"}</span></div>
-      <div class="meta-line">Data do scan: <span class="meta-value">${item.dataScanISO || "-"}</span></div>
-      <div class="card-actions">
-        <button class="small-btn btn-edit" onclick='regerarEtiquetaWord(${JSON.stringify({localCurto:"__LC__", serie:"__SE__", armazem:"__AR__", dataEtiqueta:"__DE__", dataScanISO:"__DS__"})}.replace("__LC__", ${JSON.stringify('')}).replace("__SE__", ${JSON.stringify('')}).replace("__AR__", ${JSON.stringify('')}).replace("__DE__", ${JSON.stringify('')}).replace("__DS__", ${JSON.stringify('')}))'>Regerar Word</button>
-      </div>
-    </div>
-  `).join("");
-
-  // fix button handlers with safe data binding
-  const cards = host.querySelectorAll(".etiqueta-card");
-  cards.forEach((card, idx) => {
-    const btn = card.querySelector("button");
-    if (!btn) return;
-    btn.onclick = () => regerarEtiquetaWord(lista[idx]);
-  });
-}
-
-function filtrarEtiquetasWord() {
-  const termo = normalizarTexto(el("searchEtiquetasWord")?.value || "");
-  const lista = etiquetasWordGlobal.filter(item => {
-    const txt = [
-      item.localCurto,
-      item.serie,
-      item.armazem,
-      item.dataEtiqueta,
-      item.dataScanISO
-    ].join(" ");
-    return normalizarTexto(txt).includes(termo);
-  });
-  renderEtiquetasWord(lista);
-}
-
-async function regerarEtiquetaWord(item) {
-  await gerarWordEtiquetaFromMeta(item, false);
-}
-
-if (typeof db !== "undefined" && !window.__etiquetasWordListenerAttached) {
-  window.__etiquetasWordListenerAttached = true;
-  db.collection("etiquetasWord").orderBy("created", "desc").onSnapshot(snap => {
-    etiquetasWordGlobal = [];
-    snap.forEach(doc => {
-      const d = doc.data();
-      d.idDoc = doc.id;
-      etiquetasWordGlobal.push(d);
-    });
-    renderEtiquetasWord(etiquetasWordGlobal);
-  }, error => {
-    console.error("Erro etiquetasWord:", error);
-    renderEtiquetasWord([]);
-  });
-}
-
 window.gerarWordEtiquetaFromForm = gerarWordEtiquetaFromForm;
-window.filtrarEtiquetasWord = filtrarEtiquetasWord;
-window.regerarEtiquetaWord = regerarEtiquetaWord;

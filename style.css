@@ -1194,24 +1194,3 @@ body.dark .app-version-mini {
   color: var(--muted);
   font-size: 13px;
 }
-
-
-.etiqueta-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 18px;
-  box-shadow: var(--shadow);
-}
-
-.tag-inline {
-  display: inline-flex;
-  align-items: center;
-  min-height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: rgba(59, 130, 246, 0.10);
-  color: var(--primary);
-  font-size: 12px;
-  font-weight: 700;
-}
