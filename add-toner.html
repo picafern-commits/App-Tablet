@@ -9,11 +9,8 @@
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="stylesheet" href="style.css">
-
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  <script src="https://unpkg.com/html5-qrcode"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body>
 <aside class="sidebar">
@@ -26,37 +23,27 @@
   </div>
 
   <div class="nav-group-label">Operação</div>
-  <a href="index.html">Dashboard</a>
-  <a href="add-toner.html" class="active">Adicionar Toner</a>
-  <a href="stock.html">Stock</a>
-  <a href="historico.html">Histórico</a>
+<a href="index.html">Dashboard</a>
+<a href="add-toner.html" class="active">Adicionar Toner</a>
+<a href="stock.html">Stock</a>
+<a href="historico.html">Histórico</a>
 
   <div class="nav-group-label">Infraestrutura</div>
-  <a href="impressoras.html">Impressoras</a>
-  <a href="manutencao-impressoras.html">Manutenção Impressoras</a>
-  <a href="portas.html">Portas Rede</a>
+<a href="impressoras.html">Impressoras</a>
+<a href="manutencao-impressoras.html">Manutenção Impressoras</a>
+<a href="portas.html">Portas Rede</a>
 
   <div class="nav-group-label">Equipamentos</div>
-  <a href="computadores.html">Computadores</a>
-  <a href="pistolas.html">Pistolas CK65</a>
+<a href="computadores.html">Computadores</a>
+<a href="pistolas.html">Pistolas CK65</a>
 
   <div class="nav-group-label">Administração</div>
-  <a href="users.html">Users</a>
-  <a href="config.html">Configurações</a>
+<a href="users.html">Users</a>
+<a href="config.html">Configurações</a>
 </aside>
-
 <main class="main">
 
-  <div class="topbar premium-topbar">
-    <div class="topbar-main">
-      <h1>Adicionar Toner</h1>
-      <p class="subtitle">Novo toner para stock</p>
-    </div>
-    <div class="topbar-status">
-      <span class="status-pill">Sistema Online</span>
-      <span class="version-pill">v1.3 Premium</span>
-    </div>
-  </div>
+  <div class="topbar premium-topbar"><div class="topbar-main"><h1>Adicionar Toner</h1><p class="subtitle">Novo toner para stock</p></div><div class="topbar-status"><span class="status-pill">Sistema Online</span><span class="version-pill">v1.3 Premium</span></div></div>
 
   <div class="panel">
     <div class="section-header">
@@ -70,14 +57,7 @@
       <button type="button" class="primary-btn" onclick="startScanner()">📷 Ler Código</button>
       <button type="button" class="secondary-btn" onclick="abrirOCR()">🧠 Ler Folha (OCR)</button>
       <button type="button" class="secondary-btn" onclick="stopScanner()">Fechar Câmara</button>
-      <input
-        id="ocrInput"
-        type="file"
-        accept="image/*"
-        capture="environment"
-        style="display:none;"
-        onchange="processarOCRInput(event)"
-      >
+      <input id="ocrInput" type="file" accept="image/*" capture="environment" style="display:none;" onchange="processarOCRInput(event)">
     </div>
 
     <div id="reader" class="scanner-box"></div>
@@ -106,8 +86,7 @@
   </div>
 
   <div class="panel form-grid">
-    <label>
-      <span>Equipamento</span>
+    <label><span>Equipamento</span>
       <select id="equipamento">
         <option value="">Selecionar equipamento</option>
         <option value="P3155DN">P3155DN</option>
@@ -116,11 +95,9 @@
       </select>
     </label>
 
-    <label>
-      <span>Localização</span>
+    <label><span>Localização</span>
       <select id="localizacao">
         <option value="">Selecionar localização</option>
-
         <option value="R4B2229805 - Braga - Ilha 01">R4B2229805 - Braga - Ilha 01</option>
         <option value="WD44336210 - Braga - Ilha 02">WD44336210 - Braga - Ilha 02</option>
         <option value="R4B1395508 - Braga - Ilha 03">R4B1395508 - Braga - Ilha 03</option>
@@ -132,36 +109,28 @@
         <option value="R4B1293173 - Braga - G/Encomendas">R4B1293173 - Braga - G/Encomendas</option>
         <option value="R4B1395261 - Braga - Devoluções">R4B1395261 - Braga - Devoluções</option>
         <option value="RVP0Z03770 - Braga - Escritorio">RVP0Z03770 - Braga - Escritorio</option>
-
         <option value="R4B1293169 - Vila Real - Ilha 01">R4B1293169 - Vila Real - Ilha 01</option>
         <option value="R4B1293174 - Vila Real - Ilha 02">R4B1293174 - Vila Real - Ilha 02</option>
         <option value="RVP0Z03715 - Vila Real - Ilha 03">RVP0Z03715 - Vila Real - Ilha 03</option>
-
         <option value="Sem Localização">Sem Localização</option>
       </select>
     </label>
 
-    <label>
-      <span>Cor</span>
+    <label><span>Cor</span>
       <select id="cor">
         <option value="">Selecionar cor</option>
-        <option value="Preto">Preto</option>
-        <option value="Amarelo">Amarelo</option>
-        <option value="Vermelho">Vermelho</option>
-        <option value="Azul">Azul</option>
+        <option value="Preto">Preto</option><option value="Amarelo">Amarelo</option><option value="Vermelho">Vermelho</option><option value="Azul">Azul</option>
       </select>
     </label>
-
-    <label>
-      <span>Data</span>
-      <input type="date" id="data">
-    </label>
-
+    <label><span>Data</span><input type="date" id="data"></label>
     <button class="primary-btn" onclick="disponivel()">Adicionar ao stock</button>
   </div>
 
 </main>
-
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
