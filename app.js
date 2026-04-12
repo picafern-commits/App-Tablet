@@ -2818,7 +2818,7 @@ window.addEventListener("DOMContentLoaded", () => {
 /* =========================
    VERSÃO / ONLINE-OFFLINE
 ========================= */
-const APP_BRAGA_VERSION = "v1.4 Premium";
+const APP_BRAGA_VERSION = "v1.5 Premium";
 
 function atualizarEstadoLigacaoAppBraga() {
   const online = navigator.onLine;
@@ -3115,6 +3115,9 @@ async function processarOCRInputStable(event) {
 
     mostrarOCRStatusStable(resumo || "A folha foi lida, mas não encontrei dados suficientes.");
     mostrarMensagem(ok ? "Folha lida com sucesso." : "Não encontrei dados suficientes na folha.", ok ? "sucesso" : "erro");
+    if (ok && dados.serie && dados.equipamento) {
+      await gerarWordEtiquetaFromForm(true);
+    }
   } catch (e) {
     console.error("Erro OCR:", e);
     mostrarOCRStatusStable("Erro ao ler a folha.");
@@ -3150,3 +3153,144 @@ window.abrirOCR = abrirOCRStable;
 window.processarOCRInput = processarOCRInputStable;
 window.confirmarSerie3Digitos = confirmarSerie3DigitosStable;
 window.fecharSerie3Digitos = fecharSerie3DigitosStable;
+
+
+/* =========================
+   ETIQUETA WORD AUTOMÁTICA
+========================= */
+function formatDatePTAppBraga(valor) {
+  const raw = String(valor || "").trim();
+  if (!raw) return "";
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    const [yyyy, mm, dd] = raw.split("-");
+    return `${dd}/${mm}/${yyyy}`;
+  }
+
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(raw)) {
+    return raw;
+  }
+
+  return raw;
+}
+
+function extrairDadosEtiquetaWord() {
+  const loc = (el("localizacao") && el("localizacao").value) || "";
+  const dataFolha = (el("dataFolha") && el("dataFolha").value) || "";
+  const dataScan = (el("data") && el("data").value) || "";
+
+  let serie = "";
+  let localCurto = "";
+  let armazem = "";
+
+  const parts = loc.split(" - ").map(v => v.trim()).filter(Boolean);
+  if (parts.length >= 3) {
+    serie = parts[0] || "";
+    armazem = parts[1] || "";
+    localCurto = parts.slice(2).join(" - ");
+  } else {
+    localCurto = loc || "Sem Localização";
+  }
+
+  const dataEtiqueta = formatDatePTAppBraga(dataFolha || dataScan);
+
+  return {
+    serie: serie || "SEM SÉRIE",
+    localCurto: localCurto || "Sem Localização",
+    armazem: armazem || "",
+    dataEtiqueta: dataEtiqueta || formatDatePTAppBraga(dataScan) || "Sem Data"
+  };
+}
+
+async function gerarWordEtiquetaFromForm(auto = false) {
+  try {
+    if (typeof docx === "undefined") {
+      mostrarMensagem("Biblioteca Word não carregada.", "erro");
+      return;
+    }
+
+    const dados = extrairDadosEtiquetaWord();
+
+    if (!dados.localCurto || !dados.serie) {
+      mostrarMensagem("Faltam dados para gerar a etiqueta Word.", "erro");
+      return;
+    }
+
+    const {
+      Document,
+      Packer,
+      Paragraph,
+      AlignmentType,
+      TextRun,
+      HeadingLevel
+    } = docx;
+
+    const doc = new Document({
+      creator: "App Braga",
+      title: "Etiqueta Toner",
+      description: "Etiqueta gerada automaticamente pelo scan OCR",
+      sections: [
+        {
+          properties: {},
+          children: [
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              spacing: { before: 3200, after: 500 },
+              children: [
+                new TextRun({
+                  text: dados.localCurto,
+                  bold: true,
+                  size: 42
+                })
+              ]
+            }),
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              spacing: { before: 200, after: 2800 },
+              children: [
+                new TextRun({
+                  text: dados.serie,
+                  bold: true,
+                  size: 64
+                })
+              ]
+            }),
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              spacing: { before: 0, after: 200 },
+              children: [
+                new TextRun({
+                  text: dados.dataEtiqueta,
+                  bold: true,
+                  size: 56
+                })
+              ]
+            })
+          ]
+        }
+      ]
+    });
+
+    const blob = await Packer.toBlob(doc);
+    const fileName = `Etiqueta_${dados.localCurto.replace(/\s+/g, "_")}_${dados.serie}.docx`;
+
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      URL.revokeObjectURL(a.href);
+      a.remove();
+    }, 1200);
+
+    if (!auto) {
+      mostrarMensagem("Etiqueta Word gerada com sucesso.");
+    }
+  } catch (error) {
+    console.error("Erro ao gerar Word:", error);
+    mostrarMensagem("Erro ao gerar a etiqueta Word.", "erro");
+  }
+}
+
+window.gerarWordEtiquetaFromForm = gerarWordEtiquetaFromForm;

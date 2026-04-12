@@ -1187,3 +1187,10 @@ body.dark .app-version-mini {
   gap: 12px;
   margin-top: 12px;
 }
+
+
+.word-note {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
