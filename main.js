@@ -22,7 +22,7 @@ function createWindow() {
     }
   });
 
-  win.loadFile("index.html");
+  win.loadURL("https://picafern-commits.github.io/App-Tablet/");
 
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
