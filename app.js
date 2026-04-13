@@ -1,4 +1,4 @@
-const APP_VERSION = "1.5.0";
+const APP_VERSION = "1.5.1";
 const firebaseConfig = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
   authDomain: "toner-manager-756c4.firebaseapp.com",
@@ -3893,3 +3893,24 @@ function renderModoGestorExtremo() {
       : `<div class="gestor-alert-card"><h4>Sem alertas do dia</h4><div class="meta-line">Ainda não há dados suficientes para destacar problemas.</div></div>`;
   }
 }
+
+
+function renderGestao() {
+  const score = Math.max(0, 100 - (stockGlobal.length < 5 ? 40 : 0));
+  const elScore = document.getElementById("gestaoScore");
+  if(elScore){
+    elScore.innerHTML = `<h4>Score Sistema: ${score}</h4>`;
+  }
+
+  const elPrior = document.getElementById("gestaoPrioridades");
+  if(elPrior){
+    elPrior.innerHTML = `<p>Prioridade: verificar stock crítico</p>`;
+  }
+
+  const elRec = document.getElementById("gestaoRecomendacoes");
+  if(elRec){
+    elRec.innerHTML = `<p>Recomendação: repor toners críticos</p>`;
+  }
+}
+
+renderGestao();
