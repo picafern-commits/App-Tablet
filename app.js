@@ -1,4 +1,4 @@
-const APP_VERSION = "1.5.6";
+const APP_VERSION = "1.5.7";
 const firebaseConfig = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
   authDomain: "toner-manager-756c4.firebaseapp.com",
@@ -1521,35 +1521,33 @@ function renderDashboardResumoInteligente() {
   if (!host) return;
 
   const buckets = getCriticalityBucketsAppBraga();
-  const topLocs = getTopLocalizacoesHistorico(3);
-  const ultimos = getUltimosMovimentos(3);
+  const topLocs = getTopLocalizacoesHistorico(4);
+  const ultimos = getUltimosMovimentos(4);
+
+  const critLabel = buckets.critical > 0 ? "Ação imediata" : "Sem críticos";
+  const warnLabel = buckets.warning > 0 ? "Vigiar" : "Sem avisos";
 
   host.innerHTML = `
     <div class="summary-grid">
       <div class="summary-card">
         <h4>Criticidade Real</h4>
         <div class="summary-value">${buckets.critical}</div>
-        <div class="meta-line">Críticas &lt; 10%</div>
+        <div class="meta-line">${critLabel} · toner abaixo de 10%</div>
       </div>
       <div class="summary-card">
         <h4>Atenção</h4>
         <div class="summary-value">${buckets.warning}</div>
-        <div class="meta-line">Entre 10% e 25%</div>
+        <div class="meta-line">${warnLabel} · entre 10% e 25%</div>
       </div>
       <div class="summary-card">
         <h4>Top Localizações</h4>
-        <ul class="summary-list">
-          ${topLocs.length ? topLocs.map(([k,v]) => `<li>${k} — ${v}</li>`).join("") : "<li>Sem dados</li>"}
-        </ul>
+        <ul class="summary-list">${topLocs.length ? topLocs.map(([k,v]) => `<li>${k} — ${v}</li>`).join("") : "<li>Sem dados ainda</li>"}</ul>
       </div>
       <div class="summary-card">
         <h4>Últimos Movimentos</h4>
-        <ul class="summary-list">
-          ${ultimos.length ? ultimos.map(item => `<li>${item.equipamento || "-"} · ${item.cor || "-"} · ${item.localizacao || "-"}</li>`).join("") : "<li>Sem histórico</li>"}
-        </ul>
+        <ul class="summary-list">${ultimos.length ? ultimos.map(item => `<li>${item.equipamento || "-"} · ${item.cor || "-"} · ${item.localizacao || "-"}</li>`).join("") : "<li>Sem histórico ainda</li>"}</ul>
       </div>
-    </div>
-  `;
+    </div>`;
 }
 
 function renderDashboardCards(items) {
