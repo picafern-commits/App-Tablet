@@ -1,4 +1,4 @@
-const APP_VERSION = "1.5.3";
+const APP_VERSION = "1.5.5";
 const firebaseConfig = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
   authDomain: "toner-manager-756c4.firebaseapp.com",
@@ -3679,3 +3679,20 @@ window.editarPistola = editarPistola;
 window.fecharEditarPistola = fecharEditarPistola;
 window.guardarEdicaoPistola = guardarEdicaoPistola;
 window.apagarPistola = apagarPistola;
+
+
+/* ===== MODO VISUAL ===== */
+function modoVisualInit() {
+  document.body.classList.add("modo-visual-on");
+  document.querySelectorAll(".panel, .pc-card, .dashboard-card, .stock-card, .history-card").forEach((node, index) => {
+    node.style.opacity = "0";
+    node.style.transform = "translateY(8px)";
+    setTimeout(() => {
+      node.style.transition = "opacity 0.24s ease, transform 0.24s ease";
+      node.style.opacity = "1";
+      node.style.transform = "translateY(0)";
+    }, 25 * Math.min(index, 10));
+  });
+}
+
+window.addEventListener("load", modoVisualInit);
