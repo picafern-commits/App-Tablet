@@ -1199,3 +1199,41 @@ body.dark .app-version-mini {
 #btnMigrarPortas {
   white-space: nowrap;
 }
+
+
+.update-box-appbraga {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: min(360px, calc(100vw - 32px));
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  z-index: 9999;
+  padding: 16px;
+}
+
+.update-box-title {
+  font-size: 16px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.update-box-subtitle {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.update-box-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.version-pill {
+  min-width: 110px;
+  text-align: center;
+}

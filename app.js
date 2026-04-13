@@ -1,4 +1,4 @@
-const APP_VERSION = "1.0.2";
+const APP_VERSION = "1.0.0";
 const firebaseConfig = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
   authDomain: "toner-manager-756c4.firebaseapp.com",
@@ -3377,11 +3377,14 @@ async function verificarAtualizacao() {
     const res = await fetch("https://picafern-commits.github.io/App-Tablet/version.json?t=" + Date.now(), { cache: "no-store" });
     const data = await res.json();
 
+    atualizarVersaoUI(data.version || APP_VERSION);
+
     if (data && data.version && data.version !== APP_VERSION) {
       mostrarAvisoUpdate(data.version);
     }
   } catch (e) {
     console.error("Erro a verificar updates", e);
+    atualizarVersaoUI(APP_VERSION);
   }
 }
 
@@ -3391,25 +3394,16 @@ function mostrarAvisoUpdate(novaVersao) {
   if (!box) {
     box = document.createElement("div");
     box.id = "updateBoxAppBraga";
-    box.style.position = "fixed";
-    box.style.bottom = "20px";
-    box.style.right = "20px";
-    box.style.background = "#111827";
-    box.style.color = "#fff";
-    box.style.padding = "14px 18px";
-    box.style.borderRadius = "12px";
-    box.style.boxShadow = "0 10px 30px rgba(0,0,0,0.2)";
-    box.style.zIndex = "9999";
-    box.style.maxWidth = "320px";
+    box.className = "update-box-appbraga";
     document.body.appendChild(box);
   }
 
   box.innerHTML = `
-    <div style="font-weight:700; margin-bottom:6px;">🚀 Nova versão disponível</div>
-    <div style="font-size:13px; opacity:.9;">Atual: ${APP_VERSION} · Nova: ${novaVersao}</div>
-    <div style="display:flex; gap:8px; margin-top:10px;">
-      <button onclick="atualizarApp()" style="padding:8px 12px; border-radius:10px; border:none; cursor:pointer;">Atualizar</button>
-      <button onclick="fecharAvisoUpdate()" style="padding:8px 12px; border-radius:10px; border:none; cursor:pointer;">Fechar</button>
+    <div class="update-box-title">🚀 Nova versão disponível</div>
+    <div class="update-box-subtitle">Atual: v${APP_VERSION} · Nova: v${novaVersao}</div>
+    <div class="update-box-actions">
+      <button class="primary-btn" onclick="atualizarApp()">Atualizar</button>
+      <button class="secondary-btn" onclick="fecharAvisoUpdate()">Fechar</button>
     </div>
   `;
 }
@@ -3421,6 +3415,15 @@ function fecharAvisoUpdate() {
 
 function atualizarApp() {
   window.location.reload();
+}
+
+
+
+function atualizarVersaoUI(versionValue = APP_VERSION) {
+  const badge = document.getElementById("appVersionBadge");
+  if (badge) {
+    badge.innerText = "v" + versionValue + " Premium";
+  }
 }
 
 window.addEventListener("load", verificarAtualizacao);
