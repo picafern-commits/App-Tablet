@@ -1467,3 +1467,33 @@ body.dark .page-hero {
 .meta-line {
   line-height: 1.5;
 }
+
+
+/* ===== UPDATE OBRIGATÓRIO ===== */
+.update-overlay-appbraga {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 9998;
+}
+
+.update-box-appbraga.mandatory {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  right: auto;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+  width: min(420px, calc(100vw - 24px));
+  z-index: 9999;
+}
+
+.update-box-appbraga.mandatory .update-title {
+  font-size: 22px;
+}
+
+.update-box-appbraga.mandatory .update-subtitle {
+  font-size: 14px;
+}

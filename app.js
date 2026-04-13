@@ -1,4 +1,4 @@
-const APP_VERSION = "1.5.5";
+const APP_VERSION = "1.0.0";
 const firebaseConfig = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
   authDomain: "toner-manager-756c4.firebaseapp.com",
@@ -3396,7 +3396,7 @@ async function verificarAtualizacao() {
     atualizarVersaoUI(data && data.version ? data.version : APP_VERSION);
 
     if (data && data.version && data.version !== APP_VERSION) {
-      mostrarAvisoUpdate(data.version);
+      mostrarAvisoUpdateObrigatorio(data.version);
     }
   } catch (e) {
     console.error("Erro a verificar updates", e);
@@ -3413,35 +3413,40 @@ function atualizarVersaoUI(versionValue = APP_VERSION) {
   });
 }
 
-function mostrarAvisoUpdate(novaVersao) {
+function mostrarAvisoUpdateObrigatorio(novaVersao) {
+  let overlay = document.getElementById("updateOverlayAppBraga");
   let box = document.getElementById("updateBoxAppBraga");
+
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.id = "updateOverlayAppBraga";
+    overlay.className = "update-overlay-appbraga";
+    document.body.appendChild(overlay);
+  }
 
   if (!box) {
     box = document.createElement("div");
     box.id = "updateBoxAppBraga";
-    box.className = "update-box-appbraga";
+    box.className = "update-box-appbraga mandatory";
     document.body.appendChild(box);
   }
 
   box.innerHTML = `
-    <div class="update-title">🚀 Nova versão disponível</div>
+    <div class="update-title">🚀 Atualização obrigatória</div>
     <div class="update-subtitle">
+      Esta app está desatualizada e precisa de ser atualizada para continuar.<br><br>
       Atual: v${APP_VERSION} Premium<br>
       Nova: v${novaVersao} Premium
     </div>
     <div class="update-actions">
-      <button class="primary-btn" onclick="atualizarApp()">Atualizar</button>
-      <button class="secondary-btn" onclick="fecharAvisoUpdate()">Fechar</button>
+      <button class="primary-btn" onclick="atualizarAppObrigatorio()">Atualizar agora</button>
     </div>
   `;
+
+  document.body.style.overflow = "hidden";
 }
 
-function fecharAvisoUpdate() {
-  const box = document.getElementById("updateBoxAppBraga");
-  if (box) box.remove();
-}
-
-function atualizarApp() {
+function atualizarAppObrigatorio() {
   const box = document.getElementById("updateBoxAppBraga");
   const isOnlineApp = window.location.href.includes("github.io");
 
