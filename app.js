@@ -1,4 +1,4 @@
-const APP_VERSION = "1.5.7";
+const APP_VERSION = "1.0.0";
 const firebaseConfig = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
   authDomain: "toner-manager-756c4.firebaseapp.com",
@@ -1384,6 +1384,7 @@ db.collection("stock").orderBy("created", "desc").onSnapshot(snap => {
   renderDashboardCards(stockGlobal);
   renderStockCards(stockGlobal);
   renderDashboardResumoInteligente();
+  renderModoGestorExtremo();
 }, error => {
   console.error(error);
   stockGlobal = loadBackupAppBraga(BACKUP_KEYS_APP_BRAGA.stock);
@@ -1392,6 +1393,7 @@ db.collection("stock").orderBy("created", "desc").onSnapshot(snap => {
   renderDashboardCards(stockGlobal);
   renderStockCards(stockGlobal);
   renderDashboardResumoInteligente();
+  renderModoGestorExtremo();
 });
 
 db.collection("historico").orderBy("created", "desc").onSnapshot(snap => {
@@ -1407,14 +1409,18 @@ db.collection("historico").orderBy("created", "desc").onSnapshot(snap => {
   saveBackupAppBraga(BACKUP_KEYS_APP_BRAGA.historico, historicoGlobal);
   hideBackupBadge();
   renderHistoricoCards(historicoGlobal);
+  renderModoGestorExtremo();
   renderDashboardResumoInteligente();
+  renderModoGestorExtremo();
 }, error => {
   console.error(error);
   historicoGlobal = loadBackupAppBraga(BACKUP_KEYS_APP_BRAGA.historico);
   setText("countUsados", historicoGlobal.length);
   showBackupBadge();
   renderHistoricoCards(historicoGlobal);
+  renderModoGestorExtremo();
   renderDashboardResumoInteligente();
+  renderModoGestorExtremo();
 });
 
 db.collection("pcs").orderBy("created", "desc").onSnapshot(snap => {
@@ -1430,12 +1436,14 @@ db.collection("pcs").orderBy("created", "desc").onSnapshot(snap => {
   saveBackupAppBraga(BACKUP_KEYS_APP_BRAGA.pcs, pcsGlobal);
   hideBackupBadge();
   renderPCCards(pcsGlobal);
+  renderModoGestorExtremo();
 }, error => {
   console.error(error);
   pcsGlobal = loadBackupAppBraga(BACKUP_KEYS_APP_BRAGA.pcs);
   setText("countPCs", pcsGlobal.length);
   showBackupBadge();
   renderPCCards(pcsGlobal);
+  renderModoGestorExtremo();
 });
 
 db.collection("manutencoes").orderBy("created", "desc").onSnapshot(snap => {
@@ -3699,3 +3707,128 @@ function modoVisualInit() {
 }
 
 window.addEventListener("load", modoVisualInit);
+
+
+/* ===== MODO GESTOR EXTREMO ===== */
+function getTopConsumoEquipamentos(limit = 4) {
+  const map = new Map();
+  historicoGlobal.forEach(item => {
+    const key = `${item.equipamento || "-"} · ${item.localizacao || "-"}`;
+    map.set(key, (map.get(key) || 0) + 1);
+  });
+  return [...map.entries()].sort((a,b) => b[1]-a[1]).slice(0, limit);
+}
+
+function getTopProblemasDoDia(limit = 3) {
+  const buckets = getCriticalityBucketsAppBraga();
+  const topLocs = getTopLocalizacoesHistorico(2);
+  const ultimos = getUltimosMovimentos(1);
+  const problems = [];
+
+  if (buckets.critical > 0) {
+    problems.push(`Existem ${buckets.critical} impressoras em estado crítico.`);
+  }
+  if (buckets.warning > 0) {
+    problems.push(`Existem ${buckets.warning} impressoras em zona de atenção.`);
+  }
+  if (topLocs.length) {
+    problems.push(`Maior pressão recente em ${topLocs[0][0]} com ${topLocs[0][1]} movimentos.`);
+  }
+  if (ultimos.length) {
+    const u = ultimos[0];
+    problems.push(`Último movimento: ${u.equipamento || "-"} · ${u.cor || "-"} · ${u.localizacao || "-"}.`);
+  }
+
+  return problems.slice(0, limit);
+}
+
+function getPrioridadeMaximaGestor(limit = 4) {
+  const rows = [];
+  impressorasData.forEach(item => {
+    const info = tonerInfoState[item.ip] || null;
+    const colors = Array.isArray(info?.colors) ? info.colors : [];
+    const crit = colors.filter(c => typeof c.percent === "number" && c.percent <= 10);
+    if (crit.length) {
+      rows.push({
+        label: `${item.modelo} · ${item.localizacao}`,
+        detail: crit.map(c => `${c.label}: ${c.percent}%`).join(" | ")
+      });
+    }
+  });
+  return rows.slice(0, limit);
+}
+
+function renderModoGestorExtremo() {
+  const board = el("gestorExtremeBoard");
+  const prioridade = el("gestorPrioridadeMaxima");
+  const consumo = el("gestorTopConsumo");
+  const problemas = el("gestorTopProblemas");
+  if (!board && !prioridade && !consumo && !problemas) return;
+
+  const buckets = getCriticalityBucketsAppBraga();
+  const topLocs = getTopLocalizacoesHistorico(4);
+  const topEquip = getTopConsumoEquipamentos(4);
+  const topProb = getTopProblemasDoDia(3);
+  const maxRows = getPrioridadeMaximaGestor(4);
+
+  if (board) {
+    board.innerHTML = `
+      <div class="gestor-grid-hero">
+        <div class="gestor-hero-card">
+          <div class="gestor-hero-title">Estado executivo</div>
+          <div class="gestor-hero-value">${buckets.critical > 0 ? "Pressão" : "Estável"}</div>
+          <div class="gestor-hero-note">Visão imediata da operação para decidir onde agir primeiro.</div>
+          <div class="gestor-chip-row">
+            <span class="gestor-chip red">Críticos: ${buckets.critical}</span>
+            <span class="gestor-chip yellow">Atenção: ${buckets.warning}</span>
+            <span class="gestor-chip green">Stock: ${stockGlobal.length}</span>
+          </div>
+        </div>
+        <div class="gestor-card">
+          <h4>Movimento recente</h4>
+          <div class="gestor-mini-value">${historicoGlobal.length}</div>
+          <div class="meta-line">Total de registos usados no histórico.</div>
+        </div>
+        <div class="gestor-card">
+          <h4>Capacidade atual</h4>
+          <div class="gestor-mini-value">${stockGlobal.length}</div>
+          <div class="meta-line">Itens disponíveis agora em stock.</div>
+        </div>
+        <div class="gestor-card">
+          <h4>Base instalada</h4>
+          <div class="gestor-mini-value">${pcsGlobal.length}</div>
+          <div class="meta-line">PCs registados no sistema.</div>
+        </div>
+      </div>
+    `;
+  }
+
+  if (prioridade) {
+    prioridade.innerHTML = maxRows.length
+      ? maxRows.map(item => `<div class="gestor-priority-card"><h4>${item.label}</h4><div class="meta-line">${item.detail}</div></div>`).join("")
+      : `<div class="gestor-priority-card"><h4>Sem prioridade máxima</h4><div class="meta-line">Não existem impressoras abaixo de 10% neste momento.</div></div>`;
+  }
+
+  if (consumo) {
+    consumo.innerHTML = `
+      <div class="gestor-card">
+        <h4>Top Localizações</h4>
+        <ul class="gestor-list">
+          ${topLocs.length ? topLocs.map(([k,v]) => `<li>${k} — ${v} movimentos</li>`).join("") : "<li>Sem dados suficientes</li>"}
+        </ul>
+      </div>
+      <div class="gestor-card">
+        <h4>Top Equipamentos</h4>
+        <ul class="gestor-list">
+          ${topEquip.length ? topEquip.map(([k,v]) => `<li>${k} — ${v}</li>`).join("") : "<li>Sem dados suficientes</li>"}
+        </ul>
+      </div>
+    `;
+  }
+
+  if (problemas) {
+    problemas.innerHTML = topProb.length
+      ? topProb.map(txt => `<div class="gestor-alert-card"><h4>Ponto de gestão</h4><div class="meta-line">${txt}</div></div>`).join("")
+      : `<div class="gestor-alert-card"><h4>Sem alertas do dia</h4><div class="meta-line">Ainda não há dados suficientes para destacar problemas.</div></div>`;
+  }
+}
