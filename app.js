@@ -1,3 +1,4 @@
+const APP_VERSION = "1.0.0";
 const firebaseConfig = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
   authDomain: "toner-manager-756c4.firebaseapp.com",
@@ -2451,16 +2452,14 @@ function atualizarContadoresPortas(lista = portasData) {
   setText("countPortasSemUser", semUser);
 }
 
-
 function renderPortas(lista = portasData) {
   const container = el("listaPortas");
   if (!container) return;
 
   atualizarContadoresPortas(lista);
 
-  container.innerHTML = lista.map((p, index) => {
+  container.innerHTML = lista.map(p => {
     const estado = estadoPorta(p);
-    const ref = p.idDoc ? `'${p.idDoc}'` : index;
     return `
       <div class="pc-card">
         <div class="pc-name">Porta ${p.porta || "-"}</div>
@@ -2469,9 +2468,6 @@ function renderPortas(lista = portasData) {
         <div class="meta-line">Equipamento: <span class="meta-value">${p.equipamento || "-"}</span></div>
         <div class="meta-line">IP: <span class="meta-value">${p.ip ? `<a href="http://${p.ip}" target="_blank">${p.ip}</a>` : "-"}</span></div>
         <div class="meta-line">Estado: <span class="meta-value">${badgePorta(estado)}</span></div>
-        <div class="porta-actions">
-          <button class="secondary-btn" onclick="editarPorta(${ref})">Editar</button>
-        </div>
       </div>
     `;
   }).join("");
@@ -3305,76 +3301,6 @@ window.gerarWordEtiquetaFromForm = gerarWordEtiquetaFromForm;
 /* =========================
    PORTAS FIREBASE FALLBACK + MIGRAÇÃO
 ========================= */
-
-let portaEditRef = null;
-
-function encontrarPortaPorRef(ref) {
-  if (typeof ref === "string") {
-    return portasData.find(p => p.idDoc === ref) || null;
-  }
-  return portasData[Number(ref)] || null;
-}
-
-function editarPorta(ref) {
-  const porta = encontrarPortaPorRef(ref);
-  if (!porta) {
-    mostrarMensagem("Porta não encontrada.", "erro");
-    return;
-  }
-
-  portaEditRef = ref;
-
-  if (el("editPorta")) el("editPorta").value = porta.porta || "";
-  if (el("editLocal")) el("editLocal").value = porta.local || "";
-  if (el("editUser")) el("editUser").value = porta.user || "";
-  if (el("editEquipamento")) el("editEquipamento").value = porta.equipamento || "";
-  if (el("editIP")) el("editIP").value = porta.ip || "";
-
-  if (el("modalEditarPorta")) el("modalEditarPorta").style.display = "flex";
-}
-
-function fecharEditarPorta() {
-  portaEditRef = null;
-  if (el("modalEditarPorta")) el("modalEditarPorta").style.display = "none";
-}
-
-async function guardarEdicaoPorta() {
-  if (portaEditRef === null || typeof portaEditRef === "undefined") {
-    mostrarMensagem("Nenhuma porta selecionada.", "erro");
-    return;
-  }
-
-  const payload = {
-    porta: el("editPorta") ? el("editPorta").value : "",
-    local: el("editLocal") ? el("editLocal").value : "",
-    user: el("editUser") ? el("editUser").value : "",
-    equipamento: el("editEquipamento") ? el("editEquipamento").value : "",
-    ip: el("editIP") ? el("editIP").value : ""
-  };
-
-  try {
-    if (typeof portaEditRef === "string" && window.db) {
-      await db.collection("portas").doc(portaEditRef).update(payload);
-    } else {
-      const idx = Number(portaEditRef);
-      if (!Number.isNaN(idx) && portasData[idx]) {
-        portasData[idx] = { ...portasData[idx], ...payload };
-      }
-      renderPortas(portasData);
-    }
-
-    fecharEditarPorta();
-    mostrarMensagem("Porta atualizada com sucesso.");
-  } catch (e) {
-    console.error(e);
-    mostrarMensagem("Erro ao atualizar a porta.", "erro");
-  }
-}
-
-window.editarPorta = editarPorta;
-window.fecharEditarPorta = fecharEditarPorta;
-window.guardarEdicaoPorta = guardarEdicaoPorta;
-
 async function migrarPortasParaFirebase() {
   if (!window.db) {
     mostrarMensagem("Firebase não está disponível.", "erro");
@@ -3444,3 +3370,57 @@ window.addEventListener("DOMContentLoaded", () => {
     }, 400);
   }
 });
+
+
+async function verificarAtualizacao() {
+  try {
+    const res = await fetch("https://picafern-commits.github.io/App-Tablet/version.json?t=" + Date.now(), { cache: "no-store" });
+    const data = await res.json();
+
+    if (data && data.version && data.version !== APP_VERSION) {
+      mostrarAvisoUpdate(data.version);
+    }
+  } catch (e) {
+    console.error("Erro a verificar updates", e);
+  }
+}
+
+function mostrarAvisoUpdate(novaVersao) {
+  let box = document.getElementById("updateBoxAppBraga");
+
+  if (!box) {
+    box = document.createElement("div");
+    box.id = "updateBoxAppBraga";
+    box.style.position = "fixed";
+    box.style.bottom = "20px";
+    box.style.right = "20px";
+    box.style.background = "#111827";
+    box.style.color = "#fff";
+    box.style.padding = "14px 18px";
+    box.style.borderRadius = "12px";
+    box.style.boxShadow = "0 10px 30px rgba(0,0,0,0.2)";
+    box.style.zIndex = "9999";
+    box.style.maxWidth = "320px";
+    document.body.appendChild(box);
+  }
+
+  box.innerHTML = `
+    <div style="font-weight:700; margin-bottom:6px;">🚀 Nova versão disponível</div>
+    <div style="font-size:13px; opacity:.9;">Atual: ${APP_VERSION} · Nova: ${novaVersao}</div>
+    <div style="display:flex; gap:8px; margin-top:10px;">
+      <button onclick="atualizarApp()" style="padding:8px 12px; border-radius:10px; border:none; cursor:pointer;">Atualizar</button>
+      <button onclick="fecharAvisoUpdate()" style="padding:8px 12px; border-radius:10px; border:none; cursor:pointer;">Fechar</button>
+    </div>
+  `;
+}
+
+function fecharAvisoUpdate() {
+  const box = document.getElementById("updateBoxAppBraga");
+  if (box) box.remove();
+}
+
+function atualizarApp() {
+  window.location.reload();
+}
+
+window.addEventListener("load", verificarAtualizacao);
