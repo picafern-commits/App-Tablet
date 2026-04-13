@@ -13,13 +13,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
-<div>
-<input id="mesa" placeholder="Mesa">
-<input id="localizacao" placeholder="Localização">
-<input id="ip" placeholder="IP">
-<button onclick="guardarEdicao()">Guardar</button>
-</div>
-
 <aside class="sidebar">
   <div class="brand premium-brand">
     <div class="brand-badge">BR</div>
@@ -60,10 +53,34 @@
   </div>
   <div class="panel">
     <div class="toolbar">
+      <button id="btnNovaPorta" class="secondary-btn" onclick="abrirModalPorta()">+ Nova Porta</button>
       <input id="searchPortas" type="text" placeholder="Pesquisar..." oninput="filtrarPortasComEstado()">
       <select id="filterEstadoPortas" onchange="filtrarPortasComEstado()"><option value="">Todos os estados</option><option value="ocupado">Ocupado</option><option value="livre">Livre</option><option value="semuser">Sem user</option></select>
     </div>
     <div id="listaPortas" class="cards-list"></div>
+  </div>
+
+
+  <div id="modalPorta" class="modal-porta" style="display:none;">
+    <div class="modal-porta-card">
+      <div class="section-header">
+        <div>
+          <h3 id="tituloModalPorta">Nova Porta</h3>
+          <p class="section-subtitle">Adicionar ou editar uma porta sem mexer no código.</p>
+        </div>
+      </div>
+      <div class="form-grid">
+        <label><span>Porta</span><input id="portaInput" type="text" placeholder="Ex: 127"></label>
+        <label><span>Local</span><input id="localInput" type="text" placeholder="Ex: Ilha 01"></label>
+        <label><span>User</span><input id="userInput" type="text" placeholder="Ex: Mesa 01"></label>
+        <label><span>Equipamento</span><input id="equipamentoInputPorta" type="text" placeholder="Ex: Computador"></label>
+        <label><span>IP</span><input id="ipInput" type="text" placeholder="Ex: 192.168.10.101"></label>
+      </div>
+      <div class="card-actions" style="margin-top:12px;">
+        <button class="primary-btn" onclick="guardarPortaFirebase()">Guardar</button>
+        <button class="secondary-btn" onclick="fecharModalPorta()">Cancelar</button>
+      </div>
+    </div>
   </div>
 
 </main>

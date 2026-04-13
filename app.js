@@ -184,7 +184,7 @@ const pistolasData = [
 /* =========================
    DADOS PORTAS DE REDE
 ========================= */
-const portasData = [
+let portasData = [
   { porta: "127", local: "Ilha 01", user: "Mesa 01", equipamento: "", ip: "" },
   { porta: "126", local: "Ilha 01", user: "Mesa 01", equipamento: "Computador", ip: "192.168.10.101" },
 
@@ -2459,14 +2459,20 @@ function renderPortas(lista = portasData) {
 
   container.innerHTML = lista.map(p => {
     const estado = estadoPorta(p);
+    const cardClass = PORTAS_ACTION_STYLE === "hover" ? "porta-card-hover" : "porta-card-inside";
+    const idAttr = p.idDoc ? p.idDoc : "";
     return `
-      <div class="pc-card">
+      <div class="pc-card ${cardClass}">
         <div class="pc-name">Porta ${p.porta || "-"}</div>
         <div class="meta-line">Local: <span class="meta-value">${p.local || "-"}</span></div>
         <div class="meta-line">User: <span class="meta-value">${p.user || "-"}</span></div>
         <div class="meta-line">Equipamento: <span class="meta-value">${p.equipamento || "-"}</span></div>
         <div class="meta-line">IP: <span class="meta-value">${p.ip ? `<a href="http://${p.ip}" target="_blank">${p.ip}</a>` : "-"}</span></div>
         <div class="meta-line">Estado: <span class="meta-value">${badgePorta(estado)}</span></div>
+        <div class="porta-actions">
+          <button onclick="editarPortaFirebase('${idAttr}')">Editar</button>
+          <button onclick="apagarPortaFirebase('${idAttr}')">Apagar</button>
+        </div>
       </div>
     `;
   }).join("");
@@ -3460,65 +3466,105 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 
-/* ===== PORTAS FIREBASE CRUD ===== */
-let portasGlobal=[];
+/* ===== PORTAS FIREBASE CRUD HOVER ===== */
+const PORTAS_ACTION_STYLE = "hover";
+let portaEditId = null;
 
-function renderPortasFirebase(){
-  const tbody=document.getElementById("portasBody");
-  if(!tbody) return;
-
-  tbody.innerHTML=portasGlobal.map(p=>`
-    <tr>
-      <td>${p.mesa||""}</td>
-      <td>${p.localizacao||""}</td>
-      <td>${p.ip||""}</td>
-      <td>
-        <button onclick="editarPorta('${p.id}')">Editar</button>
-        <button onclick="apagarPorta('${p.id}')">X</button>
-      </td>
-    </tr>
-  `).join("");
+function abrirModalPorta() {
+  portaEditId = null;
+  if (el("tituloModalPorta")) el("tituloModalPorta").innerText = "Nova Porta";
+  if (el("portaInput")) el("portaInput").value = "";
+  if (el("localInput")) el("localInput").value = "";
+  if (el("userInput")) el("userInput").value = "";
+  if (el("equipamentoInputPorta")) el("equipamentoInputPorta").value = "";
+  if (el("ipInput")) el("ipInput").value = "";
+  const m = el("modalPorta");
+  if (m) m.style.display = "flex";
 }
 
-function carregarPortasFirebase(){
-  if(!window.db) return;
-  db.collection("portas").onSnapshot(snap=>{
-    portasGlobal=snap.docs.map(d=>({id:d.id,...d.data()}));
-    renderPortasFirebase();
-  });
+function fecharModalPorta() {
+  const m = el("modalPorta");
+  if (m) m.style.display = "none";
 }
 
-async function adicionarPorta(){
-  const mesa=el("mesa").value;
-  const loc=el("localizacao").value;
-  const ip=el("ip").value;
-  if(!mesa||!loc||!ip) return alert("Preenche tudo");
-  await db.collection("portas").add({mesa,localizacao:loc,ip});
+function editarPortaFirebase(id) {
+  const p = portasData.find(x => String(x.idDoc || "") === String(id));
+  if (!p) return;
+  portaEditId = id;
+  if (el("tituloModalPorta")) el("tituloModalPorta").innerText = `Editar Porta ${p.porta || ""}`;
+  if (el("portaInput")) el("portaInput").value = p.porta || "";
+  if (el("localInput")) el("localInput").value = p.local || "";
+  if (el("userInput")) el("userInput").value = p.user || "";
+  if (el("equipamentoInputPorta")) el("equipamentoInputPorta").value = p.equipamento || "";
+  if (el("ipInput")) el("ipInput").value = p.ip || "";
+  const m = el("modalPorta");
+  if (m) m.style.display = "flex";
 }
 
-async function apagarPorta(id){
-  await db.collection("portas").doc(id).delete();
+async function guardarPortaFirebase() {
+  const payload = {
+    porta: el("portaInput")?.value?.trim() || "",
+    local: el("localInput")?.value?.trim() || "",
+    user: el("userInput")?.value?.trim() || "",
+    equipamento: el("equipamentoInputPorta")?.value?.trim() || "",
+    ip: el("ipInput")?.value?.trim() || "",
+    created: new Date()
+  };
+
+  if (!payload.porta || !payload.local) {
+    mostrarMensagem("Preenche pelo menos Porta e Local.", "erro");
+    return;
+  }
+
+  try {
+    if (portaEditId) {
+      await db.collection("portas").doc(portaEditId).set(payload, { merge: true });
+      mostrarMensagem("Porta atualizada com sucesso.");
+    } else {
+      await db.collection("portas").add(payload);
+      mostrarMensagem("Porta adicionada com sucesso.");
+    }
+    fecharModalPorta();
+  } catch (e) {
+    console.error(e);
+    mostrarMensagem("Erro ao guardar porta.", "erro");
+  }
 }
 
-function editarPorta(id){
-  const p=portasGlobal.find(x=>x.id===id);
-  if(!p) return;
-  el("mesa").value=p.mesa;
-  el("localizacao").value=p.localizacao;
-  el("ip").value=p.ip;
-  window._editId=id;
+async function apagarPortaFirebase(id) {
+  if (!id) return;
+  try {
+    await db.collection("portas").doc(id).delete();
+    mostrarMensagem("Porta apagada com sucesso.");
+  } catch (e) {
+    console.error(e);
+    mostrarMensagem("Erro ao apagar porta.", "erro");
+  }
 }
 
-async function guardarEdicao(){
-  if(!window._editId) return adicionarPorta();
-  await db.collection("portas").doc(window._editId).update({
-    mesa:el("mesa").value,
-    localizacao:el("localizacao").value,
-    ip:el("ip").value
-  });
-  window._editId=null;
+function carregarPortasFirebaseCrud() {
+  const host = el("listaPortas");
+  if (!host || !window.db) return;
+  try {
+    db.collection("portas").orderBy("porta", "desc").onSnapshot(snap => {
+      if (!snap.empty) {
+        portasData = snap.docs.map(doc => ({ idDoc: doc.id, ...doc.data() }));
+        renderPortas();
+      }
+    }, err => console.error(err));
+  } catch (e) {
+    console.error(e);
+  }
 }
 
-window.addEventListener("DOMContentLoaded",()=>{
-  setTimeout(carregarPortasFirebase,500);
+window.abrirModalPorta = abrirModalPorta;
+window.fecharModalPorta = fecharModalPorta;
+window.editarPortaFirebase = editarPortaFirebase;
+window.guardarPortaFirebase = guardarPortaFirebase;
+window.apagarPortaFirebase = apagarPortaFirebase;
+
+window.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => {
+    try { carregarPortasFirebaseCrud(); } catch (e) { console.error(e); }
+  }, 500);
 });
