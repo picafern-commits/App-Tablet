@@ -1,4 +1,4 @@
-const APP_VERSION = "1.5.0";
+const APP_VERSION = "1.0.0";
 const firebaseConfig = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
   authDomain: "toner-manager-756c4.firebaseapp.com",
@@ -3426,7 +3426,23 @@ function fecharAvisoUpdate() {
 }
 
 function atualizarApp() {
-  window.location.reload();
+  const box = document.getElementById("updateBoxAppBraga");
+  const isOnlineApp = window.location.href.includes("github.io");
+
+  if (box) {
+    box.innerHTML = `
+      <div class="update-title">⏳ A atualizar...</div>
+      <div class="update-subtitle">A abrir a versão mais recente da app.</div>
+    `;
+  }
+
+  setTimeout(() => {
+    if (isOnlineApp) {
+      window.location.reload();
+    } else {
+      window.location.href = "https://picafern-commits.github.io/App-Tablet/?update=" + Date.now();
+    }
+  }, 500);
 }
 
 window.addEventListener("load", verificarAtualizacao);
