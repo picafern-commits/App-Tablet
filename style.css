@@ -1201,39 +1201,47 @@ body.dark .app-version-mini {
 }
 
 
+/* ===== Auto Update Profissional ===== */
+.version-pill {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+}
+
+.version-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.10);
+}
+
 .update-box-appbraga {
   position: fixed;
   right: 20px;
   bottom: 20px;
-  width: min(360px, calc(100vw - 32px));
-  background: var(--card);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  box-shadow: var(--shadow);
-  z-index: 9999;
+  width: min(360px, calc(100vw - 24px));
+  background: #111827;
+  color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.26);
   padding: 16px;
+  z-index: 9999;
+  border: 1px solid rgba(255,255,255,0.08);
 }
 
-.update-box-title {
-  font-size: 16px;
+.update-box-appbraga .update-title {
   font-weight: 800;
   margin-bottom: 6px;
 }
 
-.update-box-subtitle {
+.update-box-appbraga .update-subtitle {
   font-size: 13px;
-  color: var(--muted);
-  margin-bottom: 12px;
+  opacity: 0.9;
+  line-height: 1.45;
 }
 
-.update-box-actions {
+.update-box-appbraga .update-actions {
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
 }
 
-.version-pill {
-  min-width: 110px;
-  text-align: center;
+.update-box-appbraga .update-actions button {
+  flex: 1;
 }

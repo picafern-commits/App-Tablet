@@ -3377,7 +3377,7 @@ async function verificarAtualizacao() {
     const res = await fetch("https://picafern-commits.github.io/App-Tablet/version.json?t=" + Date.now(), { cache: "no-store" });
     const data = await res.json();
 
-    atualizarVersaoUI(data.version || APP_VERSION);
+    atualizarVersaoUI(data && data.version ? data.version : APP_VERSION);
 
     if (data && data.version && data.version !== APP_VERSION) {
       mostrarAvisoUpdate(data.version);
@@ -3386,6 +3386,15 @@ async function verificarAtualizacao() {
     console.error("Erro a verificar updates", e);
     atualizarVersaoUI(APP_VERSION);
   }
+}
+
+function atualizarVersaoUI(versionValue = APP_VERSION) {
+  const nodes = document.querySelectorAll("#appVersion, .version-pill");
+  nodes.forEach((node) => {
+    if (!node) return;
+    node.innerText = "v" + versionValue + " Premium";
+    node.title = "Versão atual da app";
+  });
 }
 
 function mostrarAvisoUpdate(novaVersao) {
@@ -3399,9 +3408,12 @@ function mostrarAvisoUpdate(novaVersao) {
   }
 
   box.innerHTML = `
-    <div class="update-box-title">🚀 Nova versão disponível</div>
-    <div class="update-box-subtitle">Atual: v${APP_VERSION} · Nova: v${novaVersao}</div>
-    <div class="update-box-actions">
+    <div class="update-title">🚀 Nova versão disponível</div>
+    <div class="update-subtitle">
+      Atual: v${APP_VERSION} Premium<br>
+      Nova: v${novaVersao} Premium
+    </div>
+    <div class="update-actions">
       <button class="primary-btn" onclick="atualizarApp()">Atualizar</button>
       <button class="secondary-btn" onclick="fecharAvisoUpdate()">Fechar</button>
     </div>
@@ -3417,13 +3429,5 @@ function atualizarApp() {
   window.location.reload();
 }
 
-
-
-function atualizarVersaoUI(versionValue = APP_VERSION) {
-  const badge = document.getElementById("appVersionBadge");
-  if (badge) {
-    badge.innerText = "v" + versionValue + " Premium";
-  }
-}
-
 window.addEventListener("load", verificarAtualizacao);
+window.addEventListener("load", () => atualizarVersaoUI(APP_VERSION));
