@@ -64,6 +64,31 @@ function el(id) {
   return document.getElementById(id);
 }
 
+function isAutoAddAfterScanEnabled() {
+  return localStorage.getItem(AUTO_ADD_SCAN_KEY_APP_BRAGA) === "true";
+}
+
+function setAutoAddAfterScanEnabled(value) {
+  localStorage.setItem(AUTO_ADD_SCAN_KEY_APP_BRAGA, value ? "true" : "false");
+  tryRenderAppBraga(() => enhanceScannerStatus(value ? "Auto adicionar após scan: ON" : "Auto adicionar após scan: OFF"));
+}
+
+function formularioTonerCompleto() {
+  return !!((el("equipamento") && el("equipamento").value) && (el("localizacao") && el("localizacao").value) && (el("cor") && el("cor").value));
+}
+
+async function tentarAutoAdicionarAposScan(origem = "scan") {
+  if (!isAutoAddAfterScanEnabled()) return false;
+  if (!formularioTonerCompleto()) return false;
+  try {
+    await disponivel(true, origem);
+    return true;
+  } catch (e) {
+    console.error("Erro auto adicionar:", e);
+    return false;
+  }
+}
+
 function setText(id, value) {
   const node = el(id);
   if (node) node.innerText = value;
@@ -1325,7 +1350,7 @@ async function gerarID() {
   });
 }
 
-async function disponivel() {
+async function disponivel(autoMode = false, origem = "manual") {
   const equipamento = el("equipamento");
   const localizacao = el("localizacao");
   const cor = el("cor");
@@ -2838,6 +2863,7 @@ window.addEventListener("DOMContentLoaded", () => {
    VERSÃO / ONLINE-OFFLINE
 ========================= */
 const APP_BRAGA_VERSION = "v1.8 Premium";
+const AUTO_ADD_SCAN_KEY_APP_BRAGA = "appBraga_autoAddAfterScan";
 
 function atualizarEstadoLigacaoAppBraga() {
   const online = navigator.onLine;
@@ -3145,6 +3171,7 @@ async function processarOCRInputStable(event) {
     mostrarMensagem(ok ? "Folha lida com sucesso." : "Não encontrei dados suficientes na folha.", ok ? "sucesso" : "erro");
     if (ok && dados.serie && dados.equipamento) {
       await gerarWordEtiquetaFromForm(true);
+      await tentarAutoAdicionarAposScan("ocr");
     }
   } catch (e) {
     console.error("Erro OCR:", e);
@@ -3173,6 +3200,7 @@ function confirmarSerie3DigitosStable() {
 
   fecharSerie3DigitosStable();
   mostrarMensagem("Localização selecionada com sucesso.");
+  tentarAutoAdicionarAposScan("scanner");
 }
 
 window.startScanner = startScannerStable;
@@ -4230,3 +4258,117 @@ window.abrirEditarHistoricoModal = abrirEditarHistoricoModal;
 window.fecharEdicaoHistoricoModal = fecharEdicaoHistoricoModal;
 window.guardarEdicaoHistoricoModal = guardarEdicaoHistoricoModal;
 
+
+
+/* =========================
+   ETIQUETAS WORD + HISTÓRICO VISUAL
+========================= */
+globalThis.etiquetasWordGlobal = globalThis.etiquetasWordGlobal || [];
+
+function extrairMetaEtiquetaWordAppBraga() {
+  const loc = (el("localizacao") && el("localizacao").value) || "";
+  const dataFolha = (el("dataFolha") && el("dataFolha").value) || "";
+  const dataScan = (el("data") && el("data").value) || "";
+  let serie = "";
+  let localCurto = "";
+  let armazem = "";
+  const parts = loc.split(" - ").map(v => v.trim()).filter(Boolean);
+  if (parts.length >= 3) {
+    serie = parts[0] || "";
+    armazem = parts[1] || "";
+    localCurto = parts.slice(2).join(" - ");
+  } else {
+    localCurto = loc || "Sem Localização";
+  }
+  const dataBase = (typeof getHojeISOAppBraga === "function" ? getHojeISOAppBraga() : ((new Date()).toISOString().slice(0,10)));
+  const dataPt = typeof formatDatePTAppBraga === "function" ? formatDatePTAppBraga(dataFolha || dataScan || dataBase) : (dataFolha || dataScan || dataBase);
+  return {
+    serie: serie || "SEM SÉRIE",
+    localCurto: localCurto || "Sem Localização",
+    armazem: armazem || "",
+    dataEtiqueta: dataPt || "Sem Data",
+    dataScanISO: dataScan || dataBase
+  };
+}
+
+async function guardarRegistoEtiquetaWordAppBraga(meta) {
+  try {
+    await db.collection("etiquetasWord").add({ ...meta, created: new Date() });
+  } catch (error) {
+    console.error("Erro ao guardar etiqueta Word:", error);
+  }
+}
+
+async function apagarEtiquetaWord(id) {
+  if (!confirm("Queres apagar este registo de etiqueta Word?")) return;
+  try {
+    await db.collection("etiquetasWord").doc(id).delete();
+    mostrarMensagem("Registo da etiqueta apagado.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao apagar o registo da etiqueta.", "erro");
+  }
+}
+
+function renderEtiquetasWord(lista = globalThis.etiquetasWordGlobal) {
+  const host = el("listaEtiquetasWord");
+  if (!host) return;
+  if (!lista.length) {
+    host.innerHTML = `<div class="panel empty-state"><h3>Sem etiquetas guardadas</h3><p>Quando o Word for gerado, o registo aparece aqui.</p></div>`;
+    return;
+  }
+  host.innerHTML = lista.map(item => `
+    <div class="stock-card">
+      <div class="stock-id">${item.localCurto || "Sem Localização"}</div>
+      <div class="meta-line">Série: <span class="meta-value">${item.serie || "SEM SÉRIE"}</span></div>
+      <div class="meta-line">Armazém: <span class="meta-value">${item.armazem || "-"}</span></div>
+      <div class="meta-line">Data etiqueta: <span class="meta-value">${item.dataEtiqueta || "Sem Data"}</span></div>
+      <div class="meta-line">Data scan: <span class="meta-value">${item.dataScanISO || "-"}</span></div>
+      <div class="card-actions">
+        <button class="small-btn btn-delete" onclick="apagarEtiquetaWord('${item.idDoc}')">Apagar</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function filtrarEtiquetasWord() {
+  const termo = String((el("searchEtiquetasWord") && el("searchEtiquetasWord").value) || "").toLowerCase().trim();
+  if (!termo) {
+    renderEtiquetasWord(globalThis.etiquetasWordGlobal);
+    return;
+  }
+  const filtrada = globalThis.etiquetasWordGlobal.filter(item => [item.localCurto, item.serie, item.armazem, item.dataEtiqueta, item.dataScanISO].join(" ").toLowerCase().includes(termo));
+  renderEtiquetasWord(filtrada);
+}
+
+try {
+  db.collection("etiquetasWord").orderBy("created", "desc").onSnapshot(snap => {
+    globalThis.etiquetasWordGlobal = [];
+    snap.forEach(docSnap => globalThis.etiquetasWordGlobal.push({ idDoc: docSnap.id, ...docSnap.data() }));
+    renderEtiquetasWord(globalThis.etiquetasWordGlobal);
+  }, error => {
+    console.error("Erro etiquetasWord:", error);
+    renderEtiquetasWord([]);
+  });
+} catch (e) {
+  console.error(e);
+}
+
+if (typeof window.gerarWordEtiquetaFromForm === "function") {
+  const gerarWordEtiquetaFromFormOriginal = window.gerarWordEtiquetaFromForm;
+  gerarWordEtiquetaFromForm = async function(auto = false) {
+    const resultado = await gerarWordEtiquetaFromFormOriginal(auto);
+    try {
+      const meta = extrairMetaEtiquetaWordAppBraga();
+      await guardarRegistoEtiquetaWordAppBraga(meta);
+    } catch (e) {
+      console.error(e);
+    }
+    return resultado;
+  };
+  window.gerarWordEtiquetaFromForm = gerarWordEtiquetaFromForm;
+}
+
+window.renderEtiquetasWord = renderEtiquetasWord;
+window.filtrarEtiquetasWord = filtrarEtiquetasWord;
+window.apagarEtiquetaWord = apagarEtiquetaWord;
