@@ -1,1 +1,81 @@
-<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Etiquetas Word</title><link rel="stylesheet" href="style.css"></head><body><main class="main"><div class="topbar premium-topbar"><div class="topbar-main"><h1>Etiquetas Word</h1><p class="subtitle">Página pronta para integração nesta versão.</p></div></div><div class="panel"><div class="section-header"><div><h3>Etiquetas Word</h3><p class="section-subtitle">Nesta build a página foi mantida ativa para evitar links partidos.</p></div></div></div></main></body></html>
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Etiquetas Word</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand-block"><div class="brand-logo">BR</div><div><h2>App Braga</h2><p>Centro Operacional</p></div></div>
+    <nav>
+      <h4>Operação</h4>
+      <a href="index.html">Dashboard</a>
+      <a href="add-toner.html">Adicionar Toner</a>
+      <a href="stock.html">Stock</a>
+      <a href="historico.html">Histórico</a>
+      <a href="etiquetas-word.html" class="active">Etiquetas Word</a>
+      <h4>Infraestrutura</h4>
+      <a href="impressoras.html">Impressoras</a>
+      <a href="manutencao-impressoras.html">Manutenção Impressoras</a>
+      <a href="portas.html">Portas Rede</a>
+      <h4>Equipamentos</h4>
+      <a href="computadores.html">Computadores</a>
+      <a href="pistolas.html">Pistolas CK65</a>
+      <h4>Administração</h4>
+      <a href="users.html">Users</a>
+      <a href="config.html">Configurações</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="topbar premium-topbar">
+      <div class="topbar-main">
+        <h1>Etiquetas Word</h1>
+        <p class="subtitle">Gerar, regerar e apagar etiquetas dos toners.</p>
+      </div>
+      <div class="topbar-status">
+        <span class="status-pill">Sistema Online</span>
+        <span class="version-pill" id="appVersion">v1.0.0 Premium</span>
+      </div>
+    </div>
+
+    <section class="page-hero">
+      <h2>Etiquetas Word</h2>
+      <p class="page-hero-subtitle">Lista de toners em stock e histórico prontos para gerar etiqueta.</p>
+    </section>
+
+    <div class="summary-grid">
+      <div class="summary-card"><h4>Total</h4><div class="summary-value" id="countEtiquetasTotal">0</div><div class="meta-line">Stock + histórico</div></div>
+      <div class="summary-card"><h4>Em Stock</h4><div class="summary-value" id="countEtiquetasStock">0</div><div class="meta-line">Prontos para imprimir</div></div>
+      <div class="summary-card"><h4>Histórico</h4><div class="summary-value" id="countEtiquetasHistorico">0</div><div class="meta-line">Etiquetas já usadas</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="section-header">
+        <div>
+          <h3>Pesquisar etiqueta</h3>
+          <p class="section-subtitle">Procura por localização, série, equipamento, cor ou lote.</p>
+        </div>
+      </div>
+      <div class="toolbar-inline">
+        <input id="searchEtiquetasWord" type="text" placeholder="Pesquisar etiqueta...">
+        <select id="filterEtiquetasOrigem">
+          <option value="">Todas as origens</option>
+          <option value="stock">Só stock</option>
+          <option value="historico">Só histórico</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="listaEtiquetasWord" class="cards-grid"></div>
+  </main>
+</div>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

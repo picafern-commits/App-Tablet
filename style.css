@@ -483,12 +483,17 @@ table a:hover {
 
 .toast-app {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  top: auto;
+  left: auto;
+  max-width: min(420px, calc(100vw - 32px));
+  width: fit-content;
   padding: 12px 18px;
   border-radius: 12px;
   color: white;
   font-weight: 700;
+  line-height: 1.35;
   z-index: 9999;
   display: none;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
@@ -1780,3 +1785,60 @@ html.dark .minimo-item, body.dark .minimo-item {
 .item-warning { color:#d97706; font-weight:700; }
 .item-ok { color:#16a34a; font-weight:700; }
 @media (max-width:780px){ .hist-advanced-toolbar { flex-direction:column; } }
+
+
+body.modal-open {
+  overflow: hidden;
+}
+
+#modalEditarUser {
+  align-items: flex-start;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-top: max(20px, env(safe-area-inset-top));
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+}
+
+#modalEditarUser .modal-card {
+  margin: auto;
+}
+
+@media (max-width: 900px) {
+  #modalEditarUser {
+    padding: 10px 10px calc(18px + env(safe-area-inset-bottom));
+    align-items: flex-start;
+  }
+
+  #modalEditarUser .modal-card {
+    width: 100%;
+    max-height: none;
+    min-height: calc(100dvh - 20px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  #modalEditarUser .card-actions {
+    position: sticky;
+    bottom: 0;
+    padding-top: 12px;
+    padding-bottom: max(6px, env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(15,23,42,0), rgba(15,23,42,0.96) 28%);
+  }
+
+  #modalEditarUser .card-actions button {
+    flex: 1;
+    min-height: 48px;
+  }
+}
+
+
+@media (max-width: 768px) {
+  .toast-app {
+    right: 12px;
+    left: 12px;
+    width: auto;
+    max-width: none;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    font-size: 14px;
+  }
+}
