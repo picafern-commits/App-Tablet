@@ -2665,8 +2665,8 @@ window.addEventListener("DOMContentLoaded", () => {
   renderUsers();
   renderEtiquetasWord();
 
-  if (el("searchEtiquetasWord")) el("searchEtiquetasWord").addEventListener("input", renderEtiquetasWord);
-  if (el("filterEtiquetasOrigem")) el("filterEtiquetasOrigem").addEventListener("change", renderEtiquetasWord);
+  if (el("searchEtiquetasWord")) el("searchEtiquetasWord").addEventListener("input", filtrarEtiquetasWord);
+  if (el("filterEtiquetasOrigem")) el("filterEtiquetasOrigem").addEventListener("change", filtrarEtiquetasWord);
 
   if (el("manutencaoSerie")) {
     el("manutencaoSerie").addEventListener("change", sincronizarCamposImpressora);
