@@ -3910,6 +3910,33 @@ function getPrioridadeMaximaGestor(limit = 4) {
   return rows.slice(0, limit);
 }
 
+function getPrintersByTonerState() {
+  const states = { critical: [], warning: [], stable: [] };
+  impressorasData.forEach(item => {
+    const info = tonerInfoState[item.ip] || null;
+    const colors = Array.isArray(info?.colors) ? info.colors : [];
+    const mono = typeof info?.percent === "number" ? info.percent : null;
+    const values = colors.map(c => c.percent).filter(v => typeof v === "number");
+    if (!values.length && mono !== null) values.push(mono);
+    const minv = values.length ? Math.min(...values) : null;
+    const nome = `${item.modelo || "Impressora"} · ${item.localizacao || item.ip || "-"}`;
+    if (minv === null) states.stable.push(nome);
+    else if (minv < 10) states.critical.push(nome);
+    else if (minv <= 25) states.warning.push(nome);
+    else states.stable.push(nome);
+  });
+  return states;
+}
+
+function renderGestorStateCard(title, variant, items, emptyText) {
+  return `
+    <div class="gestor-card gestor-state-card ${variant}">
+      <h4>${title}</h4>
+      <div class="meta-line">${items.length ? items.join("<br>") : emptyText}</div>
+    </div>
+  `;
+}
+
 function renderModoGestorExtremo() {
   const board = el("gestorExtremeBoard");
   const prioridade = el("gestorPrioridadeMaxima");
@@ -3918,9 +3945,7 @@ function renderModoGestorExtremo() {
   if (!board && !prioridade && !consumo && !problemas) return;
 
   const buckets = getCriticalityBucketsAppBraga();
-  const topLocs = getTopLocalizacoesHistorico(4);
-  const topEquip = getTopConsumoEquipamentos(4);
-  const topProb = getTopProblemasDoDia(3);
+  const printerStates = getPrintersByTonerState();
   const maxRows = getPrioridadeMaximaGestor(4);
 
   if (board) {
@@ -3929,28 +3954,11 @@ function renderModoGestorExtremo() {
         <div class="gestor-hero-card">
           <div class="gestor-hero-title">Estado executivo</div>
           <div class="gestor-hero-value">${buckets.critical > 0 ? "Pressão" : "Estável"}</div>
-          <div class="gestor-hero-note">Visão imediata da operação para decidir onde agir primeiro.</div>
-          <div class="gestor-chip-row">
-            <span class="gestor-chip red">Críticos: ${buckets.critical}</span>
-            <span class="gestor-chip yellow">Atenção: ${buckets.warning}</span>
-            <span class="gestor-chip green">Stock: ${stockGlobal.length}</span>
-          </div>
+          <div class="gestor-hero-note">Leitura real do estado do toner por impressora.</div>
         </div>
-        <div class="gestor-card">
-          <h4>Movimento recente</h4>
-          <div class="gestor-mini-value">${historicoGlobal.length}</div>
-          <div class="meta-line">Total de registos usados no histórico.</div>
-        </div>
-        <div class="gestor-card">
-          <h4>Capacidade atual</h4>
-          <div class="gestor-mini-value">${stockGlobal.length}</div>
-          <div class="meta-line">Itens disponíveis agora em stock.</div>
-        </div>
-        <div class="gestor-card">
-          <h4>Base instalada</h4>
-          <div class="gestor-mini-value">${pcsGlobal.length}</div>
-          <div class="meta-line">PCs registados no sistema.</div>
-        </div>
+        ${renderGestorStateCard("Críticos", "red", printerStates.critical, "Sem impressoras em estado crítico.")}
+        ${renderGestorStateCard("Atenção", "yellow", printerStates.warning, "Sem impressoras em estado de atenção.")}
+        ${renderGestorStateCard("Estável", "green", printerStates.stable, "Sem impressoras em estado bom no momento.")}
       </div>
     `;
   }
