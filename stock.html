@@ -57,7 +57,17 @@
   </div>
 
   <div class="stats-grid"><div class="stat-card"><span>Total em stock</span><strong id="countStock">0</strong></div></div>
-<div class="panel">
+  <div class="panel">
+    <div class="section-header">
+      <div>
+        <h3>Stock mínimo por localização</h3>
+        <p class="section-subtitle">Controlo inteligente do mínimo recomendado por zona.</p>
+      </div>
+    </div>
+    <div id="stockMinimoPainel" class="cards-list"></div>
+  </div>
+
+  <div class="panel">
     <div class="toolbar">
       <input id="search" type="text" placeholder="Pesquisar stock..." oninput="filtrar()">
       <button class="secondary-btn" onclick="exportarExcelStock()">Exportar Excel Stock</button>
