@@ -2668,6 +2668,71 @@ window.addEventListener("DOMContentLoaded", () => {
    TABLET / FIREBASE COMPLETO
 ========================= */
 const printerFirebaseState = {};
+const printerFirebaseSyncState = {};
+
+function normalizePrinterIp(ip) {
+  return String(ip || "").trim().replace(/^https?:\/\//i, "").replace(/\/$/, "");
+}
+
+function hasUsablePrinterInfo(info) {
+  if (!info) return false;
+  if (Array.isArray(info.colors) && info.colors.length) return true;
+  if (info.residue && typeof info.residue.percent === "number") return true;
+  return typeof info.percent === "number";
+}
+
+function buildPrinterFirebasePayload(ip, info) {
+  const payload = {
+    ip: normalizePrinterIp(ip),
+    syncSource: "desktop-snmp",
+    updatedAtMs: Date.now(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  if (Array.isArray(info.colors) && info.colors.length) {
+    payload.toner = {};
+    info.colors.forEach((color) => {
+      if (!color || typeof color.percent !== "number") return;
+      const key = String(color.key || "").toLowerCase();
+      if (["black", "cyan", "magenta", "yellow"].includes(key)) {
+        payload.toner[key] = Math.max(0, Math.min(100, Math.round(color.percent)));
+      }
+    });
+  }
+
+  if (info.residue && typeof info.residue.percent === "number") {
+    payload.waste = Math.max(0, Math.min(100, Math.round(info.residue.percent)));
+  }
+
+  if (typeof info.percent === "number") {
+    payload.percent = Math.max(0, Math.min(100, Math.round(info.percent)));
+  } else if (payload.toner && typeof payload.toner.black === "number") {
+    payload.percent = payload.toner.black;
+  }
+
+  return payload;
+}
+
+async function syncPrinterInfoToFirebase(ip, info) {
+  const cleanIp = normalizePrinterIp(ip);
+  if (!cleanIp || !db || !db.collection || !hasUsablePrinterInfo(info)) return false;
+
+  const payload = buildPrinterFirebasePayload(cleanIp, info);
+  const compareKey = JSON.stringify({
+    ip: payload.ip,
+    toner: payload.toner || null,
+    waste: typeof payload.waste === "number" ? payload.waste : null,
+    percent: typeof payload.percent === "number" ? payload.percent : null
+  });
+
+  if (printerFirebaseSyncState[cleanIp] === compareKey) return true;
+
+  await db.collection("printers").doc(cleanIp).set(payload, { merge: true });
+  printerFirebaseSyncState[cleanIp] = compareKey;
+  printerFirebaseState[cleanIp] = Object.assign({}, printerFirebaseState[cleanIp] || {}, payload);
+  tonerInfoState[cleanIp] = mapFirebasePrinterInfo(printerFirebaseState[cleanIp]);
+  return true;
+}
 
 function normalizePrinterColorsFromFirebase(printerDoc) {
   const toner = printerDoc && printerDoc.toner ? printerDoc.toner : {};
@@ -2724,11 +2789,11 @@ function bindPrintersFirebaseRealtime() {
   db.collection("printers").onSnapshot((snap) => {
     snap.forEach((doc) => {
       const data = doc.data() || {};
-      const ip = data.ip || doc.id;
+      const ip = normalizePrinterIp(data.ip || doc.id);
       if (!ip) return;
 
       const mapped = mapFirebasePrinterInfo(data);
-      printerFirebaseState[ip] = data;
+      printerFirebaseState[ip] = Object.assign({}, data, { ip });
       tonerInfoState[ip] = mapped;
       maybeNotifyCriticalSupply(ip, mapped);
     });
@@ -2747,10 +2812,31 @@ function bindPrintersFirebaseRealtime() {
 
 const __originalObterTonerInfo = obterTonerInfo;
 obterTonerInfo = async function(ip) {
-  if (printerFirebaseState[ip]) {
-    return mapFirebasePrinterInfo(printerFirebaseState[ip]);
+  const cleanIp = normalizePrinterIp(ip);
+  const desktopMode = !!(window.electronAPI && window.electronAPI.getTonerSNMP);
+
+  if (desktopMode) {
+    const freshInfo = await __originalObterTonerInfo(cleanIp);
+    if (hasUsablePrinterInfo(freshInfo)) {
+      try {
+        await syncPrinterInfoToFirebase(cleanIp, freshInfo);
+      } catch (error) {
+        console.error("Erro ao sincronizar impressora para Firebase:", cleanIp, error);
+      }
+      return freshInfo;
+    }
+
+    if (printerFirebaseState[cleanIp]) {
+      return mapFirebasePrinterInfo(printerFirebaseState[cleanIp]);
+    }
+
+    return freshInfo;
   }
-  return await __originalObterTonerInfo(ip);
+
+  if (printerFirebaseState[cleanIp]) {
+    return mapFirebasePrinterInfo(printerFirebaseState[cleanIp]);
+  }
+  return await __originalObterTonerInfo(cleanIp);
 };
 
 const __originalTestarTodasAsImpressoras = testarTodasAsImpressoras;
