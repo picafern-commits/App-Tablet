@@ -16,5 +16,9 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "scope": "./",
+  "id": "app-braga",
+  "description": "App Braga com alertas de toner e atalhos operacionais.",
+  "orientation": "portrait"
 }

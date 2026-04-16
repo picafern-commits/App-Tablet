@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell, ipcMain } = require("electron");
+const { app, BrowserWindow, shell, ipcMain, Notification } = require("electron");
 const path = require("path");
 const http = require("http");
 const https = require("https");
