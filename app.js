@@ -131,7 +131,7 @@ const manutencaoLocais = [
    DADOS PISTOLAS CK65
    (SEM RÁDIOS)
 ========================= */
-const pistolasData = [
+let pistolasData = [
   { num: 01, nome: "BRA01", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D81B7", mac: "0C:23:69:ED:7D:05", operador: "Márcio Vilela", armazem: "Vila Real", prontas: "2026-01-12", estado: "" },
   { num: 02, nome: "BRA02", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D8148", mac: "0C:23:69:ED:92:68", operador: "Mário Roberto Gomes Monteiro", armazem: "Braga", prontas: "2026-01-12", estado: "" },
   { num: 03, nome: "BRA03", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D81A8", mac: "0C:23:69:ED:88:CF", operador: "Joao Abel Pacheco", armazem: "Braga", prontas: "2026-01-12", estado: "" },
@@ -185,7 +185,7 @@ const pistolasData = [
 /* =========================
    DADOS PORTAS DE REDE
 ========================= */
-const portasData = [
+let portasData = [
   { porta: "127", local: "Ilha 01", user: "Mesa 01", equipamento: "", ip: "" },
   { porta: "126", local: "Ilha 01", user: "Mesa 01", equipamento: "Computador", ip: "192.168.10.101" },
 
@@ -2401,7 +2401,7 @@ function renderPistolas(lista = pistolasData) {
   atualizarContadoresPistolas(lista);
 
   container.innerHTML = lista.map((p, index) => {
-    const ref = p.idDoc ? `'${p.idDoc}'` : index;
+    const ref = p.idDoc ? `'${p.idDoc}'` : `'${p._ref || `local-pistola-${pistolasData.indexOf(p)}`}'`;
     return `
     <div class="pc-card">
       <div class="pc-name">${p.nome}</div>
@@ -2504,7 +2504,7 @@ function renderPortas(lista = portasData) {
 
   container.innerHTML = lista.map((p, index) => {
     const estado = estadoPorta(p);
-    const ref = p.idDoc ? `'${p.idDoc}'` : index;
+    const ref = p.idDoc ? `'${p.idDoc}'` : `'${p._ref || `local-porta-${portasData.indexOf(p)}`}'`;
     return `
       <div class="pc-card">
         <div class="pc-name">Porta ${p.porta || "-"}</div>
@@ -2544,6 +2544,80 @@ function filtrarPortas(txt = "") {
 function filtrarPortasComEstado() {
   const texto = el("searchPortas")?.value || "";
   filtrarPortas(texto);
+}
+
+
+const PISTOLAS_STORAGE_KEY = 'appbraga_pistolas_custom_v1';
+const PORTAS_STORAGE_KEY = 'appbraga_portas_custom_v1';
+
+function prepararRefsPistolas() {
+  pistolasData.forEach((p, i) => {
+    if (!p.idDoc && !p._ref) p._ref = `local-pistola-${i}`;
+  });
+}
+
+function guardarPistolasLocal() {
+  try {
+    const serializavel = pistolasData.map(p => ({ ...p }));
+    localStorage.setItem(PISTOLAS_STORAGE_KEY, JSON.stringify(serializavel));
+  } catch (e) {
+    console.warn('Nao foi possivel guardar pistolas no localStorage.', e);
+  }
+}
+
+function carregarPistolasLocal() {
+  try {
+    const raw = localStorage.getItem(PISTOLAS_STORAGE_KEY);
+    if (!raw) {
+      prepararRefsPistolas();
+      return;
+    }
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || !parsed.length) {
+      prepararRefsPistolas();
+      return;
+    }
+    pistolasData.splice(0, pistolasData.length, ...parsed);
+    prepararRefsPistolas();
+  } catch (e) {
+    console.warn('Nao foi possivel carregar pistolas do localStorage.', e);
+    prepararRefsPistolas();
+  }
+}
+
+function prepararRefsPortas() {
+  portasData.forEach((p, i) => {
+    if (!p.idDoc && !p._ref) p._ref = `local-porta-${i}`;
+  });
+}
+
+function guardarPortasLocal() {
+  try {
+    const serializavel = portasData.map(p => ({ ...p }));
+    localStorage.setItem(PORTAS_STORAGE_KEY, JSON.stringify(serializavel));
+  } catch (e) {
+    console.warn('Nao foi possivel guardar portas no localStorage.', e);
+  }
+}
+
+function carregarPortasLocal() {
+  try {
+    const raw = localStorage.getItem(PORTAS_STORAGE_KEY);
+    if (!raw) {
+      prepararRefsPortas();
+      return;
+    }
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || !parsed.length) {
+      prepararRefsPortas();
+      return;
+    }
+    portasData.splice(0, portasData.length, ...parsed);
+    prepararRefsPortas();
+  } catch (e) {
+    console.warn('Nao foi possivel carregar portas do localStorage.', e);
+    prepararRefsPortas();
+  }
 }
 
 /* =========================
@@ -2677,6 +2751,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
   renderImpressoras();
   renderManutencoes(manutencoesGlobal);
+  carregarPistolasLocal();
+  carregarPortasLocal();
   renderPistolas();
   renderPortas();
   carregarUsersLocal();
@@ -3643,6 +3719,7 @@ async function migrarPortasParaFirebase() {
 
 async function carregarPortasComFallback() {
   if (!window.db) {
+    carregarPortasLocal();
     renderPortas(portasData);
     return;
   }
@@ -3650,6 +3727,7 @@ async function carregarPortasComFallback() {
   try {
     db.collection("portas").onSnapshot(snap => {
       if (snap.empty) {
+        carregarPortasLocal();
         renderPortas(portasData);
         const countEl = document.getElementById("countPortas");
         if (countEl) countEl.innerText = String(portasData.length);
@@ -3657,6 +3735,8 @@ async function carregarPortasComFallback() {
       }
 
       portasData = snap.docs.map(doc => ({ idDoc: doc.id, ...doc.data() }));
+      prepararRefsPortas();
+      guardarPortasLocal();
       renderPortas(portasData);
     }, error => {
       console.error(error);
@@ -3880,8 +3960,9 @@ async function guardarEdicaoPorta() {
       const idx = idxPorRef(portasData, portaEditRef);
       if (idx >= 0) portasData[idx] = { ...portasData[idx], ...payload };
     }
+    guardarPortasLocal();
     fecharEditarPorta();
-    renderPortas(portasData);
+    filtrarPortasComEstado();
     mostrarMensagem("Porta atualizada com sucesso.");
   } catch (e) {
     console.error(e);
@@ -3897,7 +3978,8 @@ async function apagarPorta(ref) {
     }
     const idx = idxPorRef(portasData, ref);
     if (idx >= 0) portasData.splice(idx, 1);
-    renderPortas(portasData);
+    guardarPortasLocal();
+    filtrarPortasComEstado();
     mostrarMensagem("Porta apagada com sucesso.");
   } catch (e) {
     console.error(e);
@@ -4000,8 +4082,9 @@ async function guardarEdicaoPistola() {
       const idx = idxPorRef(pistolasData, pistolaEditRef);
       if (idx >= 0) pistolasData[idx] = { ...pistolasData[idx], ...payload };
     }
+    guardarPistolasLocal();
     fecharEditarPistola();
-    renderPistolas(pistolasData);
+    filtrarPistolasComFiltros();
     mostrarMensagem("Pistola atualizada com sucesso.");
   } catch (e) {
     console.error(e);
@@ -4017,7 +4100,8 @@ async function apagarPistola(ref) {
     }
     const idx = idxPorRef(pistolasData, ref);
     if (idx >= 0) pistolasData.splice(idx, 1);
-    renderPistolas(pistolasData);
+    guardarPistolasLocal();
+    filtrarPistolasComFiltros();
     mostrarMensagem("Pistola apagada com sucesso.");
   } catch (e) {
     console.error(e);
