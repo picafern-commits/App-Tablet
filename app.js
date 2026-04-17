@@ -2671,6 +2671,7 @@ function renderUsers(lista = usersData) {
       <div class="meta-line">Pass Bragalis: <span class="meta-value">${u.pass_bragalis || "-"}</span></div>
       <div class="item-actions">
         <button class="secondary-btn" onclick="editarUser(${ref})">Editar</button>
+        <button class="secondary-btn" onclick="imprimirUser(${ref})">Imprimir Dados</button>
         <button class="secondary-btn" onclick="apagarUser(${ref})">Apagar</button>
       </div>
     </div>
@@ -4046,6 +4047,168 @@ async function apagarUser(ref) {
     mostrarMensagem("Erro ao apagar o user.", "erro");
   }
 }
+
+
+function formatUserFieldLabel(chave) {
+  const labels = {
+    nome: "Nome",
+    zona: "Zona",
+    user_pc_eye: "User PC/EYE",
+    pass_remote: "Pass Remote",
+    pass_eye_peak: "Pass Eye Peak",
+    op_pistola: "Op. Pistola",
+    pass_pistola: "Pass Pistola",
+    nome_pc: "Nome PC",
+    teamviewer: "TeamViewer",
+    user_mo365: "User MO365",
+    pw_mo365: "Pw MO365",
+    email_bragalis: "Email Bragalis",
+    pass_bragalis: "Pass Bragalis"
+  };
+  return labels[chave] || chave;
+}
+
+function escapeHtmlAppBraga(valor) {
+  return String(valor ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function imprimirUser(ref) {
+  const item = itemPorRef(usersData, ref);
+  if (!item) return mostrarMensagem("User não encontrado.", "erro");
+
+  const campos = [
+    "nome","zona","user_pc_eye","pass_remote","pass_eye_peak","op_pistola",
+    "pass_pistola","nome_pc","teamviewer","user_mo365","pw_mo365",
+    "email_bragalis","pass_bragalis"
+  ];
+
+  const linhas = campos
+    .filter(campo => normalizarTexto(item[campo]) !== "")
+    .map(campo => `
+      <div class="print-row">
+        <div class="print-label">${escapeHtmlAppBraga(formatUserFieldLabel(campo))}</div>
+        <div class="print-value">${escapeHtmlAppBraga(item[campo])}</div>
+      </div>
+    `).join("");
+
+  const popup = window.open("", "_blank", "width=900,height=700");
+  if (!popup) {
+    mostrarMensagem("Não foi possível abrir a janela de impressão. Verifica se o browser bloqueou popups.", "erro");
+    return;
+  }
+
+  const titulo = escapeHtmlAppBraga(item.nome || "User");
+  popup.document.open();
+  popup.document.write(`
+    <!DOCTYPE html>
+    <html lang="pt">
+    <head>
+      <meta charset="UTF-8">
+      <title>Imprimir Dados - ${titulo}</title>
+      <style>
+        @page { size: 100mm 150mm; margin: 4mm; }
+        html, body {
+          width: 100mm;
+          height: 150mm;
+          margin: 0;
+          padding: 0;
+          background: #ffffff;
+          color: #111827;
+          font-family: Arial, Helvetica, sans-serif;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        body { box-sizing: border-box; }
+        .label-sheet {
+          width: 100mm;
+          min-height: 150mm;
+          box-sizing: border-box;
+          padding: 6mm;
+          display: flex;
+          flex-direction: column;
+          gap: 3mm;
+        }
+        .title {
+          font-size: 20px;
+          font-weight: 700;
+          margin: 0 0 2mm 0;
+          border-bottom: 1px solid #d1d5db;
+          padding-bottom: 2mm;
+          word-break: break-word;
+        }
+        .subtitle {
+          font-size: 11px;
+          color: #4b5563;
+          margin: 0 0 1mm 0;
+        }
+        .content {
+          display: flex;
+          flex-direction: column;
+          gap: 2.2mm;
+          margin-top: 2mm;
+        }
+        .print-row {
+          border: 1px solid #e5e7eb;
+          border-radius: 2mm;
+          padding: 2.2mm 2.5mm;
+          page-break-inside: avoid;
+        }
+        .print-label {
+          font-size: 10px;
+          font-weight: 700;
+          color: #374151;
+          margin-bottom: 1mm;
+          text-transform: uppercase;
+          letter-spacing: .2px;
+        }
+        .print-value {
+          font-size: 12px;
+          line-height: 1.3;
+          word-break: break-word;
+          white-space: pre-wrap;
+        }
+        @media screen {
+          body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            background: #f3f4f6;
+            padding: 12px;
+          }
+          .label-sheet {
+            background: #fff;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="label-sheet">
+        <div class="subtitle">Etiqueta User - App Braga</div>
+        <h1 class="title">${titulo}</h1>
+        <div class="content">
+          ${linhas || '<div class="print-row"><div class="print-label">Sem dados</div><div class="print-value">Este user não tem campos preenchidos.</div></div>'}
+        </div>
+      </div>
+      <script>
+        window.onload = () => {
+          setTimeout(() => {
+            window.focus();
+            window.print();
+          }, 150);
+        };
+      </scr' + 'ipt>
+    </body>
+    </html>
+  `);
+  popup.document.close();
+}
+
 
 /* Pistolas */
 let pistolaEditRef = null;
