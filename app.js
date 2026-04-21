@@ -4824,7 +4824,8 @@ function montarPayloadEtiquetaPartilhada(extra = {}) {
     localCurto: info.localCurto || "Sem Localização",
     armazem: info.armazem || extra.armazem || "",
     localizacao: info.localizacaoRaw || loc || "Sem Localização",
-    dataEtiqueta: formatDatePTShared(dataFolha || dataScan) || "Sem Data",
+    dataEtiqueta: formatDatePTShared(dataScan || dataFolha) || "Sem Data",
+    dataScan: dataScan || "",
     data: dataScan || "",
     dataFolha: dataFolha || "",
     equipamento: equipamento || "",
@@ -4931,7 +4932,7 @@ function montarHtmlEtiquetaImpressao(item) {
     ["Equipamento", item.equipamento],
     ["Cor", item.cor],
     ["Lote", item.lote],
-    ["Data", item.dataEtiqueta || item.data || item.dataFolha],
+    ["Data", item.dataScan || item.dataEtiqueta || item.data || item.dataFolha],
     ["Origem", item.origem]
   ].filter(([,v]) => String(v || '').trim());
 
@@ -5012,7 +5013,7 @@ function montarHtmlEtiquetaOverlay(item) {
     ["Equipamento", item.equipamento],
     ["Cor", item.cor],
     ["Lote", item.lote],
-    ["Data", item.dataEtiqueta || item.data || item.dataFolha],
+    ["Data", item.dataScan || item.dataEtiqueta || item.data || item.dataFolha],
     ["Origem", item.origem]
   ].filter(([,v]) => String(v || '').trim());
 
@@ -5022,11 +5023,12 @@ function montarHtmlEtiquetaOverlay(item) {
     <style>
       @media print {
         @page { size: 100mm 150mm; margin: 0; }
+        html, body { width: 100mm !important; height: 150mm !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; background: #fff !important; }
         body * { visibility: hidden !important; }
         #printAreaEtiquetaAppBraga, #printAreaEtiquetaAppBraga * { visibility: visible !important; }
-        #printAreaEtiquetaAppBraga { position: fixed !important; inset: 0 !important; margin: 0 !important; background: #fff !important; }
+        #printAreaEtiquetaAppBraga { position: fixed !important; inset: 0 !important; width: 100mm !important; height: 150mm !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; background: #fff !important; }
       }
-      #printAreaEtiquetaAppBraga .etq-sheet { width:100mm; height:150mm; box-sizing:border-box; padding:8mm; color:#111; font-family:Arial, sans-serif; background:#fff; display:flex; flex-direction:column; justify-content:flex-start; }
+      #printAreaEtiquetaAppBraga .etq-sheet { width:100mm; height:150mm; max-width:100mm; max-height:150mm; overflow:hidden; box-sizing:border-box; padding:8mm; color:#111; font-family:Arial, sans-serif; background:#fff; display:flex; flex-direction:column; justify-content:flex-start; break-inside: avoid; page-break-inside: avoid; break-after: avoid-page; page-break-after: avoid; }
       #printAreaEtiquetaAppBraga .etq-title { font-size:20px; font-weight:700; margin:0 0 6mm; }
       #printAreaEtiquetaAppBraga .etq-row { display:flex; flex-direction:column; margin:0 0 3.5mm; }
       #printAreaEtiquetaAppBraga .etq-key { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
