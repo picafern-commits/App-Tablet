@@ -1802,3 +1802,26 @@ html.dark .minimo-item, body.dark .minimo-item {
 .diagnostics-log-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .log-toggle-btn { min-width: 112px; }
 .diagnostics-log-wrap.is-collapsed .diagnostics-log { display:none; }
+
+
+/* Impressão direta de etiquetas sem popup/iframe */
+#printAreaEtiqueta { display: none; }
+body.modo-impressao-etiqueta #printAreaEtiqueta {
+  display: block;
+  position: fixed;
+  inset: 0;
+  background: #fff;
+  z-index: 999999;
+}
+@media print {
+  body.modo-impressao-etiqueta > *:not(#printAreaEtiqueta):not(script):not(style) {
+    display: none !important;
+  }
+  body.modo-impressao-etiqueta #printAreaEtiqueta {
+    display: block !important;
+    position: static !important;
+    inset: auto !important;
+    background: #fff !important;
+    z-index: auto !important;
+  }
+}

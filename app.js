@@ -4915,7 +4915,6 @@ function renderEtiquetasWordCards() {
       <div class="meta-line">Data: <span class="meta-value">${t.dataEtiqueta || '-'}</span></div>
       <div class="meta-line">Origem: <span class="meta-value">${t.origem || 'scan'}</span></div>
       <div class="card-actions">
-        <button class="small-btn btn-edit" onclick='></button>
         <button class="small-btn btn-use" onclick="regerarEtiquetaWordPartilhada('${t.idDoc}')">Imprimir</button>
         <button class="small-btn btn-delete" onclick="apagarEtiquetaWordPartilhada('${t.idDoc}')">Apagar</button>
       </div>
@@ -4963,35 +4962,47 @@ function montarHtmlEtiquetaImpressao(item) {
 </html>`;
 }
 
+
+function limparModoImpressaoEtiqueta() {
+  try {
+    document.body.classList.remove('modo-impressao-etiqueta');
+    const area = document.getElementById('printAreaEtiqueta');
+    if (area) area.remove();
+  } catch (e) { console.error(e); }
+}
+
 async function regerarEtiquetaWordPartilhada(id) {
   const item = etiquetasWordGlobal.find(x => x.idDoc === id);
   if (!item) return mostrarMensagem("Etiqueta não encontrada.", "erro");
   try {
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'fixed';
-    iframe.style.right = '0';
-    iframe.style.bottom = '0';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = '0';
-    document.body.appendChild(iframe);
-    const doc = iframe.contentWindow.document;
-    doc.open();
-    doc.write(montarHtmlEtiquetaImpressao(item));
-    doc.close();
-    setTimeout(() => {
-      try {
-        iframe.contentWindow.focus();
-        iframe.contentWindow.print();
-        mostrarMensagem('Etiqueta pronta a imprimir.');
-      } catch (e) {
-        console.error(e);
-        mostrarMensagem('Erro ao abrir a impressão.', 'erro');
-      }
-      setTimeout(() => { try { iframe.remove(); } catch (e) {} }, 1200);
-    }, 300);
+    limparModoImpressaoEtiqueta();
+    const area = document.createElement('div');
+    area.id = 'printAreaEtiqueta';
+    area.innerHTML = montarHtmlEtiquetaImpressao(item)
+      .replace(/<!DOCTYPE html>[\s\S]*?<body>/i, '')
+      .replace(/<\/body>[\s\S]*$/i, '');
+    document.body.appendChild(area);
+    document.body.classList.add('modo-impressao-etiqueta');
+
+    const finalizar = () => {
+      window.removeEventListener('afterprint', finalizar);
+      setTimeout(() => {
+        limparModoImpressaoEtiqueta();
+      }, 100);
+    };
+    window.addEventListener('afterprint', finalizar, { once: true });
+
+    try {
+      window.print();
+      mostrarMensagem('Etiqueta pronta a imprimir.');
+    } catch (e) {
+      console.error(e);
+      limparModoImpressaoEtiqueta();
+      mostrarMensagem('Erro ao abrir a impressão.', 'erro');
+    }
   } catch (e) {
     console.error(e);
+    limparModoImpressaoEtiqueta();
     mostrarMensagem('Erro ao preparar impressão.', 'erro');
   }
 }
