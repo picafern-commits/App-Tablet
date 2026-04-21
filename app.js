@@ -4913,7 +4913,7 @@ function renderEtiquetasWordCards() {
       <div class="meta-line">Equipamento: <span class="meta-value">${t.equipamento || '-'}</span></div>
       <div class="meta-line">Cor: <span class="meta-value">${t.cor || '-'}</span></div>
       <div class="meta-line">Lote: <span class="meta-value">${t.lote || '-'}</span></div>
-      <div class="meta-line">Data: <span class="meta-value">${t.dataScan || t.dataEtiqueta || t.data || t.dataFolha || '-'}</span></div>
+      <div class="meta-line">Data: <span class="meta-value">${t.dataEtiqueta || '-'}</span></div>
       <div class="meta-line">Origem: <span class="meta-value">${t.origem || 'scan'}</span></div>
       <div class="card-actions">
         <button class="small-btn btn-use" onclick="regerarEtiquetaWordPartilhada('${t.idDoc}')">Imprimir</button>
@@ -4948,10 +4948,10 @@ function montarHtmlEtiquetaImpressao(item) {
   html, body { margin:0; padding:0; width:100mm; height:150mm; font-family: Arial, sans-serif; }
   body { box-sizing:border-box; padding:8mm; color:#111; }
   .etq-wrap { width:100%; height:100%; display:flex; flex-direction:column; justify-content:flex-start; }
-  .etq-title { font-size:21px; font-weight:900; margin:0 0 6mm; }
+  .etq-title { font-size:20px; font-weight:700; margin:0 0 6mm; }
   .etq-row { display:flex; flex-direction:column; margin:0 0 3.5mm; }
-  .etq-key { font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:.4px; }
-  .etq-val { font-size:17px; line-height:1.3; font-weight:800; word-break:break-word; }
+  .etq-key { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+  .etq-val { font-size:16px; line-height:1.25; word-break:break-word; }
 </style>
 </head>
 <body>
@@ -4984,28 +4984,20 @@ async function regerarEtiquetaWordPartilhada(id) {
     const oldTitle = document.title;
     document.title = `Etiqueta-${(item.localCurto || item.localizacao || 'Etiqueta')}`;
 
-    const cleanup = () => {
-      try { window.removeEventListener('afterprint', cleanup); } catch (e) {}
-      try { overlay.remove(); } catch (e) {}
-      document.title = oldTitle;
-    };
-
-    try { window.addEventListener('afterprint', cleanup, { once: true }); } catch (e) {}
-
-    // força render antes de imprimir
-    void overlay.offsetHeight;
-
-    try {
-      window.print();
-      mostrarMensagem('Etiqueta pronta a imprimir.');
-    } catch (e) {
-      console.error(e);
-      mostrarMensagem('Erro ao abrir a impressão.', 'erro');
-      cleanup();
-      return;
-    }
-
-    setTimeout(cleanup, 1200);
+    setTimeout(() => {
+      try {
+        window.print();
+        mostrarMensagem('Etiqueta pronta a imprimir.');
+      } catch (e) {
+        console.error(e);
+        mostrarMensagem('Erro ao abrir a impressão.', 'erro');
+      } finally {
+        setTimeout(() => {
+          try { overlay.remove(); } catch (e) {}
+          document.title = oldTitle;
+        }, 600);
+      }
+    }, 150);
   } catch (e) {
     console.error(e);
     mostrarMensagem('Erro ao preparar impressão.', 'erro');
@@ -5036,11 +5028,11 @@ function montarHtmlEtiquetaOverlay(item) {
         #printAreaEtiquetaAppBraga, #printAreaEtiquetaAppBraga * { visibility: visible !important; }
         #printAreaEtiquetaAppBraga { position: fixed !important; inset: 0 !important; width: 100mm !important; height: 150mm !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; background: #fff !important; }
       }
-      #printAreaEtiquetaAppBraga .etq-sheet { width:100mm; height:150mm; max-width:100mm; max-height:150mm; overflow:hidden; box-sizing:border-box; padding:8mm; color:#000; font-family:Arial, sans-serif; background:#fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; text-shadow: 0 0 1px #000; display:flex; flex-direction:column; justify-content:flex-start; break-inside: avoid; page-break-inside: avoid; break-after: avoid-page; page-break-after: avoid; }
-      #printAreaEtiquetaAppBraga .etq-title { font-size:21px; font-weight:900; margin:0 0 6mm; }
+      #printAreaEtiquetaAppBraga .etq-sheet { width:100mm; height:150mm; max-width:100mm; max-height:150mm; overflow:hidden; box-sizing:border-box; padding:8mm; color:#111; font-family:Arial, sans-serif; background:#fff; display:flex; flex-direction:column; justify-content:flex-start; break-inside: avoid; page-break-inside: avoid; break-after: avoid-page; page-break-after: avoid; }
+      #printAreaEtiquetaAppBraga .etq-title { font-size:20px; font-weight:700; margin:0 0 6mm; }
       #printAreaEtiquetaAppBraga .etq-row { display:flex; flex-direction:column; margin:0 0 3.5mm; }
-      #printAreaEtiquetaAppBraga .etq-key { font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:.4px; }
-      #printAreaEtiquetaAppBraga .etq-val { font-size:17px; line-height:1.3; font-weight:800; word-break:break-word; }
+      #printAreaEtiquetaAppBraga .etq-key { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+      #printAreaEtiquetaAppBraga .etq-val { font-size:16px; line-height:1.25; word-break:break-word; }
     </style>
     <div class="etq-sheet">
       <div class="etq-title">${escapeHtml(item.localCurto || item.localizacao || 'Etiqueta')}</div>
