@@ -4916,16 +4916,84 @@ function renderEtiquetasWordCards() {
       <div class="meta-line">Origem: <span class="meta-value">${t.origem || 'scan'}</span></div>
       <div class="card-actions">
         <button class="small-btn btn-edit" onclick='></button>
-        <button class="small-btn btn-use" onclick="regerarEtiquetaWordPartilhada('${t.idDoc}')">Download Word</button>
+        <button class="small-btn btn-use" onclick="regerarEtiquetaWordPartilhada('${t.idDoc}')">Imprimir</button>
         <button class="small-btn btn-delete" onclick="apagarEtiquetaWordPartilhada('${t.idDoc}')">Apagar</button>
       </div>
     </div>`).join("");
 }
 
+
+function montarHtmlEtiquetaImpressao(item) {
+  const linhas = [
+    ["Local", item.localCurto || item.localizacao],
+    ["Série", item.serie],
+    ["Armazém", item.armazem],
+    ["Localização", item.localizacao],
+    ["Equipamento", item.equipamento],
+    ["Cor", item.cor],
+    ["Lote", item.lote],
+    ["Data", item.dataEtiqueta || item.data || item.dataFolha],
+    ["Origem", item.origem]
+  ].filter(([,v]) => String(v || '').trim());
+
+  const escapeHtml = (v) => String(v ?? '').replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c] || c));
+  const rows = linhas.map(([k,v]) => `<div class="etq-row"><div class="etq-key">${escapeHtml(k)}</div><div class="etq-val">${escapeHtml(v)}</div></div>`).join('');
+  return `<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<title>Etiqueta</title>
+<style>
+  @page { size: 100mm 150mm; margin: 0; }
+  html, body { margin:0; padding:0; width:100mm; height:150mm; font-family: Arial, sans-serif; }
+  body { box-sizing:border-box; padding:8mm; color:#111; }
+  .etq-wrap { width:100%; height:100%; display:flex; flex-direction:column; justify-content:flex-start; }
+  .etq-title { font-size:20px; font-weight:700; margin:0 0 6mm; }
+  .etq-row { display:flex; flex-direction:column; margin:0 0 3.5mm; }
+  .etq-key { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+  .etq-val { font-size:16px; line-height:1.25; word-break:break-word; }
+</style>
+</head>
+<body>
+  <div class="etq-wrap">
+    <div class="etq-title">${escapeHtml(item.localCurto || item.localizacao || 'Etiqueta')}</div>
+    ${rows}
+  </div>
+</body>
+</html>`;
+}
+
 async function regerarEtiquetaWordPartilhada(id) {
   const item = etiquetasWordGlobal.find(x => x.idDoc === id);
   if (!item) return mostrarMensagem("Etiqueta não encontrada.", "erro");
-  await gerarWordEtiquetaPartilhada(item, { saveRecord: false, silent: false });
+  try {
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+    const doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(montarHtmlEtiquetaImpressao(item));
+    doc.close();
+    setTimeout(() => {
+      try {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+        mostrarMensagem('Etiqueta pronta a imprimir.');
+      } catch (e) {
+        console.error(e);
+        mostrarMensagem('Erro ao abrir a impressão.', 'erro');
+      }
+      setTimeout(() => { try { iframe.remove(); } catch (e) {} }, 1200);
+    }, 300);
+  } catch (e) {
+    console.error(e);
+    mostrarMensagem('Erro ao preparar impressão.', 'erro');
+  }
 }
 
 async function apagarEtiquetaWordPartilhada(id) {
