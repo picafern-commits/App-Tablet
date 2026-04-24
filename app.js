@@ -5188,3 +5188,36 @@ window.addEventListener("DOMContentLoaded", () => {
   bindEtiquetasWordRealtime();
 });
 
+
+// ===== APP BRAGA - MOBILE SIDEBAR =====
+(function () {
+  function ensureMobileShell() {
+    if (!document.querySelector('.mobile-sidebar-toggle')) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'mobile-sidebar-toggle';
+      btn.setAttribute('aria-label', 'Abrir menu');
+      btn.innerHTML = '☰';
+      document.body.insertBefore(btn, document.body.firstChild);
+    }
+    if (!document.querySelector('.sidebar-overlay-appbraga')) {
+      const overlay = document.createElement('div');
+      overlay.className = 'sidebar-overlay-appbraga';
+      document.body.insertBefore(overlay, document.body.firstChild);
+    }
+  }
+  function closeSidebar() { document.body.classList.remove('sidebar-mobile-open'); }
+  function toggleSidebar() { document.body.classList.toggle('sidebar-mobile-open'); }
+  window.toggleSidebar = toggleSidebar;
+  window.closeSidebarMobile = closeSidebar;
+  document.addEventListener('DOMContentLoaded', function () {
+    ensureMobileShell();
+    const toggle = document.querySelector('.mobile-sidebar-toggle');
+    const overlay = document.querySelector('.sidebar-overlay-appbraga');
+    const sidebar = document.querySelector('.sidebar');
+    if (toggle) toggle.addEventListener('click', function (ev) { ev.preventDefault(); ev.stopPropagation(); toggleSidebar(); });
+    if (overlay) overlay.addEventListener('click', closeSidebar);
+    if (sidebar) sidebar.querySelectorAll('a').forEach(function (link) { link.addEventListener('click', closeSidebar); });
+    document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') closeSidebar(); });
+  });
+})();

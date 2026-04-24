@@ -1802,3 +1802,37 @@ html.dark .minimo-item, body.dark .minimo-item {
 .diagnostics-log-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .log-toggle-btn { min-width: 112px; }
 .diagnostics-log-wrap.is-collapsed .diagnostics-log { display:none; }
+
+/* =========================================================
+   APP BRAGA - MOBILE APP DESIGN + SIDEBAR FIX
+   Corrige iPhone: sidebar escondida + conteúdo full screen
+   ========================================================= */
+.mobile-sidebar-toggle,
+.sidebar-overlay-appbraga { display: none; }
+@media (max-width: 768px) {
+  html, body { width:100% !important; max-width:100% !important; overflow-x:hidden !important; background: radial-gradient(circle at top left, rgba(59,130,246,.16), transparent 28%), linear-gradient(180deg,#081225 0%,#0f172a 55%,#111827 100%) !important; }
+  body { display:block !important; min-height:100vh !important; padding:0 !important; color:#f8fafc !important; }
+  .mobile-sidebar-toggle { display:inline-flex !important; position:fixed !important; top:calc(env(safe-area-inset-top,0px) + 12px) !important; left:14px !important; width:48px !important; height:48px !important; align-items:center !important; justify-content:center !important; border:1px solid rgba(148,163,184,.18) !important; border-radius:16px !important; background:rgba(15,23,42,.82) !important; color:#fff !important; font-size:22px !important; font-weight:900 !important; z-index:10050 !important; box-shadow:0 18px 40px rgba(0,0,0,.34) !important; backdrop-filter:blur(14px) !important; -webkit-backdrop-filter:blur(14px) !important; cursor:pointer !important; }
+  .sidebar-overlay-appbraga { display:block !important; position:fixed !important; inset:0 !important; background:rgba(2,6,23,.62) !important; z-index:10030 !important; opacity:0 !important; pointer-events:none !important; transition:opacity .22s ease !important; backdrop-filter:blur(3px) !important; -webkit-backdrop-filter:blur(3px) !important; }
+  body.sidebar-mobile-open .sidebar-overlay-appbraga { opacity:1 !important; pointer-events:auto !important; }
+  .sidebar { position:fixed !important; top:0 !important; left:0 !important; width:min(82vw,310px) !important; max-width:310px !important; min-width:0 !important; height:100vh !important; min-height:100vh !important; padding:calc(env(safe-area-inset-top,0px) + 76px) 18px 28px !important; background:rgba(2,6,23,.96) !important; border-right:1px solid rgba(148,163,184,.14) !important; box-shadow:28px 0 60px rgba(0,0,0,.45) !important; overflow-y:auto !important; z-index:10040 !important; transform:translateX(-105%) !important; transition:transform .28s cubic-bezier(.2,.8,.2,1) !important; -webkit-overflow-scrolling:touch !important; }
+  body.sidebar-mobile-open .sidebar { transform:translateX(0) !important; }
+  .sidebar .brand, .sidebar .premium-brand { margin-bottom:28px !important; }
+  .sidebar a, .sidebar .menu-btn { min-height:50px !important; padding:14px !important; margin-bottom:10px !important; border-radius:16px !important; font-size:16px !important; letter-spacing:-.01em !important; background:transparent !important; }
+  .sidebar a.active, .sidebar a:hover, .sidebar .menu-btn.active, .sidebar .menu-btn:hover { background:rgba(59,130,246,.18) !important; box-shadow:inset 3px 0 0 rgba(59,130,246,.95), 0 10px 26px rgba(59,130,246,.10) !important; }
+  .nav-group-label { margin:22px 0 10px !important; color:rgba(226,232,240,.52) !important; font-size:12px !important; letter-spacing:.14em !important; }
+  .main, main, .content, .app-main { margin-left:0 !important; width:100% !important; max-width:100% !important; min-width:0 !important; padding:calc(env(safe-area-inset-top,0px) + 82px) 16px 28px !important; background:transparent !important; }
+  .topbar, .premium-topbar { display:block !important; margin:0 0 18px !important; padding:18px !important; border:1px solid rgba(148,163,184,.14) !important; border-radius:24px !important; background:rgba(15,23,42,.58) !important; box-shadow:0 18px 45px rgba(0,0,0,.20) !important; backdrop-filter:blur(14px) !important; -webkit-backdrop-filter:blur(14px) !important; }
+  .topbar h1, .main h1 { font-size:clamp(30px,9vw,46px) !important; line-height:.98 !important; letter-spacing:-.06em !important; margin-bottom:10px !important; }
+  .subtitle, .section-subtitle { font-size:15px !important; line-height:1.45 !important; color:rgba(226,232,240,.72) !important; }
+  .topbar-status, .top-actions { display:flex !important; flex-wrap:wrap !important; gap:10px !important; margin-top:14px !important; }
+  .status-pill, .version-pill, .visual-badge { min-height:38px !important; padding:0 14px !important; border-radius:999px !important; background:rgba(15,23,42,.72) !important; border:1px solid rgba(148,163,184,.18) !important; box-shadow:0 10px 26px rgba(0,0,0,.16) !important; }
+  .stats-grid, .cards-grid, .form-grid, .toolbar, .portas-toolbar, .pistolas-toolbar, .users-toolbar, .portas-stats-grid, .pistolas-stats-grid, .users-stats-grid { display:grid !important; grid-template-columns:1fr !important; gap:14px !important; }
+  .stat-card, .panel, .stock-card, .history-card, .pc-card, .dashboard-card, .card, .box, .operational-item, .printer-card, .user-card, .pistola-card, .porta-card { border-radius:24px !important; border:1px solid rgba(148,163,184,.13) !important; background:rgba(15,23,42,.58) !important; box-shadow:0 16px 42px rgba(0,0,0,.22) !important; backdrop-filter:blur(12px) !important; -webkit-backdrop-filter:blur(12px) !important; }
+  .stat-card { min-height:108px !important; padding:22px !important; }
+  .stat-card strong { font-size:40px !important; letter-spacing:-.05em !important; }
+  button, .btn, .primary-btn, .secondary-btn, .small-btn, .action-btn { min-height:48px !important; border-radius:16px !important; font-weight:800 !important; }
+  input, select, textarea { min-height:50px !important; border-radius:16px !important; font-size:16px !important; }
+  .table-wrap, .table-container { overflow-x:auto !important; -webkit-overflow-scrolling:touch !important; border-radius:20px !important; }
+  .pro-table { min-width:720px !important; }
+}
