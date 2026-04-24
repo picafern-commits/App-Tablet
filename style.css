@@ -1868,3 +1868,38 @@ body::before{background:radial-gradient(circle at 70% 92%,rgba(30,64,175,.16),tr
 .primary-btn,.add-btn,.save-btn,button.btn-primary,.btn-primary{background:linear-gradient(135deg,#3b82f6,#2563eb)!important;color:#fff!important;box-shadow:0 14px 30px rgba(37,99,235,.22)!important;}
 .btn,.action-btn,button:not(.danger):not(.delete-btn):not(.btn-danger){border-color:rgba(59,130,246,.24)!important;}
 a{color:#93c5fd!important;}
+
+
+/* Sidebar global única */
+.sidebar .premium-brand,
+.sidebar .brand.premium-brand {
+  margin-bottom: 28px;
+}
+
+.sidebar .nav-group-label {
+  margin: 26px 0 12px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.42);
+}
+
+.sidebar a {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 22px;
+  margin: 6px 0;
+  border-radius: 18px;
+  color: rgba(255,255,255,.78);
+  text-decoration: none;
+  font-weight: 850;
+}
+
+.sidebar a.active {
+  color: #fff;
+  background: linear-gradient(135deg, #2575ff, #2464f0);
+  box-shadow: 0 14px 34px rgba(37, 117, 255, .28);
+}
