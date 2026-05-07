@@ -306,7 +306,7 @@ let portasData = [
 /* =========================
    DADOS USERS
 ========================= */
-const usersData = [
+let usersData = [
   {
     nome: "Aguinaldo Enoque de Oliveira Epalanga",
     zona: "Armazém",
@@ -1202,34 +1202,47 @@ function prepararRefsUsers() {
   });
 }
 
-function guardarUsersLocal() {
-  try {
-    const serializavel = usersData.map(u => ({ ...u }));
-    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(serializavel));
-  } catch (e) {
-    console.warn('Nao foi possivel guardar users no localStorage.', e);
-  }
+function guardarUsersLocal() { return; }
+
+function carregarUsersLocal() { return; }
+
+
+
+
+/* =========================
+   USERS FIREBASE SYNC
+========================= */
+
+function sincronizarUsersFirebase() {
+
+  if (!window.db) return;
+
+  db.collection("users").onSnapshot((snapshot) => {
+
+    usersData.splice(0, usersData.length);
+
+    snapshot.forEach((doc) => {
+
+      usersData.push({
+        idDoc: doc.id,
+        ...doc.data()
+      });
+
+    });
+
+    prepararRefsUsers();
+
+    if (typeof filtrarUsersComFiltros === "function") {
+      filtrarUsersComFiltros();
+    } else if (typeof renderUsers === "function") {
+      renderUsers();
+    }
+
+  });
+
 }
 
-function carregarUsersLocal() {
-  try {
-    const raw = localStorage.getItem(USERS_STORAGE_KEY);
-    if (!raw) {
-      prepararRefsUsers();
-      return;
-    }
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed) || !parsed.length) {
-      prepararRefsUsers();
-      return;
-    }
-    usersData.splice(0, usersData.length, ...parsed);
-    prepararRefsUsers();
-  } catch (e) {
-    console.warn('Nao foi possivel carregar users do localStorage.', e);
-    prepararRefsUsers();
-  }
-}
+sincronizarUsersFirebase();
 
 
 /* =========================
@@ -5188,31 +5201,3 @@ window.addEventListener("DOMContentLoaded", () => {
   bindEtiquetasWordRealtime();
 });
 
-
-
-// Firebase realtime sync - Pistolas
-try {
-  db.collection("pistolas").onSnapshot((snap) => {
-    pistolasData = snap.docs.map(doc => ({ idDoc: doc.id, ...doc.data() }));
-    if (typeof renderPistolas === 'function') renderPistolas(pistolasData);
-    if (typeof guardarPistolasLocal === 'function') guardarPistolasLocal();
-  });
-} catch(e){ console.warn('Erro sync pistolas', e); }
-
-// Firebase realtime sync - Users
-try {
-  db.collection("users").onSnapshot((snap) => {
-    usersData.splice(0, usersData.length, ...snap.docs.map(doc => ({ idDoc: doc.id, ...doc.data() })));
-    if (typeof renderUsers === 'function') renderUsers(usersData);
-    if (typeof guardarUsersLocal === 'function') guardarUsersLocal();
-  });
-} catch(e){ console.warn('Erro sync users', e); }
-
-// Firebase realtime sync - Portas
-try {
-  db.collection("portas").onSnapshot((snap) => {
-    portasData = snap.docs.map(doc => ({ idDoc: doc.id, ...doc.data() }));
-    if (typeof renderPortas === 'function') renderPortas(portasData);
-    if (typeof guardarPortasLocal === 'function') guardarPortasLocal();
-  });
-} catch(e){ console.warn('Erro sync portas', e); }
