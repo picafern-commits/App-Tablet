@@ -5188,3 +5188,31 @@ window.addEventListener("DOMContentLoaded", () => {
   bindEtiquetasWordRealtime();
 });
 
+
+
+// Firebase realtime sync - Pistolas
+try {
+  db.collection("pistolas").onSnapshot((snap) => {
+    pistolasData = snap.docs.map(doc => ({ idDoc: doc.id, ...doc.data() }));
+    if (typeof renderPistolas === 'function') renderPistolas(pistolasData);
+    if (typeof guardarPistolasLocal === 'function') guardarPistolasLocal();
+  });
+} catch(e){ console.warn('Erro sync pistolas', e); }
+
+// Firebase realtime sync - Users
+try {
+  db.collection("users").onSnapshot((snap) => {
+    usersData.splice(0, usersData.length, ...snap.docs.map(doc => ({ idDoc: doc.id, ...doc.data() })));
+    if (typeof renderUsers === 'function') renderUsers(usersData);
+    if (typeof guardarUsersLocal === 'function') guardarUsersLocal();
+  });
+} catch(e){ console.warn('Erro sync users', e); }
+
+// Firebase realtime sync - Portas
+try {
+  db.collection("portas").onSnapshot((snap) => {
+    portasData = snap.docs.map(doc => ({ idDoc: doc.id, ...doc.data() }));
+    if (typeof renderPortas === 'function') renderPortas(portasData);
+    if (typeof guardarPortasLocal === 'function') guardarPortasLocal();
+  });
+} catch(e){ console.warn('Erro sync portas', e); }
