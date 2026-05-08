@@ -1,4 +1,32 @@
 
+
+window.guardarEdicaoFirestore = async function(collectionName, item){
+  try {
+
+    if(!item || !item.idDoc){
+      console.error("Item sem idDoc", item);
+      return false;
+    }
+
+    const dados = {...item};
+
+    delete dados.idDoc;
+
+    await db.collection(collectionName)
+      .doc(item.idDoc)
+      .update(dados);
+
+    console.log("Atualizado:", collectionName, item.idDoc);
+
+    return true;
+
+  } catch(e){
+    console.error(e);
+    return false;
+  }
+};
+
+
 // ===== FIRESTORE REAL UPDATE/DELETE FIX =====
 
 async function apagarDocumentoFirestore(collectionName, item) {
@@ -4120,21 +4148,22 @@ async function guardarEdicaoPorta() {
 }
 
 async function apagarPorta(ref) {
-  if (!confirm("Queres apagar esta porta?")) return;
-  try {
-    if (typeof ref === "string" && window.db) {
-      await db.collection("portas").doc(ref).delete();
-    }
-    const idx = idxPorRef(portasData, ref);
-    if (idx >= 0) portasData.splice(idx, 1);
-      if (item && item.idDoc) apagarFirestore("portas_rede", item.idDoc);
-    guardarPortasLocal();
-    filtrarPortasComEstado();
-    mostrarMensagem("Porta apagada com sucesso.");
-  } catch (e) {
-    console.error(e);
-    mostrarMensagem("Erro ao apagar a porta.", "erro");
+  const item = arguments[0];
+
+  if (!item || !item.idDoc) {
+    console.error("Sem idDoc Firestore", item);
+    return;
   }
+
+  db.collection("portas_rede")
+    .doc(item.idDoc)
+    .delete()
+    .then(() => {
+      console.log("Apagado Firestore:", item.idDoc);
+    })
+    .catch((err) => {
+      console.error("Erro apagar:", err);
+    });
 }
 
 /* Users */
@@ -4200,21 +4229,22 @@ async function guardarEdicaoUser() {
 }
 
 async function apagarUser(ref) {
-  if (!confirm("Queres apagar este user?")) return;
-  try {
-    if (typeof ref === "string" && window.db) {
-      await db.collection("users").doc(ref).delete();
-    }
-    const idx = idxPorRef(usersData, ref);
-    if (idx >= 0) usersData.splice(idx, 1);
-      if (item && item.idDoc) apagarFirestore("users", item.idDoc);
-    guardarUsersLocal();
-    filtrarUsersComFiltros();
-    mostrarMensagem("User apagado com sucesso.");
-  } catch (e) {
-    console.error(e);
-    mostrarMensagem("Erro ao apagar o user.", "erro");
+  const item = arguments[0];
+
+  if (!item || !item.idDoc) {
+    console.error("Sem idDoc Firestore", item);
+    return;
   }
+
+  db.collection("users")
+    .doc(item.idDoc)
+    .delete()
+    .then(() => {
+      console.log("Apagado Firestore:", item.idDoc);
+    })
+    .catch((err) => {
+      console.error("Erro apagar:", err);
+    });
 }
 
 
@@ -4451,21 +4481,22 @@ async function guardarEdicaoPistola() {
 }
 
 async function apagarPistola(ref) {
-  if (!confirm("Queres apagar esta pistola?")) return;
-  try {
-    if (typeof ref === "string" && window.db) {
-      await db.collection("pistolas").doc(ref).delete();
-    }
-    const idx = idxPorRef(pistolasData, ref);
-    if (idx >= 0) pistolasData.splice(idx, 1);
-      if (item && item.idDoc) apagarFirestore("pistolas_ck65", item.idDoc);
-    guardarPistolasLocal();
-    filtrarPistolasComFiltros();
-    mostrarMensagem("Pistola apagada com sucesso.");
-  } catch (e) {
-    console.error(e);
-    mostrarMensagem("Erro ao apagar a pistola.", "erro");
+  const item = arguments[0];
+
+  if (!item || !item.idDoc) {
+    console.error("Sem idDoc Firestore", item);
+    return;
   }
+
+  db.collection("pistolas_ck65")
+    .doc(item.idDoc)
+    .delete()
+    .then(() => {
+      console.log("Apagado Firestore:", item.idDoc);
+    })
+    .catch((err) => {
+      console.error("Erro apagar:", err);
+    });
 }
 
 
