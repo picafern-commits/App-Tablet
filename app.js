@@ -1,3 +1,92 @@
+
+// ===== FIRESTORE REAL UPDATE/DELETE FIX =====
+
+async function apagarDocumentoFirestore(collectionName, item) {
+  try {
+
+    const id = item?.idDoc || item?.id || item?.docId;
+
+    if (!id) {
+      console.error("Documento sem ID Firestore:", item);
+      return false;
+    }
+
+    await db.collection(collectionName).doc(id).delete();
+
+    console.log("Apagado Firestore:", collectionName, id);
+
+    return true;
+
+  } catch(e) {
+    console.error("Erro apagar Firestore:", e);
+    return false;
+  }
+}
+
+async function atualizarDocumentoFirestore(collectionName, item) {
+  try {
+
+    const id = item?.idDoc || item?.id || item?.docId;
+
+    if (!id) {
+      console.error("Documento sem ID Firestore:", item);
+      return false;
+    }
+
+    const dados = {...item};
+
+    delete dados.idDoc;
+    delete dados.id;
+    delete dados.docId;
+
+    await db.collection(collectionName).doc(id).update(dados);
+
+    console.log("Atualizado Firestore:", collectionName, id);
+
+    return true;
+
+  } catch(e) {
+    console.error("Erro update Firestore:", e);
+    return false;
+  }
+}
+
+
+
+
+// ===== FIREBASE CRUD SYNC FIX =====
+
+async function apagarFirestore(collectionName, idDoc) {
+  try {
+    if (!idDoc) return false;
+
+    await db.collection(collectionName).doc(idDoc).delete();
+
+    console.log("Documento apagado:", collectionName, idDoc);
+
+    return true;
+  } catch (e) {
+    console.error("Erro ao apagar documento:", e);
+    return false;
+  }
+}
+
+async function atualizarFirestore(collectionName, idDoc, dados) {
+  try {
+    if (!idDoc) return false;
+
+    await db.collection(collectionName).doc(idDoc).update(dados);
+
+    console.log("Documento atualizado:", collectionName, idDoc);
+
+    return true;
+  } catch (e) {
+    console.error("Erro ao atualizar documento:", e);
+    return false;
+  }
+}
+
+
 const APP_VERSION = "1.5.0";
 const firebaseConfig = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
@@ -1171,12 +1260,14 @@ function sincronizarUsersFirebase() {
   db.collection("users").onSnapshot((snapshot) => {
 
     usersData.splice(0, usersData.length);
+      if (item && item.idDoc) apagarFirestore("users", item.idDoc);
 
     snapshot.forEach((doc) => {
 
       usersData.push({
         idDoc: doc.id,
-        ...doc.data()
+        idDoc: doc.id,
+            ...doc.data()
       });
 
     });
@@ -2559,6 +2650,7 @@ function carregarPistolasLocal() {
   } catch(e) {}
 
   pistolasData.splice(0, pistolasData.length);
+      if (item && item.idDoc) apagarFirestore("pistolas_ck65", item.idDoc);
   prepararRefsPistolas();
 }
 
@@ -2585,6 +2677,7 @@ async function sincronizarPistolasFirebase() {
         snapshot.forEach((doc) => {
           lista.push({
             idDoc: doc.id,
+            idDoc: doc.id,
             ...doc.data()
           });
         });
@@ -2593,6 +2686,7 @@ async function sincronizarPistolasFirebase() {
           carregado = true;
 
           pistolasData.splice(0, pistolasData.length, ...lista);
+      if (item && item.idDoc) apagarFirestore("pistolas_ck65", item.idDoc);
 
           prepararRefsPistolas();
 
@@ -2644,6 +2738,7 @@ function carregarPortasLocal() {
       return;
     }
     portasData.splice(0, portasData.length, ...parsed);
+      if (item && item.idDoc) apagarFirestore("portas_rede", item.idDoc);
     prepararRefsPortas();
   } catch (e) {
     console.warn('Nao foi possivel carregar portas do localStorage.', e);
@@ -3769,7 +3864,8 @@ async function carregarPortasComFallback() {
         return;
       }
 
-      portasData = snap.docs.map(doc => ({ idDoc: doc.id, ...doc.data() }));
+      portasData = snap.docs.map(doc => ({ idDoc: doc.id, idDoc: doc.id,
+            ...doc.data() }));
       prepararRefsPortas();
       guardarPortasLocal();
       renderPortas(portasData);
@@ -4031,6 +4127,7 @@ async function apagarPorta(ref) {
     }
     const idx = idxPorRef(portasData, ref);
     if (idx >= 0) portasData.splice(idx, 1);
+      if (item && item.idDoc) apagarFirestore("portas_rede", item.idDoc);
     guardarPortasLocal();
     filtrarPortasComEstado();
     mostrarMensagem("Porta apagada com sucesso.");
@@ -4110,6 +4207,7 @@ async function apagarUser(ref) {
     }
     const idx = idxPorRef(usersData, ref);
     if (idx >= 0) usersData.splice(idx, 1);
+      if (item && item.idDoc) apagarFirestore("users", item.idDoc);
     guardarUsersLocal();
     filtrarUsersComFiltros();
     mostrarMensagem("User apagado com sucesso.");
@@ -4360,6 +4458,7 @@ async function apagarPistola(ref) {
     }
     const idx = idxPorRef(pistolasData, ref);
     if (idx >= 0) pistolasData.splice(idx, 1);
+      if (item && item.idDoc) apagarFirestore("pistolas_ck65", item.idDoc);
     guardarPistolasLocal();
     filtrarPistolasComFiltros();
     mostrarMensagem("Pistola apagada com sucesso.");
@@ -5217,4 +5316,30 @@ function mostrarEstadoVazioPistolas(lista) {
       Sem pistolas registadas
     </div>
   `;
+}
+
+
+// ===== AUTO FIREBASE UPDATE =====
+
+async function sincronizarEdicaoFirestore(tipo, item) {
+
+  if (!item || !item.idDoc) return;
+
+  try {
+
+    if (tipo === "ck65") {
+      await atualizarFirestore("pistolas_ck65", item.idDoc, item);
+    }
+
+    if (tipo === "portas") {
+      await atualizarFirestore("portas_rede", item.idDoc, item);
+    }
+
+    if (tipo === "users") {
+      await atualizarFirestore("users", item.idDoc, item);
+    }
+
+  } catch(e) {
+    console.error("Erro sync edição:", e);
+  }
 }
