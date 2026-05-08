@@ -33,7 +33,159 @@
 }
 </style>
 
-</head>
+<style>
+
+/* RESPONSIVE AUTO LAYOUT */
+
+@media (max-width: 1024px){
+
+  .sidebar{
+    width:88px !important;
+    overflow-x:hidden;
+  }
+
+  .sidebar:hover{
+    width:240px !important;
+  }
+
+  .main-content,
+  .content{
+    margin-left:88px !important;
+    width:calc(100% - 88px) !important;
+  }
+
+  .stats-grid,
+  .dashboard-grid{
+    grid-template-columns:1fr !important;
+  }
+
+}
+
+@media (max-width: 768px){
+
+  .sidebar{
+    width:72px !important;
+    position:fixed !important;
+    z-index:9999;
+  }
+
+  .sidebar:hover{
+    width:220px !important;
+  }
+
+  .main-content,
+  .content{
+    margin-left:72px !important;
+    width:calc(100% - 72px) !important;
+    padding:12px !important;
+  }
+
+  .card,
+  .dashboard-card,
+  .stock-card{
+    width:100% !important;
+  }
+
+  .stats-grid,
+  .dashboard-grid{
+    grid-template-columns:1fr !important;
+    gap:12px !important;
+  }
+
+  h1{
+    font-size:32px !important;
+  }
+
+  button{
+    width:100%;
+  }
+
+}
+
+@media (max-width: 480px){
+
+  .sidebar{
+    width:64px !important;
+  }
+
+  .main-content,
+  .content{
+    margin-left:64px !important;
+    width:calc(100% - 64px) !important;
+  }
+
+  h1{
+    font-size:26px !important;
+  }
+
+  .topbar,
+  .header{
+    padding:14px !important;
+  }
+
+}
+</style><style>
+
+/* MOBILE DRAWER SIDEBAR */
+
+.mobile-menu-btn{
+  display:none;
+}
+
+.mobile-overlay{
+  display:none;
+}
+
+@media (max-width:768px){
+
+  .mobile-menu-btn{
+    display:flex !important;
+    position:fixed;
+    top:14px;
+    left:14px;
+    z-index:10001;
+    width:44px;
+    height:44px;
+    border:none;
+    border-radius:12px;
+    background:#2563eb;
+    color:white;
+    font-size:24px;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .sidebar{
+    position:fixed !important;
+    left:-260px !important;
+    top:0;
+    width:240px !important;
+    height:100vh;
+    z-index:10000;
+    transition:left .3s ease;
+  }
+
+  .sidebar.mobile-open{
+    left:0 !important;
+  }
+
+  .mobile-overlay.active{
+    display:block;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.45);
+    z-index:9998;
+  }
+
+  .main-content,
+  .content{
+    margin-left:0 !important;
+    width:100% !important;
+    padding:70px 14px 14px 14px !important;
+  }
+
+}
+</style></head>
 <body>
 <aside class="sidebar">
   <div class="brand premium-brand">
