@@ -33,7 +33,98 @@
 }
 </style>
 
-</head>
+<style>
+
+/* RESPONSIVE AUTO LAYOUT */
+
+@media (max-width: 1024px){
+
+  .sidebar{
+    width:88px !important;
+    overflow-x:hidden;
+  }
+
+  .sidebar:hover{
+    width:240px !important;
+  }
+
+  .main-content,
+  .content{
+    margin-left:88px !important;
+    width:calc(100% - 88px) !important;
+  }
+
+  .stats-grid,
+  .dashboard-grid{
+    grid-template-columns:1fr !important;
+  }
+
+}
+
+@media (max-width: 768px){
+
+  .sidebar{
+    width:72px !important;
+    position:fixed !important;
+    z-index:9999;
+  }
+
+  .sidebar:hover{
+    width:220px !important;
+  }
+
+  .main-content,
+  .content{
+    margin-left:72px !important;
+    width:calc(100% - 72px) !important;
+    padding:12px !important;
+  }
+
+  .card,
+  .dashboard-card,
+  .stock-card{
+    width:100% !important;
+  }
+
+  .stats-grid,
+  .dashboard-grid{
+    grid-template-columns:1fr !important;
+    gap:12px !important;
+  }
+
+  h1{
+    font-size:32px !important;
+  }
+
+  button{
+    width:100%;
+  }
+
+}
+
+@media (max-width: 480px){
+
+  .sidebar{
+    width:64px !important;
+  }
+
+  .main-content,
+  .content{
+    margin-left:64px !important;
+    width:calc(100% - 64px) !important;
+  }
+
+  h1{
+    font-size:26px !important;
+  }
+
+  .topbar,
+  .header{
+    padding:14px !important;
+  }
+
+}
+</style></head>
 <body>
 <aside class="sidebar">
   <div class="brand premium-brand">

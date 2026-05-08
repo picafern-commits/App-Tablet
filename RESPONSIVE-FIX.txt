@@ -1,0 +1,17 @@
+
+RESPONSIVE FIX APLICADO
+
+Alterações:
+- sidebar responsiva automática
+- deteção automática do tamanho do ecrã
+- layout adaptativo:
+  - PC
+  - Tablet
+  - iPhone
+- grids responsivas
+- conteúdo ajustável
+- sem alterar Firebase
+- sem alterar Electron
+
+Objetivo:
+- mesma app em todos os dispositivos
