@@ -1,3 +1,11 @@
+// MODULAR LOADERS
+import './js/firebase/config.js';
+import './js/pages/ck65.js';
+import './js/pages/portas.js';
+import './js/pages/users.js';
+
+// APP ORIGINAL ABAIXO
+
 const APP_VERSION = "1.5.0";
 const firebaseConfig = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
