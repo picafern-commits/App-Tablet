@@ -2599,24 +2599,50 @@ function guardarPistolasLocal() {
 }
 
 function carregarPistolasLocal() {
+  // DESATIVADO:
+  // O Electron estava a carregar dados antigos/mock do localStorage
+  // e a substituir os dados reais da Firebase.
+  // Agora as pistolas carregam apenas da Firebase.
   try {
-    const raw = localStorage.getItem(PISTOLAS_STORAGE_KEY);
-    if (!raw) {
+    localStorage.removeItem(PISTOLAS_STORAGE_KEY);
+  } catch(e) {}
+
+  pistolasData.splice(0, pistolasData.length);
+  prepararRefsPistolas();
+}
+
+
+async function sincronizarPistolasFirebase() {
+  try {
+    db.collection("pistolas").onSnapshot((snapshot) => {
+      const lista = [];
+
+      snapshot.forEach((doc) => {
+        lista.push({
+          idDoc: doc.id,
+          ...doc.data()
+        });
+      });
+
+      pistolasData.splice(0, pistolasData.length, ...lista);
+
       prepararRefsPistolas();
-      return;
-    }
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed) || !parsed.length) {
-      prepararRefsPistolas();
-      return;
-    }
-    pistolasData.splice(0, pistolasData.length, ...parsed);
-    prepararRefsPistolas();
+
+      if (typeof renderPistolas === "function") {
+        renderPistolas();
+      }
+
+      if (typeof atualizarContadoresPistolas === "function") {
+        atualizarContadoresPistolas();
+      }
+
+      console.log("Pistolas sincronizadas da Firebase:", lista.length);
+    });
   } catch (e) {
-    console.warn('Nao foi possivel carregar pistolas do localStorage.', e);
-    prepararRefsPistolas();
+    console.error("Erro ao sincronizar pistolas:", e);
   }
 }
+
 
 function prepararRefsPortas() {
   portasData.forEach((p, i) => {
@@ -5201,3 +5227,6 @@ window.addEventListener("DOMContentLoaded", () => {
   bindEtiquetasWordRealtime();
 });
 
+
+
+sincronizarPistolasFirebase();
