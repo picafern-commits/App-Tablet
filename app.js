@@ -5202,3 +5202,19 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
 sincronizarPistolasFirebase();
+
+
+function mostrarEstadoVazioPistolas(lista) {
+  if (!lista) return;
+
+  lista.innerHTML = `
+    <div class="empty-state" style="
+      width:100%;
+      padding:24px;
+      text-align:center;
+      opacity:.7;
+    ">
+      Sem pistolas registadas
+    </div>
+  `;
+}
