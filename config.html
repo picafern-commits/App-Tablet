@@ -306,5 +306,41 @@ document.addEventListener('DOMContentLoaded', ()=>{
 </script>
 
 
+
+<script>
+// DARK MODE SAVE FIX
+document.addEventListener('DOMContentLoaded', ()=>{
+
+  const savedTheme = localStorage.getItem('theme');
+
+  if(savedTheme === 'dark'){
+    document.body.classList.add('dark');
+    document.documentElement.setAttribute('data-theme','dark');
+  }else if(savedTheme === 'light'){
+    document.body.classList.remove('dark');
+    document.documentElement.setAttribute('data-theme','light');
+  }
+
+  document.querySelectorAll('[data-theme-toggle], .theme-toggle, .dark-mode-toggle').forEach((btn)=>{
+
+    btn.addEventListener('click', ()=>{
+
+      const isDark =
+        document.body.classList.contains('dark') ||
+        document.documentElement.getAttribute('data-theme') === 'dark';
+
+      if(isDark){
+        localStorage.setItem('theme','light');
+      }else{
+        localStorage.setItem('theme','dark');
+      }
+
+    });
+
+  });
+
+});
+</script>
+
 </body>
 </html>
