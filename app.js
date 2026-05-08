@@ -1260,7 +1260,8 @@ function sincronizarUsersFirebase() {
   db.collection("users").onSnapshot((snapshot) => {
 
     usersData.splice(0, usersData.length);
-snapshot.forEach((doc) => {
+
+    snapshot.forEach((doc) => {
 
       usersData.push({
         idDoc: doc.id,
@@ -2648,9 +2649,8 @@ function carregarPistolasLocal() {
   } catch(e) {}
 
   pistolasData.splice(0, pistolasData.length);
-prepararRefsPistolas();
+  prepararRefsPistolas();
 }
-
 
 
 async function sincronizarPistolasFirebase() {
@@ -2675,15 +2675,14 @@ async function sincronizarPistolasFirebase() {
           filtrarPistolasComFiltros();
         }
 
-        console.log("CK65 sincronizadas:", pistolasData.length);
+        console.log("Firebase CK65 sincronizada:", pistolasData.length);
 
       });
 
   } catch(e) {
-    console.error("Erro Firebase CK65:", e);
+    console.error("Erro Firebase:", e);
   }
 }
-
 
 
 function prepararRefsPortas() {
@@ -2714,7 +2713,7 @@ function carregarPortasLocal() {
       return;
     }
     portasData.splice(0, portasData.length, ...parsed);
-prepararRefsPortas();
+    prepararRefsPortas();
   } catch (e) {
     console.warn('Nao foi possivel carregar portas do localStorage.', e);
     prepararRefsPortas();
@@ -4102,7 +4101,7 @@ async function apagarPorta(ref) {
     }
     const idx = idxPorRef(portasData, ref);
     if (idx >= 0) portasData.splice(idx, 1);
-guardarPortasLocal();
+    guardarPortasLocal();
     filtrarPortasComEstado();
     mostrarMensagem("Porta apagada com sucesso.");
   } catch (e) {
@@ -4181,7 +4180,7 @@ async function apagarUser(ref) {
     }
     const idx = idxPorRef(usersData, ref);
     if (idx >= 0) usersData.splice(idx, 1);
-guardarUsersLocal();
+    guardarUsersLocal();
     filtrarUsersComFiltros();
     mostrarMensagem("User apagado com sucesso.");
   } catch (e) {
@@ -4390,66 +4389,77 @@ function fecharEditarPistola() {
 }
 
 async function guardarEdicaoPistola() {
-  if (pistolaEditRef === null || typeof pistolaEditRef === "undefined") return mostrarMensagem("Nenhuma pistola selecionada.", "erro");
+
+  if (pistolaEditRef === null || typeof pistolaEditRef === "undefined") {
+    return mostrarMensagem("Nenhuma pistola selecionada.", "erro");
+  }
+
   const isNovaPistola = pistolaEditRef === "__new__";
+
   const payload = {};
+
   ["num","nome","password","cn","sn","mac","operador","armazem","prontas"].forEach(f => {
     payload[f] = el("editP_" + f) ? el("editP_" + f).value : "";
   });
 
   try {
-    if (isNovaPistola) {
-      if (window.db) {
-        const docRef = await db.collection("pistolas").add(payload);
-        pistolasData.unshift({ idDoc: docRef.id, ...payload });
+
+    if (window.db) {
+
+      if (isNovaPistola) {
+
+        await db.collection("pistolas_ck65").add(payload);
+
       } else {
-        pistolasData.unshift({ _ref: `local-pistola-${Date.now()}`, ...payload });
+
+        const item = itemPorRef(pistolasData, pistolaEditRef);
+
+        if (!item) {
+          mostrarMensagem("Pistola não encontrada.", "erro");
+          return;
+        }
+
+        const firestoreId = item.idDoc || item.id;
+
+        await db.collection("pistolas_ck65")
+          .doc(firestoreId)
+          .update(payload);
       }
-    } else if (typeof pistolaEditRef === "string" && window.db) {
-      await db.collection("pistolas").doc(pistolaEditRef).update(payload);
-      const idx = idxPorRef(pistolasData, pistolaEditRef);
-      if (idx >= 0) pistolasData[idx] = { ...pistolasData[idx], ...payload };
-    } else {
-      const idx = idxPorRef(pistolasData, pistolaEditRef);
-      if (idx >= 0) pistolasData[idx] = { ...pistolasData[idx], ...payload };
     }
-    guardarPistolasLocal();
+
     fecharEditarPistola();
-    filtrarPistolasComFiltros();
-    mostrarMensagem(isNovaPistola ? "Pistola adicionada com sucesso." : "Pistola atualizada com sucesso.");
-  } catch (e) {
+
+    mostrarMensagem(
+      isNovaPistola
+        ? "Pistola criada com sucesso."
+        : "Pistola atualizada com sucesso."
+    );
+
+  } catch(e) {
     console.error(e);
-    mostrarMensagem("Erro ao atualizar a pistola.", "erro");
+    mostrarMensagem("Erro ao guardar pistola.", "erro");
   }
 }
 
-async 
-async function apagarPistola(ref) {
+async async function apagarPistola(ref) {
   if (!confirm("Queres apagar esta pistola?")) return;
 
   try {
 
-    const idx = idxPorRef(pistolasData, ref);
+    const item = itemPorRef(pistolasData, ref);
 
-    if (idx < 0) {
+    if (!item) {
       mostrarMensagem("Pistola não encontrada.", "erro");
       return;
     }
 
-    const item = pistolasData[idx];
+    const firestoreId = item.idDoc || item.id;
 
-    const firestoreId = item?.idDoc || item?.id;
-
-    if (firestoreId && window.db) {
+    if (window.db && firestoreId) {
       await db.collection("pistolas_ck65")
         .doc(firestoreId)
         .delete();
     }
-
-    pistolasData.splice(idx, 1);
-
-    guardarPistolasLocal();
-    filtrarPistolasComFiltros();
 
     mostrarMensagem("Pistola apagada com sucesso.");
 
@@ -4458,7 +4468,6 @@ async function apagarPistola(ref) {
     mostrarMensagem("Erro ao apagar a pistola.", "erro");
   }
 }
-
 
 
 function abrirAdicionarImpressora() {
