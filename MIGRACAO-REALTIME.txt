@@ -1,0 +1,20 @@
+MIGRAÇÃO REALTIME INICIADA
+
+Foi integrada a estrutura modular na app real.
+
+Criado:
+- js/firebase/config.js
+- js/pages/ck65.js
+- js/pages/portas.js
+- js/pages/users.js
+- js/ui/sidebar.js
+
+Objetivo:
+- separar Firebase do app.js
+- preparar modularização real
+- manter compatibilidade GitHub/Electron
+
+Próximo passo:
+- mover lógica CK65 do app.js para js/pages/ck65.js
+- remover CRUD localStorage
+- ativar Firestore realtime completo

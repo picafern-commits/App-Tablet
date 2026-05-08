@@ -1,0 +1,9 @@
+Restauro seguro para Tablet
+
+Esta pasta é um restauro limpo da tua base original.
+Objetivo: voltar a ter a app a funcionar e os dados a aparecer.
+
+Notas:
+- Tablet e iPhone usam a mesma base web.
+- PC-Web é uma base web restaurada para browser/integração web.
+- Não inclui build Electron nativa do PC porque essa base não foi fornecida neste passo.

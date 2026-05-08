@@ -44,12 +44,34 @@
 </aside>
 <main class="main">
 
+  <div class="topbar premium-topbar"><div class="topbar-main"><h1>Configurações</h1><p class="subtitle">Preferências da app</p></div><div class="topbar-status"><span class="status-pill">Sistema Online</span><span class="version-pill" id="appVersion">v1.0.0 Premium</span></div></div>
+
   <div class="page-hero">
     <div class="page-hero-title">Configurações</div>
-    <span class="status-pill">Sistema Online</span>
+    <p class="page-hero-subtitle">Preferências da app</p>
+    <div class="visual-badge-row">
+      <span class="visual-badge">✨ Modo Visual</span>
+      <span class="visual-badge">🏢 Estilo Empresa</span>
+      <span class="visual-badge">⚡ UI Premium</span>
+    </div>
   </div>
 
   <div class="panel"><label class="switch-row"><input type="checkbox" id="darkSwitch"> <span>Modo escuro</span></label></div>
+
+
+  <div class="panel">
+    <div class="section-header">
+      <div>
+        <h3>Stock mínimo por localização</h3>
+        <p class="section-subtitle">Define o mínimo recomendado para cada localização.</p>
+      </div>
+    </div>
+    <div id="stockMinimoConfigList" class="cards-list"></div>
+    <div class="card-actions" style="margin-top:14px;">
+      <button class="primary-btn" onclick="guardarStockMinimoConfig()">Guardar mínimos</button>
+      <button class="secondary-btn" onclick="resetStockMinimoConfig()">Repor base</button>
+    </div>
+  </div>
 
 </main>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>

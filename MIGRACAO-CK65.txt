@@ -1,0 +1,17 @@
+MIGRAÇÃO CK65 INICIADA
+
+O que foi feito:
+- criado js/firebase/pistolas.service.js
+- criada estrutura CK65 realtime
+- preparado CRUD Firestore
+- preparado onSnapshot()
+
+Ainda falta:
+- mover render real do app.js
+- remover pistolasData local
+- ligar modais reais
+- ligar filtros reais
+- remover localStorage CK65
+
+Objetivo:
+- CK65 Firebase-first real

@@ -1,92 +1,3 @@
-
-// ===== FIRESTORE REAL UPDATE/DELETE FIX =====
-
-async function apagarDocumentoFirestore(collectionName, item) {
-  try {
-
-    const id = item?.idDoc || item?.id || item?.docId;
-
-    if (!id) {
-      console.error("Documento sem ID Firestore:", item);
-      return false;
-    }
-
-    await db.collection(collectionName).doc(id).delete();
-
-    console.log("Apagado Firestore:", collectionName, id);
-
-    return true;
-
-  } catch(e) {
-    console.error("Erro apagar Firestore:", e);
-    return false;
-  }
-}
-
-async function atualizarDocumentoFirestore(collectionName, item) {
-  try {
-
-    const id = item?.idDoc || item?.id || item?.docId;
-
-    if (!id) {
-      console.error("Documento sem ID Firestore:", item);
-      return false;
-    }
-
-    const dados = {...item};
-
-    delete dados.idDoc;
-    delete dados.id;
-    delete dados.docId;
-
-    await db.collection(collectionName).doc(id).update(dados);
-
-    console.log("Atualizado Firestore:", collectionName, id);
-
-    return true;
-
-  } catch(e) {
-    console.error("Erro update Firestore:", e);
-    return false;
-  }
-}
-
-
-
-
-// ===== FIREBASE CRUD SYNC FIX =====
-
-async function apagarFirestore(collectionName, idDoc) {
-  try {
-    if (!idDoc) return false;
-
-    await db.collection(collectionName).doc(idDoc).delete();
-
-    console.log("Documento apagado:", collectionName, idDoc);
-
-    return true;
-  } catch (e) {
-    console.error("Erro ao apagar documento:", e);
-    return false;
-  }
-}
-
-async function atualizarFirestore(collectionName, idDoc, dados) {
-  try {
-    if (!idDoc) return false;
-
-    await db.collection(collectionName).doc(idDoc).update(dados);
-
-    console.log("Documento atualizado:", collectionName, idDoc);
-
-    return true;
-  } catch (e) {
-    console.error("Erro ao atualizar documento:", e);
-    return false;
-  }
-}
-
-
 const APP_VERSION = "1.5.0";
 const firebaseConfig = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
@@ -222,7 +133,56 @@ const manutencaoLocais = [
    DADOS PISTOLAS CK65
    (SEM RÁDIOS)
 ========================= */
-let pistolasData = [];
+let pistolasData = [
+  { num: 01, nome: "BRA01", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D81B7", mac: "0C:23:69:ED:7D:05", operador: "Márcio Vilela", armazem: "Vila Real", prontas: "2026-01-12", estado: "" },
+  { num: 02, nome: "BRA02", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D8148", mac: "0C:23:69:ED:92:68", operador: "Mário Roberto Gomes Monteiro", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 03, nome: "BRA03", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D81A8", mac: "0C:23:69:ED:88:CF", operador: "Joao Abel Pacheco", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 04, nome: "BRA04", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D8143", mac: "0C:23:69:ED:94:51", operador: "Carlos Avelino Lopes Silva", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 05, nome: "BRA05", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D813E", mac: "0C:23:69:ED:7C:F6", operador: "Papa Bei", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 06, nome: "BRA06", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D8105", mac: "0C:23:69:ED:88:A2", operador: "Aguinaldo Enoque de Oliveira Epalanga", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 07, nome: "BRA07", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D813D", mac: "0C:23:69:ED:89:B0", operador: "Luís Faria", armazem: "Vila Real", prontas: "2026-01-12", estado: "" },
+  { num: 08, nome: "BRA08", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D8152", mac: "0C:23:69:ED:87:9A", operador: "Paulo Sérgio Marques Pimenta", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 09, nome: "BRA09", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D810C", mac: "0C:23:69:ED:89:68", operador: "André Correia", armazem: "Vila Real", prontas: "2026-01-12", estado: "" },
+  { num: 10, nome: "BRA10", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D8103", mac: "0C:23:69:ED:88:60", operador: "Luis Filipe Bragas Silva", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 11, nome: "BRA11", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25154D80E9", mac: "0C:23:69:ED:CC:EE", operador: "Cristiana Da Silva Oliveira/fernandes", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 12, nome: "BRA12", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D813C", mac: "0C:23:69:ED:93:73", operador: "Diogo Gomes Da Mota", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 13, nome: "BRA13", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D819F", mac: "0C:23:69:ED:83:EF", operador: "André Filipe Brandão Batista", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 14, nome: "BRA14", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D8141", mac: "0C:23:69:ED:93:22", operador: "Rafael David Martins Cunha", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 15, nome: "BRA15", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D813F", mac: "0C:23:69:ED:89:A7", operador: "Leonel Alexandre Gomes Pereira", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 16, nome: "BRA16", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D8142", mac: "0C:23:69:ED:89:E6", operador: "Joao Pedro Fernandes Da Silva", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 17, nome: "BRA17", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D811F", mac: "0C:23:69:ED:7C:5A", operador: "Miguel Esteves", armazem: "Vila Real", prontas: "2026-01-12", estado: "" },
+  { num: 18, nome: "BRA18", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D80BF", mac: "0C:23:69:ED:8A:7C", operador: "Daniel Chukhleb", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 19, nome: "BRA19", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D81AE", mac: "0C:23:69:ED:7C:78", operador: "Fábio Alexandre Vaz Pereira", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 20, nome: "BRA20", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D814F", mac: "0C:23:69:ED:90:DF", operador: "Hugo Carvalho", armazem: "Vila Real", prontas: "2026-01-12", estado: "" },
+  { num: 21, nome: "BRA21", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D8151", mac: "0C:23:69:ED:92:8F", operador: "Rafael SIlva Araujo", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 22, nome: "BRA22", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D8199", mac: "0C:23:69:ED:83:1A", operador: "José Miguel Pereira Araujo", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 23, nome: "BRA23", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D8136", mac: "0C:23:69:ED:93:5B", operador: "Micael Da Costa Marques", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 24, nome: "BRA24", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D817A", mac: "0C:23:69:ED:84:2B", operador: "Rui Jorge Sousa Fernandes", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 25, nome: "BRA25", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D81A6", mac: "0C:23:69:ED:88:B4", operador: "Rui Filipe Gonçalves Bernardo", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 26, nome: "BRA26", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D8114", mac: "0C:23:69:ED:83:98", operador: "Leonardo Alexandre Silva Ferreira", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 27, nome: "BRA27", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D8161", mac: "0C:23:69:ED:93:EB", operador: "Pedro Esteves", armazem: "Vila Real", prontas: "2026-01-12", estado: "" },
+  { num: 28, nome: "BRA28", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D81AB", mac: "0C:23:69:ED:7C:D8", operador: "Rafael Gonçalves Silva", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 29, nome: "BRA29", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D80BD", mac: "0C:23:69:ED:88:9F", operador: "José Miguel Silva Lopes", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 30, nome: "BRA30", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D80C9", mac: "0C:23:69:ED:8A:79", operador: "Diogo Vieira Costa", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 31, nome: "BRA31", password: "123456", cn: "CK65-L0N-BSC210E", sn: "23138D820C", mac: "0C:23:69:A2:FB:F2", operador: "Dmitrii Diuldin", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 32, nome: "BRA32", password: "123456", cn: "CK65-L0N-BSC210E", sn: "23139D8288", mac: "0C:23:69:A3:05:40", operador: "Francisco Pereira Silva", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 33, nome: "BRA33", password: "123456", cn: "CK65-L0N-BSC210E", sn: "23059D8073", mac: "0C:23:69:A2:4B:B2", operador: "Tiago Filipe Ferreira De Melo", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 34, nome: "BRA34", password: "123456", cn: "CK65-L0N-BSC210E", sn: "24075D802B", mac: "C4:EF:DA:06:1A:34", operador: "Fábio Filipe Macedo Ferreira Da Silva", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 35, nome: "BRA35", password: "123456", cn: "CK65-L0N-BSC210E", sn: "24074D8336", mac: "C4:EF:DA:05:EC:F2", operador: "José Ferreira Da Silva", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 36, nome: "BRA36", password: "123456", cn: "CK65-L0N-BSC210E", sn: "23130D8005", mac: "0C:23:69:A3:1F:3E", operador: "Carlos Miguel Abreu Gomes", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 37, nome: "BRA37", password: "123456", cn: "CK65-L0N-BSC210E", sn: "24074D8320", mac: "C4:EF:DA:05:E6:AD", operador: "Jorge Miguel Ribeiro Rodrigues", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 38, nome: "BRA38", password: "123456", cn: "CK65-L0N-BSC210E", sn: "24074D8305", mac: "C4:EF:DA:05:B9:32", operador: "José Miguel Castro Gomes", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 39, nome: "BRA39", password: "123456", cn: "CK65-L0N-BSC210E", sn: "24074D8311", mac: "C4:EF:DA:05:9F:97", operador: "Andre Nuno Gomes Da Costa", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 40, nome: "BRA40", password: "123456", cn: "CK65-L0N-BSC210E", sn: "24075D8027", mac: "C4:EF:DA:06:16:80", operador: "Henrique Filipe Gomes Ferreira", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 41, nome: "BRA41", password: "123456", cn: "CK65-L0N-BSC210E", sn: "23057D80E0", mac: "0C:23:69:A2:3A:BD", operador: "Pedro José Peixoto Machado", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 42, nome: "BRA42", password: "123456", cn: "CK65-L0N-BSC210E", sn: "24074D831E", mac: "C4:EF:DA:06:18:C3", operador: "Marcelino Rafael Domingues Fernandes", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 43, nome: "BRA49", password: "123456", cn: "CK65-L0N-BSC210E", sn: "24075D8068", mac: "C4:EF:DA:06:15:F9", operador: "Reserva", armazem: "Braga", prontas: "2026-02-24", estado: "" },
+  { num: 44, nome: "BRA44", password: "123456", cn: "CK65-L0N-BSC210E", sn: "24075D8092", mac: "C4:EF:DA:06:18:FF", operador: "Gonçalo Santos", armazem: "Braga", prontas: "2026-01-12", estado: "" },
+  { num: 45, nome: "BRA45", password: "123456", cn: "CK65-L0N-BSC210E", sn: "24074D834D", mac: "C4:EF:DA:05:EF:BC", operador: "Joao Ferreira", armazem: "Braga", prontas: "2026-02-24", estado: "" },
+  { num: 46, nome: "BRA46", password: "123456", cn: "CK65-L0N-BSC210E", sn: "24075D8082", mac: "C4:EF:DA:06:1A:5A", operador: "Pedro Fernandes", armazem: "Braga", prontas: "2026-02-24", estado: "" },
+  { num: 47, nome: "BRA47", password: "123456", cn: "CK65-L0N-BSC210E", sn: "24074D83A2", mac: "C4:EF:DA:06:18:A7", operador: "Carlos Pinto", armazem: "Braga", prontas: "2026-02-24", estado: "" },
+  { num: 48, nome: "BRA48", password: "123456", cn: "CK65-L0N-BSC210E", sn: "23130D80C6", mac: "0C:23:69:A3:04:1A", operador: "Reserva", armazem: "Braga", prontas: "2026-02-24", estado: "" }
+];
 
 /* =========================
    DADOS PORTAS DE REDE
@@ -1260,14 +1220,12 @@ function sincronizarUsersFirebase() {
   db.collection("users").onSnapshot((snapshot) => {
 
     usersData.splice(0, usersData.length);
-      if (item && item.idDoc) apagarFirestore("users", item.idDoc);
 
     snapshot.forEach((doc) => {
 
       usersData.push({
         idDoc: doc.id,
-        idDoc: doc.id,
-            ...doc.data()
+        ...doc.data()
       });
 
     });
@@ -2641,74 +2599,24 @@ function guardarPistolasLocal() {
 }
 
 function carregarPistolasLocal() {
-  // DESATIVADO:
-  // O Electron estava a carregar dados antigos/mock do localStorage
-  // e a substituir os dados reais da Firebase.
-  // Agora as pistolas carregam apenas da Firebase.
   try {
-    localStorage.removeItem(PISTOLAS_STORAGE_KEY);
-  } catch(e) {}
-
-  pistolasData.splice(0, pistolasData.length);
-      if (item && item.idDoc) apagarFirestore("pistolas_ck65", item.idDoc);
-  prepararRefsPistolas();
-}
-
-
-async function sincronizarPistolasFirebase() {
-  try {
-
-    const collections = [
-      "pistolas_ck65",
-      "pistolas",
-      "ck65"
-    ];
-
-    let carregado = false;
-
-    collections.forEach((collectionName) => {
-
-      db.collection(collectionName).onSnapshot((snapshot) => {
-
-        if (snapshot.empty && carregado) return;
-
-        const lista = [];
-
-        snapshot.forEach((doc) => {
-          lista.push({
-            idDoc: doc.id,
-            idDoc: doc.id,
-            ...doc.data()
-          });
-        });
-
-        if (lista.length > 0) {
-          carregado = true;
-
-          pistolasData.splice(0, pistolasData.length, ...lista);
-      if (item && item.idDoc) apagarFirestore("pistolas_ck65", item.idDoc);
-
-          prepararRefsPistolas();
-
-          if (typeof renderPistolas === "function") {
-            renderPistolas();
-          }
-
-          if (typeof atualizarContadoresPistolas === "function") {
-            atualizarContadoresPistolas();
-          }
-
-          console.log("CK65 sincronizadas da Firebase:", collectionName, lista.length);
-        }
-      });
-
-    });
-
+    const raw = localStorage.getItem(PISTOLAS_STORAGE_KEY);
+    if (!raw) {
+      prepararRefsPistolas();
+      return;
+    }
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || !parsed.length) {
+      prepararRefsPistolas();
+      return;
+    }
+    pistolasData.splice(0, pistolasData.length, ...parsed);
+    prepararRefsPistolas();
   } catch (e) {
-    console.error("Erro ao sincronizar pistolas:", e);
+    console.warn('Nao foi possivel carregar pistolas do localStorage.', e);
+    prepararRefsPistolas();
   }
 }
-
 
 function prepararRefsPortas() {
   portasData.forEach((p, i) => {
@@ -2738,7 +2646,6 @@ function carregarPortasLocal() {
       return;
     }
     portasData.splice(0, portasData.length, ...parsed);
-      if (item && item.idDoc) apagarFirestore("portas_rede", item.idDoc);
     prepararRefsPortas();
   } catch (e) {
     console.warn('Nao foi possivel carregar portas do localStorage.', e);
@@ -3864,8 +3771,7 @@ async function carregarPortasComFallback() {
         return;
       }
 
-      portasData = snap.docs.map(doc => ({ idDoc: doc.id, idDoc: doc.id,
-            ...doc.data() }));
+      portasData = snap.docs.map(doc => ({ idDoc: doc.id, ...doc.data() }));
       prepararRefsPortas();
       guardarPortasLocal();
       renderPortas(portasData);
@@ -4127,7 +4033,6 @@ async function apagarPorta(ref) {
     }
     const idx = idxPorRef(portasData, ref);
     if (idx >= 0) portasData.splice(idx, 1);
-      if (item && item.idDoc) apagarFirestore("portas_rede", item.idDoc);
     guardarPortasLocal();
     filtrarPortasComEstado();
     mostrarMensagem("Porta apagada com sucesso.");
@@ -4207,7 +4112,6 @@ async function apagarUser(ref) {
     }
     const idx = idxPorRef(usersData, ref);
     if (idx >= 0) usersData.splice(idx, 1);
-      if (item && item.idDoc) apagarFirestore("users", item.idDoc);
     guardarUsersLocal();
     filtrarUsersComFiltros();
     mostrarMensagem("User apagado com sucesso.");
@@ -4458,7 +4362,6 @@ async function apagarPistola(ref) {
     }
     const idx = idxPorRef(pistolasData, ref);
     if (idx >= 0) pistolasData.splice(idx, 1);
-      if (item && item.idDoc) apagarFirestore("pistolas_ck65", item.idDoc);
     guardarPistolasLocal();
     filtrarPistolasComFiltros();
     mostrarMensagem("Pistola apagada com sucesso.");
@@ -5298,48 +5201,3 @@ window.addEventListener("DOMContentLoaded", () => {
   bindEtiquetasWordRealtime();
 });
 
-
-
-sincronizarPistolasFirebase();
-
-
-function mostrarEstadoVazioPistolas(lista) {
-  if (!lista) return;
-
-  lista.innerHTML = `
-    <div class="empty-state" style="
-      width:100%;
-      padding:24px;
-      text-align:center;
-      opacity:.7;
-    ">
-      Sem pistolas registadas
-    </div>
-  `;
-}
-
-
-// ===== AUTO FIREBASE UPDATE =====
-
-async function sincronizarEdicaoFirestore(tipo, item) {
-
-  if (!item || !item.idDoc) return;
-
-  try {
-
-    if (tipo === "ck65") {
-      await atualizarFirestore("pistolas_ck65", item.idDoc, item);
-    }
-
-    if (tipo === "portas") {
-      await atualizarFirestore("portas_rede", item.idDoc, item);
-    }
-
-    if (tipo === "users") {
-      await atualizarFirestore("users", item.idDoc, item);
-    }
-
-  } catch(e) {
-    console.error("Erro sync edição:", e);
-  }
-}
