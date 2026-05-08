@@ -185,6 +185,49 @@
   }
 
 }
+</style><style>
+
+/* MOBILE SIDEBAR BUTTON */
+
+.mobile-sidebar-btn{
+  display:none;
+}
+
+@media (max-width:768px){
+
+  .mobile-sidebar-btn{
+    display:flex !important;
+    position:fixed;
+    top:16px;
+    left:16px;
+    width:48px;
+    height:48px;
+    border:none;
+    border-radius:14px;
+    background:#2563eb;
+    color:white;
+    font-size:26px;
+    z-index:10002;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 8px 25px rgba(0,0,0,.35);
+  }
+
+  .sidebar{
+    position:fixed !important;
+    left:-260px !important;
+    top:0;
+    width:240px !important;
+    height:100vh !important;
+    transition:left .3s ease !important;
+    z-index:10001 !important;
+  }
+
+  .sidebar.mobile-open{
+    left:0 !important;
+  }
+
+}
 </style></head>
 <body>
 <aside class="sidebar">
@@ -289,5 +332,38 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 <script src="js/firebase/config.js"></script>
 <script src="app.js"></script>
+
+
+<script>
+
+document.addEventListener('DOMContentLoaded', ()=>{
+
+  if(window.innerWidth <= 768){
+
+    const sidebar = document.querySelector('.sidebar');
+
+    if(!sidebar) return;
+
+    const btn = document.createElement('button');
+
+    btn.className = 'mobile-sidebar-btn';
+
+    btn.innerHTML = '☰';
+
+    document.body.appendChild(btn);
+
+    btn.addEventListener('click', ()=>{
+
+      sidebar.classList.toggle('mobile-open');
+
+    });
+
+  }
+
+});
+
+</script>
+
+
 </body>
 </html>
