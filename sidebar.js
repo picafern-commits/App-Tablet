@@ -34,7 +34,11 @@
 
     sidebar.innerHTML = `
       <div class="brand premium-brand">
-        <div class="brand-badge">BR</div>
+        
+<div class="brand-badge logo-badge">
+  <img src="assets/icon-192.png" alt="Logo App Braga" class="sidebar-logo">
+</div>
+
         <div>
           <h2>App Braga</h2>
           <p>Centro Operacional</p>
