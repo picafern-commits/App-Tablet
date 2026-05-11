@@ -1,7 +1,7 @@
 import { db } from './config.js';
 
-export function ouvirUsers(callback){
-  return db.collection('users').onSnapshot((snapshot)=>{
+export function ouvirPortas(callback){
+  return db.collection('portas').onSnapshot((snapshot)=>{
     const lista = [];
     snapshot.forEach((doc)=>{
       lista.push({
