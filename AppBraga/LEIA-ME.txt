@@ -1,0 +1,11 @@
+Subir todos os ficheiros para o GitHub.
+
+Depois no Electron:
+npm install
+npm start
+
+Fixes:
+- leitura real Kyocera
+- IP clicável
+- refresh automático
+- CK65 corrigido

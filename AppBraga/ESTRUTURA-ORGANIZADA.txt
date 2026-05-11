@@ -1,0 +1,9 @@
+Estrutura organizada:
+
+- js/pages -> páginas da APP
+- firebase -> ligação Firebase
+- electron -> desktop Electron
+- assets -> imagens/icons
+- services -> serviços auxiliares
+
+Os ficheiros duplicados CK65/Users/Portas foram movidos para js/pages.
