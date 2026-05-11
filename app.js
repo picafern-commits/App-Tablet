@@ -1318,8 +1318,8 @@ function preencherLocaisManutencao() {
     selectIP.innerHTML = `
       <option value="">Selecionar IP</option>
       ${impressorasData.map(item => `
-        <option value="<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>">
-          <a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a> - ${item.localizacao} (${item.armazem})
+        <option value="<a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a>">
+          <a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a> - ${item.localizacao} (${item.armazem})
         </option>
       `).join("")}
     `;
@@ -1674,7 +1674,7 @@ function renderDashboardCards(items) {
         <div class="stock-id">${item.modelo}</div>
         <div class="meta-line">Série: <span class="meta-value">${item.serie}</span></div>
         <div class="meta-line">Local: <span class="meta-value">${item.localizacao} (${item.armazem})</span></div>
-        <div class="meta-line">IP: <span class="meta-value"><a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></span></div>
+        <div class="meta-line">IP: <span class="meta-value"><a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a></span></div>
         <div class="printer-toners-grid" style="margin-top:10px;">${supplyHtml}${residueHtml}</div>
       </div>
     `;
@@ -1962,7 +1962,7 @@ function renderManutencoes(items) {
       <div class="meta-line">Técnico: <span class="meta-value">${item.tecnico}</span></div>
       <div class="meta-line">Armazém: <span class="meta-value">${item.armazem}</span></div>
       <div class="meta-line">Localização: <span class="meta-value">${item.localizacao}</span></div>
-      <div class="meta-line">IP: <span class="meta-value"><a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" rel="noopener noreferrer"><a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a></span></div>
+      <div class="meta-line">IP: <span class="meta-value"><a href="http://<a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a>" target="_blank" rel="noopener noreferrer"><a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a></a></span></div>
       <div class="meta-line">Pedido: <span class="meta-value">${item.dataPedido}</span></div>
       <div class="meta-line">Resolução: <span class="meta-value">${item.dataResolucao || "Sem resolução"}</span></div>
       <div class="meta-line">Motivo: <span class="meta-value">${item.motivo}</span></div>
@@ -2398,15 +2398,15 @@ function renderImpressoras(lista = impressorasData) {
         <td>${item.serie}</td>
         <td>${item.armazem}</td>
         <td>${item.localizacao}</td>
-        <td><a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" rel="noopener noreferrer"><a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a></td>
+        <td><a href="http://<a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a>" target="_blank" rel="noopener noreferrer"><a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a></a></td>
         <td>${badgeEstado(estado)}</td>
         <td>
           <div id="${tonerId}">${gerarHTMLBarraToner(null)}</div>
           <div class="table-actions" style="margin-top:8px;">
-            <button class="action-btn ip" onclick="abrirIP('<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>')">Abrir IP</button>
+            <button class="action-btn ip" onclick="abrirIP('<a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a>')">Abrir IP</button>
             <button class="action-btn manut" onclick='abrirManutencaoDireta(${JSON.stringify(item)})'>Manutenção</button>
             <button class="action-btn" onclick='abrirHistoricoImpressora(${JSON.stringify(item)})'>Histórico</button>
-            <button class="action-btn" onclick="window.testarTonerImpressora('<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>', '${tonerId}')">Testar toner</button>
+            <button class="action-btn" onclick="window.testarTonerImpressora('<a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a>', '${tonerId}')">Testar toner</button>
           </div>
         </td>
       </tr>
@@ -3073,7 +3073,7 @@ renderImpressoras = function(lista = impressorasData) {
     const estado = obterEstadoImpressora(item.ip);
     const tonerId = `toner-${item.ip.replace(/\./g, "-")}`;
     const info = printerFirebaseState[item.ip] ? mapFirebasePrinterInfo(printerFirebaseState[item.ip]) : (tonerInfoState[item.ip] || null);
-    const ipHtml = webMode ? item.ip : `<a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" rel="noopener noreferrer"><a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a>`;
+    const ipHtml = webMode ? item.ip : `<a href="http://<a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a>" target="_blank" rel="noopener noreferrer"><a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a></a>`;
 
     return `
       <tr>
@@ -3086,9 +3086,9 @@ renderImpressoras = function(lista = impressorasData) {
         <td>
           <div id="${tonerId}">${gerarHTMLToners(info)}</div>
           <div class="table-actions" style="margin-top:8px;">
-            ${webMode ? "" : `<button class="action-btn ip" onclick="abrirIP('<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>')">Abrir IP</button>`}
+            ${webMode ? "" : `<button class="action-btn ip" onclick="abrirIP('<a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a>')">Abrir IP</button>`}
             <button class="action-btn manut" onclick='abrirManutencaoDireta(${JSON.stringify(item)})'>Manutenção</button>
-            ${webMode ? "" : `<button class="action-btn" onclick="window.testarTonerImpressora('<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>', '${tonerId}')">Testar toner</button>`}
+            ${webMode ? "" : `<button class="action-btn" onclick="window.testarTonerImpressora('<a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a>', '${tonerId}')">Testar toner</button>`}
           </div>
         </td>
       </tr>
@@ -3188,7 +3188,7 @@ function renderTonerDiagnostics() {
   logEl.innerHTML = tonerDiagnosticsState.log.map(item => `
     <div class="diagnostics-log-item">
       <span class="diag-time">${item.time}</span>
-      <strong><a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></strong> · ${item.message}
+      <strong><a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a></strong> · ${item.message}
     </div>
   `).join("");
 }
@@ -5363,3 +5363,37 @@ window.addEventListener("load", () => {
   }, 5000);
 
 });
+
+
+// ===== TONER KYOCERA PRETO =====
+
+async function atualizarTonerKyocera(ip, index){
+
+  try{
+
+    const toner =
+      await window.electronAPI.obterToner(ip);
+
+    if(!toner) return;
+
+    if(window.impressoras?.[index]){
+
+      window.impressoras[index].black =
+        toner.black;
+
+      window.impressoras[index].toner =
+        toner.black;
+
+      console.log(
+        'TONER PRETO:',
+        ip,
+        toner.black + '%'
+      );
+
+    }
+
+  }catch(e){
+    console.log(e);
+  }
+
+}
