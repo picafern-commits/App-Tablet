@@ -1,0 +1,89 @@
+function extrairPercentagemTonerDoHTML(html) {
+  const match = html.match(/(\d{1,3})%/);
+  return match ? parseInt(match[1]) : null;
+}
+
+async function testarToner(ip, id) {
+  const div = el(id);
+  div.innerHTML = "A testar...";
+  try {
+    const res = await window.electronAPI.getPrinterHTML(ip);
+    if (!res || !res.body) {
+      div.innerHTML = "N/D";
+      return;
+    }
+    const percent = extrairPercentagemTonerDoHTML(res.body);
+    if (percent == null) {
+      div.innerHTML = "N/D";
+    } else {
+      div.innerHTML = percent + "%";
+    }
+  } catch {
+    div.innerHTML = "Erro";
+  }
+}
+
+-----
+
+function extrairPercentagemTonerDoHTML(html) {
+  if (!html) return null;
+
+  const texto = String(html);
+
+  const padroes = [
+    /black[^0-9]{0,40}(\d{1,3})\s?%/i,
+    /preto[^0-9]{0,40}(\d{1,3})\s?%/i,
+    /toner[^0-9]{0,40}(\d{1,3})\s?%/i,
+    /(\d{1,3})\s?%/i
+  ];
+
+  for (const padrao of padroes) {
+    const match = texto.match(padrao);
+    if (match) {
+      const valor = parseInt(match[1], 10);
+      if (!isNaN(valor)) return valor;
+    }
+  }
+
+  return null;
+}
+
+function gerarHTMLBarraToner(percentagem) {
+  if (percentagem == null) {
+    return `<div>N/D</div>`;
+  }
+
+  return `<div>${percentagem}%</div>`;
+}
+
+async function testarTonerImpressora(ip, outputId) {
+  const output = el(outputId);
+  if (!output) return;
+
+  output.innerHTML = "A testar...";
+
+  try {
+    const res = await window.electronAPI.getPrinterHTML(ip);
+
+    if (!res || !res.body) {
+      output.innerHTML = "N/D";
+      return;
+    }
+
+    const percent = extrairPercentagemTonerDoHTML(res.body);
+    output.innerHTML = gerarHTMLBarraToner(percent);
+
+  } catch (err) {
+    console.error(err);
+    output.innerHTML = "Erro";
+  }
+}
+
+
+----
+
+const alvoId = toner-${item.ip.replace(/\./g, "-")};
+
+-----
+
+const alvoId = `toner-${item.ip.replace(/\./g, "-")}`;
