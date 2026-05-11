@@ -1,5 +1,5 @@
 
-/* KYOCERA HTML TONER AUTO REFRESH */
+/* KYOCERA FINAL TONER FIX */
 
 async function atualizarTonerViaHTML(impressora){
 
@@ -12,12 +12,23 @@ async function atualizarTonerViaHTML(impressora){
 
     if(r && r.success){
 
-      impressora.toner = r.toner;
+      impressora.toner = Number(r.toner);
+
+      if(window.renderImpressoras){
+        window.renderImpressoras();
+      }
+
+      try{
+        localStorage.setItem(
+          'impressoras',
+          JSON.stringify(window.impressoras || [])
+        );
+      }catch(e){}
 
       console.log(
-        'Toner atualizado:',
+        'TONER REAL:',
         impressora.ip,
-        r.toner + '%'
+        impressora.toner + '%'
       );
 
     }
