@@ -2038,21 +2038,42 @@ function carregarEdicaoToner() {
   }
 }
 
-function extrairPercentagemTonerDoHTML(html) {
-  if (!html) return null;
+function extrairPercentagemTonerDoHTML(html){
 
-  const texto = String(html);
-  const linhaPreto = texto.match(/Preto[\s\S]{0,160}?(\d{1,3})\s*%/i) || texto.match(/Black[\s\S]{0,160}?(\d{1,3})\s*%/i);
-  if (linhaPreto) {
-    const valor = parseInt(linhaPreto[1], 10);
-    if (!Number.isNaN(valor) && valor >= 0 && valor <= 100) return valor;
+  if(!html) return null;
+
+  const regexes = [
+
+    /Black[\s\S]{0,120}?(\d{1,3})%/i,
+    /Preto[\s\S]{0,120}?(\d{1,3})%/i,
+    /Toner Preto[\s\S]{0,120}?(\d{1,3})%/i
+
+  ];
+
+  for(const rgx of regexes){
+
+    const match = html.match(rgx);
+
+    if(match){
+
+      const valor = parseInt(match[1]);
+
+      if(
+        !Number.isNaN(valor) &&
+        valor >= 0 &&
+        valor <= 100
+      ){
+
+        console.log('TONER PRETO:', valor);
+
+        return valor;
+
+      }
+
+    }
+
   }
 
-  const match = texto.match(/(\d{1,3})\s?%/i);
-  if (match) {
-    const valor = parseInt(match[1], 10);
-    if (!Number.isNaN(valor) && valor >= 0 && valor <= 100) return valor;
-  }
   return null;
 }
 
