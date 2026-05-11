@@ -279,8 +279,8 @@
   </div>
 
 
-</main>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+
+
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 <script src="js/firebase/config.js"></script>
 <script src="app.js"></script>
@@ -352,6 +352,72 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
 });
 </script>
+
+
+<script>
+
+/* BACKUP DASHBOARD STATUS */
+
+async function verificarStatusBackupFirebase(){
+
+  try{
+
+    if(!window.db) return;
+
+    const ref = await db.collection("app_backup_status")
+      .doc("latest")
+      .get();
+
+    if(!ref.exists) return;
+
+    const data = ref.data();
+
+    const statusEl = document.getElementById("backup-status");
+    const dateEl = document.getElementById("backup-last-date");
+
+    if(statusEl){
+
+      statusEl.innerText =
+        data.status === "success"
+          ? "Ativo"
+          : "Erro";
+
+      statusEl.style.color =
+        data.status === "success"
+          ? "#22c55e"
+          : "#ef4444";
+
+    }
+
+    if(dateEl){
+
+      const d = new Date(data.lastBackupMs || Date.now());
+
+      dateEl.innerText =
+        d.toLocaleDateString() +
+        " " +
+        d.toLocaleTimeString();
+
+    }
+
+  }catch(e){
+    console.error(e);
+  }
+
+}
+
+window.addEventListener("load", ()=>{
+
+  setTimeout(()=>{
+    verificarStatusBackupFirebase();
+  },3000);
+
+});
+
+</script>
+
+
+
 
 </body>
 </html>

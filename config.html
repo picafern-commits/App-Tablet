@@ -268,8 +268,8 @@
 
   <div class="panel"><label class="switch-row"><input type="checkbox" id="darkSwitch"> <span>Modo escuro</span></label></div>
 
-</main>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+
+
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 <script src="js/firebase/config.js"></script>
 <script src="app.js"></script>
@@ -338,6 +338,227 @@ document.addEventListener('DOMContentLoaded', ()=>{
     });
 
   });
+
+});
+</script>
+
+
+<script>
+
+/* BACKUP DASHBOARD STATUS */
+
+async function verificarStatusBackupFirebase(){
+
+  try{
+
+    if(!window.db) return;
+
+    const ref = await db.collection("app_backup_status")
+      .doc("latest")
+      .get();
+
+    if(!ref.exists) return;
+
+    const data = ref.data();
+
+    const statusEl = document.getElementById("backup-status");
+    const dateEl = document.getElementById("backup-last-date");
+
+    if(statusEl){
+
+      statusEl.innerText =
+        data.status === "success"
+          ? "Ativo"
+          : "Erro";
+
+      statusEl.style.color =
+        data.status === "success"
+          ? "#22c55e"
+          : "#ef4444";
+
+    }
+
+    if(dateEl){
+
+      const d = new Date(data.lastBackupMs || Date.now());
+
+      dateEl.innerText =
+        d.toLocaleDateString() +
+        " " +
+        d.toLocaleTimeString();
+
+    }
+
+  }catch(e){
+    console.error(e);
+  }
+
+}
+
+window.addEventListener("load", ()=>{
+
+  setTimeout(()=>{
+    verificarStatusBackupFirebase();
+  },3000);
+
+});
+
+</script>
+
+
+
+
+
+<!-- BACKUP DASHBOARD -->
+<div id="backup-dashboard" style="
+margin-top:40px;
+padding:24px;
+border-radius:24px;
+background:linear-gradient(135deg,#1e1b4b,#0f172a);
+border:1px solid rgba(255,255,255,.08);
+box-shadow:0 10px 30px rgba(0,0,0,.35);
+color:white;
+">
+
+<h2 style="font-size:34px;margin-bottom:10px;">💾 Backup Firebase</h2>
+
+<p style="opacity:.8;margin-bottom:20px;">
+Estado real do sistema de backups automáticos.
+</p>
+
+<div style="
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:16px;
+">
+
+<div style="padding:18px;border-radius:18px;background:#111827;">
+<div style="opacity:.7;">Último Backup</div>
+<div id="backup-last-date" style="font-size:24px;font-weight:bold;">--</div>
+</div>
+
+<div style="padding:18px;border-radius:18px;background:#111827;">
+<div style="opacity:.7;">Estado</div>
+<div id="backup-status" style="font-size:24px;font-weight:bold;color:#22c55e;">Ativo</div>
+</div>
+
+<div style="padding:18px;border-radius:18px;background:#111827;">
+<div style="opacity:.7;">Próximo Backup</div>
+<div id="backup-countdown" style="font-size:24px;font-weight:bold;">--</div>
+</div>
+
+<div style="padding:18px;border-radius:18px;background:#111827;">
+<div style="opacity:.7;">Local</div>
+<div style="font-size:24px;font-weight:bold;">Firebase</div>
+</div>
+
+</div>
+
+<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:24px;">
+
+<button onclick="executarBackupFirebaseAppBraga(true)" style="
+padding:14px 22px;
+border:none;
+border-radius:14px;
+background:#2563eb;
+color:white;
+font-weight:bold;
+cursor:pointer;
+">
+Criar Backup Agora
+</button>
+
+<button onclick="verificarStatusBackupFirebase()" style="
+padding:14px 22px;
+border:none;
+border-radius:14px;
+background:#16a34a;
+color:white;
+font-weight:bold;
+cursor:pointer;
+">
+Atualizar Estado
+</button>
+
+</div>
+
+</div>
+
+<script>
+async function verificarStatusBackupFirebase(){
+
+  try{
+
+    if(!window.db) return;
+
+    const ref = await db.collection("app_backup_status")
+      .doc("latest")
+      .get();
+
+    if(ref.exists){
+
+      const data = ref.data();
+
+      const statusEl = document.getElementById("backup-status");
+      const dateEl = document.getElementById("backup-last-date");
+
+      if(statusEl){
+        statusEl.innerText = data.status === "success" ? "Ativo" : "Erro";
+        statusEl.style.color = data.status === "success" ? "#22c55e" : "#ef4444";
+      }
+
+      if(dateEl && data.lastBackupMs){
+        const d = new Date(data.lastBackupMs);
+        dateEl.innerText = d.toLocaleDateString() + " " + d.toLocaleTimeString();
+      }
+
+    }
+
+  }catch(e){
+    console.error(e);
+  }
+
+}
+
+function atualizarCountdownBackup(){
+
+  const agora = new Date();
+
+  let proximo = new Date();
+
+  proximo.setHours(18,30,0,0);
+
+  const diasAteSexta = (5 - agora.getDay() + 7) % 7;
+
+  proximo.setDate(agora.getDate() + diasAteSexta);
+
+  if(agora > proximo){
+    proximo.setDate(proximo.getDate() + 7);
+  }
+
+  const diff = proximo - agora;
+
+  const dias = Math.floor(diff / (1000*60*60*24));
+  const horas = Math.floor((diff / (1000*60*60)) % 24);
+  const mins = Math.floor((diff / (1000*60)) % 60);
+
+  const el = document.getElementById("backup-countdown");
+
+  if(el){
+    el.innerText = `${dias}d ${horas}h ${mins}m`;
+  }
+
+}
+
+window.addEventListener("load", ()=>{
+
+  setTimeout(()=>{
+    verificarStatusBackupFirebase();
+    atualizarCountdownBackup();
+
+    setInterval(atualizarCountdownBackup, 60000);
+
+  },2000);
 
 });
 </script>

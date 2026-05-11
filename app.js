@@ -5201,3 +5201,136 @@ window.addEventListener("DOMContentLoaded", () => {
   if (el("listaEtiquetasWord")) renderEtiquetasWordCards();
   bindEtiquetasWordRealtime();
 });
+
+
+
+/* =========================
+   FIREBASE AUTO BACKUP SYSTEM
+========================= */
+
+const APP_BACKUP_COLLECTION = "app_backups";
+const APP_BACKUP_STATUS_COLLECTION = "app_backup_status";
+
+async function obterCollectionBackup(nome) {
+  try {
+    if (!window.db) return [];
+    const snap = await db.collection(nome).get();
+    return snap.docs.map(doc => ({
+      idDoc: doc.id,
+      ...doc.data()
+    }));
+  } catch (e) {
+    console.error("Erro backup collection:", nome, e);
+    return [];
+  }
+}
+
+function obterBackupKeySemana() {
+  const agora = new Date();
+  return `weekly-${agora.getFullYear()}-${String(agora.getMonth()+1).padStart(2,'0')}-${String(agora.getDate()).padStart(2,'0')}`;
+}
+
+async function executarBackupFirebaseAppBraga(force = false) {
+  try {
+
+    if (!window.db) return false;
+
+    const agora = new Date();
+
+    const deveExecutar =
+      agora.getDay() === 5 &&
+      agora.getHours() === 18 &&
+      agora.getMinutes() >= 30;
+
+    if (!force && !deveExecutar) return false;
+
+    const backupId = obterBackupKeySemana();
+
+    const backupRef = db.collection(APP_BACKUP_COLLECTION).doc(backupId);
+
+    const existe = await backupRef.get();
+
+    if (existe.exists && !force) {
+      console.log("Backup semanal já existe.");
+      return false;
+    }
+
+    const snapshot = {
+      stock: await obterCollectionBackup("stock"),
+      historico: await obterCollectionBackup("historico"),
+      portas: await obterCollectionBackup("portas"),
+      pistolas: await obterCollectionBackup("pistolas"),
+      users: await obterCollectionBackup("users"),
+      etiquetasWord: await obterCollectionBackup("etiquetasWord"),
+      pcs: await obterCollectionBackup("pcs"),
+      manutencoes: await obterCollectionBackup("manutencoes")
+    };
+
+    const totalItens = Object.values(snapshot)
+      .reduce((a,b)=>a + (Array.isArray(b) ? b.length : 0),0);
+
+    await backupRef.set({
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdAtMs: Date.now(),
+      totalItens,
+      appVersion: typeof APP_VERSION !== "undefined" ? APP_VERSION : "unknown",
+      device: navigator.userAgent || "unknown",
+      snapshot
+    });
+
+    await db.collection(APP_BACKUP_STATUS_COLLECTION).doc("latest").set({
+      status: "success",
+      lastBackupMs: Date.now(),
+      totalItens,
+      backupId
+    });
+
+    console.log("Backup Firebase concluído.");
+    return true;
+
+  } catch (e) {
+
+    console.error("Erro backup Firebase:", e);
+
+    try {
+      await db.collection(APP_BACKUP_STATUS_COLLECTION).doc("latest").set({
+        status: "error",
+        error: String(e),
+        updatedAtMs: Date.now()
+      }, { merge:true });
+    } catch(_) {}
+
+    return false;
+  }
+}
+
+function iniciarAgendamentoBackupFirebase() {
+
+  executarBackupFirebaseAppBraga();
+
+  setInterval(() => {
+
+    try {
+      executarBackupFirebaseAppBraga();
+    } catch(e) {
+      console.error(e);
+    }
+
+  }, 60000);
+}
+
+window.executarBackupFirebaseAppBraga = executarBackupFirebaseAppBraga;
+
+window.addEventListener("load", () => {
+
+  setTimeout(() => {
+
+    try {
+      iniciarAgendamentoBackupFirebase();
+    } catch(e) {
+      console.error(e);
+    }
+
+  }, 5000);
+
+});
