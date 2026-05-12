@@ -1942,3 +1942,47 @@ button, a, .nav-item, .sidebar a { touch-action: manipulation; }
     place-items: center !important;
   }
 }
+
+
+/* =========================
+   FIX SCROLL DESKTOP
+========================= */
+@media (min-width: 769px) {
+  html, body {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: auto !important;
+    position: relative !important;
+  }
+
+  .content,
+  .main-content,
+  .page-content,
+  .dashboard-container {
+    overflow: visible !important;
+    height: auto !important;
+    position: relative !important;
+  }
+}
+
+/* MOBILE SIDEBAR */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -260px;
+    width: 260px;
+    height: 100%;
+    z-index: 9999;
+    transition: left .3s ease;
+  }
+
+  .sidebar.active {
+    left: 0;
+  }
+
+  .content {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+}

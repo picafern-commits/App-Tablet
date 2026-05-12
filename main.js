@@ -185,3 +185,10 @@ app.whenReady().then(() => {
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
+
+
+// Sidebar toggle added automatically
+function toggleSidebar() {
+  const sb = document.querySelector(".sidebar");
+  if (sb) sb.classList.toggle("active");
+}

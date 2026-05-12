@@ -58,3 +58,10 @@
     renderSidebar();
   }
 })();
+
+
+// Sidebar toggle added automatically
+function toggleSidebar() {
+  const sb = document.querySelector(".sidebar");
+  if (sb) sb.classList.toggle("active");
+}
