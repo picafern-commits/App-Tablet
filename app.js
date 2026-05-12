@@ -9,6 +9,7 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.firestore();
+window.db = db;
 
 
 const BACKUP_KEYS_APP_BRAGA = {
@@ -5500,246 +5501,88 @@ async function firebaseDeletePorta(id){
 }
 
 
+/* ===== FIREBASE IMPORT ISOLADO ===== */
 
-/* =========================
-   FIREBASE STORAGE OVERRIDE
-========================= */
+async function importarExcelFirebase(){
 
-async function guardarUsersLocal() {
-
-  try {
+  try{
 
     if(!window.db){
-      console.log("Firebase indisponível.");
+      alert("Firebase não iniciada.");
       return;
     }
 
-    for(const user of usersData){
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".xlsx,.xlsm,.xls";
 
-      const payload = {...user};
+    input.onchange = async (e)=>{
 
-      delete payload.id;
+      try{
 
-      if(user.id){
+        const file = e.target.files[0];
 
-        await window.db
-          .collection("users")
-          .doc(user.id)
-          .set(payload);
+        if(!file) return;
 
-      }else{
+        const data = await file.arrayBuffer();
 
-        const ref =
+        const workbook = XLSX.read(data);
+
+        const usersSheet =
+          workbook.Sheets["Users"] ||
+          workbook.Sheets["users"];
+
+        if(!usersSheet){
+
+          alert("Folha Users não encontrada.");
+
+          return;
+
+        }
+
+        const users =
+          XLSX.utils.sheet_to_json(usersSheet);
+
+        let total = 0;
+
+        for(const user of users){
+
           await window.db
             .collection("users")
-            .add(payload);
+            .add(user);
 
-        user.id = ref.id;
+          total++;
 
-      }
+        }
 
-    }
+        alert(
+          "Importação concluída: "
+          + total +
+          " registos."
+        );
 
-    console.log("Users sincronizados Firebase.");
+      }catch(err){
 
-  } catch(e){
+        console.error(err);
 
-    console.error(e);
-
-  }
-
-}
-
-async function carregarUsersLocal() {
-
-  try {
-
-    if(!window.db){
-      return;
-    }
-
-    const snapshot =
-      await window.db
-        .collection("users")
-        .get();
-
-    usersData.splice(
-      0,
-      usersData.length,
-      ...snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
-    );
-
-    if(typeof renderUsers === "function"){
-      renderUsers(usersData);
-    }
-
-  } catch(e){
-
-    console.error(e);
-
-  }
-
-}
-
-async function guardarPistolasLocal() {
-
-  try {
-
-    if(!window.db) return;
-
-    for(const item of pistolasData){
-
-      const payload = {...item};
-
-      delete payload.id;
-
-      if(item.id){
-
-        await window.db
-          .collection("pistolas")
-          .doc(item.id)
-          .set(payload);
-
-      }else{
-
-        const ref =
-          await window.db
-            .collection("pistolas")
-            .add(payload);
-
-        item.id = ref.id;
+        alert(
+          "Erro import: " + err.message
+        );
 
       }
 
-    }
+    };
 
-  } catch(e){
+    input.click();
 
-    console.error(e);
+  }catch(err){
 
-  }
-
-}
-
-async function carregarPistolasLocal() {
-
-  try {
-
-    if(!window.db) return;
-
-    const snapshot =
-      await window.db
-        .collection("pistolas")
-        .get();
-
-    pistolasData.splice(
-      0,
-      pistolasData.length,
-      ...snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
-    );
-
-    if(typeof renderPistolas === "function"){
-      renderPistolas(pistolasData);
-    }
-
-  } catch(e){
-
-    console.error(e);
+    console.error(err);
 
   }
 
 }
 
-async function guardarPortasLocal() {
-
-  try {
-
-    if(!window.db) return;
-
-    for(const item of portasData){
-
-      const payload = {...item};
-
-      delete payload.id;
-
-      if(item.id){
-
-        await window.db
-          .collection("portas")
-          .doc(item.id)
-          .set(payload);
-
-      }else{
-
-        const ref =
-          await window.db
-            .collection("portas")
-            .add(payload);
-
-        item.id = ref.id;
-
-      }
-
-    }
-
-  } catch(e){
-
-    console.error(e);
-
-  }
-
-}
-
-async function carregarPortasLocal() {
-
-  try {
-
-    if(!window.db) return;
-
-    const snapshot =
-      await window.db
-        .collection("portas")
-        .get();
-
-    portasData.splice(
-      0,
-      portasData.length,
-      ...snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
-    );
-
-    if(typeof renderPortas === "function"){
-      renderPortas(portasData);
-    }
-
-  } catch(e){
-
-    console.error(e);
-
-  }
-
-}
-
-window.addEventListener(
-  "DOMContentLoaded",
-  () => {
-
-    setTimeout(async ()=>{
-
-      await carregarUsersLocal();
-      await carregarPistolasLocal();
-      await carregarPortasLocal();
-
-    },2000);
-
-  }
-);
+window.importarExcelFirebase =
+  importarExcelFirebase;
 
