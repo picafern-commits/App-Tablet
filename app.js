@@ -9,7 +9,6 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.firestore();
-window.db = db;
 
 
 const BACKUP_KEYS_APP_BRAGA = {
@@ -5344,67 +5343,107 @@ window.addEventListener(
 
 
 
-/* ===== USERS FIREBASE REALTIME ===== */
+/* =========================
+   EXPORT JSON SYSTEM
+========================= */
 
-async function iniciarUsersRealtime(){
+function descarregarJSON(nome, dados){
 
   try{
 
-    if(!window.db){
+    const blob = new Blob(
+      [
+        JSON.stringify(
+          dados || [],
+          null,
+          2
+        )
+      ],
+      {
+        type:"application/json"
+      }
+    );
 
-      console.log("Firebase indisponível.");
+    const a =
+      document.createElement("a");
 
-      return;
+    a.href =
+      URL.createObjectURL(blob);
 
-    }
+    a.download =
+      nome + "_" +
+      Date.now() +
+      ".json";
 
-    window.db
-      .collection("users")
-      .onSnapshot((snapshot)=>{
+    document.body.appendChild(a);
 
-        const dados =
-          snapshot.docs.map(doc=>({
-            id: doc.id,
-            ...doc.data()
-          }));
+    a.click();
 
-        window.usersData = dados;
+    setTimeout(()=>{
 
-        if(typeof usersData !== "undefined"){
+      URL.revokeObjectURL(a.href);
 
-          usersData.length = 0;
+      a.remove();
 
-          dados.forEach(u=>usersData.push(u));
-
-        }
-
-        console.log(
-          "Users realtime recebidos:",
-          dados.length
-        );
-
-        if(typeof renderUsers === "function"){
-
-          renderUsers(dados);
-
-        }
-
-      });
+    },1000);
 
   }catch(error){
 
-    console.error(
-      "Erro realtime users:",
-      error
+    console.error(error);
+
+    alert(
+      "Erro ao exportar JSON."
     );
 
   }
 
 }
 
-setTimeout(()=>{
+/* USERS */
 
-  iniciarUsersRealtime();
+function exportUsersJSON(){
 
-},2500);
+  descarregarJSON(
+    "users_backup",
+    typeof usersData !== "undefined"
+      ? usersData
+      : []
+  );
+
+}
+
+/* PISTOLAS */
+
+function exportPistolasJSON(){
+
+  descarregarJSON(
+    "pistolas_backup",
+    typeof pistolasData !== "undefined"
+      ? pistolasData
+      : []
+  );
+
+}
+
+/* PORTAS */
+
+function exportPortasJSON(){
+
+  descarregarJSON(
+    "portas_backup",
+    typeof portasData !== "undefined"
+      ? portasData
+      : []
+  );
+
+}
+
+window.exportUsersJSON =
+  exportUsersJSON;
+
+window.exportPistolasJSON =
+  exportPistolasJSON;
+
+window.exportPortasJSON =
+  exportPortasJSON;
 
