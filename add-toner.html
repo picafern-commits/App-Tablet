@@ -60,22 +60,19 @@
   <div class="panel">
     <div class="section-header">
       <div>
-        <h3>Leitura Inteligente PC</h3>
-        <p class="section-subtitle">Usa scanner físico, cola o código ou lê a folha por OCR para preencher automaticamente.</p>
+        <h3>Leitura Inteligente</h3>
+        <p class="section-subtitle">Use a câmara para ler código de barras ou a folha completa.</p>
       </div>
     </div>
-    <div class="form-grid">
-      <label><span>Scanner físico / código</span>
-        <input id="scannerInput" type="text" placeholder="Passe o scanner e carregue Enter" onkeydown="handleScannerEnter(event)">
-      </label>
-      <label><span>OCR da folha</span>
-        <input id="ocrInput" type="file" accept="image/*" onchange="processarOCRInputPC(event)">
-      </label>
+
+    <div class="card-actions" style="margin-bottom:14px;">
+      <button type="button" class="primary-btn" onclick="startScanner()">📷 Ler Código</button>
+      <button type="button" class="secondary-btn" onclick="abrirOCR()">🧠 Ler Folha (OCR)</button>
+      <button type="button" class="secondary-btn" onclick="stopScanner()">Fechar Câmara</button>
+      <input id="ocrInput" type="file" accept="image/*" capture="environment" style="display:none;" onchange="processarOCRInput(event)">
     </div>
-    <div class="card-actions" style="margin-top:12px;">
-      <button type="button" class="secondary-btn" onclick="focarScannerPC()">Focar Scanner</button>
-      <button type="button" class="secondary-btn" onclick="gerarWordEtiquetaFromForm()">Gerar Word Etiqueta</button>
-    </div>
+
+    <div id="reader" class="scanner-box"></div>
     <div id="ocrStatus" class="ocr-status" style="display:none;"></div>
   </div>
 
@@ -86,12 +83,17 @@
         <p class="section-subtitle">Introduza os 3 últimos dígitos da impressora para selecionar a localização automaticamente.</p>
       </div>
     </div>
+
     <div class="form-grid">
-      <label><span>Últimos 3 dígitos</span><input id="serial3Input" type="text" maxlength="3" placeholder="Ex: 805"></label>
+      <label>
+        <span>Últimos 3 dígitos</span>
+        <input id="serial3Input" type="text" maxlength="3" placeholder="Ex: 805">
+      </label>
     </div>
+
     <div class="card-actions" style="margin-top:12px;">
-      <button type="button" class="primary-btn" onclick="confirmarSerie3DigitosPC()">Confirmar Série</button>
-      <button type="button" class="secondary-btn" onclick="fecharSerie3DigitosPC()">Cancelar</button>
+      <button type="button" class="primary-btn" onclick="confirmarSerie3Digitos()">Confirmar Série</button>
+      <button type="button" class="secondary-btn" onclick="fecharSerie3Digitos()">Cancelar</button>
     </div>
   </div>
 
@@ -104,6 +106,7 @@
         <option value="PA5500x">PA5500x</option>
       </select>
     </label>
+
     <label><span>Localização</span>
       <select id="localizacao">
         <option value="">Selecionar localização</option>
@@ -124,18 +127,35 @@
         <option value="Sem Localização">Sem Localização</option>
       </select>
     </label>
+
     <label><span>Cor</span>
       <select id="cor">
         <option value="">Selecionar cor</option>
         <option value="Preto">Preto</option><option value="Amarelo">Amarelo</option><option value="Vermelho">Vermelho</option><option value="Azul">Azul</option>
       </select>
     </label>
+    <label><span>Lote</span><input type="text" id="lote" placeholder="Lote automático / opcional"></label>
     <label><span>Data da folha</span><input type="text" id="dataFolha" readonly placeholder="Data lida da folha"></label>
     <label><span>Data do scan</span><input type="date" id="data"></label>
     <button class="primary-btn" onclick="disponivel()">Adicionar ao stock</button>
+    <button class="secondary-btn" onclick="gerarWordEtiquetaFromForm()">Gerar Word Etiqueta</button>
+  </div>
+
+
+  <div class="panel">
+    <div class="section-header">
+      <div>
+        <h3>Scanner Profissional</h3>
+        <p class="section-subtitle">A leitura inteligente agora tenta reconhecer modelo, cor, série e lote.</p>
+      </div>
+    </div>
+    <div id="scannerSmartStatus" class="smart-status-box">À espera de leitura.</div>
   </div>
 
 </main>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
 <script src="app.js"></script>

@@ -64,6 +64,7 @@
   </div>
   <div class="panel">
     <div class="toolbar">
+      <button class="primary-btn" type="button" onclick="abrirAdicionarPorta()">+ Adicionar Porta</button>
       <button id="btnMigrarPortas" class="secondary-btn" onclick="migrarPortasParaFirebase()">Migrar portas para Firebase</button>
       <input id="searchPortas" type="text" placeholder="Pesquisar..." oninput="filtrarPortasComEstado()">
       <select id="filterEstadoPortas" onchange="filtrarPortasComEstado()"><option value="">Todos os estados</option><option value="ocupado">Ocupado</option><option value="livre">Livre</option><option value="semuser">Sem user</option></select>
@@ -95,6 +96,8 @@
   </div>
 
 </main>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

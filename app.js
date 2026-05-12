@@ -1,12 +1,8 @@
-const APP_VERSION = "1.0.0";
+const APP_VERSION = "1.5.0";
 const firebaseConfig = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
   authDomain: "toner-manager-756c4.firebaseapp.com",
-  databaseURL: "https://toner-manager-756c4-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "toner-manager-756c4",
-  storageBucket: "toner-manager-756c4.firebasestorage.app",
-  messagingSenderId: "1004492465437",
-  appId: "1:1004492465437:web:6a745933c51fc17b04adf4"
+  projectId: "toner-manager-756c4"
 };
 
 if (!firebase.apps.length) {
@@ -15,17 +11,21 @@ if (!firebase.apps.length) {
 const db = firebase.firestore();
 
 
-const APP_BRAGA_VERSION = "v1.8 Premium";
 const BACKUP_KEYS_APP_BRAGA = {
-  stock: "appBragaDesktop_backup_stock",
-  historico: "appBragaDesktop_backup_historico",
-  pcs: "appBragaDesktop_backup_pcs",
-  manutencoes: "appBragaDesktop_backup_manutencoes"
+  stock: "appBraga_backup_stock",
+  historico: "appBraga_backup_historico",
+  pcs: "appBraga_backup_pcs",
+  manutencoes: "appBraga_backup_manutencoes"
 };
 
 function saveBackupAppBraga(key, data) {
-  try { localStorage.setItem(key, JSON.stringify(data || [])); } catch (e) { console.error("Erro backup local:", e); }
+  try {
+    localStorage.setItem(key, JSON.stringify(data || []));
+  } catch (e) {
+    console.error("Erro backup local:", e);
+  }
 }
+
 function loadBackupAppBraga(key) {
   try {
     const raw = localStorage.getItem(key);
@@ -35,32 +35,25 @@ function loadBackupAppBraga(key) {
     return [];
   }
 }
+
 function showBackupBadge() {
   document.querySelectorAll(".version-pill").forEach(node => {
     if (!node.dataset.backupShown) {
       node.dataset.backupShown = "1";
-      node.innerHTML = `${APP_BRAGA_VERSION} <span class="backup-badge">Backup local</span>`;
+      node.innerHTML = `${node.textContent} <span class="backup-badge">Backup local</span>`;
     }
   });
 }
+
 function hideBackupBadge() {
   document.querySelectorAll(".version-pill").forEach(node => {
-    node.dataset.backupShown = "";
-    node.textContent = APP_BRAGA_VERSION;
+    if (node.dataset.backupShown === "1") {
+      node.dataset.backupShown = "";
+      node.textContent = node.textContent.replace(" Backup local", "").trim();
+      if (typeof APP_BRAGA_VERSION !== "undefined") node.textContent = APP_BRAGA_VERSION;
+    }
   });
 }
-function atualizarEstadoLigacaoAppBraga() {
-  const online = navigator.onLine;
-  document.querySelectorAll(".status-pill").forEach(node => {
-    node.textContent = online ? "Sistema Online" : "Sistema Offline";
-    node.classList.toggle("offline", !online);
-  });
-  document.querySelectorAll(".version-pill").forEach(node => {
-    if (!node.dataset.backupShown) node.textContent = APP_BRAGA_VERSION;
-  });
-}
-window.addEventListener("online", atualizarEstadoLigacaoAppBraga);
-window.addEventListener("offline", atualizarEstadoLigacaoAppBraga);
 
 let stockGlobal = [];
 let historicoGlobal = [];
@@ -109,8 +102,8 @@ const impressorasData = [
   { modelo: "Kyocera P3155dn", serie: "R4B1395508", armazem: "Braga", localizacao: "Ilha 03", ip: "192.168.10.180" },
   { modelo: "Kyocera P3155dn", serie: "R4B1293179", armazem: "Braga", localizacao: "Ilha 04", ip: "192.168.10.181" },
   { modelo: "Kyocera P3155dn", serie: "R4B1293180", armazem: "Braga", localizacao: "Ilha 05", ip: "192.168.10.182" },
-  { modelo: "Kyocera P3155dn", serie: "R4B1293183", armazem: "Braga", localizacao: "Balcão 01", ip: "192.168.10.183" },
-  { modelo: "Kyocera P3155dn", serie: "R4B1293184", armazem: "Braga", localizacao: "Balcão 02", ip: "192.168.10.184" },
+  { modelo: "Kyocera P3155dn", serie: "R4B1293183", armazem: "Braga", localizacao: "Balcão 01", ip: "192.168.10.184" },
+  { modelo: "Kyocera P3155dn", serie: "R4B1293184", armazem: "Braga", localizacao: "Balcão 02", ip: "192.168.10.183" },
   { modelo: "Kyocera P3155dn", serie: "R4B2230012", armazem: "Braga", localizacao: "Dep. Logistica", ip: "192.168.10.185" },
   { modelo: "Kyocera P3155dn", serie: "R4B1293173", armazem: "Braga", localizacao: "G/Encomendas", ip: "192.168.10.186" },
   { modelo: "Kyocera P3155dn", serie: "R4B1395261", armazem: "Braga", localizacao: "Devoluções", ip: "192.168.10.187" },
@@ -119,6 +112,8 @@ const impressorasData = [
   { modelo: "Kyocera P3155dn", serie: "R4B1293174", armazem: "Vila Real", localizacao: "Ilha 02", ip: "192.168.11.108" },
   { modelo: "TASKalfa 2554ci", serie: "RVP0Z03715", armazem: "Vila Real", localizacao: "Ilha 03", ip: "192.168.11.197" }
 ];
+
+const IMPRESSORAS_STORAGE_KEY = "appbraga_impressoras_v1";
 
 const manutencaoLocais = [
   "Ilha 01",
@@ -138,7 +133,7 @@ const manutencaoLocais = [
    DADOS PISTOLAS CK65
    (SEM RÁDIOS)
 ========================= */
-const pistolasData = [
+let pistolasData = [
   { num: 01, nome: "BRA01", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D81B7", mac: "0C:23:69:ED:7D:05", operador: "Márcio Vilela", armazem: "Vila Real", prontas: "2026-01-12", estado: "" },
   { num: 02, nome: "BRA02", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D8148", mac: "0C:23:69:ED:92:68", operador: "Mário Roberto Gomes Monteiro", armazem: "Braga", prontas: "2026-01-12", estado: "" },
   { num: 03, nome: "BRA03", password: "123456", cn: "CK65-L0N-BSC210E", sn: "25105D81A8", mac: "0C:23:69:ED:88:CF", operador: "Joao Abel Pacheco", armazem: "Braga", prontas: "2026-01-12", estado: "" },
@@ -192,7 +187,7 @@ const pistolasData = [
 /* =========================
    DADOS PORTAS DE REDE
 ========================= */
-const portasData = [
+let portasData = [
   { porta: "127", local: "Ilha 01", user: "Mesa 01", equipamento: "", ip: "" },
   { porta: "126", local: "Ilha 01", user: "Mesa 01", equipamento: "Computador", ip: "192.168.10.101" },
 
@@ -244,10 +239,10 @@ const portasData = [
   { porta: "141", local: "Mesa 12", user: "Mesa 12", equipamento: "", ip: "" },
   { porta: "140", local: "Mesa 12", user: "Jorge Rodrigues", equipamento: "Computador", ip: "192.168.10.112" },
 
-  { porta: "224", local: "BRA-BAL01", user: "BRA-BAL01", equipamento: "", ip: "" },
+  { porta: "224", local: "BRA-BAL01", user: "BRA-BAL01", equipamento: "", ip: "192.168.10.183" },
   { porta: "223", local: "BRA-BAL01", user: "Jose Miguel / Gonçalo Santos", equipamento: "Computador", ip: "192.168.10.125" },
 
-  { porta: "222", local: "BRA-BAL02", user: "BRA-BAL02", equipamento: "Impressora", ip: "192.168.10.183" },
+  { porta: "222", local: "BRA-BAL02", user: "BRA-BAL02", equipamento: "Impressora", ip: "192.168.10.184" },
   { porta: "221", local: "BRA-BAL02", user: "Rafael Araujo / Fabio Silva", equipamento: "Computador", ip: "192.168.10.126" },
 
   { porta: "220", local: "BRA-BAL03", user: "BRA-BAL03", equipamento: "Impressora", ip: "192.168.10.184" },
@@ -1199,6 +1194,44 @@ const usersData = [
   }
 ];
 
+const USERS_STORAGE_KEY = 'appbraga_users_custom_v1';
+
+function prepararRefsUsers() {
+  usersData.forEach((u, i) => {
+    if (!u.idDoc && !u._ref) u._ref = `local-user-${i}`;
+  });
+}
+
+function guardarUsersLocal() {
+  try {
+    const serializavel = usersData.map(u => ({ ...u }));
+    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(serializavel));
+  } catch (e) {
+    console.warn('Nao foi possivel guardar users no localStorage.', e);
+  }
+}
+
+function carregarUsersLocal() {
+  try {
+    const raw = localStorage.getItem(USERS_STORAGE_KEY);
+    if (!raw) {
+      prepararRefsUsers();
+      return;
+    }
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || !parsed.length) {
+      prepararRefsUsers();
+      return;
+    }
+    usersData.splice(0, usersData.length, ...parsed);
+    prepararRefsUsers();
+  } catch (e) {
+    console.warn('Nao foi possivel carregar users do localStorage.', e);
+    prepararRefsUsers();
+  }
+}
+
+
 /* =========================
    IMPRESSORAS / MANUTENÇÃO
 ========================= */
@@ -1337,6 +1370,7 @@ async function disponivel() {
   const localizacao = el("localizacao");
   const cor = el("cor");
   const data = el("data");
+  const lote = el("lote");
 
   if (!equipamento || !cor) return;
 
@@ -1344,6 +1378,7 @@ async function disponivel() {
   const loc = localizacao ? localizacao.value : "";
   const corValue = cor.value;
   const dataValue = data ? data.value : "";
+  const loteValue = lote ? lote.value : "";
 
   if (!eq || !corValue) {
     mostrarMensagem("Preenche o equipamento e a cor.", "erro");
@@ -1360,6 +1395,7 @@ async function disponivel() {
       cor: corValue,
       data: dataValue || "Sem Data",
       dataFolha: (el("dataFolha") && el("dataFolha").value) || "Sem Data da Folha",
+      lote: loteValue || "",
       created: new Date()
     });
 
@@ -1368,6 +1404,7 @@ async function disponivel() {
     cor.value = "";
     if (data) data.value = "";
     if (el("dataFolha")) el("dataFolha").value = "";
+    if (lote) lote.value = "";
 
     mostrarMensagem("Toner adicionado com sucesso.");
   } catch (error) {
@@ -1390,7 +1427,10 @@ db.collection("stock").orderBy("created", "desc").onSnapshot(snap => {
   hideBackupBadge();
   renderDashboardCards(stockGlobal);
   renderStockCards(stockGlobal);
+  renderStockMinimoPainel();
+  renderAlertasInteligentes();
   renderDashboardResumoInteligente();
+  renderAlertasInteligentes();
   renderModoGestorExtremo();
 }, error => {
   console.error(error);
@@ -1399,7 +1439,10 @@ db.collection("stock").orderBy("created", "desc").onSnapshot(snap => {
   showBackupBadge();
   renderDashboardCards(stockGlobal);
   renderStockCards(stockGlobal);
+  renderStockMinimoPainel();
+  renderAlertasInteligentes();
   renderDashboardResumoInteligente();
+  renderAlertasInteligentes();
   renderModoGestorExtremo();
 });
 
@@ -1416,8 +1459,10 @@ db.collection("historico").orderBy("created", "desc").onSnapshot(snap => {
   saveBackupAppBraga(BACKUP_KEYS_APP_BRAGA.historico, historicoGlobal);
   hideBackupBadge();
   renderHistoricoCards(historicoGlobal);
+  renderAlertasInteligentes();
   renderModoGestorExtremo();
   renderDashboardResumoInteligente();
+  renderAlertasInteligentes();
   renderModoGestorExtremo();
 }, error => {
   console.error(error);
@@ -1425,8 +1470,10 @@ db.collection("historico").orderBy("created", "desc").onSnapshot(snap => {
   setText("countUsados", historicoGlobal.length);
   showBackupBadge();
   renderHistoricoCards(historicoGlobal);
+  renderAlertasInteligentes();
   renderModoGestorExtremo();
   renderDashboardResumoInteligente();
+  renderAlertasInteligentes();
   renderModoGestorExtremo();
 });
 
@@ -1485,36 +1532,52 @@ function atualizarContadoresManutencao() {
 
 
 function getCriticalityBucketsAppBraga() {
-  let critical = 0, warning = 0, normal = 0;
+  let critical = 0;
+  let warning = 0;
+  let normal = 0;
+
   impressorasData.forEach(item => {
     const info = tonerInfoState[item.ip] || null;
     const colors = Array.isArray(info?.colors) ? info.colors : [];
-    const mono = typeof info?.percent === "number" ? info.percent : null;
-    const values = colors.map(c => c.percent).filter(v => typeof v === "number");
-    if (!values.length && mono !== null) values.push(mono);
-    if (!values.length) { normal++; return; }
-    const minv = Math.min(...values);
-    if (minv < 10) critical++;
-    else if (minv <= 25) warning++;
+    const monoPercent = typeof info?.percent === "number" ? info.percent : null;
+    const allPercents = colors.map(c => c.percent).filter(v => typeof v === "number");
+    if (!allPercents.length && monoPercent !== null) allPercents.push(monoPercent);
+
+    if (!allPercents.length) {
+      normal++;
+      return;
+    }
+
+    const minValue = Math.min(...allPercents);
+    if (minValue < 10) critical++;
+    else if (minValue <= 25) warning++;
     else normal++;
   });
+
   return { critical, warning, normal };
 }
+
 function getTopLocalizacoesHistorico(limit = 3) {
   const counts = {};
   historicoGlobal.forEach(item => {
     const key = String(item.localizacao || "Sem Localização");
     counts[key] = (counts[key] || 0) + 1;
   });
-  return Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,limit);
+  return Object.entries(counts)
+    .sort((a,b) => b[1] - a[1])
+    .slice(0, limit);
 }
+
 function getUltimosMovimentos(limit = 3) {
-  return [...historicoGlobal].sort((a,b)=> {
-    const ad = a.created && a.created.seconds ? a.created.seconds : 0;
-    const bd = b.created && b.created.seconds ? b.created.seconds : 0;
-    return bd - ad;
-  }).slice(0,limit);
+  return [...historicoGlobal]
+    .sort((a,b) => {
+      const ad = a.created && a.created.seconds ? a.created.seconds : 0;
+      const bd = b.created && b.created.seconds ? b.created.seconds : 0;
+      return bd - ad;
+    })
+    .slice(0, limit);
 }
+
 function renderDashboardResumoInteligente() {
   const host = el("dashboardResumoInteligente");
   if (!host) return;
@@ -1619,11 +1682,13 @@ function renderStockCards(items) {
       <div class="meta-line">Equipamento: <span class="meta-value">${t.equipamento}</span></div>
       <div class="meta-line">Cor: <span class="meta-value">${t.cor}</span></div>
       <div class="meta-line">Localização: <span class="meta-value">${t.localizacao}</span></div>
-      <div class="meta-line">Data scan: <span class="meta-value">${t.data || "Sem Data"}</span></div>
-      <div class="meta-line">Data folha: <span class="meta-value">${t.dataFolha || "Sem Data da Folha"}</span></div>
+      <div class="meta-line">Lote: <span class="meta-value">${t.lote || "-"}</span></div>
+      <div class="meta-line">Data Scan: <span class="meta-value">${t.data || "Sem Data"}</span></div>
+      <div class="meta-line">Data Folha: <span class="meta-value">${t.dataFolha || "Sem Data da Folha"}</span></div>
       <div class="card-actions">
         <button class="small-btn btn-use" onclick="usar('${t.idDoc}')">Marcar usado</button>
-        <button class="small-btn btn-edit" onclick="editar('${t.idDoc}')">Editar</button>
+        <button class="small-btn btn-edit" onclick="abrirEditarStockModal('${t.idDoc}')">Editar</button>
+        <button class="small-btn btn-delete" onclick="apagarStockItem('${t.idDoc}')">Apagar</button>
       </div>
     </div>
   `).join("");
@@ -1644,9 +1709,11 @@ function renderHistoricoCards(items) {
       <div class="meta-line">Equipamento: <span class="meta-value">${t.equipamento}</span></div>
       <div class="meta-line">Cor: <span class="meta-value">${t.cor || "-"}</span></div>
       <div class="meta-line">Localização: <span class="meta-value">${t.localizacao || "Sem Localização"}</span></div>
-      <div class="meta-line">Data scan: <span class="meta-value">${t.data || "Sem Data"}</span></div>
-      <div class="meta-line">Data folha: <span class="meta-value">${t.dataFolha || "Sem Data da Folha"}</span></div>
+      <div class="meta-line">Lote: <span class="meta-value">${t.lote || "-"}</span></div>
+      <div class="meta-line">Data Scan: <span class="meta-value">${t.data || "Sem Data"}</span></div>
+      <div class="meta-line">Data Folha: <span class="meta-value">${t.dataFolha || "Sem Data da Folha"}</span></div>
       <div class="card-actions">
+        <button class="small-btn btn-edit" onclick="abrirEditarHistoricoModal('${t.idDoc}')">Editar</button>
         <button class="small-btn btn-delete" onclick="apagar('${t.idDoc}')">Apagar</button>
       </div>
     </div>
@@ -1694,42 +1761,11 @@ function editar(id) {
   window.location.href = "add-toner.html";
 }
 
-function exportar() {
-  if (!stockGlobal.length) {
-    mostrarMensagem("Não há dados para exportar.", "erro");
-    return;
-  }
+function exportar() { exportarExcelStock(); }
 
-  let csv = "ID;Equipamento;Localização;Cor;Data Scan;Data Folha\n";
-  stockGlobal.forEach(t => {
-    csv += `${t.idInterno};${t.equipamento};${t.localizacao};${t.cor};${t.data || ""};${t.dataFolha || ""}\n`;
-  });
+function filtrar() { filtrarStockDebounced(); }
 
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "stock.csv";
-  a.click();
-}
-
-function filtrar() {
-  const input = el("search");
-  if (!input) return;
-
-  const txt = input.value.toLowerCase();
-  const filtrados = stockGlobal.filter(t =>
-    normalizarTexto(t.idInterno).includes(txt) ||
-    normalizarTexto(t.equipamento).includes(txt) ||
-    normalizarTexto(t.cor).includes(txt) ||
-    normalizarTexto(t.localizacao).includes(txt)
-  );
-
-  renderStockCards(filtrados);
-}
-
-function filtrarDashboard() {
-  renderDashboardCards();
-}
+function filtrarDashboard() { filtrarDashDebounced(); }
 
 /* =========================
    COMPUTADORES
@@ -1981,6 +2017,8 @@ function carregarEdicaoToner() {
     el("localizacao").value = toner.localizacao || "";
     el("cor").value = toner.cor || "";
     el("data").value = toner.data || "";
+    if (el("lote")) el("lote").value = toner.lote || "";
+    if (el("dataFolha")) el("dataFolha").value = toner.dataFolha || "";
   } catch (e) {
     console.error(e);
   }
@@ -2192,6 +2230,8 @@ async function testarTonerImpressora(ip, outputId) {
 
   if (output) output.innerHTML = gerarHTMLToners(info);
   if (info) maybeNotifyCriticalSupply(ip, info);
+  updateTonerDiagnosticStatus(info ? "ok" : "error", { running: false, lastRunAt: new Date(), successCount: info ? 1 : 0, totalCount: 1, source: resolveDiagSource() });
+  pushTonerDiagnosticLog(ip, info ? summarizeTonerInfo(info) : "sem resposta");
   renderDashboardCards();
 }
 
@@ -2218,24 +2258,44 @@ function filtrarHistoricoPorImpressora(item) {
   const serie = String(item.serie || "");
   const loc = String(item.localizacao || "");
   const arm = String(item.armazem || "");
+
   return historicoGlobal.filter(h => {
     const hLoc = String(h.localizacao || "");
     const hEq = String(h.equipamento || "");
-    return hLoc.includes(serie) || hLoc.includes(loc) || (hLoc.includes(arm) && hLoc.includes(loc)) || normalizarTexto(hEq).includes(normalizarTexto(item.modelo));
+    return hLoc.includes(serie) ||
+      hLoc.includes(loc) ||
+      (hLoc.includes(arm) && hLoc.includes(loc)) ||
+      normalizarTexto(hEq).includes(normalizarTexto(item.modelo));
   });
 }
+
 function abrirHistoricoImpressora(item) {
   const host = el("historicoImpressoraPanel");
   if (!host) return;
+
   const itens = filtrarHistoricoPorImpressora(item);
   const ultimo = itens[0] || null;
+
   host.innerHTML = `
     <div class="printer-history-card">
-      <div class="section-header"><div><h3>${item.modelo} — ${item.serie}</h3><p class="section-subtitle">${item.armazem} · ${item.localizacao}</p></div></div>
-      <div class="history-mini-grid">
-        <div class="summary-card"><h4>Total de Toners</h4><div class="summary-value">${itens.length}</div></div>
-        <div class="summary-card"><h4>Último Registo</h4><div class="meta-line">${ultimo ? `${ultimo.cor || "-"} · ${ultimo.data || "Sem Data"}` : "Sem registos"}</div></div>
+      <div class="section-header">
+        <div>
+          <h3>${item.modelo} — ${item.serie}</h3>
+          <p class="section-subtitle">${item.armazem} · ${item.localizacao}</p>
+        </div>
       </div>
+
+      <div class="history-mini-grid">
+        <div class="summary-card">
+          <h4>Total de Toners</h4>
+          <div class="summary-value">${itens.length}</div>
+        </div>
+        <div class="summary-card">
+          <h4>Último Registo</h4>
+          <div class="meta-line">${ultimo ? `${ultimo.cor || "-"} · ${ultimo.data || "Sem Data"}` : "Sem registos"}</div>
+        </div>
+      </div>
+
       <div class="printer-history-items">
         ${itens.length ? itens.slice(0,8).map(h => `
           <div class="printer-history-item">
@@ -2243,9 +2303,29 @@ function abrirHistoricoImpressora(item) {
             <div class="meta-line">Cor: <span class="meta-value">${h.cor || "-"}</span></div>
             <div class="meta-line">Data: <span class="meta-value">${h.data || "Sem Data"}</span></div>
             <div class="meta-line">Localização: <span class="meta-value">${h.localizacao || "Sem Localização"}</span></div>
-          </div>`).join("") : `<div class="panel empty-state"><h3>Sem histórico para esta impressora</h3><p>Quando houver movimentos associados, aparecem aqui.</p></div>`}
+          </div>
+        `).join("") : `<div class="panel empty-state"><h3>Sem histórico para esta impressora</h3><p>Quando houver movimentos associados, aparecem aqui.</p></div>`}
       </div>
-    </div>`;
+    </div>
+  `;
+}
+
+function guardarImpressorasLocal() {
+  try {
+    impressorasData.forEach((item, i) => { if (!item._ref) item._ref = item.idDoc || `local-impressora-${i}`; });
+    localStorage.setItem(IMPRESSORAS_STORAGE_KEY, JSON.stringify(impressorasData.map(i => ({ ...i }))));
+  } catch (e) { console.warn('Nao foi possivel guardar impressoras no localStorage.', e); }
+}
+
+function carregarImpressorasLocal() {
+  try {
+    const raw = localStorage.getItem(IMPRESSORAS_STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || !parsed.length) return;
+    parsed.forEach((item, i) => { if (!item._ref) item._ref = item.idDoc || `local-impressora-${i}`; });
+    impressorasData.splice(0, impressorasData.length, ...parsed);
+  } catch (e) { console.warn('Nao foi possivel carregar impressoras do localStorage.', e); }
 }
 
 function renderImpressoras(lista = impressorasData) {
@@ -2341,7 +2421,7 @@ function renderPistolas(lista = pistolasData) {
   atualizarContadoresPistolas(lista);
 
   container.innerHTML = lista.map((p, index) => {
-    const ref = p.idDoc ? `'${p.idDoc}'` : index;
+    const ref = p.idDoc ? `'${p.idDoc}'` : `'${p._ref || `local-pistola-${pistolasData.indexOf(p)}`}'`;
     return `
     <div class="pc-card">
       <div class="pc-name">${p.nome}</div>
@@ -2444,7 +2524,7 @@ function renderPortas(lista = portasData) {
 
   container.innerHTML = lista.map((p, index) => {
     const estado = estadoPorta(p);
-    const ref = p.idDoc ? `'${p.idDoc}'` : index;
+    const ref = p.idDoc ? `'${p.idDoc}'` : `'${p._ref || `local-porta-${portasData.indexOf(p)}`}'`;
     return `
       <div class="pc-card">
         <div class="pc-name">Porta ${p.porta || "-"}</div>
@@ -2486,6 +2566,80 @@ function filtrarPortasComEstado() {
   filtrarPortas(texto);
 }
 
+
+const PISTOLAS_STORAGE_KEY = 'appbraga_pistolas_custom_v1';
+const PORTAS_STORAGE_KEY = 'appbraga_portas_custom_v1';
+
+function prepararRefsPistolas() {
+  pistolasData.forEach((p, i) => {
+    if (!p.idDoc && !p._ref) p._ref = `local-pistola-${i}`;
+  });
+}
+
+function guardarPistolasLocal() {
+  try {
+    const serializavel = pistolasData.map(p => ({ ...p }));
+    localStorage.setItem(PISTOLAS_STORAGE_KEY, JSON.stringify(serializavel));
+  } catch (e) {
+    console.warn('Nao foi possivel guardar pistolas no localStorage.', e);
+  }
+}
+
+function carregarPistolasLocal() {
+  try {
+    const raw = localStorage.getItem(PISTOLAS_STORAGE_KEY);
+    if (!raw) {
+      prepararRefsPistolas();
+      return;
+    }
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || !parsed.length) {
+      prepararRefsPistolas();
+      return;
+    }
+    pistolasData.splice(0, pistolasData.length, ...parsed);
+    prepararRefsPistolas();
+  } catch (e) {
+    console.warn('Nao foi possivel carregar pistolas do localStorage.', e);
+    prepararRefsPistolas();
+  }
+}
+
+function prepararRefsPortas() {
+  portasData.forEach((p, i) => {
+    if (!p.idDoc && !p._ref) p._ref = `local-porta-${i}`;
+  });
+}
+
+function guardarPortasLocal() {
+  try {
+    const serializavel = portasData.map(p => ({ ...p }));
+    localStorage.setItem(PORTAS_STORAGE_KEY, JSON.stringify(serializavel));
+  } catch (e) {
+    console.warn('Nao foi possivel guardar portas no localStorage.', e);
+  }
+}
+
+function carregarPortasLocal() {
+  try {
+    const raw = localStorage.getItem(PORTAS_STORAGE_KEY);
+    if (!raw) {
+      prepararRefsPortas();
+      return;
+    }
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || !parsed.length) {
+      prepararRefsPortas();
+      return;
+    }
+    portasData.splice(0, portasData.length, ...parsed);
+    prepararRefsPortas();
+  } catch (e) {
+    console.warn('Nao foi possivel carregar portas do localStorage.', e);
+    prepararRefsPortas();
+  }
+}
+
 /* =========================
    USERS - EMPRESA EXTREMO
 ========================= */
@@ -2519,7 +2673,7 @@ function renderUsers(lista = usersData) {
   atualizarContadoresUsers(lista);
 
   container.innerHTML = lista.map((u, index) => {
-    const ref = u.idDoc ? `'${u.idDoc}'` : index;
+    const ref = u.idDoc ? `'${u.idDoc}'` : `'${u._ref || `local-user-${index}`}'`;
     return `
     <div class="pc-card">
       <div class="pc-name">${u.nome}</div>
@@ -2537,6 +2691,7 @@ function renderUsers(lista = usersData) {
       <div class="meta-line">Pass Bragalis: <span class="meta-value">${u.pass_bragalis || "-"}</span></div>
       <div class="item-actions">
         <button class="secondary-btn" onclick="editarUser(${ref})">Editar</button>
+        <button class="secondary-btn" onclick="imprimirUser(${ref})">Imprimir Dados</button>
         <button class="secondary-btn" onclick="apagarUser(${ref})">Apagar</button>
       </div>
     </div>
@@ -2588,11 +2743,7 @@ function filtrarUsersComFiltros() {
    INIT
 ========================= */
 window.addEventListener("DOMContentLoaded", () => {
-  atualizarEstadoLigacaoAppBraga();
-  renderDashboardResumoInteligente();
-  renderModoGestorExtremo();
   if (el("historicoImpressoraPanel") && impressorasData && impressorasData.length) { abrirHistoricoImpressora(impressorasData[0]); }
-  if (el("scannerInput")) setTimeout(focarScannerPC, 250);
   const sw = el("darkSwitch");
 
   if (localStorage.getItem("modo") === "dark") {
@@ -2611,13 +2762,22 @@ window.addEventListener("DOMContentLoaded", () => {
 
   carregarChecklist();
   carregarEdicaoToner();
+  ensureLoteFieldOnEdit();
+  tryRenderAppBraga(renderStockMinimoConfig);
+  tryRenderAppBraga(renderStockMinimoPainel);
+  tryRenderAppBraga(renderAlertasInteligentes);
+  tryRenderAppBraga(() => enhanceScannerStatus("Leitura pronta."));
   preencherLocaisManutencao();
   preencherFormularioManutencao();
 
+  carregarImpressorasLocal();
   renderImpressoras();
   renderManutencoes(manutencoesGlobal);
+  carregarPistolasLocal();
+  carregarPortasLocal();
   renderPistolas();
   renderPortas();
+  carregarUsersLocal();
   renderUsers();
 
   if (el("manutencaoSerie")) {
@@ -2643,11 +2803,440 @@ window.addEventListener("DOMContentLoaded", () => {
 
 });
 
+/* =========================
+   TABLET / FIREBASE COMPLETO
+========================= */
+const printerFirebaseState = {};
+const printerFirebaseSyncState = {};
+
+function normalizePrinterIp(ip) {
+  return String(ip || "").trim().replace(/^https?:\/\//i, "").replace(/\/$/, "");
+}
+
+function hasUsablePrinterInfo(info) {
+  if (!info) return false;
+  if (Array.isArray(info.colors) && info.colors.length) return true;
+  if (info.residue && typeof info.residue.percent === "number") return true;
+  return typeof info.percent === "number";
+}
+
+function buildPrinterFirebasePayload(ip, info) {
+  const payload = {
+    ip: normalizePrinterIp(ip),
+    syncSource: "desktop-snmp",
+    updatedAtMs: Date.now(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  if (Array.isArray(info.colors) && info.colors.length) {
+    payload.toner = {};
+    info.colors.forEach((color) => {
+      if (!color || typeof color.percent !== "number") return;
+      const key = String(color.key || "").toLowerCase();
+      if (["black", "cyan", "magenta", "yellow"].includes(key)) {
+        payload.toner[key] = Math.max(0, Math.min(100, Math.round(color.percent)));
+      }
+    });
+  }
+
+  if (info.residue && typeof info.residue.percent === "number") {
+    payload.waste = Math.max(0, Math.min(100, Math.round(info.residue.percent)));
+  }
+
+  if (typeof info.percent === "number") {
+    payload.percent = Math.max(0, Math.min(100, Math.round(info.percent)));
+  } else if (payload.toner && typeof payload.toner.black === "number") {
+    payload.percent = payload.toner.black;
+  }
+
+  return payload;
+}
+
+async function syncPrinterInfoToFirebase(ip, info) {
+  const cleanIp = normalizePrinterIp(ip);
+  if (!cleanIp || !db || !db.collection || !hasUsablePrinterInfo(info)) return false;
+
+  const payload = buildPrinterFirebasePayload(cleanIp, info);
+  const compareKey = JSON.stringify({
+    ip: payload.ip,
+    toner: payload.toner || null,
+    waste: typeof payload.waste === "number" ? payload.waste : null,
+    percent: typeof payload.percent === "number" ? payload.percent : null
+  });
+
+  if (printerFirebaseSyncState[cleanIp] === compareKey) return true;
+
+  await db.collection("printers").doc(cleanIp).set(payload, { merge: true });
+  printerFirebaseSyncState[cleanIp] = compareKey;
+  printerFirebaseState[cleanIp] = Object.assign({}, printerFirebaseState[cleanIp] || {}, payload);
+  tonerInfoState[cleanIp] = mapFirebasePrinterInfo(printerFirebaseState[cleanIp]);
+  return true;
+}
+
+function normalizePrinterColorsFromFirebase(printerDoc) {
+  const toner = printerDoc && printerDoc.toner ? printerDoc.toner : {};
+  const colors = [];
+
+  const colorMap = [
+    ["black", "Preto", "black"],
+    ["cyan", "Ciano", "cyan"],
+    ["magenta", "Magenta", "magenta"],
+    ["yellow", "Amarelo", "yellow"]
+  ];
+
+  colorMap.forEach(([field, label, key]) => {
+    const value = toner[field];
+    if (typeof value === "number") {
+      colors.push({ key, label, percent: Math.max(0, Math.min(100, Math.round(value))) });
+    }
+  });
+
+  return colors;
+}
+
+function normalizePrinterResidueFromFirebase(printerDoc) {
+  const wasteValue = printerDoc && typeof printerDoc.waste === "number"
+    ? printerDoc.waste
+    : (printerDoc && typeof printerDoc.residue === "number" ? printerDoc.residue : null);
+
+  if (typeof wasteValue !== "number") return null;
+
+  return {
+    key: "waste",
+    label: "Resíduo",
+    percent: Math.max(0, Math.min(100, Math.round(wasteValue)))
+  };
+}
+
+function mapFirebasePrinterInfo(printerDoc) {
+  const colors = normalizePrinterColorsFromFirebase(printerDoc);
+  const residue = normalizePrinterResidueFromFirebase(printerDoc);
+  let percent = null;
+
+  if (colors.length === 1 && colors[0].key === "black") {
+    percent = colors[0].percent;
+  } else if (!colors.length && printerDoc && typeof printerDoc.percent === "number") {
+    percent = Math.max(0, Math.min(100, Math.round(printerDoc.percent)));
+  }
+
+  return { colors, residue, percent };
+}
+
+function bindPrintersFirebaseRealtime() {
+  if (!db || !db.collection) return;
+
+  db.collection("printers").onSnapshot((snap) => {
+    snap.forEach((doc) => {
+      const data = doc.data() || {};
+      const ip = normalizePrinterIp(data.ip || doc.id);
+      if (!ip) return;
+
+      const mapped = mapFirebasePrinterInfo(data);
+      printerFirebaseState[ip] = Object.assign({}, data, { ip });
+      tonerInfoState[ip] = mapped;
+      maybeNotifyCriticalSupply(ip, mapped);
+    });
+
+    renderDashboardCards();
+    renderImpressoras();
+    renderTonerDiagnostics();
+
+    const dashboardHasSearch = !!el("searchDashboard");
+    if (dashboardHasSearch && normalizarTexto(el("searchDashboard")?.value || "")) {
+      renderDashboardCards();
+    }
+  }, (error) => {
+    console.error("Erro ao ler coleção printers:", error);
+  });
+}
+
+const __originalObterTonerInfo = obterTonerInfo;
+obterTonerInfo = async function(ip) {
+  const cleanIp = normalizePrinterIp(ip);
+  const desktopMode = !!(window.electronAPI && window.electronAPI.getTonerSNMP);
+
+  if (desktopMode) {
+    const freshInfo = await __originalObterTonerInfo(cleanIp);
+    if (hasUsablePrinterInfo(freshInfo)) {
+      try {
+        await syncPrinterInfoToFirebase(cleanIp, freshInfo);
+      } catch (error) {
+        console.error("Erro ao sincronizar impressora para Firebase:", cleanIp, error);
+      }
+      return freshInfo;
+    }
+
+    if (printerFirebaseState[cleanIp]) {
+      return mapFirebasePrinterInfo(printerFirebaseState[cleanIp]);
+    }
+
+    return freshInfo;
+  }
+
+  if (printerFirebaseState[cleanIp]) {
+    return mapFirebasePrinterInfo(printerFirebaseState[cleanIp]);
+  }
+  return await __originalObterTonerInfo(cleanIp);
+};
+
+const __originalTestarTodasAsImpressoras = testarTodasAsImpressoras;
+testarTodasAsImpressoras = async function() {
+  const webMode = !(window.electronAPI && window.electronAPI.getTonerSNMP);
+  if (webMode) {
+    impressorasData.forEach((item) => {
+      const info = printerFirebaseState[item.ip] ? mapFirebasePrinterInfo(printerFirebaseState[item.ip]) : null;
+      tonerInfoState[item.ip] = info;
+      const alvoId = `toner-${item.ip.replace(/\./g, "-")}`;
+      if (el(alvoId)) {
+        el(alvoId).innerHTML = gerarHTMLToners(info);
+      }
+      if (info) maybeNotifyCriticalSupply(item.ip, info);
+    });
+    renderDashboardCards();
+    return;
+  }
+  return await __originalTestarTodasAsImpressoras();
+};
+
+const __originalAbrirIP = abrirIP;
+abrirIP = function(ip) {
+  // No tablet/web o IP fica só de leitura
+  const webMode = !(window.electronAPI && window.electronAPI.getTonerSNMP);
+  if (webMode) return;
+  return __originalAbrirIP(ip);
+};
+
+const __originalRenderImpressoras = renderImpressoras;
+renderImpressoras = function(lista = impressorasData) {
+  const tbody = el("impressorasTableBody");
+  if (!tbody) return __originalRenderImpressoras(lista);
+
+  const total = impressorasData.length;
+  const ok = impressorasData.filter(i => obterEstadoImpressora(i.ip) === "OK").length;
+  const problema = impressorasData.filter(i => {
+    const e = obterEstadoImpressora(i.ip);
+    return e === "Pendente" || e === "Em reparação";
+  }).length;
+  const resolvidas = impressorasData.filter(i => obterEstadoImpressora(i.ip) === "Resolvido").length;
+
+  setText("countImpressoras", total);
+  setText("countImpressorasOk", ok);
+  setText("countImpressorasProblema", problema);
+  setText("countImpressorasResolvidas", resolvidas);
+
+  const webMode = !(window.electronAPI && window.electronAPI.getTonerSNMP);
+
+  tbody.innerHTML = lista.map(item => {
+    const estado = obterEstadoImpressora(item.ip);
+    const tonerId = `toner-${item.ip.replace(/\./g, "-")}`;
+    const info = printerFirebaseState[item.ip] ? mapFirebasePrinterInfo(printerFirebaseState[item.ip]) : (tonerInfoState[item.ip] || null);
+    const ipHtml = webMode ? item.ip : `<a href="http://${item.ip}" target="_blank" rel="noopener noreferrer">${item.ip}</a>`;
+
+    return `
+      <tr>
+        <td>${item.modelo}</td>
+        <td>${item.serie}</td>
+        <td>${item.armazem}</td>
+        <td>${item.localizacao}</td>
+        <td>${ipHtml}</td>
+        <td>${badgeEstado(estado)}</td>
+        <td>
+          <div id="${tonerId}">${gerarHTMLToners(info)}</div>
+          <div class="table-actions" style="margin-top:8px;">
+            ${webMode ? "" : `<button class="action-btn ip" onclick="abrirIP('${item.ip}')">Abrir IP</button>`}
+            <button class="action-btn manut" onclick='abrirManutencaoDireta(${JSON.stringify(item)})'>Manutenção</button>
+            ${webMode ? "" : `<button class="action-btn" onclick="window.testarTonerImpressora('${item.ip}', '${tonerId}')">Testar toner</button>`}
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+};
+
+window.addEventListener("DOMContentLoaded", () => {
+  if (el("historicoImpressoraPanel") && impressorasData && impressorasData.length) { abrirHistoricoImpressora(impressorasData[0]); }
+  bindPrintersFirebaseRealtime();
+});
+
+
+
+
 
 /* =========================
-   PC OCR + WORD + ETIQUETAS
+   DIAGNÓSTICO DO TONER
 ========================= */
-const tonerMapPC = {
+const tonerDiagnosticsState = {
+  running: false,
+  lastRunAt: null,
+  source: "—",
+  successCount: 0,
+  totalCount: 0,
+  status: "idle",
+  log: []
+};
+
+function formatDiagTime(date) {
+  if (!date) return "—";
+  try {
+    return new Intl.DateTimeFormat("pt-PT", { hour: "2-digit", minute: "2-digit", second: "2-digit", day: "2-digit", month: "2-digit" }).format(date);
+  } catch (e) {
+    return date.toLocaleString();
+  }
+}
+
+function resolveDiagSource() {
+  return (window.electronAPI && window.electronAPI.getTonerSNMP) ? "Leitura real SNMP" : "Firebase";
+}
+
+
+const tonerDiagUiState = { logsVisible: false };
+
+function renderTonerDiagLogVisibility() {
+  const wrapEl = el("tonerDiagLogWrap");
+  const btnEl = el("toggleTonerDiagLogBtn");
+  if (!wrapEl || !btnEl) return;
+  wrapEl.classList.toggle("is-collapsed", !tonerDiagUiState.logsVisible);
+  btnEl.textContent = tonerDiagUiState.logsVisible ? "Esconder logs" : "Ver logs";
+}
+
+function toggleTonerDiagLog(force) {
+  tonerDiagUiState.logsVisible = typeof force === "boolean" ? force : !tonerDiagUiState.logsVisible;
+  renderTonerDiagLogVisibility();
+}
+window.toggleTonerDiagLog = toggleTonerDiagLog;
+
+function renderTonerDiagnostics() {
+  const statusEl = el("tonerDiagStatus");
+  const dotEl = el("tonerDiagDot");
+  const lastRunEl = el("tonerDiagLastRun");
+  const sourceEl = el("tonerDiagSource");
+  const summaryEl = el("tonerDiagSummary");
+  const logEl = el("tonerDiagLog");
+  if (!statusEl || !dotEl || !lastRunEl || !sourceEl || !summaryEl || !logEl) return;
+  renderTonerDiagLogVisibility();
+
+  const map = {
+    idle: ["Sem teste", "is-idle"],
+    running: ["A testar", "is-running"],
+    ok: ["A funcionar", "is-ok"],
+    warn: ["Parcial", "is-warn"],
+    error: ["Com falhas", "is-error"]
+  };
+
+  const current = map[tonerDiagnosticsState.status] || map.idle;
+  statusEl.textContent = current[0];
+  dotEl.className = `diag-dot ${current[1]}`;
+  lastRunEl.textContent = formatDiagTime(tonerDiagnosticsState.lastRunAt);
+  sourceEl.textContent = tonerDiagnosticsState.source || "—";
+
+  if (tonerDiagnosticsState.running) {
+    summaryEl.textContent = `A testar ${tonerDiagnosticsState.totalCount || impressorasData.length || 0} impressoras`;
+  } else if (!tonerDiagnosticsState.lastRunAt) {
+    summaryEl.textContent = "À espera de teste";
+  } else {
+    summaryEl.textContent = `${tonerDiagnosticsState.successCount}/${tonerDiagnosticsState.totalCount || 0} impressoras com leitura`;
+  }
+
+  if (!tonerDiagnosticsState.log.length) {
+    logEl.innerHTML = '<div class="diagnostics-log-item is-muted">Ainda sem leituras.</div>';
+    return;
+  }
+
+  logEl.innerHTML = tonerDiagnosticsState.log.map(item => `
+    <div class="diagnostics-log-item">
+      <span class="diag-time">${item.time}</span>
+      <strong>${item.ip}</strong> · ${item.message}
+    </div>
+  `).join("");
+}
+
+function pushTonerDiagnosticLog(ip, message) {
+  tonerDiagnosticsState.log.unshift({
+    ip: ip || "Sistema",
+    message,
+    time: formatDiagTime(new Date())
+  });
+  tonerDiagnosticsState.log = tonerDiagnosticsState.log.slice(0, 10);
+  renderTonerDiagnostics();
+}
+
+function updateTonerDiagnosticStatus(status, partial = {}) {
+  tonerDiagnosticsState.status = status;
+  Object.assign(tonerDiagnosticsState, partial);
+  renderTonerDiagnostics();
+}
+
+function summarizeTonerInfo(info) {
+  if (!info) return "sem leitura";
+  if (Array.isArray(info.colors) && info.colors.length) {
+    return info.colors.map(c => `${c.label || c.key}: ${typeof c.percent === "number" ? Math.round(c.percent) : "N/D"}%`).join(" · ");
+  }
+  if (typeof info.percent === "number") return `Preto: ${Math.round(info.percent)}%`;
+  return "sem percentagem";
+}
+
+async function testarSistemaToner() {
+  updateTonerDiagnosticStatus("running", {
+    running: true,
+    source: resolveDiagSource(),
+    totalCount: impressorasData.length || 0,
+    successCount: 0
+  });
+  pushTonerDiagnosticLog("Sistema", `Teste iniciado por ${resolveDiagSource()}`);
+
+  let success = 0;
+  for (const item of impressorasData) {
+    const info = await obterTonerInfo(item.ip);
+    tonerInfoState[item.ip] = info || null;
+    const alvoId = `toner-${item.ip.replace(/\./g, "-")}`;
+    if (el(alvoId)) el(alvoId).innerHTML = gerarHTMLToners(info);
+    if (info) {
+      success += 1;
+      pushTonerDiagnosticLog(item.ip, summarizeTonerInfo(info));
+      maybeNotifyCriticalSupply(item.ip, info);
+    } else {
+      pushTonerDiagnosticLog(item.ip, "sem resposta");
+    }
+  }
+
+  updateTonerDiagnosticStatus(success === impressorasData.length ? "ok" : (success > 0 ? "warn" : "error"), {
+    running: false,
+    lastRunAt: new Date(),
+    successCount: success,
+    totalCount: impressorasData.length || 0,
+    source: resolveDiagSource()
+  });
+
+  renderDashboardCards();
+  renderImpressoras();
+}
+
+window.testarSistemaToner = testarSistemaToner;
+
+/* =========================
+   VERSÃO / ONLINE-OFFLINE
+========================= */
+const APP_BRAGA_VERSION = "v1.8 Premium";
+
+function atualizarEstadoLigacaoAppBraga() {
+  const online = navigator.onLine;
+  document.querySelectorAll(".status-pill").forEach(node => {
+    node.textContent = online ? "Sistema Online" : "Sistema Offline";
+    node.classList.toggle("offline", !online);
+  });
+  document.querySelectorAll(".version-pill").forEach(node => {
+    node.textContent = APP_BRAGA_VERSION;
+  });
+}
+
+window.addEventListener("online", atualizarEstadoLigacaoAppBraga);
+window.addEventListener("offline", atualizarEstadoLigacaoAppBraga);
+document.addEventListener("DOMContentLoaded", atualizarEstadoLigacaoAppBraga);
+
+/* =========================
+   ADD TONER - ESTÁVEL
+========================= */
+const tonerMapStable = {
   "TK-3190": { equipamento: "P3155DN", cor: "Preto", codigo: "TK-3190" },
   "TK-8365Y": { equipamento: "TASKalfa_255ci", cor: "Amarelo", codigo: "TK-8365Y" },
   "TK-8365C": { equipamento: "TASKalfa_255ci", cor: "Azul", codigo: "TK-8365C" },
@@ -2655,101 +3244,75 @@ const tonerMapPC = {
   "TK-8365K": { equipamento: "TASKalfa_255ci", cor: "Preto", codigo: "TK-8365K" },
   "TK-3430": { equipamento: "PA5500x", cor: "Preto", codigo: "TK-3430" }
 };
-let etiquetasWordGlobal = [];
 
-function focarScannerPC() {
-  const input = el("scannerInput");
-  if (input) input.focus();
-}
-function formatDatePTAppBraga(valor) {
-  const raw = String(valor || "").trim();
-  if (!raw) return "";
-  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-    const [yyyy, mm, dd] = raw.split("-");
-    return `${dd}/${mm}/${yyyy}`;
-  }
-  return raw;
-}
-function getHojeISOAppBraga() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-function getHojePTAppBraga() {
-  return formatDatePTAppBraga(getHojeISOAppBraga());
-}
-function normalizarTextoOCRPC(texto) {
-  return String(texto || "").replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").replace(/—/g, "-").replace(/_/g, "-").trim().toUpperCase();
-}
-function mostrarOCRStatusPC(texto) {
+let scannerInstanceStable = null;
+let scannerAtivoStable = false;
+
+function mostrarOCRStatusStable(texto) {
   const box = el("ocrStatus");
   if (!box) return;
   box.style.display = "block";
   box.innerText = texto;
 }
-function preencherDataScanPC() {
-  const data = el("data");
-  if (data && !data.value) data.value = getHojeISOAppBraga();
+
+function normalizarTextoOCRStable(texto) {
+  return String(texto || "")
+    .replace(/[\r\n]+/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/—/g, "-")
+    .replace(/_/g, "-")
+    .trim()
+    .toUpperCase();
 }
-function aplicarTonerPC(toner) {
-  if (el("equipamento")) el("equipamento").value = toner.equipamento || "";
-  if (el("cor")) el("cor").value = toner.cor || "";
-  preencherDataScanPC();
+
+function preencherDataAtualSeVaziaStable() {
+  const dataEl = el("data");
+  if (!dataEl) return;
+  if (!dataEl.value) {
+    const hoje = new Date();
+    const yyyy = hoje.getFullYear();
+    const mm = String(hoje.getMonth() + 1).padStart(2, "0");
+    const dd = String(hoje.getDate()).padStart(2, "0");
+    dataEl.value = `${yyyy}-${mm}-${dd}`;
+  }
 }
-function abrirSerie3DigitosPC() {
-  const box = el("serial3Box");
-  if (box) box.style.display = "block";
-  const input = el("serial3Input");
-  if (input) { input.value = ""; setTimeout(()=>input.focus(), 120); }
+
+function montarTextoLocalizacaoStable(item) {
+  return `${item.serie} - ${item.armazem} - ${item.localizacao}`;
 }
-function fecharSerie3DigitosPC() {
-  const box = el("serial3Box");
-  if (box) box.style.display = "none";
-  if (el("serial3Input")) el("serial3Input").value = "";
-}
-function procurarImpressoraPorUltimos3DigitosPC(final3) {
+
+function procurarImpressoraPorUltimos3DigitosStable(final3) {
   const alvo = String(final3 || "").trim().toUpperCase();
   if (alvo.length !== 3) return null;
   return impressorasData.find(item => String(item.serie || "").toUpperCase().slice(-3) === alvo) || null;
 }
-function montarTextoLocalizacaoPC(item) {
-  return `${item.serie} - ${item.armazem} - ${item.localizacao}`;
-}
-function confirmarSerie3DigitosPC() {
-  const valor = ((el("serial3Input") && el("serial3Input").value) || "").trim().toUpperCase();
-  if (valor.length !== 3) { mostrarMensagem("Introduza exatamente 3 dígitos.", "erro"); return; }
-  const printer = procurarImpressoraPorUltimos3DigitosPC(valor);
-  if (!printer) { mostrarMensagem("Nenhuma impressora encontrada com esses 3 dígitos.", "erro"); return; }
-  if (el("localizacao")) el("localizacao").value = montarTextoLocalizacaoPC(printer);
-  fecharSerie3DigitosPC();
-  mostrarMensagem("Localização selecionada com sucesso.");
-}
-function processarTextoScannerPC(textoLido) {
-  const t = normalizarTextoOCRPC(textoLido);
-  const tkMatch = t.match(/TK[\s-]?(\d{4}[A-Z]?)/);
-  if (tkMatch) {
-    const tk = `TK-${tkMatch[1]}`;
-    const toner = tonerMapPC[tk] || null;
-    if (toner) {
-      aplicarTonerPC(toner);
-      mostrarMensagem(`Toner identificado: ${toner.codigo}`);
-      abrirSerie3DigitosPC();
-      return true;
-    }
+
+function abrirSerie3DigitosStable() {
+  const box = el("serial3Box");
+  if (box) box.style.display = "block";
+  const input = el("serial3Input");
+  if (input) {
+    input.value = "";
+    setTimeout(() => input.focus(), 120);
   }
-  mostrarMensagem("Código não reconhecido para preenchimento automático.", "erro");
-  return false;
 }
-function handleScannerEnter(event) {
-  if (event.key !== "Enter") return;
-  const input = el("scannerInput");
-  if (!input) return;
-  const valor = input.value.trim();
-  if (!valor) return;
-  processarTextoScannerPC(valor);
-  input.value = "";
+
+function fecharSerie3DigitosStable() {
+  const box = el("serial3Box");
+  if (box) box.style.display = "none";
+  const input = el("serial3Input");
+  if (input) input.value = "";
 }
-function extrairDadosEtiquetaOCRPC(texto) {
-  const t = normalizarTextoOCRPC(texto);
+
+function aplicarDadosTonerStable(toner) {
+  if (el("equipamento")) el("equipamento").value = toner.equipamento || "";
+  if (el("cor")) el("cor").value = toner.cor || "";
+  preencherDataAtualSeVaziaStable();
+}
+
+function extrairDadosEtiquetaOCRStable(texto) {
+  const t = normalizarTextoOCRStable(texto);
+
   let tonerCode = "";
   const tkMatch = t.match(/TK[\s-]?(\d{4}[A-Z]?)/);
   if (tkMatch) tonerCode = `TK-${tkMatch[1]}`;
@@ -2758,8 +3321,10 @@ function extrairDadosEtiquetaOCRPC(texto) {
   const dataISO = t.match(/\d{4}-\d{2}-\d{2}/);
   const dataPTSlash = t.match(/\d{2}\/\d{2}\/\d{4}/);
   const dataPTHyphen = t.match(/\d{2}-\d{2}-\d{4}/);
-  if (dataISO) dataFolha = dataISO[0];
-  else if (dataPTSlash) {
+
+  if (dataISO) {
+    dataFolha = dataISO[0];
+  } else if (dataPTSlash) {
     const [dd, mm, yyyy] = dataPTSlash[0].split("/");
     dataFolha = `${yyyy}-${mm}-${dd}`;
   } else if (dataPTHyphen) {
@@ -2770,160 +3335,374 @@ function extrairDadosEtiquetaOCRPC(texto) {
   let serieEncontrada = "";
   for (const item of impressorasData) {
     const s = String(item.serie || "").toUpperCase();
-    if (s && t.includes(s)) { serieEncontrada = item.serie; break; }
+    if (s && t.includes(s)) {
+      serieEncontrada = item.serie;
+      break;
+    }
   }
 
   let equipamento = "";
   let cor = "";
-  if (tonerCode && tonerMapPC[tonerCode]) {
-    equipamento = tonerMapPC[tonerCode].equipamento || "";
-    cor = tonerMapPC[tonerCode].cor || "";
+
+  if (tonerCode && tonerMapStable[tonerCode]) {
+    equipamento = tonerMapStable[tonerCode].equipamento || "";
+    cor = tonerMapStable[tonerCode].cor || "";
   }
+
   if (!equipamento) {
     if (t.includes("P3155DN")) equipamento = "P3155DN";
     else if (t.includes("PA5500X")) equipamento = "PA5500x";
     else if (t.includes("2554CI")) equipamento = "TASKalfa_255ci";
   }
+
   if (!cor && tonerCode) {
     if (tonerCode.endsWith("Y")) cor = "Amarelo";
     else if (tonerCode.endsWith("C")) cor = "Azul";
     else if (tonerCode.endsWith("M")) cor = "Vermelho";
     else cor = "Preto";
   }
-  return { tonerCode, equipamento, cor, dataFolha, serie: serieEncontrada };
+
+  const lote = extractLoteFromText(t);
+
+  return {
+    lote,
+    tonerCode,
+    equipamento,
+    cor,
+    dataFolha,
+    serie: serieEncontrada
+  };
 }
-function aplicarDadosOCRNoFormularioPC(dados) {
+
+function aplicarDadosOCRNoFormularioStable(dados) {
   if (!dados) return false;
+
   if (dados.equipamento && el("equipamento")) el("equipamento").value = dados.equipamento;
   if (dados.cor && el("cor")) el("cor").value = dados.cor;
-  if (el("dataFolha")) el("dataFolha").value = dados.dataFolha || "";
-  preencherDataScanPC();
+
+  if (el("dataFolha")) {
+    el("dataFolha").value = dados.dataFolha || "";
+  }
+  if (el("lote")) {
+    el("lote").value = dados.lote || "";
+  }
+
+  preencherDataAtualSeVaziaStable();
+
   if (dados.serie && el("localizacao")) {
     const printer = impressorasData.find(p => p.serie === dados.serie);
-    if (printer) el("localizacao").value = montarTextoLocalizacaoPC(printer);
+    if (printer) {
+      el("localizacao").value = montarTextoLocalizacaoStable(printer);
+    }
   } else if (dados.equipamento || dados.cor) {
-    abrirSerie3DigitosPC();
+    abrirSerie3DigitosStable();
   }
+
   return !!(dados.tonerCode || dados.equipamento || dados.cor || dados.dataFolha || dados.serie);
 }
-async function processarOCRInputPC(event) {
+
+function processarTextoLidoStable(textoLido) {
+  const bruto = String(textoLido || "");
+  const normal = normalizarTextoOCRStable(bruto);
+
+  const tkMatch = normal.match(/TK[\s-]?(\d{4}[A-Z]?)/);
+  if (tkMatch) {
+    const tk = `TK-${tkMatch[1]}`;
+    const toner = tonerMapStable[tk] || null;
+    if (toner) {
+      aplicarDadosTonerStable(toner);
+      mostrarMensagem(`Toner identificado: ${toner.codigo}`);
+      abrirSerie3DigitosStable();
+      return true;
+    }
+  }
+
+  mostrarMensagem("Código não reconhecido para preenchimento automático.", "erro");
+  return false;
+}
+
+async function startScannerStable() {
+  const reader = el("reader");
+
+  if (!reader) {
+    mostrarMensagem("Zona do scanner não encontrada.", "erro");
+    return;
+  }
+
+  if (typeof Html5Qrcode === "undefined") {
+    mostrarMensagem("Biblioteca da câmara não carregada.", "erro");
+    return;
+  }
+
+  if (scannerAtivoStable) {
+    mostrarMensagem("A câmara já está aberta.", "erro");
+    return;
+  }
+
+  reader.innerHTML = "";
+  scannerInstanceStable = new Html5Qrcode("reader");
+
+  try {
+    await scannerInstanceStable.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 280, height: 180 } },
+      (decodedText) => {
+        enhanceScannerStatus("Código lido. A processar automaticamente...");
+        processarTextoLidoStable(decodedText);
+        stopScannerStable();
+      },
+      () => {}
+    );
+    scannerAtivoStable = true;
+    enhanceScannerStatus("Câmara iniciada. À espera de leitura inteligente.");
+    mostrarMensagem("Câmara iniciada.");
+  } catch (e) {
+    console.error("Erro ao iniciar scanner:", e);
+    mostrarMensagem("Não foi possível abrir a câmara.", "erro");
+  }
+}
+
+async function stopScannerStable() {
+  const reader = el("reader");
+  if (!scannerInstanceStable || !scannerAtivoStable) {
+    if (reader) reader.innerHTML = "";
+    scannerAtivoStable = false;
+    return;
+  }
+
+  try {
+    await scannerInstanceStable.stop();
+    await scannerInstanceStable.clear();
+  } catch (e) {
+    console.error("Erro ao fechar scanner:", e);
+  } finally {
+    scannerInstanceStable = null;
+    scannerAtivoStable = false;
+    if (reader) reader.innerHTML = "";
+  }
+}
+
+function abrirOCRStable() {
+  const input = el("ocrInput");
+  if (!input) {
+    mostrarMensagem("Input OCR não encontrado.", "erro");
+    return;
+  }
+  input.value = "";
+  input.click();
+}
+
+async function processarOCRInputStable(event) {
   const file = event && event.target && event.target.files ? event.target.files[0] : null;
   if (!file) return;
-  if (typeof Tesseract === "undefined") { mostrarMensagem("Biblioteca OCR não carregada.", "erro"); return; }
+
+  if (typeof Tesseract === "undefined") {
+    mostrarMensagem("Biblioteca OCR não carregada.", "erro");
+    return;
+  }
+
   try {
-    mostrarOCRStatusPC("A ler a folha... pode demorar alguns segundos.");
+    mostrarOCRStatusStable("A ler a folha... pode demorar alguns segundos.");
     mostrarMensagem("A ler a folha...");
+
     const result = await Tesseract.recognize(file, "eng", { logger: () => {} });
     const texto = result && result.data ? result.data.text : "";
-    const dados = extrairDadosEtiquetaOCRPC(texto);
-    const ok = aplicarDadosOCRNoFormularioPC(dados);
-    const resumo = [dados.tonerCode?`Toner: ${dados.tonerCode}`:"", dados.equipamento?`Equipamento: ${dados.equipamento}`:"", dados.cor?`Cor: ${dados.cor}`:"", dados.dataFolha?`Data folha: ${dados.dataFolha}`:"", el("data")&&el("data").value?`Data scan: ${el("data").value}`:"", dados.serie?`Série: ${dados.serie}`:""].filter(Boolean).join(" | ");
-    mostrarOCRStatusPC(resumo || "A folha foi lida, mas não encontrei dados suficientes.");
+    const dados = extrairDadosEtiquetaOCRStable(texto);
+    const ok = aplicarDadosOCRNoFormularioStable(dados);
+
+    const resumo = [
+      dados.tonerCode ? `Toner: ${dados.tonerCode}` : "",
+      dados.lote ? `Lote: ${dados.lote}` : "",
+      dados.equipamento ? `Equipamento: ${dados.equipamento}` : "",
+      dados.cor ? `Cor: ${dados.cor}` : "",
+      dados.dataFolha ? `Data folha: ${dados.dataFolha}` : "",
+      el("data") && el("data").value ? `Data scan: ${el("data").value}` : "",
+      dados.serie ? `Série: ${dados.serie}` : ""
+    ].filter(Boolean).join(" | ");
+
+    mostrarOCRStatusStable(resumo || "A folha foi lida, mas não encontrei dados suficientes.");
     mostrarMensagem(ok ? "Folha lida com sucesso." : "Não encontrei dados suficientes na folha.", ok ? "sucesso" : "erro");
-    if (ok && dados.serie && dados.equipamento) await gerarWordEtiquetaFromForm();
+    if (ok && dados.serie && dados.equipamento) {
+      await gerarWordEtiquetaFromForm(true);
+    }
   } catch (e) {
     console.error("Erro OCR:", e);
-    mostrarOCRStatusPC("Erro ao ler a folha.");
+    mostrarOCRStatusStable("Erro ao ler a folha.");
     mostrarMensagem("Erro ao ler a folha.", "erro");
   }
 }
-function extrairDadosEtiquetaWordPC() {
+
+function confirmarSerie3DigitosStable() {
+  const valor = ((el("serial3Input") && el("serial3Input").value) || "").trim().toUpperCase();
+
+  if (valor.length !== 3) {
+    mostrarMensagem("Introduza exatamente 3 dígitos.", "erro");
+    return;
+  }
+
+  const printer = procurarImpressoraPorUltimos3DigitosStable(valor);
+  if (!printer) {
+    mostrarMensagem("Nenhuma impressora encontrada com esses 3 dígitos.", "erro");
+    return;
+  }
+
+  if (el("localizacao")) {
+    el("localizacao").value = montarTextoLocalizacaoStable(printer);
+  }
+
+  fecharSerie3DigitosStable();
+  mostrarMensagem("Localização selecionada com sucesso.");
+}
+
+window.startScanner = startScannerStable;
+window.stopScanner = stopScannerStable;
+window.abrirOCR = abrirOCRStable;
+window.processarOCRInput = processarOCRInputStable;
+window.confirmarSerie3Digitos = confirmarSerie3DigitosStable;
+window.fecharSerie3Digitos = fecharSerie3DigitosStable;
+
+
+/* =========================
+   ETIQUETA WORD AUTOMÁTICA
+========================= */
+function formatDatePTAppBraga(valor) {
+  const raw = String(valor || "").trim();
+  if (!raw) return "";
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    const [yyyy, mm, dd] = raw.split("-");
+    return `${dd}/${mm}/${yyyy}`;
+  }
+
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(raw)) {
+    return raw;
+  }
+
+  return raw;
+}
+
+function extrairDadosEtiquetaWord() {
   const loc = (el("localizacao") && el("localizacao").value) || "";
-  let serie = "", localCurto = "", armazem = "";
-  const parts = loc.split(" - ").map(v=>v.trim()).filter(Boolean);
+  const dataFolha = (el("dataFolha") && el("dataFolha").value) || "";
+  const dataScan = (el("data") && el("data").value) || "";
+
+  let serie = "";
+  let localCurto = "";
+  let armazem = "";
+
+  const parts = loc.split(" - ").map(v => v.trim()).filter(Boolean);
   if (parts.length >= 3) {
     serie = parts[0] || "";
     armazem = parts[1] || "";
     localCurto = parts.slice(2).join(" - ");
-  } else localCurto = loc || "Sem Localização";
-  return { serie: serie || "SEM SÉRIE", localCurto: localCurto || "Sem Localização", armazem: armazem || "", dataEtiqueta: getHojePTAppBraga(), dataScanISO: getHojeISOAppBraga() };
+  } else {
+    localCurto = loc || "Sem Localização";
+  }
+
+  const dataEtiqueta = formatDatePTAppBraga(dataFolha || dataScan);
+
+  return {
+    serie: serie || "SEM SÉRIE",
+    localCurto: localCurto || "Sem Localização",
+    armazem: armazem || "",
+    dataEtiqueta: dataEtiqueta || formatDatePTAppBraga(dataScan) || "Sem Data"
+  };
 }
-async function guardarRegistoEtiquetaWordPC(meta) {
-  try { await db.collection("etiquetasWord").add({ ...meta, created: new Date() }); } catch (e) { console.error("Erro etiqueta word:", e); }
-}
-async function gerarWordEtiquetaFromMetaPC(meta, silent=false) {
+
+async function gerarWordEtiquetaFromForm(auto = false) {
   try {
-    if (typeof docx === "undefined") { mostrarMensagem("Biblioteca Word não carregada.", "erro"); return; }
-    const { Document, Packer, Paragraph, AlignmentType, TextRun } = docx;
+    if (typeof docx === "undefined") {
+      mostrarMensagem("Biblioteca Word não carregada.", "erro");
+      return;
+    }
+
+    const dados = extrairDadosEtiquetaWord();
+
+    if (!dados.localCurto || !dados.serie) {
+      mostrarMensagem("Faltam dados para gerar a etiqueta Word.", "erro");
+      return;
+    }
+
+    const {
+      Document,
+      Packer,
+      Paragraph,
+      AlignmentType,
+      TextRun,
+      HeadingLevel
+    } = docx;
+
     const doc = new Document({
       creator: "App Braga",
       title: "Etiqueta Toner",
-      sections: [{
-        children: [
-          new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 3200, after: 500 }, children: [new TextRun({ text: meta.localCurto || "Sem Localização", bold: true, size: 42 })]}),
-          new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 200, after: 2800 }, children: [new TextRun({ text: meta.serie || "SEM SÉRIE", bold: true, size: 64 })]}),
-          new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 0, after: 200 }, children: [new TextRun({ text: meta.dataEtiqueta || getHojePTAppBraga(), bold: true, size: 56 })]})
-        ]
-      }]
+      description: "Etiqueta gerada automaticamente pelo scan OCR",
+      sections: [
+        {
+          properties: {},
+          children: [
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              spacing: { before: 3200, after: 500 },
+              children: [
+                new TextRun({
+                  text: dados.localCurto,
+                  bold: true,
+                  size: 42
+                })
+              ]
+            }),
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              spacing: { before: 200, after: 2800 },
+              children: [
+                new TextRun({
+                  text: dados.serie,
+                  bold: true,
+                  size: 64
+                })
+              ]
+            }),
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              spacing: { before: 0, after: 200 },
+              children: [
+                new TextRun({
+                  text: dados.dataEtiqueta,
+                  bold: true,
+                  size: 56
+                })
+              ]
+            })
+          ]
+        }
+      ]
     });
+
     const blob = await Packer.toBlob(doc);
-    const fileName = `Etiqueta_${String(meta.localCurto || "Local").replace(/\s+/g, "_")}_${meta.serie || "SEM_SERIE"}_${(meta.dataEtiqueta || getHojePTAppBraga()).replace(/\//g, "-")}.docx`;
+    const fileName = `Etiqueta_${dados.localCurto.replace(/\s+/g, "_")}_${dados.serie}.docx`;
+
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = fileName;
     document.body.appendChild(a);
     a.click();
-    setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1500);
-    if (!silent) mostrarMensagem("Etiqueta Word gerada com sucesso.");
-  } catch (e) {
-    console.error("Erro Word:", e);
+    setTimeout(() => {
+      URL.revokeObjectURL(a.href);
+      a.remove();
+    }, 1200);
+
+    await guardarEtiquetaPartilhada({ origem: auto ? "scan" : "manual" });
+
+    if (!auto) {
+      mostrarMensagem("Etiqueta Word gerada com sucesso.");
+    }
+  } catch (error) {
+    console.error("Erro ao gerar Word:", error);
     mostrarMensagem("Erro ao gerar a etiqueta Word.", "erro");
   }
 }
-async function gerarWordEtiquetaFromForm() {
-  const dados = extrairDadosEtiquetaWordPC();
-  if (!dados.localCurto || !dados.serie) { mostrarMensagem("Faltam dados para gerar a etiqueta Word.", "erro"); return; }
-  await gerarWordEtiquetaFromMetaPC(dados, false);
-  await guardarRegistoEtiquetaWordPC(dados);
-}
-function renderEtiquetasWord(lista = etiquetasWordGlobal) {
-  const host = el("listaEtiquetasWord");
-  if (!host) return;
-  if (!lista.length) {
-    host.innerHTML = `<div class="panel empty-state"><h3>Sem etiquetas guardadas</h3><p>Quando o OCR gerar um Word, ele vai aparecer aqui.</p></div>`;
-    return;
-  }
-  host.innerHTML = lista.map((item, idx) => `
-    <div class="etiqueta-card">
-      <div class="stock-id">${item.localCurto || "Sem Localização"}</div>
-      <div class="meta-line">Série: <span class="meta-value">${item.serie || "-"}</span></div>
-      <div class="meta-line">Armazém: <span class="meta-value">${item.armazem || "-"}</span></div>
-      <div class="meta-line">Data etiqueta: <span class="meta-value">${item.dataEtiqueta || "-"}</span></div>
-      <div class="meta-line">Data scan: <span class="meta-value">${item.dataScanISO || "-"}</span></div>
-      <div class="card-actions"><button class="small-btn btn-edit" data-etq="${idx}">Regerar Word</button></div>
-    </div>`).join("");
-  host.querySelectorAll("[data-etq]").forEach(btn => {
-    btn.onclick = () => regerarEtiquetaWordPC(lista[Number(btn.dataset.etq)]);
-  });
-}
-function filtrarEtiquetasWord() {
-  const termo = normalizarTexto(el("searchEtiquetasWord")?.value || "");
-  const filtrada = etiquetasWordGlobal.filter(item => normalizarTexto([item.localCurto, item.serie, item.armazem, item.dataEtiqueta, item.dataScanISO].join(" ")).includes(termo));
-  renderEtiquetasWord(filtrada);
-}
-async function regerarEtiquetaWordPC(item) {
-  await gerarWordEtiquetaFromMetaPC(item, false);
-}
-db.collection("etiquetasWord").orderBy("created", "desc").onSnapshot(snap => {
-  etiquetasWordGlobal = [];
-  snap.forEach(doc => {
-    const d = doc.data();
-    d.idDoc = doc.id;
-    etiquetasWordGlobal.push(d);
-  });
-  renderEtiquetasWord(etiquetasWordGlobal);
-}, error => {
-  console.error(error);
-  renderEtiquetasWord([]);
-});
-window.focarScannerPC = focarScannerPC;
-window.handleScannerEnter = handleScannerEnter;
-window.processarOCRInputPC = processarOCRInputPC;
-window.confirmarSerie3DigitosPC = confirmarSerie3DigitosPC;
-window.fecharSerie3DigitosPC = fecharSerie3DigitosPC;
+
 window.gerarWordEtiquetaFromForm = gerarWordEtiquetaFromForm;
-window.filtrarEtiquetasWord = filtrarEtiquetasWord;
-window.regerarEtiquetaWordPC = regerarEtiquetaWordPC;
 
 
 
@@ -2964,6 +3743,7 @@ async function migrarPortasParaFirebase() {
 
 async function carregarPortasComFallback() {
   if (!window.db) {
+    carregarPortasLocal();
     renderPortas(portasData);
     return;
   }
@@ -2971,6 +3751,7 @@ async function carregarPortasComFallback() {
   try {
     db.collection("portas").onSnapshot(snap => {
       if (snap.empty) {
+        carregarPortasLocal();
         renderPortas(portasData);
         const countEl = document.getElementById("countPortas");
         if (countEl) countEl.innerText = String(portasData.length);
@@ -2978,6 +3759,8 @@ async function carregarPortasComFallback() {
       }
 
       portasData = snap.docs.map(doc => ({ idDoc: doc.id, ...doc.data() }));
+      prepararRefsPortas();
+      guardarPortasLocal();
       renderPortas(portasData);
     }, error => {
       console.error(error);
@@ -3148,7 +3931,7 @@ window.addEventListener("load", () => atualizarVersaoUI(APP_VERSION));
 /* ===== CRUD EXTRA: Portas, Users, Pistolas ===== */
 function itemPorRef(lista, ref) {
   if (typeof ref === "string") {
-    return lista.find(i => i.idDoc === ref) || null;
+    return lista.find(i => i.idDoc === ref || i._ref === ref) || null;
   }
   const idx = Number(ref);
   return Number.isNaN(idx) ? null : (lista[idx] || null);
@@ -3156,7 +3939,7 @@ function itemPorRef(lista, ref) {
 
 function idxPorRef(lista, ref) {
   if (typeof ref === "string") {
-    return lista.findIndex(i => i.idDoc === ref);
+    return lista.findIndex(i => i.idDoc === ref || i._ref === ref);
   }
   const idx = Number(ref);
   return Number.isNaN(idx) ? -1 : idx;
@@ -3164,6 +3947,14 @@ function idxPorRef(lista, ref) {
 
 /* Portas */
 let portaEditRef = null;
+
+function abrirAdicionarPorta() {
+  portaEditRef = "__new__";
+  [["editPorta",""],["editLocal",""],["editUser",""],["editEquipamento",""],["editIP",""]].forEach(([id,v]) => { const node = el(id); if (node) node.value = v; });
+  const h3 = document.querySelector('#modalEditarPorta h3'); if (h3) h3.textContent = 'Adicionar Porta';
+  const sub = document.querySelector('#modalEditarPorta .section-subtitle'); if (sub) sub.textContent = 'Criar uma nova porta de rede';
+  if (el("modalEditarPorta")) el("modalEditarPorta").style.display = "flex";
+}
 
 function editarPorta(ref) {
   const item = itemPorRef(portasData, ref);
@@ -3179,11 +3970,14 @@ function editarPorta(ref) {
 
 function fecharEditarPorta() {
   portaEditRef = null;
+  const h3 = document.querySelector('#modalEditarPorta h3'); if (h3) h3.textContent = 'Editar Porta';
+  const sub = document.querySelector('#modalEditarPorta .section-subtitle'); if (sub) sub.textContent = 'Editar a porta selecionada';
   if (el("modalEditarPorta")) el("modalEditarPorta").style.display = "none";
 }
 
 async function guardarEdicaoPorta() {
   if (portaEditRef === null || typeof portaEditRef === "undefined") return mostrarMensagem("Nenhuma porta selecionada.", "erro");
+  const isNovaPorta = portaEditRef === "__new__";
   const payload = {
     porta: el("editPorta") ? el("editPorta").value : "",
     local: el("editLocal") ? el("editLocal").value : "",
@@ -3193,7 +3987,14 @@ async function guardarEdicaoPorta() {
   };
 
   try {
-    if (typeof portaEditRef === "string" && window.db) {
+    if (isNovaPorta) {
+      if (window.db) {
+        const docRef = await db.collection("portas").add(payload);
+        portasData.unshift({ idDoc: docRef.id, ...payload });
+      } else {
+        portasData.unshift({ _ref: `local-porta-${Date.now()}`, ...payload });
+      }
+    } else if (typeof portaEditRef === "string" && window.db) {
       await db.collection("portas").doc(portaEditRef).update(payload);
       const idx = idxPorRef(portasData, portaEditRef);
       if (idx >= 0) portasData[idx] = { ...portasData[idx], ...payload };
@@ -3201,9 +4002,10 @@ async function guardarEdicaoPorta() {
       const idx = idxPorRef(portasData, portaEditRef);
       if (idx >= 0) portasData[idx] = { ...portasData[idx], ...payload };
     }
+    guardarPortasLocal();
     fecharEditarPorta();
-    renderPortas(portasData);
-    mostrarMensagem("Porta atualizada com sucesso.");
+    filtrarPortasComEstado();
+    mostrarMensagem(isNovaPorta ? "Porta adicionada com sucesso." : "Porta atualizada com sucesso.");
   } catch (e) {
     console.error(e);
     mostrarMensagem("Erro ao atualizar a porta.", "erro");
@@ -3218,7 +4020,8 @@ async function apagarPorta(ref) {
     }
     const idx = idxPorRef(portasData, ref);
     if (idx >= 0) portasData.splice(idx, 1);
-    renderPortas(portasData);
+    guardarPortasLocal();
+    filtrarPortasComEstado();
     mostrarMensagem("Porta apagada com sucesso.");
   } catch (e) {
     console.error(e);
@@ -3228,6 +4031,15 @@ async function apagarPorta(ref) {
 
 /* Users */
 let userEditRef = null;
+
+function abrirAdicionarUser() {
+  userEditRef = "__new__";
+  const fields = ["nome","zona","user_pc_eye","pass_remote","pass_eye_peak","op_pistola","pass_pistola","nome_pc","teamviewer","user_mo365","pw_mo365","email_bragalis","pass_bragalis"];
+  fields.forEach(f => { const node = el("editUser_" + f); if (node) node.value = ""; });
+  const h3 = document.querySelector('#modalEditarUser h3'); if (h3) h3.textContent = 'Adicionar User';
+  const sub = document.querySelector('#modalEditarUser .section-subtitle'); if (sub) sub.textContent = 'Criar um novo utilizador';
+  if (el("modalEditarUser")) el("modalEditarUser").style.display = "flex";
+}
 
 function editarUser(ref) {
   const item = itemPorRef(usersData, ref);
@@ -3240,18 +4052,28 @@ function editarUser(ref) {
 
 function fecharEditarUser() {
   userEditRef = null;
+  const h3 = document.querySelector('#modalEditarUser h3'); if (h3) h3.textContent = 'Editar User';
+  const sub = document.querySelector('#modalEditarUser .section-subtitle'); if (sub) sub.textContent = 'Editar o utilizador selecionado';
   if (el("modalEditarUser")) el("modalEditarUser").style.display = "none";
 }
 
 async function guardarEdicaoUser() {
   if (userEditRef === null || typeof userEditRef === "undefined") return mostrarMensagem("Nenhum user selecionado.", "erro");
+  const isNovoUser = userEditRef === "__new__";
   const payload = {};
   ["nome","zona","user_pc_eye","pass_remote","pass_eye_peak","op_pistola","pass_pistola","nome_pc","teamviewer","user_mo365","pw_mo365","email_bragalis","pass_bragalis"].forEach(f => {
     payload[f] = el("editUser_" + f) ? el("editUser_" + f).value : "";
   });
 
   try {
-    if (typeof userEditRef === "string" && window.db) {
+    if (isNovoUser) {
+      if (window.db) {
+        const docRef = await db.collection("users").add(payload);
+        usersData.unshift({ idDoc: docRef.id, ...payload });
+      } else {
+        usersData.unshift({ _ref: `local-user-${Date.now()}`, ...payload });
+      }
+    } else if (typeof userEditRef === "string" && window.db) {
       await db.collection("users").doc(userEditRef).update(payload);
       const idx = idxPorRef(usersData, userEditRef);
       if (idx >= 0) usersData[idx] = { ...usersData[idx], ...payload };
@@ -3259,9 +4081,10 @@ async function guardarEdicaoUser() {
       const idx = idxPorRef(usersData, userEditRef);
       if (idx >= 0) usersData[idx] = { ...usersData[idx], ...payload };
     }
+    guardarUsersLocal();
     fecharEditarUser();
-    renderUsers(usersData);
-    mostrarMensagem("User atualizado com sucesso.");
+    filtrarUsersComFiltros();
+    mostrarMensagem(isNovoUser ? "User adicionado com sucesso." : "User atualizado com sucesso.");
   } catch (e) {
     console.error(e);
     mostrarMensagem("Erro ao atualizar o user.", "erro");
@@ -3276,7 +4099,8 @@ async function apagarUser(ref) {
     }
     const idx = idxPorRef(usersData, ref);
     if (idx >= 0) usersData.splice(idx, 1);
-    renderUsers(usersData);
+    guardarUsersLocal();
+    filtrarUsersComFiltros();
     mostrarMensagem("User apagado com sucesso.");
   } catch (e) {
     console.error(e);
@@ -3284,8 +4108,186 @@ async function apagarUser(ref) {
   }
 }
 
+
+function formatUserFieldLabel(chave) {
+  const labels = {
+    nome: "Nome",
+    zona: "Zona",
+    user_pc_eye: "User PC/EYE",
+    pass_remote: "Pass Remote",
+    pass_eye_peak: "Pass Eye Peak",
+    op_pistola: "Op. Pistola",
+    pass_pistola: "Pass Pistola",
+    nome_pc: "Nome PC",
+    teamviewer: "TeamViewer",
+    user_mo365: "User MO365",
+    pw_mo365: "Pw MO365",
+    email_bragalis: "Email Bragalis",
+    pass_bragalis: "Pass Bragalis"
+  };
+  return labels[chave] || chave;
+}
+
+function escapeHtmlAppBraga(valor) {
+  return String(valor ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function imprimirUser(ref) {
+  const item = itemPorRef(usersData, ref);
+  if (!item) return mostrarMensagem("User não encontrado.", "erro");
+
+  const campos = [
+    "nome","zona","user_pc_eye","pass_remote","pass_eye_peak","op_pistola",
+    "pass_pistola","nome_pc","teamviewer","user_mo365","pw_mo365",
+    "email_bragalis","pass_bragalis"
+  ];
+
+  const linhas = campos
+    .filter(campo => normalizarTexto(item[campo]) !== "")
+    .map(campo => `
+      <div class="print-row">
+        <div class="print-label">${escapeHtmlAppBraga(formatUserFieldLabel(campo))}</div>
+        <div class="print-value">${escapeHtmlAppBraga(item[campo])}</div>
+      </div>
+    `).join("");
+
+  const titulo = escapeHtmlAppBraga(item.nome || "User");
+  const htmlImpressao = `
+    <!DOCTYPE html>
+    <html lang="pt">
+    <head>
+      <meta charset="UTF-8">
+      <title>Imprimir Dados - ${titulo}</title>
+      <style>
+        @page { size: 100mm 150mm; margin: 4mm; }
+        html, body {
+          width: 100mm;
+          height: 150mm;
+          margin: 0;
+          padding: 0;
+          background: #ffffff;
+          color: #111827;
+          font-family: Arial, Helvetica, sans-serif;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        body { box-sizing: border-box; }
+        .label-sheet {
+          width: 100mm;
+          min-height: 150mm;
+          box-sizing: border-box;
+          padding: 6mm;
+          display: flex;
+          flex-direction: column;
+          gap: 3mm;
+        }
+        .title {
+          font-size: 20px;
+          font-weight: 700;
+          margin: 0 0 2mm 0;
+          border-bottom: 1px solid #d1d5db;
+          padding-bottom: 2mm;
+          word-break: break-word;
+        }
+        .subtitle {
+          font-size: 11px;
+          color: #4b5563;
+          margin: 0 0 1mm 0;
+        }
+        .content {
+          display: flex;
+          flex-direction: column;
+          gap: 2.2mm;
+          margin-top: 2mm;
+        }
+        .print-row {
+          border: 1px solid #e5e7eb;
+          border-radius: 2mm;
+          padding: 2.2mm 2.5mm;
+          page-break-inside: avoid;
+        }
+        .print-label {
+          font-size: 10px;
+          font-weight: 700;
+          color: #374151;
+          margin-bottom: 1mm;
+          text-transform: uppercase;
+          letter-spacing: .2px;
+        }
+        .print-value {
+          font-size: 12px;
+          line-height: 1.3;
+          word-break: break-word;
+          white-space: pre-wrap;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="label-sheet">
+        <div class="subtitle">Etiqueta User - App Braga</div>
+        <h1 class="title">${titulo}</h1>
+        <div class="content">
+          ${linhas || '<div class="print-row"><div class="print-label">Sem dados</div><div class="print-value">Este user não tem campos preenchidos.</div></div>'}
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const iframe = document.createElement("iframe");
+  iframe.style.position = "fixed";
+  iframe.style.right = "0";
+  iframe.style.bottom = "0";
+  iframe.style.width = "0";
+  iframe.style.height = "0";
+  iframe.style.border = "0";
+  iframe.setAttribute("aria-hidden", "true");
+  document.body.appendChild(iframe);
+
+  const frameWindow = iframe.contentWindow;
+  if (!frameWindow) {
+    iframe.remove();
+    mostrarMensagem("Não foi possível preparar a impressão neste dispositivo.", "erro");
+    return;
+  }
+
+  const limparIframe = () => setTimeout(() => iframe.remove(), 1500);
+
+  iframe.onload = () => {
+    setTimeout(() => {
+      try {
+        frameWindow.focus();
+        frameWindow.print();
+      } catch (err) {
+        console.error("Falha ao imprimir user:", err);
+        mostrarMensagem("Não foi possível iniciar a impressão.", "erro");
+      } finally {
+        limparIframe();
+      }
+    }, 200);
+  };
+
+  frameWindow.document.open();
+  frameWindow.document.write(htmlImpressao);
+  frameWindow.document.close();
+}
+
+
 /* Pistolas */
 let pistolaEditRef = null;
+
+function abrirAdicionarPistola() {
+  pistolaEditRef = "__new__";
+  ["num","nome","password","cn","sn","mac","operador","armazem","prontas"].forEach(f => { const node = el("editP_" + f); if (node) node.value = ""; });
+  const h3 = document.querySelector('#modalEditarPistola h3'); if (h3) h3.textContent = 'Adicionar Pistola CK65';
+  const sub = document.querySelector('#modalEditarPistola .section-subtitle'); if (sub) sub.textContent = 'Criar uma nova pistola';
+  if (el("modalEditarPistola")) el("modalEditarPistola").style.display = "flex";
+}
 
 function editarPistola(ref) {
   const item = itemPorRef(pistolasData, ref);
@@ -3300,18 +4302,28 @@ function editarPistola(ref) {
 
 function fecharEditarPistola() {
   pistolaEditRef = null;
+  const h3 = document.querySelector('#modalEditarPistola h3'); if (h3) h3.textContent = 'Editar Pistola CK65';
+  const sub = document.querySelector('#modalEditarPistola .section-subtitle'); if (sub) sub.textContent = 'Editar a pistola selecionada';
   if (el("modalEditarPistola")) el("modalEditarPistola").style.display = "none";
 }
 
 async function guardarEdicaoPistola() {
   if (pistolaEditRef === null || typeof pistolaEditRef === "undefined") return mostrarMensagem("Nenhuma pistola selecionada.", "erro");
+  const isNovaPistola = pistolaEditRef === "__new__";
   const payload = {};
   ["num","nome","password","cn","sn","mac","operador","armazem","prontas"].forEach(f => {
     payload[f] = el("editP_" + f) ? el("editP_" + f).value : "";
   });
 
   try {
-    if (typeof pistolaEditRef === "string" && window.db) {
+    if (isNovaPistola) {
+      if (window.db) {
+        const docRef = await db.collection("pistolas").add(payload);
+        pistolasData.unshift({ idDoc: docRef.id, ...payload });
+      } else {
+        pistolasData.unshift({ _ref: `local-pistola-${Date.now()}`, ...payload });
+      }
+    } else if (typeof pistolaEditRef === "string" && window.db) {
       await db.collection("pistolas").doc(pistolaEditRef).update(payload);
       const idx = idxPorRef(pistolasData, pistolaEditRef);
       if (idx >= 0) pistolasData[idx] = { ...pistolasData[idx], ...payload };
@@ -3319,9 +4331,10 @@ async function guardarEdicaoPistola() {
       const idx = idxPorRef(pistolasData, pistolaEditRef);
       if (idx >= 0) pistolasData[idx] = { ...pistolasData[idx], ...payload };
     }
+    guardarPistolasLocal();
     fecharEditarPistola();
-    renderPistolas(pistolasData);
-    mostrarMensagem("Pistola atualizada com sucesso.");
+    filtrarPistolasComFiltros();
+    mostrarMensagem(isNovaPistola ? "Pistola adicionada com sucesso." : "Pistola atualizada com sucesso.");
   } catch (e) {
     console.error(e);
     mostrarMensagem("Erro ao atualizar a pistola.", "erro");
@@ -3336,7 +4349,8 @@ async function apagarPistola(ref) {
     }
     const idx = idxPorRef(pistolasData, ref);
     if (idx >= 0) pistolasData.splice(idx, 1);
-    renderPistolas(pistolasData);
+    guardarPistolasLocal();
+    filtrarPistolasComFiltros();
     mostrarMensagem("Pistola apagada com sucesso.");
   } catch (e) {
     console.error(e);
@@ -3344,10 +4358,42 @@ async function apagarPistola(ref) {
   }
 }
 
+
+function abrirAdicionarImpressora() {
+  [["addImp_modelo",""],["addImp_serie",""],["addImp_armazem",""],["addImp_localizacao",""],["addImp_ip",""]].forEach(([id,v]) => { const node = el(id); if (node) node.value = v; });
+  if (el("modalAdicionarImpressora")) el("modalAdicionarImpressora").style.display = "flex";
+}
+
+function fecharAdicionarImpressora() {
+  if (el("modalAdicionarImpressora")) el("modalAdicionarImpressora").style.display = "none";
+}
+
+async function guardarNovaImpressora() {
+  const payload = {
+    modelo: el("addImp_modelo")?.value || "",
+    serie: el("addImp_serie")?.value || "",
+    armazem: el("addImp_armazem")?.value || "",
+    localizacao: el("addImp_localizacao")?.value || "",
+    ip: el("addImp_ip")?.value || ""
+  };
+  if (!normalizarTexto(payload.modelo) || !normalizarTexto(payload.serie) || !normalizarTexto(payload.ip)) {
+    return mostrarMensagem("Preenche pelo menos Modelo, Série e IP.", "erro");
+  }
+  impressorasData.unshift({ _ref: `local-impressora-${Date.now()}`, ...payload });
+  guardarImpressorasLocal();
+  fecharAdicionarImpressora();
+  filtrarImpressoras();
+  mostrarMensagem("Impressora adicionada com sucesso.");
+}
+
 window.editarPorta = editarPorta;
 window.fecharEditarPorta = fecharEditarPorta;
 window.guardarEdicaoPorta = guardarEdicaoPorta;
 window.apagarPorta = apagarPorta;
+window.abrirAdicionarPorta = abrirAdicionarPorta;
+window.abrirAdicionarImpressora = abrirAdicionarImpressora;
+window.fecharAdicionarImpressora = fecharAdicionarImpressora;
+window.guardarNovaImpressora = guardarNovaImpressora;
 
 window.editarUser = editarUser;
 window.fecharEditarUser = fecharEditarUser;
@@ -3358,6 +4404,7 @@ window.editarPistola = editarPistola;
 window.fecharEditarPistola = fecharEditarPistola;
 window.guardarEdicaoPistola = guardarEdicaoPistola;
 window.apagarPistola = apagarPistola;
+window.abrirAdicionarPistola = abrirAdicionarPistola;
 
 
 /* ===== MODO VISUAL ===== */
@@ -3500,3 +4547,655 @@ function renderModoGestorExtremo() {
       : `<div class="gestor-alert-card"><h4>Sem alertas do dia</h4><div class="meta-line">Ainda não há dados suficientes para destacar problemas.</div></div>`;
   }
 }
+
+
+
+/* ===== MELHORIAS 1 2 3 4 5 7 8 10 ===== */
+const STOCK_MIN_DEFAULTS = {
+  "Braga - Ilha 01": 1,
+  "Braga - Ilha 02": 1,
+  "Braga - Ilha 03": 1,
+  "Braga - Ilha 04": 1,
+  "Braga - Ilha 05": 1,
+  "Braga - Balcão 01": 2,
+  "Braga - Balcão 02": 2,
+  "Braga - Dep. Logistica": 2,
+  "Braga - G/Encomendas": 1,
+  "Braga - Devoluções": 1,
+  "Braga - Escritorio": 1,
+  "Vila Real - Ilha 01": 1,
+  "Vila Real - Ilha 02": 1,
+  "Vila Real - Ilha 03": 1,
+  "Sem Localização": 1
+};
+
+let stockEditModalId = null;
+let historicoEditModalId = null;
+
+function debounceAppBraga(fn, wait = 180) {
+  let t = null;
+  return function(...args) {
+    clearTimeout(t);
+    t = setTimeout(() => fn.apply(this, args), wait);
+  };
+}
+
+function tryRenderAppBraga(fn) {
+  try { fn(); } catch (e) { console.error(e); }
+}
+
+function loadStockMinConfig() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("stockMinConfig") || "{}");
+    return { ...STOCK_MIN_DEFAULTS, ...saved };
+  } catch (e) {
+    console.error(e);
+    return { ...STOCK_MIN_DEFAULTS };
+  }
+}
+
+function saveStockMinConfig(cfg) {
+  localStorage.setItem("stockMinConfig", JSON.stringify(cfg || {}));
+}
+
+function normalizeLocMin(loc) {
+  const raw = String(loc || "Sem Localização");
+  if (raw.includes(" - ")) {
+    const parts = raw.split(" - ");
+    if (parts.length >= 3) return `${parts[1]} - ${parts[2]}`;
+  }
+  return raw;
+}
+
+function getStockByLocationCounts() {
+  const map = {};
+  stockGlobal.forEach(item => {
+    const key = normalizeLocMin(item.localizacao);
+    map[key] = (map[key] || 0) + 1;
+  });
+  return map;
+}
+
+function renderStockMinimoPainel() {
+  const host = el("stockMinimoPainel");
+  if (!host) return;
+  const config = loadStockMinConfig();
+  const counts = getStockByLocationCounts();
+  host.innerHTML = Object.keys(config).map(loc => {
+    const atual = counts[loc] || 0;
+    const minimo = Number(config[loc] || 0);
+    const cls = atual < minimo ? "item-danger" : atual === minimo ? "item-warning" : "item-ok";
+    const estado = atual < minimo ? "Abaixo do mínimo" : atual === minimo ? "No mínimo" : "Acima do mínimo";
+    return `<div class="stock-min-card"><strong>${loc}</strong><div class="meta-line">Atual: <span class="meta-value ${cls}">${atual}</span></div><div class="meta-line">Mínimo: <span class="meta-value">${minimo}</span></div><div class="meta-line">${estado}</div></div>`;
+  }).join("");
+}
+
+function renderStockMinimoConfig() {
+  const host = el("stockMinimoConfigList");
+  if (!host) return;
+  const cfg = loadStockMinConfig();
+  host.innerHTML = `<div class="minimo-grid">${
+    Object.keys(cfg).map(loc => `
+      <div class="minimo-item">
+        <label>${loc}</label>
+        <input type="number" min="0" value="${cfg[loc]}" data-stock-min-loc="${loc}">
+      </div>
+    `).join("")
+  }</div>`;
+}
+
+function guardarStockMinimoConfig() {
+  const inputs = document.querySelectorAll("[data-stock-min-loc]");
+  const cfg = {};
+  inputs.forEach(inp => { cfg[inp.getAttribute("data-stock-min-loc")] = Math.max(0, parseInt(inp.value || "0", 10) || 0); });
+  saveStockMinConfig(cfg);
+  mostrarMensagem("Stock mínimo guardado com sucesso.");
+  tryRenderAppBraga(renderStockMinimoPainel);
+  tryRenderAppBraga(renderAlertasInteligentes);
+}
+
+function resetStockMinimoConfig() {
+  saveStockMinConfig(STOCK_MIN_DEFAULTS);
+  renderStockMinimoConfig();
+  renderStockMinimoPainel();
+  renderAlertasInteligentes();
+  mostrarMensagem("Stock mínimo reposto.");
+}
+
+function ensureLoteFieldOnEdit() {
+  const item = localStorage.getItem("editarToner");
+  if (!item || !el("lote")) return;
+  try {
+    const toner = JSON.parse(item);
+    el("lote").value = toner.lote || "";
+    if (el("dataFolha")) el("dataFolha").value = toner.dataFolha || "";
+  } catch (e) { console.error(e); }
+}
+
+function extractLoteFromText(text) {
+  const t = String(text || "").toUpperCase();
+  const m = t.match(/(?:LOTE|LOT|BATCH)\s*[:#-]?\s*([A-Z0-9-]{4,})/);
+  return m ? m[1] : "";
+}
+
+function enhanceScannerStatus(extra = "") {
+  const box = el("scannerSmartStatus");
+  if (!box) return;
+  box.innerText = extra || "Leitura pronta.";
+}
+
+function exportCsvFile(filename, headers, rows) {
+  const content = [headers.join(";"), ...rows.map(r => headers.map(h => String(r[h] ?? "").replace(/\n/g, " ")).join(";"))].join("\n");
+  const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+
+function exportarExcelStock() {
+  if (!stockGlobal.length) return mostrarMensagem("Não há stock para exportar.", "erro");
+  exportCsvFile("stock_app_braga.csv", ["idInterno","equipamento","localizacao","cor","lote","data","dataFolha"], stockGlobal);
+}
+
+function exportarExcelHistorico() {
+  if (!historicoGlobal.length) return mostrarMensagem("Não há histórico para exportar.", "erro");
+  exportCsvFile("historico_app_braga.csv", ["idInterno","equipamento","localizacao","cor","lote","data","dataFolha"], historicoGlobal);
+}
+
+function exportarExcelTudo() {
+  const rows = [...stockGlobal.map(x => ({...x, origem:"stock"})), ...historicoGlobal.map(x => ({...x, origem:"historico"}))];
+  if (!rows.length) return mostrarMensagem("Não há dados para exportar.", "erro");
+  exportCsvFile("dados_completos_app_braga.csv", ["origem","idInterno","equipamento","localizacao","cor","lote","data","dataFolha"], rows);
+}
+
+function filtrarHistoricoAvancado() {
+  const texto = normalizarTexto(el("searchHistorico")?.value || "");
+  const dFrom = el("filterHistoricoFrom")?.value || "";
+  const dTo = el("filterHistoricoTo")?.value || "";
+  const fLoc = normalizarTexto(el("filterHistoricoLocal")?.value || "");
+  const fEq = normalizarTexto(el("filterHistoricoEquipamento")?.value || "");
+  const fCor = normalizarTexto(el("filterHistoricoCor")?.value || "");
+
+  const items = historicoGlobal.filter(t => {
+    const data = String(t.data || "");
+    const okText = !texto || [t.idInterno,t.equipamento,t.localizacao,t.cor,t.lote].some(v => normalizarTexto(v).includes(texto));
+    const okFrom = !dFrom || data >= dFrom;
+    const okTo = !dTo || data <= dTo;
+    const okLoc = !fLoc || normalizarTexto(t.localizacao).includes(fLoc);
+    const okEq = !fEq || normalizarTexto(t.equipamento).includes(fEq);
+    const okCor = !fCor || normalizarTexto(t.cor).includes(fCor);
+    return okText && okFrom && okTo && okLoc && okEq && okCor;
+  });
+  renderHistoricoCards(items);
+}
+
+function abrirEditarStockModal(id) {
+  const item = stockGlobal.find(x => x.idDoc === id);
+  if (!item) return mostrarMensagem("Item de stock não encontrado.", "erro");
+  stockEditModalId = id;
+  if (el("editStockEquipamento")) el("editStockEquipamento").value = item.equipamento || "";
+  if (el("editStockCor")) el("editStockCor").value = item.cor || "";
+  if (el("editStockLocalizacao")) el("editStockLocalizacao").value = item.localizacao || "";
+  if (el("editStockLote")) el("editStockLote").value = item.lote || "";
+  if (el("editStockData")) el("editStockData").value = item.data || "";
+  if (el("editStockDataFolha")) el("editStockDataFolha").value = item.dataFolha || "";
+  if (el("modalEditarStock")) el("modalEditarStock").style.display = "flex";
+}
+
+function fecharEdicaoStockModal() {
+  stockEditModalId = null;
+  if (el("modalEditarStock")) el("modalEditarStock").style.display = "none";
+}
+
+async function guardarEdicaoStockModal() {
+  if (!stockEditModalId) return;
+  const payload = {
+    equipamento: el("editStockEquipamento")?.value || "",
+    cor: el("editStockCor")?.value || "",
+    localizacao: el("editStockLocalizacao")?.value || "",
+    lote: el("editStockLote")?.value || "",
+    data: el("editStockData")?.value || "",
+    dataFolha: el("editStockDataFolha")?.value || ""
+  };
+  try {
+    await db.collection("stock").doc(stockEditModalId).update(payload);
+    fecharEdicaoStockModal();
+    mostrarMensagem("Stock atualizado.");
+  } catch (e) {
+    console.error(e);
+    mostrarMensagem("Erro ao atualizar stock.", "erro");
+  }
+}
+
+async function apagarStockItem(id) {
+  if (!confirm("Queres apagar este item do stock?")) return;
+  try {
+    await db.collection("stock").doc(id).delete();
+    mostrarMensagem("Item de stock apagado.");
+  } catch (e) {
+    console.error(e);
+    mostrarMensagem("Erro ao apagar stock.", "erro");
+  }
+}
+
+function abrirEditarHistoricoModal(id) {
+  const item = historicoGlobal.find(x => x.idDoc === id);
+  if (!item) return mostrarMensagem("Histórico não encontrado.", "erro");
+  historicoEditModalId = id;
+  if (el("editHistoricoEquipamento")) el("editHistoricoEquipamento").value = item.equipamento || "";
+  if (el("editHistoricoCor")) el("editHistoricoCor").value = item.cor || "";
+  if (el("editHistoricoLocalizacao")) el("editHistoricoLocalizacao").value = item.localizacao || "";
+  if (el("editHistoricoLote")) el("editHistoricoLote").value = item.lote || "";
+  if (el("editHistoricoData")) el("editHistoricoData").value = item.data || "";
+  if (el("editHistoricoDataFolha")) el("editHistoricoDataFolha").value = item.dataFolha || "";
+  if (el("modalEditarHistorico")) el("modalEditarHistorico").style.display = "flex";
+}
+
+function fecharEdicaoHistoricoModal() {
+  historicoEditModalId = null;
+  if (el("modalEditarHistorico")) el("modalEditarHistorico").style.display = "none";
+}
+
+async function guardarEdicaoHistoricoModal() {
+  if (!historicoEditModalId) return;
+  const payload = {
+    equipamento: el("editHistoricoEquipamento")?.value || "",
+    cor: el("editHistoricoCor")?.value || "",
+    localizacao: el("editHistoricoLocalizacao")?.value || "",
+    lote: el("editHistoricoLote")?.value || "",
+    data: el("editHistoricoData")?.value || "",
+    dataFolha: el("editHistoricoDataFolha")?.value || ""
+  };
+  try {
+    await db.collection("historico").doc(historicoEditModalId).update(payload);
+    fecharEdicaoHistoricoModal();
+    mostrarMensagem("Histórico atualizado.");
+  } catch (e) {
+    console.error(e);
+    mostrarMensagem("Erro ao atualizar histórico.", "erro");
+  }
+}
+
+function buildAlertasInteligentes() {
+  const cfg = loadStockMinConfig();
+  const counts = getStockByLocationCounts();
+  const rows = [];
+  Object.keys(cfg).forEach(loc => {
+    const atual = counts[loc] || 0;
+    const minimo = Number(cfg[loc] || 0);
+    if (atual < minimo) rows.push({ tipo: "stock", titulo: loc, detalhe: `Stock abaixo do mínimo: ${atual}/${minimo}` });
+  });
+
+  if (typeof impressorasData !== "undefined" && typeof tonerInfoState !== "undefined") {
+    impressorasData.forEach(item => {
+      const info = tonerInfoState[item.ip] || null;
+      const colors = Array.isArray(info?.colors) ? info.colors : [];
+      const crit = colors.filter(c => typeof c.percent === "number" && c.percent <= 20);
+      if (crit.length) rows.push({ tipo: "printer", titulo: `${item.modelo} · ${item.localizacao}`, detalhe: crit.map(c => `${c.label}: ${c.percent}%`).join(" | ") });
+    });
+  }
+  return rows.slice(0, 8);
+}
+
+function renderAlertasInteligentes() {
+  const rows = buildAlertasInteligentes();
+  ["alertasInteligentesDashboard","alertasInteligentesImpressoras"].forEach(id => {
+    const host = el(id);
+    if (!host) return;
+    host.innerHTML = rows.length ? rows.map(r => `<div class="alert-inteligente-card"><strong>${r.titulo}</strong><div class="meta-line">${r.detalhe}</div></div>`).join("") : `<div class="alert-inteligente-card"><strong>Sem alertas</strong><div class="meta-line">Não existem alertas inteligentes ativos.</div></div>`;
+  });
+}
+
+const filtrarStockDebounced = debounceAppBraga(function() {
+  const input = el("search");
+  if (!input) return;
+  const txt = input.value.toLowerCase();
+  const filtrados = stockGlobal.filter(t =>
+    normalizarTexto(t.idInterno).includes(txt) ||
+    normalizarTexto(t.equipamento).includes(txt) ||
+    normalizarTexto(t.cor).includes(txt) ||
+    normalizarTexto(t.localizacao).includes(txt) ||
+    normalizarTexto(t.lote).includes(txt)
+  );
+  renderStockCards(filtrados);
+}, 120);
+
+const filtrarDashDebounced = debounceAppBraga(function() {
+  renderDashboardCards();
+}, 120);
+
+window.exportarExcelStock = exportarExcelStock;
+window.exportarExcelHistorico = exportarExcelHistorico;
+window.exportarExcelTudo = exportarExcelTudo;
+window.guardarStockMinimoConfig = guardarStockMinimoConfig;
+window.resetStockMinimoConfig = resetStockMinimoConfig;
+window.filtrarHistoricoAvancado = filtrarHistoricoAvancado;
+window.abrirEditarStockModal = abrirEditarStockModal;
+window.fecharEdicaoStockModal = fecharEdicaoStockModal;
+window.guardarEdicaoStockModal = guardarEdicaoStockModal;
+window.apagarStockItem = apagarStockItem;
+window.abrirEditarHistoricoModal = abrirEditarHistoricoModal;
+window.fecharEdicaoHistoricoModal = fecharEdicaoHistoricoModal;
+window.guardarEdicaoHistoricoModal = guardarEdicaoHistoricoModal;
+
+
+
+
+/* =========================
+   ETIQUETAS WORD PARTILHADAS
+========================= */
+try { BACKUP_KEYS_APP_BRAGA.etiquetas = "appBraga_backup_etiquetas"; } catch (e) {}
+let etiquetasWordGlobal = [];
+
+function formatDatePTShared(valor) {
+  const raw = String(valor || "").trim();
+  if (!raw) return "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    const [yyyy, mm, dd] = raw.split("-");
+    return `${dd}/${mm}/${yyyy}`;
+  }
+  return raw;
+}
+
+function parseLocalizacaoEtiquetaShared(loc) {
+  const raw = String(loc || "").trim();
+  let serie = "";
+  let localCurto = raw || "Sem Localização";
+  let armazem = "";
+  const parts = raw.split(" - ").map(v => v.trim()).filter(Boolean);
+  if (parts.length >= 3) {
+    serie = parts[0] || "";
+    armazem = parts[1] || "";
+    localCurto = parts.slice(2).join(" - ") || localCurto;
+  } else {
+    const printer = (typeof impressorasData !== "undefined" && Array.isArray(impressorasData)) ? impressorasData.find(p => normalizarTexto(raw).includes(normalizarTexto(p.localizacao)) || normalizarTexto(raw).includes(normalizarTexto(p.serie))) : null;
+    if (printer) {
+      serie = printer.serie || "";
+      armazem = printer.armazem || "";
+      localCurto = printer.localizacao || localCurto;
+    }
+  }
+  return { serie, localCurto, armazem, localizacaoRaw: raw };
+}
+
+function montarPayloadEtiquetaPartilhada(extra = {}) {
+  const loc = extra.localizacao || ((el("localizacao") && el("localizacao").value) || "");
+  const info = parseLocalizacaoEtiquetaShared(loc);
+  const dataFolha = extra.dataFolha || ((el("dataFolha") && el("dataFolha").value) || "");
+  const dataScan = extra.data || ((el("data") && el("data").value) || "");
+  const equipamento = extra.equipamento || ((el("equipamento") && el("equipamento").value) || "");
+  const cor = extra.cor || ((el("cor") && el("cor").value) || "");
+  const lote = extra.lote || ((el("lote") && el("lote").value) || "");
+  const origem = extra.origem || "scan";
+  return {
+    serie: info.serie || extra.serie || "SEM SÉRIE",
+    localCurto: info.localCurto || "Sem Localização",
+    armazem: info.armazem || extra.armazem || "",
+    localizacao: info.localizacaoRaw || loc || "Sem Localização",
+    dataEtiqueta: formatDatePTShared(dataScan || dataFolha) || "Sem Data",
+    dataScan: dataScan || "",
+    data: dataScan || "",
+    dataFolha: dataFolha || "",
+    equipamento: equipamento || "",
+    cor: cor || "",
+    lote: lote || "",
+    origem,
+    created: Date.now()
+  };
+}
+
+async function guardarEtiquetaPartilhada(extra = {}) {
+  if (!db || !db.collection) return null;
+  try {
+    const payload = montarPayloadEtiquetaPartilhada(extra);
+    const ref = await db.collection("etiquetasWord").add(payload);
+    return { idDoc: ref.id, ...payload };
+  } catch (e) {
+    console.error("Erro ao guardar etiqueta partilhada:", e);
+    return null;
+  }
+}
+
+async function gerarWordEtiquetaPartilhada(dados, opts = {}) {
+  try {
+    if (typeof docx === "undefined") {
+      mostrarMensagem("Biblioteca Word não carregada.", "erro");
+      return false;
+    }
+    const payload = montarPayloadEtiquetaPartilhada(dados || {});
+    const { Document, Packer, Paragraph, AlignmentType, TextRun } = docx;
+    const doc = new Document({
+      creator: "App Braga",
+      title: "Etiqueta Toner",
+      sections: [{ children: [
+        new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 3200, after: 500 }, children: [ new TextRun({ text: payload.localCurto, bold: true, size: 42 }) ] }),
+        new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 200, after: 2800 }, children: [ new TextRun({ text: payload.serie, bold: true, size: 64 }) ] }),
+        new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 0, after: 200 }, children: [ new TextRun({ text: payload.dataEtiqueta, bold: true, size: 56 }) ] })
+      ] }]
+    });
+    const blob = await Packer.toBlob(doc);
+    const fileName = `Etiqueta_${String(payload.localCurto || "Etiqueta").replace(/\s+/g, "_")}_${payload.serie || "SEM_SERIE"}.docx`;
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { try { URL.revokeObjectURL(a.href); a.remove(); } catch (e) {} }, 1200);
+    if (opts.saveRecord !== false) await guardarEtiquetaPartilhada(payload);
+    if (!opts.silent) mostrarMensagem("Etiqueta guardada e pronta para download.");
+    return true;
+  } catch (e) {
+    console.error("Erro ao gerar etiqueta partilhada:", e);
+    mostrarMensagem("Erro ao gerar a etiqueta Word.", "erro");
+    return false;
+  }
+}
+
+window.gerarWordEtiquetaPartilhada = gerarWordEtiquetaPartilhada;
+
+function renderEtiquetasWordCards() {
+  const host = el("listaEtiquetasWord");
+  if (!host) return;
+  const texto = normalizarTexto(el("searchEtiquetasWord")?.value || "");
+  const origem = normalizarTexto(el("filterEtiquetasOrigem")?.value || "");
+  let items = Array.isArray(etiquetasWordGlobal) ? [...etiquetasWordGlobal] : [];
+  if (origem) items = items.filter(x => normalizarTexto(x.origem).includes(origem));
+  if (texto) {
+    items = items.filter(x => [x.serie,x.localCurto,x.localizacao,x.equipamento,x.cor,x.lote,x.dataEtiqueta].some(v => normalizarTexto(v).includes(texto)));
+  }
+  setText("countEtiquetasTotal", items.length);
+  const hoje = new Date();
+  const ymd = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-${String(hoje.getDate()).padStart(2,'0')}`;
+  setText("countEtiquetasStock", items.filter(x => String(x.data || x.dataFolha || "").startsWith(ymd) || String(x.dataEtiqueta || "").includes(`${String(hoje.getDate()).padStart(2,'0')}/${String(hoje.getMonth()+1).padStart(2,'0')}/${hoje.getFullYear()}`)).length);
+  setText("countEtiquetasHistorico", new Set(items.map(x => x.serie || x.localCurto || x.localizacao)).size);
+  if (!items.length) {
+    host.innerHTML = `<div class="panel empty-state"><h3>Sem etiquetas</h3><p>Faz scan no iPhone e a etiqueta aparece aqui para download no PC.</p></div>`;
+    return;
+  }
+  host.innerHTML = items.map(t => `
+    <div class="stock-card">
+      <div class="stock-id">${t.localCurto || t.localizacao || 'Etiqueta'}</div>
+      <div class="meta-line">Série: <span class="meta-value">${t.serie || '-'}</span></div>
+      <div class="meta-line">Armazém: <span class="meta-value">${t.armazem || '-'}</span></div>
+      <div class="meta-line">Localização: <span class="meta-value">${t.localizacao || '-'}</span></div>
+      <div class="meta-line">Equipamento: <span class="meta-value">${t.equipamento || '-'}</span></div>
+      <div class="meta-line">Cor: <span class="meta-value">${t.cor || '-'}</span></div>
+      <div class="meta-line">Lote: <span class="meta-value">${t.lote || '-'}</span></div>
+      <div class="meta-line">Data: <span class="meta-value">${t.dataEtiqueta || '-'}</span></div>
+      <div class="meta-line">Origem: <span class="meta-value">${t.origem || 'scan'}</span></div>
+      <div class="card-actions">
+        <button class="small-btn btn-use" onclick="regerarEtiquetaWordPartilhada('${t.idDoc}')">Imprimir</button>
+        <button class="small-btn btn-delete" onclick="apagarEtiquetaWordPartilhada('${t.idDoc}')">Apagar</button>
+      </div>
+    </div>`).join("");
+}
+
+
+function montarHtmlEtiquetaImpressao(item) {
+  const linhas = [
+    ["Local", item.localCurto || item.localizacao],
+    ["Série", item.serie],
+    ["Armazém", item.armazem],
+    ["Localização", item.localizacao],
+    ["Equipamento", item.equipamento],
+    ["Cor", item.cor],
+    ["Lote", item.lote],
+    ["Data", item.dataScan || item.dataEtiqueta || item.data || item.dataFolha],
+    ["Origem", item.origem]
+  ].filter(([,v]) => String(v || '').trim());
+
+  const escapeHtml = (v) => String(v ?? '').replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c] || c));
+  const rows = linhas.map(([k,v]) => `<div class="etq-row"><div class="etq-key">${escapeHtml(k)}</div><div class="etq-val">${escapeHtml(v)}</div></div>`).join('');
+  return `<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<title>Etiqueta</title>
+<style>
+  @page { size: 100mm 150mm; margin: 0; }
+  html, body { margin:0; padding:0; width:100mm; height:150mm; font-family: Arial, sans-serif; }
+  body { box-sizing:border-box; padding:8mm; color:#111; }
+  .etq-wrap { width:100%; height:100%; display:flex; flex-direction:column; justify-content:flex-start; }
+  .etq-title { font-size:20px; font-weight:700; margin:0 0 6mm; }
+  .etq-row { display:flex; flex-direction:column; margin:0 0 3.5mm; }
+  .etq-key { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+  .etq-val { font-size:16px; line-height:1.25; word-break:break-word; }
+</style>
+</head>
+<body>
+  <div class="etq-wrap">
+    <div class="etq-title">${escapeHtml(item.localCurto || item.localizacao || 'Etiqueta')}</div>
+    ${rows}
+  </div>
+</body>
+</html>`;
+}
+
+async function regerarEtiquetaWordPartilhada(id) {
+  const item = etiquetasWordGlobal.find(x => x.idDoc === id);
+  if (!item) return mostrarMensagem("Etiqueta não encontrada.", "erro");
+  try {
+    const existente = document.getElementById('printAreaEtiquetaAppBraga');
+    if (existente) existente.remove();
+    const overlay = document.createElement('div');
+    overlay.id = 'printAreaEtiquetaAppBraga';
+    overlay.style.position = 'fixed';
+    overlay.style.inset = '0';
+    overlay.style.background = '#fff';
+    overlay.style.zIndex = '999999';
+    overlay.style.display = 'flex';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+    overlay.innerHTML = montarHtmlEtiquetaOverlay(item);
+    document.body.appendChild(overlay);
+
+    const oldTitle = document.title;
+    document.title = `Etiqueta-${(item.localCurto || item.localizacao || 'Etiqueta')}`;
+
+    setTimeout(() => {
+      try {
+        window.print();
+        mostrarMensagem('Etiqueta pronta a imprimir.');
+      } catch (e) {
+        console.error(e);
+        mostrarMensagem('Erro ao abrir a impressão.', 'erro');
+      } finally {
+        setTimeout(() => {
+          try { overlay.remove(); } catch (e) {}
+          document.title = oldTitle;
+        }, 600);
+      }
+    }, 150);
+  } catch (e) {
+    console.error(e);
+    mostrarMensagem('Erro ao preparar impressão.', 'erro');
+  }
+}
+
+function montarHtmlEtiquetaOverlay(item) {
+  const linhas = [
+    ["Local", item.localCurto || item.localizacao],
+    ["Série", item.serie],
+    ["Armazém", item.armazem],
+    ["Localização", item.localizacao],
+    ["Equipamento", item.equipamento],
+    ["Cor", item.cor],
+    ["Lote", item.lote],
+    ["Data", item.dataScan || item.dataEtiqueta || item.data || item.dataFolha],
+    ["Origem", item.origem]
+  ].filter(([,v]) => String(v || '').trim());
+
+  const escapeHtml = (v) => String(v ?? '').replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c] || c));
+  const rows = linhas.map(([k,v]) => `<div class="etq-row"><div class="etq-key">${escapeHtml(k)}</div><div class="etq-val">${escapeHtml(v)}</div></div>`).join('');
+  return `
+    <style>
+      @media print {
+        @page { size: 100mm 150mm; margin: 0; }
+        html, body { width: 100mm !important; height: 150mm !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; background: #fff !important; }
+        body * { visibility: hidden !important; }
+        #printAreaEtiquetaAppBraga, #printAreaEtiquetaAppBraga * { visibility: visible !important; }
+        #printAreaEtiquetaAppBraga { position: fixed !important; inset: 0 !important; width: 100mm !important; height: 150mm !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; background: #fff !important; }
+      }
+      #printAreaEtiquetaAppBraga .etq-sheet { width:100mm; height:150mm; max-width:100mm; max-height:150mm; overflow:hidden; box-sizing:border-box; padding:8mm; color:#111; font-family:Arial, sans-serif; background:#fff; display:flex; flex-direction:column; justify-content:flex-start; break-inside: avoid; page-break-inside: avoid; break-after: avoid-page; page-break-after: avoid; }
+      #printAreaEtiquetaAppBraga .etq-title { font-size:20px; font-weight:700; margin:0 0 6mm; }
+      #printAreaEtiquetaAppBraga .etq-row { display:flex; flex-direction:column; margin:0 0 3.5mm; }
+      #printAreaEtiquetaAppBraga .etq-key { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+      #printAreaEtiquetaAppBraga .etq-val { font-size:16px; line-height:1.25; word-break:break-word; }
+    </style>
+    <div class="etq-sheet">
+      <div class="etq-title">${escapeHtml(item.localCurto || item.localizacao || 'Etiqueta')}</div>
+      ${rows}
+    </div>`;
+}
+
+
+async function apagarEtiquetaWordPartilhada(id) {
+  if (!confirm("Queres apagar esta etiqueta?")) return;
+  try {
+    await db.collection("etiquetasWord").doc(id).delete();
+    mostrarMensagem("Etiqueta apagada.");
+  } catch (e) {
+    console.error(e);
+    mostrarMensagem("Erro ao apagar etiqueta.", "erro");
+  }
+}
+window.regerarEtiquetaWordPartilhada = regerarEtiquetaWordPartilhada;
+window.apagarEtiquetaWordPartilhada = apagarEtiquetaWordPartilhada;
+
+function bindEtiquetasWordRealtime() {
+  if (!db || !db.collection) return;
+  db.collection("etiquetasWord").orderBy("created", "desc").onSnapshot((snap) => {
+    etiquetasWordGlobal = [];
+    snap.forEach((doc) => {
+      const t = doc.data() || {};
+      t.idDoc = doc.id;
+      etiquetasWordGlobal.push(t);
+    });
+    try { saveBackupAppBraga(BACKUP_KEYS_APP_BRAGA.etiquetas, etiquetasWordGlobal); } catch (e) {}
+    renderEtiquetasWordCards();
+  }, (error) => {
+    console.error(error);
+    try { etiquetasWordGlobal = loadBackupAppBraga(BACKUP_KEYS_APP_BRAGA.etiquetas); } catch (e) { etiquetasWordGlobal = []; }
+    renderEtiquetasWordCards();
+  });
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  if (el("searchEtiquetasWord")) el("searchEtiquetasWord").addEventListener("input", renderEtiquetasWordCards);
+  if (el("filterEtiquetasOrigem")) el("filterEtiquetasOrigem").addEventListener("change", renderEtiquetasWordCards);
+  if (el("listaEtiquetasWord")) renderEtiquetasWordCards();
+  bindEtiquetasWordRealtime();
+});
+
+
+
+/* =========================================================
+   APP BRAGA — SIDEBAR BRINKA + DASHBOARD CLEAN
+   ========================================================= */
+(function(){
+  function closestPanel(el){while(el&&el!==document.body){if(el.classList&&el.classList.contains('panel'))return el;el=el.parentElement;}return null;}
+  function initBrinkaSidebar(){var sidebar=document.querySelector('.sidebar');if(!sidebar)return;if(!document.querySelector('.app-menu-toggle')){var btn=document.createElement('button');btn.className='app-menu-toggle';btn.type='button';btn.setAttribute('aria-label','Abrir menu');btn.textContent='☰';document.body.appendChild(btn);}if(!document.querySelector('.app-sidebar-overlay')){var ov=document.createElement('div');ov.className='app-sidebar-overlay';document.body.appendChild(ov);}var btn=document.querySelector('.app-menu-toggle');var overlay=document.querySelector('.app-sidebar-overlay');function open(){sidebar.classList.add('app-open');overlay.classList.add('show');btn.textContent='×';}function close(){sidebar.classList.remove('app-open');overlay.classList.remove('show');btn.textContent='☰';}btn.onclick=function(e){e.preventDefault();e.stopPropagation();sidebar.classList.contains('app-open')?close():open();};overlay.onclick=close;sidebar.querySelectorAll('a').forEach(function(a){a.addEventListener('click',close);});}
+  function cleanDashboard(){var path=(location.pathname||'').toLowerCase();var isDashboard=path.endsWith('/')||path.endsWith('/index.html')||path.indexOf('index.html')!==-1;if(!isDashboard)return;document.body.classList.add('dashboard-clean');var removeTitles=['Centro Operacional Inteligente','Prioridade Máxima','Top Consumo','Alertas do Dia','Alertas Inteligentes'];document.querySelectorAll('h3').forEach(function(h){var t=(h.textContent||'').trim();if(removeTitles.indexOf(t)>=0){var p=closestPanel(h);if(p)p.classList.add('is-dashboard-removed');}});}
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){initBrinkaSidebar();cleanDashboard();});}else{initBrinkaSidebar();cleanDashboard();}
+})();

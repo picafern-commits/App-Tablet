@@ -64,6 +64,7 @@
   </div>
   <div class="panel">
     <div class="toolbar">
+      <button class="primary-btn" type="button" onclick="abrirAdicionarUser()">+ Adicionar User</button>
       <input id="searchUsers" type="text" placeholder="Pesquisar..." oninput="filtrarUsersComFiltros()">
       <select id="filterUsersMO365" onchange="filtrarUsersComFiltros()"><option value="">MO365: Todos</option><option value="sim">Com MO365</option><option value="nao">Sem MO365</option></select>
       <select id="filterUsersPistola" onchange="filtrarUsersComFiltros()"><option value="">Pistola: Todos</option><option value="sim">Com Pistola</option><option value="nao">Sem Pistola</option></select>
@@ -103,6 +104,8 @@
   </div>
 
 </main>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

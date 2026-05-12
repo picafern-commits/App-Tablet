@@ -70,10 +70,17 @@
     <div class="stat-card"><span>Usados</span><strong id="countUsados">0</strong></div>
     <div class="stat-card"><span>PCs</span><strong id="countPCs">0</strong></div>
   </div>
+
   <div class="panel">
-    <div class="section-header"><div><h3>Centro Operacional Inteligente</h3><p class="section-subtitle">Este bloco serve para mostrar prioridade real, zonas com mais movimento e os últimos registos do sistema.</p></div></div>
+    <div class="section-header">
+      <div>
+        <h3>Centro Operacional Inteligente</h3>
+        <p class="section-subtitle">Este bloco serve para mostrar prioridade real, zonas com mais movimento e os últimos registos do sistema.</p>
+      </div>
+    </div>
     <div id="dashboardResumoInteligente" class="cards-list"></div>
   </div>
+
   
   <div class="panel gestor-panel">
     <div class="section-header">
@@ -117,11 +124,24 @@
 
   <div class="panel">
     <div class="toolbar"><input id="searchDashboard" type="text" placeholder="Pesquisar toners..." oninput="filtrarDashboard()"></div>
-    <div id="listaDashboardStock" class="cards-list"></div>
+    
+  <div class="panel">
+    <div class="section-header">
+      <div>
+        <h3>Alertas Inteligentes</h3>
+        <p class="section-subtitle">Notificações controladas do stock mínimo e criticidade real.</p>
+      </div>
+    </div>
+    <div id="alertasInteligentesDashboard" class="cards-list"></div>
+  </div>
+
+<div id="listaDashboardStock" class="cards-list"></div>
   </div>
 
 
 </main>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

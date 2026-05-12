@@ -63,6 +63,7 @@
   </div>
   <div class="panel">
     <div class="toolbar">
+      <button class="primary-btn" type="button" onclick="abrirAdicionarPistola()">+ Adicionar Pistola</button>
       <input id="searchPistolas" type="text" placeholder="Pesquisar..." oninput="filtrarPistolasComFiltros()">
       <select id="filterarmazemPistolas" onchange="filtrarPistolasComFiltros()"><option value="">Todos os armazéns</option><option value="Braga">Braga</option><option value="Vila Real">Vila Real</option></select>
       <select id="filterTipoPistolas" onchange="filtrarPistolasComFiltros()"><option value="">Todos os tipos</option><option value="ativa">Ativa</option><option value="reserva">Reserva</option></select>
@@ -98,6 +99,8 @@
   </div>
 
 </main>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
