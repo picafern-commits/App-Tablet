@@ -4382,3 +4382,99 @@ window.exportPistolasJSON =
 window.exportPortasJSON =
   exportPortasJSON;
 
+
+
+
+/* =========================
+   IMPORT JSON FIREBASE
+========================= */
+
+async function importarUsersJSONFirebase(){
+
+  try{
+
+    if(!window.db){
+
+      alert(
+        "Firebase não iniciada."
+      );
+
+      return;
+
+    }
+
+    const input =
+      document.createElement("input");
+
+    input.type = "file";
+
+    input.accept = ".json";
+
+    input.onchange = async (event)=>{
+
+      try{
+
+        const file =
+          event.target.files?.[0];
+
+        if(!file) return;
+
+        const text =
+          await file.text();
+
+        const users =
+          JSON.parse(text);
+
+        if(!Array.isArray(users)){
+
+          alert(
+            "JSON inválido."
+          );
+
+          return;
+
+        }
+
+        let total = 0;
+
+        for(const user of users){
+
+          await window.db
+            .collection("users")
+            .add(user);
+
+          total++;
+
+        }
+
+        alert(
+          "Importação concluída: "
+          + total +
+          " users."
+        );
+
+      }catch(error){
+
+        console.error(error);
+
+        alert(
+          "Erro ao importar JSON."
+        );
+
+      }
+
+    };
+
+    input.click();
+
+  }catch(error){
+
+    console.error(error);
+
+  }
+
+}
+
+window.importarUsersJSONFirebase =
+  importarUsersJSONFirebase;
+
