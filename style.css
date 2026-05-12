@@ -1948,3 +1948,13 @@ button, a, .nav-item, .sidebar a { touch-action: manipulation; }
     place-items: center !important;
   }
 }
+
+.main-content{
+  overflow-y:auto !important;
+  min-height:0;
+}
+
+.content{
+  overflow-y:auto !important;
+  min-height:0;
+}
