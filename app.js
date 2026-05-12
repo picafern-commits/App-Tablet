@@ -5199,3 +5199,133 @@ window.addEventListener("DOMContentLoaded", () => {
   function cleanDashboard(){var path=(location.pathname||'').toLowerCase();var isDashboard=path.endsWith('/')||path.endsWith('/index.html')||path.indexOf('index.html')!==-1;if(!isDashboard)return;document.body.classList.add('dashboard-clean');var removeTitles=['Centro Operacional Inteligente','Prioridade Máxima','Top Consumo','Alertas do Dia','Alertas Inteligentes'];document.querySelectorAll('h3').forEach(function(h){var t=(h.textContent||'').trim();if(removeTitles.indexOf(t)>=0){var p=closestPanel(h);if(p)p.classList.add('is-dashboard-removed');}});}
   if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){initBrinkaSidebar();cleanDashboard();});}else{initBrinkaSidebar();cleanDashboard();}
 })();
+
+
+/* =========================
+   IMPORT EXCEL -> FIREBASE
+========================= */
+
+async function importarExcelFirebase(){
+
+  const input =
+    document.getElementById(
+      "excelImportFirebase"
+    );
+
+  if(!input) return;
+
+  input.click();
+
+}
+
+window.importarExcelFirebase =
+  importarExcelFirebase;
+
+window.addEventListener(
+  "DOMContentLoaded",
+  () => {
+
+    const excelInput =
+      document.getElementById(
+        "excelImportFirebase"
+      );
+
+    if(!excelInput) return;
+
+    excelInput.addEventListener(
+      "change",
+      async (event) => {
+
+        try{
+
+          const file =
+            event.target.files?.[0];
+
+          if(!file) return;
+
+          const data =
+            await file.arrayBuffer();
+
+          const workbook =
+            XLSX.read(data);
+
+          const usersSheet =
+            workbook.Sheets["Users"];
+
+          const pistolasSheet =
+            workbook.Sheets["Pistolas"];
+
+          const portasSheet =
+            workbook.Sheets["Portas"];
+
+          if(usersSheet){
+
+            const users =
+              XLSX.utils.sheet_to_json(
+                usersSheet
+              );
+
+            for(const user of users){
+
+              await db.collection(
+                "users"
+              ).add(user);
+
+            }
+
+          }
+
+          if(pistolasSheet){
+
+            const pistolas =
+              XLSX.utils.sheet_to_json(
+                pistolasSheet
+              );
+
+            for(const item of pistolas){
+
+              await db.collection(
+                "pistolas"
+              ).add(item);
+
+            }
+
+          }
+
+          if(portasSheet){
+
+            const portas =
+              XLSX.utils.sheet_to_json(
+                portasSheet
+              );
+
+            for(const item of portas){
+
+              await db.collection(
+                "portas"
+              ).add(item);
+
+            }
+
+          }
+
+          mostrarMensagem(
+            "Excel importado para Firebase com sucesso."
+          );
+
+        }catch(error){
+
+          console.error(error);
+
+          mostrarMensagem(
+            "Erro ao importar Excel.",
+            "erro"
+          );
+
+        }
+
+      }
+    );
+
+  }
+);
