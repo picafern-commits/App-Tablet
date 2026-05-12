@@ -58,5 +58,47 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 <script src="app.js"></script>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "COLOCA_AQUI",
+  authDomain: "COLOCA_AQUI",
+  projectId: "COLOCA_AQUI",
+  storageBucket: "COLOCA_AQUI",
+  messagingSenderId: "COLOCA_AQUI",
+  appId: "COLOCA_AQUI"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+window.db = firebase.firestore();
+</script>
+
+<!-- XLSX -->
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+
+<!-- BOTAO IMPORT -->
+<div id="firebaseExcelImportButton" style="
+position:fixed;
+bottom:20px;
+right:20px;
+z-index:999999;
+">
+  <button onclick="importarExcelFirebase()">
+    Importar Excel Firebase
+  </button>
+</div>
+
+<input
+  type="file"
+  id="excelImportFirebase"
+  accept=".xlsx,.xls"
+  style="display:none"
+/>
+
 </body>
 </html>

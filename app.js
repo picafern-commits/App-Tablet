@@ -5202,7 +5202,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
 /* =========================
-   IMPORT EXCEL -> FIREBASE
+   IMPORT EXCEL FIREBASE
 ========================= */
 
 async function importarExcelFirebase(){
@@ -5213,7 +5213,11 @@ async function importarExcelFirebase(){
     );
 
   if(!input){
-    alert("Input Excel não encontrado.");
+
+    alert(
+      "Input Excel não encontrado."
+    );
+
     return;
   }
 
@@ -5233,7 +5237,12 @@ window.addEventListener(
         "excelImportFirebase"
       );
 
-    if(!excelInput) return;
+    if(!excelInput){
+      console.log(
+        "Input Excel não encontrado"
+      );
+      return;
+    }
 
     excelInput.addEventListener(
       "change",
@@ -5313,7 +5322,7 @@ window.addEventListener(
           }
 
           alert(
-            "Excel importado para Firebase com sucesso."
+            "Excel importado para Firebase."
           );
 
         }catch(error){
@@ -5321,8 +5330,7 @@ window.addEventListener(
           console.error(error);
 
           alert(
-            "Erro ao importar Excel: "
-            + error.message
+            "Erro: " + error.message
           );
 
         }
