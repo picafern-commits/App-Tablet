@@ -1,3 +1,22 @@
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
+  authDomain: "toner-manager-756c4.firebaseapp.com",
+  projectId: "toner-manager-756c4"
+};
+
+if(typeof firebase !== "undefined"){
+
+  if(!firebase.apps.length){
+    firebase.initializeApp(firebaseConfig);
+  }
+
+  const db = firebase.firestore();
+
+  window.db = db;
+
+}
+
 const APP_VERSION = "1.5.0";
 const firebaseConfig = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
@@ -4481,4 +4500,419 @@ async function importarUsersJSONFirebase(){
 
 window.importarUsersJSONFirebase =
   importarUsersJSONFirebase;
+
+
+
+
+/* =========================
+   EXPORT + IMPORT JSON
+========================= */
+
+function descarregarJSON(nome, dados){
+
+  try{
+
+    const blob = new Blob(
+      [
+        JSON.stringify(
+          dados || [],
+          null,
+          2
+        )
+      ],
+      {
+        type:"application/json"
+      }
+    );
+
+    const a =
+      document.createElement("a");
+
+    a.href =
+      URL.createObjectURL(blob);
+
+    a.download =
+      nome + "_" +
+      Date.now() +
+      ".json";
+
+    document.body.appendChild(a);
+
+    a.click();
+
+    setTimeout(()=>{
+
+      URL.revokeObjectURL(a.href);
+
+      a.remove();
+
+    },1000);
+
+  }catch(error){
+
+    console.error(error);
+
+    alert("Erro export JSON");
+
+  }
+
+}
+
+/* EXPORTS */
+
+function exportUsersJSON(){
+
+  descarregarJSON(
+    "users_backup",
+    typeof usersData !== "undefined"
+      ? usersData
+      : []
+  );
+
+}
+
+function exportPistolasJSON(){
+
+  descarregarJSON(
+    "pistolas_backup",
+    typeof pistolasData !== "undefined"
+      ? pistolasData
+      : []
+  );
+
+}
+
+function exportPortasJSON(){
+
+  descarregarJSON(
+    "portas_backup",
+    typeof portasData !== "undefined"
+      ? portasData
+      : []
+  );
+
+}
+
+/* IMPORT USERS */
+
+async function importarUsersJSONFirebase(){
+
+  try{
+
+    if(!window.db){
+
+      alert("Firebase não iniciada.");
+
+      return;
+
+    }
+
+    const input =
+      document.createElement("input");
+
+    input.type = "file";
+
+    input.accept = ".json";
+
+    input.onchange = async (event)=>{
+
+      try{
+
+        const file =
+          event.target.files?.[0];
+
+        if(!file) return;
+
+        const text =
+          await file.text();
+
+        const users =
+          JSON.parse(text);
+
+        if(!Array.isArray(users)){
+
+          alert("JSON inválido");
+
+          return;
+
+        }
+
+        let total = 0;
+
+        for(const user of users){
+
+          await window.db
+            .collection("users")
+            .add(user);
+
+          total++;
+
+        }
+
+        alert(
+          "Importação concluída: "
+          + total +
+          " users."
+        );
+
+      }catch(error){
+
+        console.error(error);
+
+        alert(
+          "Erro import users: "
+          + error.message
+        );
+
+      }
+
+    };
+
+    input.click();
+
+  }catch(error){
+
+    console.error(error);
+
+  }
+
+}
+
+/* IMPORT PISTOLAS */
+
+async function importarPistolasJSONFirebase(){
+
+  try{
+
+    if(!window.db){
+
+      alert("Firebase não iniciada.");
+
+      return;
+
+    }
+
+    const input =
+      document.createElement("input");
+
+    input.type = "file";
+
+    input.accept = ".json";
+
+    input.onchange = async (event)=>{
+
+      try{
+
+        const file =
+          event.target.files?.[0];
+
+        if(!file) return;
+
+        const text =
+          await file.text();
+
+        const dados =
+          JSON.parse(text);
+
+        let total = 0;
+
+        for(const item of dados){
+
+          await window.db
+            .collection("pistolas")
+            .add(item);
+
+          total++;
+
+        }
+
+        alert(
+          "Importação concluída: "
+          + total +
+          " pistolas."
+        );
+
+      }catch(error){
+
+        console.error(error);
+
+        alert(
+          "Erro import pistolas: "
+          + error.message
+        );
+
+      }
+
+    };
+
+    input.click();
+
+  }catch(error){
+
+    console.error(error);
+
+  }
+
+}
+
+/* IMPORT PORTAS */
+
+async function importarPortasJSONFirebase(){
+
+  try{
+
+    if(!window.db){
+
+      alert("Firebase não iniciada.");
+
+      return;
+
+    }
+
+    const input =
+      document.createElement("input");
+
+    input.type = "file";
+
+    input.accept = ".json";
+
+    input.onchange = async (event)=>{
+
+      try{
+
+        const file =
+          event.target.files?.[0];
+
+        if(!file) return;
+
+        const text =
+          await file.text();
+
+        const dados =
+          JSON.parse(text);
+
+        let total = 0;
+
+        for(const item of dados){
+
+          await window.db
+            .collection("portas")
+            .add(item);
+
+          total++;
+
+        }
+
+        alert(
+          "Importação concluída: "
+          + total +
+          " portas."
+        );
+
+      }catch(error){
+
+        console.error(error);
+
+        alert(
+          "Erro import portas: "
+          + error.message
+        );
+
+      }
+
+    };
+
+    input.click();
+
+  }catch(error){
+
+    console.error(error);
+
+  }
+
+}
+
+window.exportUsersJSON = exportUsersJSON;
+window.exportPistolasJSON = exportPistolasJSON;
+window.exportPortasJSON = exportPortasJSON;
+
+window.importarUsersJSONFirebase =
+  importarUsersJSONFirebase;
+
+window.importarPistolasJSONFirebase =
+  importarPistolasJSONFirebase;
+
+window.importarPortasJSONFirebase =
+  importarPortasJSONFirebase;
+
+
+
+
+/* =========================
+   FIREBASE REALTIME USERS
+========================= */
+
+async function iniciarUsersRealtime(){
+
+  try{
+
+    if(!window.db){
+      console.log("Firebase indisponível.");
+      return;
+    }
+
+    window.db
+      .collection("users")
+      .onSnapshot((snapshot)=>{
+
+        const dados =
+          snapshot.docs.map(doc=>({
+            id: doc.id,
+            ...doc.data()
+          }));
+
+        if(typeof usersData !== "undefined"){
+
+          usersData.length = 0;
+
+          dados.forEach(u=>usersData.push(u));
+
+        }else{
+
+          window.usersData = dados;
+
+        }
+
+        console.log(
+          "Users Firebase:",
+          dados.length
+        );
+
+        if(typeof renderUsers === "function"){
+
+          renderUsers(dados);
+
+        }
+
+      });
+
+  }catch(error){
+
+    console.error(
+      "Erro realtime users:",
+      error
+    );
+
+  }
+
+}
+
+window.iniciarUsersRealtime =
+  iniciarUsersRealtime;
+
+setTimeout(()=>{
+
+  iniciarUsersRealtime();
+
+},2000);
 
