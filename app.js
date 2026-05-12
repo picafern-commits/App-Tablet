@@ -9,7 +9,7 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.firestore();
-window.db = db;
+
 
 const BACKUP_KEYS_APP_BRAGA = {
   stock: "appBraga_backup_stock",
@@ -5201,145 +5201,7 @@ window.addEventListener("DOMContentLoaded", () => {
 })();
 
 
-/* =========================
-   IMPORT EXCEL FIREBASE
-========================= */
 
-async function importarExcelFirebase(){
-
-  const input =
-    document.getElementById(
-      "excelImportFirebase"
-    );
-
-  if(!input){
-
-    alert(
-      "Input Excel não encontrado."
-    );
-
-    return;
-  }
-
-  input.click();
-
-}
-
-window.importarExcelFirebase =
-  importarExcelFirebase;
-
-window.addEventListener(
-  "DOMContentLoaded",
-  () => {
-
-    const excelInput =
-      document.getElementById(
-        "excelImportFirebase"
-      );
-
-    if(!excelInput){
-      console.log(
-        "Input Excel não encontrado"
-      );
-      return;
-    }
-
-    excelInput.addEventListener(
-      "change",
-      async (event) => {
-
-        try{
-
-          const file =
-            event.target.files?.[0];
-
-          if(!file) return;
-
-          const data =
-            await file.arrayBuffer();
-
-          const workbook =
-            XLSX.read(data);
-
-          const usersSheet =
-            workbook.Sheets["Users"];
-
-          const pistolasSheet =
-            workbook.Sheets["Pistolas"];
-
-          const portasSheet =
-            workbook.Sheets["Portas"];
-
-          if(usersSheet){
-
-            const users =
-              XLSX.utils.sheet_to_json(
-                usersSheet
-              );
-
-            for(const user of users){
-
-              await window.db
-                .collection("users")
-                .add(user);
-
-            }
-
-          }
-
-          if(pistolasSheet){
-
-            const pistolas =
-              XLSX.utils.sheet_to_json(
-                pistolasSheet
-              );
-
-            for(const item of pistolas){
-
-              await window.db
-                .collection("pistolas")
-                .add(item);
-
-            }
-
-          }
-
-          if(portasSheet){
-
-            const portas =
-              XLSX.utils.sheet_to_json(
-                portasSheet
-              );
-
-            for(const item of portas){
-
-              await window.db
-                .collection("portas")
-                .add(item);
-
-            }
-
-          }
-
-          alert(
-            "Excel importado para Firebase."
-          );
-
-        }catch(error){
-
-          console.error(error);
-
-          alert(
-            "Erro: " + error.message
-          );
-
-        }
-
-      }
-    );
-
-  }
-);
 
 
 
@@ -5498,3 +5360,450 @@ async function firebaseDeletePorta(id){
     .delete();
 
 }
+
+
+
+/* =========================
+   FIREBASE STORAGE OVERRIDE
+========================= */
+
+async function guardarUsersLocal() {
+
+  try {
+
+    if(!window.db){
+      console.log("Firebase indisponível.");
+      return;
+    }
+
+    for(const user of usersData){
+
+      const payload = {...user};
+
+      delete payload.id;
+
+      if(user.id){
+
+        await window.db
+          .collection("users")
+          .doc(user.id)
+          .set(payload);
+
+      }else{
+
+        const ref =
+          await window.db
+            .collection("users")
+            .add(payload);
+
+        user.id = ref.id;
+
+      }
+
+    }
+
+    console.log("Users sincronizados Firebase.");
+
+  } catch(e){
+
+    console.error(e);
+
+  }
+
+}
+
+async function carregarUsersLocal() {
+
+  try {
+
+    if(!window.db){
+      return;
+    }
+
+    const snapshot =
+      await window.db
+        .collection("users")
+        .get();
+
+    usersData.splice(
+      0,
+      usersData.length,
+      ...snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
+    );
+
+    if(typeof renderUsers === "function"){
+      renderUsers(usersData);
+    }
+
+  } catch(e){
+
+    console.error(e);
+
+  }
+
+}
+
+async function guardarPistolasLocal() {
+
+  try {
+
+    if(!window.db) return;
+
+    for(const item of pistolasData){
+
+      const payload = {...item};
+
+      delete payload.id;
+
+      if(item.id){
+
+        await window.db
+          .collection("pistolas")
+          .doc(item.id)
+          .set(payload);
+
+      }else{
+
+        const ref =
+          await window.db
+            .collection("pistolas")
+            .add(payload);
+
+        item.id = ref.id;
+
+      }
+
+    }
+
+  } catch(e){
+
+    console.error(e);
+
+  }
+
+}
+
+async function carregarPistolasLocal() {
+
+  try {
+
+    if(!window.db) return;
+
+    const snapshot =
+      await window.db
+        .collection("pistolas")
+        .get();
+
+    pistolasData.splice(
+      0,
+      pistolasData.length,
+      ...snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
+    );
+
+    if(typeof renderPistolas === "function"){
+      renderPistolas(pistolasData);
+    }
+
+  } catch(e){
+
+    console.error(e);
+
+  }
+
+}
+
+async function guardarPortasLocal() {
+
+  try {
+
+    if(!window.db) return;
+
+    for(const item of portasData){
+
+      const payload = {...item};
+
+      delete payload.id;
+
+      if(item.id){
+
+        await window.db
+          .collection("portas")
+          .doc(item.id)
+          .set(payload);
+
+      }else{
+
+        const ref =
+          await window.db
+            .collection("portas")
+            .add(payload);
+
+        item.id = ref.id;
+
+      }
+
+    }
+
+  } catch(e){
+
+    console.error(e);
+
+  }
+
+}
+
+async function carregarPortasLocal() {
+
+  try {
+
+    if(!window.db) return;
+
+    const snapshot =
+      await window.db
+        .collection("portas")
+        .get();
+
+    portasData.splice(
+      0,
+      portasData.length,
+      ...snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
+    );
+
+    if(typeof renderPortas === "function"){
+      renderPortas(portasData);
+    }
+
+  } catch(e){
+
+    console.error(e);
+
+  }
+
+}
+
+window.addEventListener(
+  "DOMContentLoaded",
+  () => {
+
+    setTimeout(async ()=>{
+
+      await carregarUsersLocal();
+      await carregarPistolasLocal();
+      await carregarPortasLocal();
+
+    },2000);
+
+  }
+);
+
+
+
+
+/* =========================
+   FIREBASE EXCEL IMPORT FIX
+========================= */
+
+async function importarExcelFirebase(){
+
+  const input =
+    document.getElementById(
+      "excelImportFirebase"
+    );
+
+  if(!input){
+
+    alert(
+      "Input Excel não encontrado."
+    );
+
+    return;
+
+  }
+
+  console.log(
+    "Abrir seletor Excel..."
+  );
+
+  input.value = "";
+
+  input.click();
+
+}
+
+window.importarExcelFirebase =
+  importarExcelFirebase;
+
+async function processarExcelFirebase(event){
+
+  try{
+
+    console.log(
+      "Ficheiro selecionado."
+    );
+
+    const file =
+      event.target.files?.[0];
+
+    if(!file){
+
+      alert(
+        "Nenhum ficheiro escolhido."
+      );
+
+      return;
+
+    }
+
+    console.log(
+      "Nome ficheiro:",
+      file.name
+    );
+
+    const data =
+      await file.arrayBuffer();
+
+    const workbook =
+      XLSX.read(data);
+
+    console.log(
+      "Folhas encontradas:",
+      workbook.SheetNames
+    );
+
+    const usersSheet =
+      workbook.Sheets["Users"];
+
+    const pistolasSheet =
+      workbook.Sheets["Pistolas"];
+
+    const portasSheet =
+      workbook.Sheets["Portas"];
+
+    let total = 0;
+
+    if(usersSheet){
+
+      const users =
+        XLSX.utils.sheet_to_json(
+          usersSheet
+        );
+
+      console.log(
+        "Users encontrados:",
+        users.length
+      );
+
+      for(const user of users){
+
+        await window.db
+          .collection("users")
+          .add(user);
+
+        total++;
+
+      }
+
+    }
+
+    if(pistolasSheet){
+
+      const pistolas =
+        XLSX.utils.sheet_to_json(
+          pistolasSheet
+        );
+
+      console.log(
+        "Pistolas encontradas:",
+        pistolas.length
+      );
+
+      for(const item of pistolas){
+
+        await window.db
+          .collection("pistolas")
+          .add(item);
+
+        total++;
+
+      }
+
+    }
+
+    if(portasSheet){
+
+      const portas =
+        XLSX.utils.sheet_to_json(
+          portasSheet
+        );
+
+      console.log(
+        "Portas encontradas:",
+        portas.length
+      );
+
+      for(const item of portas){
+
+        await window.db
+          .collection("portas")
+          .add(item);
+
+        total++;
+
+      }
+
+    }
+
+    alert(
+      "Importação concluída: "
+      + total +
+      " registos."
+    );
+
+  }catch(error){
+
+    console.error(error);
+
+    alert(
+      "Erro import Excel: "
+      + error.message
+    );
+
+  }
+
+}
+
+setTimeout(()=>{
+
+  const input =
+    document.getElementById(
+      "excelImportFirebase"
+    );
+
+  if(input){
+
+    console.log(
+      "Listener Excel ligado."
+    );
+
+    input.onchange =
+      processarExcelFirebase;
+
+  }else{
+
+    console.log(
+      "Input Excel não encontrado."
+    );
+
+  }
+
+},2000);
+
