@@ -2,7 +2,11 @@ const APP_VERSION = "1.0.0";
 const firebaseConfig = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
   authDomain: "toner-manager-756c4.firebaseapp.com",
-  projectId: "toner-manager-756c4"
+  databaseURL: "https://toner-manager-756c4-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "toner-manager-756c4",
+  storageBucket: "toner-manager-756c4.firebasestorage.app",
+  messagingSenderId: "1004492465437",
+  appId: "1:1004492465437:web:6a745933c51fc17b04adf4"
 };
 
 if (!firebase.apps.length) {
