@@ -5212,7 +5212,10 @@ async function importarExcelFirebase(){
       "excelImportFirebase"
     );
 
-  if(!input) return;
+  if(!input){
+    alert("Input Excel não encontrado.");
+    return;
+  }
 
   input.click();
 
@@ -5267,9 +5270,9 @@ window.addEventListener(
 
             for(const user of users){
 
-              await db.collection(
-                "users"
-              ).add(user);
+              await window.db
+                .collection("users")
+                .add(user);
 
             }
 
@@ -5284,9 +5287,9 @@ window.addEventListener(
 
             for(const item of pistolas){
 
-              await db.collection(
-                "pistolas"
-              ).add(item);
+              await window.db
+                .collection("pistolas")
+                .add(item);
 
             }
 
@@ -5301,15 +5304,15 @@ window.addEventListener(
 
             for(const item of portas){
 
-              await db.collection(
-                "portas"
-              ).add(item);
+              await window.db
+                .collection("portas")
+                .add(item);
 
             }
 
           }
 
-          mostrarMensagem(
+          alert(
             "Excel importado para Firebase com sucesso."
           );
 
@@ -5317,9 +5320,9 @@ window.addEventListener(
 
           console.error(error);
 
-          mostrarMensagem(
-            "Erro ao importar Excel.",
-            "erro"
+          alert(
+            "Erro ao importar Excel: "
+            + error.message
           );
 
         }
