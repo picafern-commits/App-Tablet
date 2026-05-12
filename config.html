@@ -1,238 +1,21 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-<link rel="icon" type="image/x-icon" href="../assets/icon.ico">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Configurações</title>
   <meta name="theme-color" content="#111827">
-  <link rel="manifest" href="../services/manifest.json">
-  <link rel="icon" type="image/png" sizes="192x192" href="../assets/icon-192.png">
-  <link rel="apple-touch-icon" href="../assets/icon-192.png">
-  <link rel="stylesheet" href="../style.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="style.css">
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-
-<style>
-.logo-badge{
-  width:56px;
-  height:56px;
-  border-radius:16px;
-  overflow:hidden;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:transparent;
-}
-
-.sidebar-logo{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  border-radius:16px;
-}
-</style>
-
-<style>
-
-/* RESPONSIVE AUTO LAYOUT */
-
-@media (max-width: 1024px){
-
-  .sidebar{
-    width:88px !important;
-    overflow-x:hidden;
-  }
-
-  .sidebar:hover{
-    width:240px !important;
-  }
-
-  .main-content,
-  .content{
-    margin-left:88px !important;
-    width:calc(100% - 88px) !important;
-  }
-
-  .stats-grid,
-  .dashboard-grid{
-    grid-template-columns:1fr !important;
-  }
-
-}
-
-@media (max-width: 768px){
-
-  .sidebar{
-    width:72px !important;
-    position:fixed !important;
-    z-index:9999;
-  }
-
-  .sidebar:hover{
-    width:220px !important;
-  }
-
-  .main-content,
-  .content{
-    margin-left:72px !important;
-    width:calc(100% - 72px) !important;
-    padding:12px !important;
-  }
-
-  .card,
-  .dashboard-card,
-  .stock-card{
-    width:100% !important;
-  }
-
-  .stats-grid,
-  .dashboard-grid{
-    grid-template-columns:1fr !important;
-    gap:12px !important;
-  }
-
-  h1{
-    font-size:32px !important;
-  }
-
-  button{
-    width:100%;
-  }
-
-}
-
-@media (max-width: 480px){
-
-  .sidebar{
-    width:64px !important;
-  }
-
-  .main-content,
-  .content{
-    margin-left:64px !important;
-    width:calc(100% - 64px) !important;
-  }
-
-  h1{
-    font-size:26px !important;
-  }
-
-  .topbar,
-  .header{
-    padding:14px !important;
-  }
-
-}
-</style><style>
-
-/* MOBILE DRAWER SIDEBAR */
-
-.mobile-menu-btn{
-  display:none;
-}
-
-.mobile-overlay{
-  display:none;
-}
-
-@media (max-width:768px){
-
-  .mobile-menu-btn{
-    display:flex !important;
-    position:fixed;
-    top:14px;
-    left:14px;
-    z-index:10001;
-    width:44px;
-    height:44px;
-    border:none;
-    border-radius:12px;
-    background:#2563eb;
-    color:white;
-    font-size:24px;
-    align-items:center;
-    justify-content:center;
-  }
-
-  .sidebar{
-    position:fixed !important;
-    left:-260px !important;
-    top:0;
-    width:240px !important;
-    height:100vh;
-    z-index:10000;
-    transition:left .3s ease;
-  }
-
-  .sidebar.mobile-open{
-    left:0 !important;
-  }
-
-  .mobile-overlay.active{
-    display:block;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.45);
-    z-index:9998;
-  }
-
-  .main-content,
-  .content{
-    margin-left:0 !important;
-    width:100% !important;
-    padding:70px 14px 14px 14px !important;
-  }
-
-}
-</style><style>
-
-/* MOBILE SIDEBAR BUTTON */
-
-.mobile-sidebar-btn{
-  display:none;
-}
-
-@media (max-width:768px){
-
-  .mobile-sidebar-btn{
-    display:flex !important;
-    position:fixed;
-    top:16px;
-    left:16px;
-    width:48px;
-    height:48px;
-    border:none;
-    border-radius:14px;
-    background:#2563eb;
-    color:white;
-    font-size:26px;
-    z-index:10002;
-    align-items:center;
-    justify-content:center;
-    box-shadow:0 8px 25px rgba(0,0,0,.35);
-  }
-
-  .sidebar{
-    position:fixed !important;
-    left:-260px !important;
-    top:0;
-    width:240px !important;
-    height:100vh !important;
-    transition:left .3s ease !important;
-    z-index:10001 !important;
-  }
-
-  .sidebar.mobile-open{
-    left:0 !important;
-  }
-
-}
-</style></head>
+</head>
 <body>
 <aside class="sidebar">
   <div class="brand premium-brand">
-    <div class="brand-badge"><img src="assets/icon-192.png" class="sidebar-logo" /></div>
+    <div class="brand-badge">BR</div>
     <div>
       <h2>App Braga</h2>
       <p>Centro Operacional</p>
@@ -240,328 +23,42 @@
   </div>
 
   <div class="nav-group-label">Operação</div>
-<a href="../index.html">Dashboard</a>
-<a href="../html/add-toner.html">Adicionar Toner</a>
-<a href="../html/stock.html">Stock</a>
-<a href="../html/historico.html">Histórico</a>
-<a href="../html/etiquetas-word.html">Etiquetas Word</a>
+<a href="index.html">Dashboard</a>
+<a href="add-toner.html">Adicionar Toner</a>
+<a href="stock.html">Stock</a>
+<a href="historico.html">Histórico</a>
+<a href="etiquetas-word.html">Etiquetas Word</a>
 
   <div class="nav-group-label">Infraestrutura</div>
-<a href="../html/impressoras.html">Impressoras</a>
-<a href="../html/manutencao-impressoras.html">Manutenção Impressoras</a>
-<a href="../html/portas.html">Portas Rede</a>
+<a href="impressoras.html">Impressoras</a>
+<a href="manutencao-impressoras.html">Manutenção Impressoras</a>
+<a href="portas.html">Portas Rede</a>
 
   <div class="nav-group-label">Equipamentos</div>
-<a href="../html/computadores.html">Computadores</a>
-<a href="../html/pistolas.html">Pistolas CK65</a>
+<a href="computadores.html">Computadores</a>
+<a href="pistolas.html">Pistolas CK65</a>
 
   <div class="nav-group-label">Administração</div>
-<a href="../html/users.html">Users</a>
-<a href="../html/config.html" class="active">Configurações</a>
+<a href="users.html">Users</a>
+<a href="config.html" class="active">Configurações</a>
 </aside>
 <main class="main">
 
+  <div class="topbar premium-topbar"><div class="topbar-main"><h1>Configurações</h1><p class="subtitle">Preferências da app</p></div><div class="topbar-status"><span class="status-pill">Sistema Online</span><span class="version-pill" id="appVersion">v1.0.0 Premium</span></div></div>
+
   <div class="page-hero">
     <div class="page-hero-title">Configurações</div>
-    <span class="status-pill">Sistema Online</span>
+    <p class="page-hero-subtitle">Preferências da app</p>
+    <div class="visual-badge-row">
+      <span class="visual-badge">✨ Modo Visual</span>
+      <span class="visual-badge">🏢 Estilo Empresa</span>
+      <span class="visual-badge">⚡ UI Premium</span>
+    </div>
   </div>
 
   <div class="panel"><label class="switch-row"><input type="checkbox" id="darkSwitch"> <span>Modo escuro</span></label></div>
 
-
-
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-<script src="js/firebase/config.js"></script>
-<script src="../app.js"></script>
-
-
-<script>
-
-document.addEventListener('DOMContentLoaded', ()=>{
-
-  if(window.innerWidth <= 768){
-
-    const sidebar = document.querySelector('.sidebar');
-
-    if(!sidebar) return;
-
-    const btn = document.createElement('button');
-
-    btn.className = 'mobile-sidebar-btn';
-
-    btn.innerHTML = '☰';
-
-    document.body.appendChild(btn);
-
-    btn.addEventListener('click', ()=>{
-
-      sidebar.classList.toggle('mobile-open');
-
-    });
-
-  }
-
-});
-
-</script>
-
-
-
-<script>
-// DARK MODE SAVE FIX
-document.addEventListener('DOMContentLoaded', ()=>{
-
-  const savedTheme = localStorage.getItem('theme');
-
-  if(savedTheme === 'dark'){
-    document.body.classList.add('dark');
-    document.documentElement.setAttribute('data-theme','dark');
-  }else if(savedTheme === 'light'){
-    document.body.classList.remove('dark');
-    document.documentElement.setAttribute('data-theme','light');
-  }
-
-  document.querySelectorAll('[data-theme-toggle], .theme-toggle, .dark-mode-toggle').forEach((btn)=>{
-
-    btn.addEventListener('click', ()=>{
-
-      const isDark =
-        document.body.classList.contains('dark') ||
-        document.documentElement.getAttribute('data-theme') === 'dark';
-
-      if(isDark){
-        localStorage.setItem('theme','light');
-      }else{
-        localStorage.setItem('theme','dark');
-      }
-
-    });
-
-  });
-
-});
-</script>
-
-
-<script>
-
-/* BACKUP DASHBOARD STATUS */
-
-async function verificarStatusBackupFirebase(){
-
-  try{
-
-    if(!window.db) return;
-
-    const ref = await db.collection("app_backup_status")
-      .doc("latest")
-      .get();
-
-    if(!ref.exists) return;
-
-    const data = ref.data();
-
-    const statusEl = document.getElementById("backup-status");
-    const dateEl = document.getElementById("backup-last-date");
-
-    if(statusEl){
-
-      statusEl.innerText =
-        data.status === "success"
-          ? "Ativo"
-          : "Erro";
-
-      statusEl.style.color =
-        data.status === "success"
-          ? "#22c55e"
-          : "#ef4444";
-
-    }
-
-    if(dateEl){
-
-      const d = new Date(data.lastBackupMs || Date.now());
-
-      dateEl.innerText =
-        d.toLocaleDateString() +
-        " " +
-        d.toLocaleTimeString();
-
-    }
-
-  }catch(e){
-    console.error(e);
-  }
-
-}
-
-window.addEventListener("load", ()=>{
-
-  setTimeout(()=>{
-    verificarStatusBackupFirebase();
-  },3000);
-
-});
-
-</script>
-
-
-
-
-
-<!-- BACKUP DASHBOARD -->
-<div id="backup-dashboard" style="
-margin-top:40px;
-padding:24px;
-border-radius:24px;
-background:linear-gradient(135deg,#1e1b4b,#0f172a);
-border:1px solid rgba(255,255,255,.08);
-box-shadow:0 10px 30px rgba(0,0,0,.35);
-color:white;
-">
-
-<h2 style="font-size:34px;margin-bottom:10px;">💾 Backup Firebase</h2>
-
-<p style="opacity:.8;margin-bottom:20px;">
-Estado real do sistema de backups automáticos.
-</p>
-
-<div style="
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-gap:16px;
-">
-
-<div style="padding:18px;border-radius:18px;background:#111827;">
-<div style="opacity:.7;">Último Backup</div>
-<div id="backup-last-date" style="font-size:24px;font-weight:bold;">--</div>
-</div>
-
-<div style="padding:18px;border-radius:18px;background:#111827;">
-<div style="opacity:.7;">Estado</div>
-<div id="backup-status" style="font-size:24px;font-weight:bold;color:#22c55e;">Ativo</div>
-</div>
-
-<div style="padding:18px;border-radius:18px;background:#111827;">
-<div style="opacity:.7;">Próximo Backup</div>
-<div id="backup-countdown" style="font-size:24px;font-weight:bold;">--</div>
-</div>
-
-<div style="padding:18px;border-radius:18px;background:#111827;">
-<div style="opacity:.7;">Local</div>
-<div style="font-size:24px;font-weight:bold;">Firebase</div>
-</div>
-
-</div>
-
-<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:24px;">
-
-<button onclick="executarBackupFirebaseAppBraga(true)" style="
-padding:14px 22px;
-border:none;
-border-radius:14px;
-background:#2563eb;
-color:white;
-font-weight:bold;
-cursor:pointer;
-">
-Criar Backup Agora
-</button>
-
-<button onclick="verificarStatusBackupFirebase()" style="
-padding:14px 22px;
-border:none;
-border-radius:14px;
-background:#16a34a;
-color:white;
-font-weight:bold;
-cursor:pointer;
-">
-Atualizar Estado
-</button>
-
-</div>
-
-</div>
-
-<script>
-async function verificarStatusBackupFirebase(){
-
-  try{
-
-    if(!window.db) return;
-
-    const ref = await db.collection("app_backup_status")
-      .doc("latest")
-      .get();
-
-    if(ref.exists){
-
-      const data = ref.data();
-
-      const statusEl = document.getElementById("backup-status");
-      const dateEl = document.getElementById("backup-last-date");
-
-      if(statusEl){
-        statusEl.innerText = data.status === "success" ? "Ativo" : "Erro";
-        statusEl.style.color = data.status === "success" ? "#22c55e" : "#ef4444";
-      }
-
-      if(dateEl && data.lastBackupMs){
-        const d = new Date(data.lastBackupMs);
-        dateEl.innerText = d.toLocaleDateString() + " " + d.toLocaleTimeString();
-      }
-
-    }
-
-  }catch(e){
-    console.error(e);
-  }
-
-}
-
-function atualizarCountdownBackup(){
-
-  const agora = new Date();
-
-  let proximo = new Date();
-
-  proximo.setHours(18,30,0,0);
-
-  const diasAteSexta = (5 - agora.getDay() + 7) % 7;
-
-  proximo.setDate(agora.getDate() + diasAteSexta);
-
-  if(agora > proximo){
-    proximo.setDate(proximo.getDate() + 7);
-  }
-
-  const diff = proximo - agora;
-
-  const dias = Math.floor(diff / (1000*60*60*24));
-  const horas = Math.floor((diff / (1000*60*60)) % 24);
-  const mins = Math.floor((diff / (1000*60)) % 60);
-
-  const el = document.getElementById("backup-countdown");
-
-  if(el){
-    el.innerText = `${dias}d ${horas}h ${mins}m`;
-  }
-
-}
-
-window.addEventListener("load", ()=>{
-
-  setTimeout(()=>{
-    verificarStatusBackupFirebase();
-    atualizarCountdownBackup();
-
-    setInterval(atualizarCountdownBackup, 60000);
-
-  },2000);
-
-});
-</script>
-
+</main>
+<script src="app.js"></script>
 </body>
 </html>
