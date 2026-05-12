@@ -5340,3 +5340,161 @@ window.addEventListener(
 
   }
 );
+
+
+
+/* =========================
+   FIREBASE REALTIME SYNC
+========================= */
+
+async function iniciarFirebaseRealtime(){
+
+  if(!window.db){
+    console.log("Firebase não inicializada.");
+    return;
+  }
+
+  try{
+
+    /* USERS */
+
+    window.db
+      .collection("users")
+      .onSnapshot((snapshot)=>{
+
+        usersData = snapshot.docs.map(doc=>({
+          id:doc.id,
+          ...doc.data()
+        }));
+
+        if(typeof renderUsers === "function"){
+          renderUsers(usersData);
+        }
+
+      });
+
+    /* PISTOLAS */
+
+    window.db
+      .collection("pistolas")
+      .onSnapshot((snapshot)=>{
+
+        pistolasData = snapshot.docs.map(doc=>({
+          id:doc.id,
+          ...doc.data()
+        }));
+
+        if(typeof renderPistolas === "function"){
+          renderPistolas(pistolasData);
+        }
+
+      });
+
+    /* PORTAS */
+
+    window.db
+      .collection("portas")
+      .onSnapshot((snapshot)=>{
+
+        portasData = snapshot.docs.map(doc=>({
+          id:doc.id,
+          ...doc.data()
+        }));
+
+        if(typeof renderPortas === "function"){
+          renderPortas(portasData);
+        }
+
+      });
+
+    console.log(
+      "Firebase realtime ativo."
+    );
+
+  }catch(error){
+
+    console.error(
+      "Erro realtime Firebase:",
+      error
+    );
+
+  }
+
+}
+
+window.addEventListener(
+  "DOMContentLoaded",
+  ()=>{
+
+    setTimeout(()=>{
+
+      iniciarFirebaseRealtime();
+
+    },1500);
+
+  }
+);
+
+/* =========================
+   FIREBASE HELPERS
+========================= */
+
+async function firebaseAddUser(data){
+
+  return await window.db
+    .collection("users")
+    .add(data);
+
+}
+
+async function firebaseUpdateUser(id,data){
+
+  return await window.db
+    .collection("users")
+    .doc(id)
+    .update(data);
+
+}
+
+async function firebaseDeleteUser(id){
+
+  return await window.db
+    .collection("users")
+    .doc(id)
+    .delete();
+
+}
+
+async function firebaseAddPistola(data){
+
+  return await window.db
+    .collection("pistolas")
+    .add(data);
+
+}
+
+async function firebaseDeletePistola(id){
+
+  return await window.db
+    .collection("pistolas")
+    .doc(id)
+    .delete();
+
+}
+
+async function firebaseAddPorta(data){
+
+  return await window.db
+    .collection("portas")
+    .add(data);
+
+}
+
+async function firebaseDeletePorta(id){
+
+  return await window.db
+    .collection("portas")
+    .doc(id)
+    .delete();
+
+}
