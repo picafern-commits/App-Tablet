@@ -11,12 +11,12 @@ if (!firebase.apps.length) {
 const db = firebase.firestore();
 window.db = db;
 
-
+const APP_BRAGA_VERSION = "v1.8 Premium";
 const BACKUP_KEYS_APP_BRAGA = {
-  stock: "appBraga_backup_stock",
-  historico: "appBraga_backup_historico",
-  pcs: "appBraga_backup_pcs",
-  manutencoes: "appBraga_backup_manutencoes"
+  stock: "appBragaDesktop_backup_stock",
+  historico: "appBragaDesktop_backup_historico",
+  pcs: "appBragaDesktop_backup_pcs",
+  manutencoes: "appBragaDesktop_backup_manutencoes"
 };
 
 function saveBackupAppBraga(key, data) {
@@ -55,6 +55,20 @@ function hideBackupBadge() {
     }
   });
 }
+
+function atualizarEstadoLigacaoAppBraga() {
+  const online = navigator.onLine;
+  document.querySelectorAll(".status-pill").forEach(node => {
+    node.textContent = online ? "Sistema Online" : "Sistema Offline";
+    node.classList.toggle("offline", !online);
+  });
+  document.querySelectorAll(".version-pill").forEach(node => {
+    if (!node.dataset.backupShown) node.textContent = APP_BRAGA_VERSION;
+  });
+}
+
+window.addEventListener("online", atualizarEstadoLigacaoAppBraga);
+window.addEventListener("offline", atualizarEstadoLigacaoAppBraga);
 
 let stockGlobal = [];
 let historicoGlobal = [];
@@ -1207,9 +1221,6 @@ function guardarUsersLocal() { return; }
 
 function carregarUsersLocal() { return; }
 
-
-
-
 /* =========================
    USERS FIREBASE SYNC
 ========================= */
@@ -1318,8 +1329,8 @@ function preencherLocaisManutencao() {
     selectIP.innerHTML = `
       <option value="">Selecionar IP</option>
       ${impressorasData.map(item => `
-        <option value="<a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a>">
-          <a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a> - ${item.localizacao} (${item.armazem})
+        <option value="${item.ip}">
+          ${item.ip} - ${item.localizacao} (${item.armazem})
         </option>
       `).join("")}
     `;
@@ -1384,7 +1395,6 @@ async function disponivel() {
   const localizacao = el("localizacao");
   const cor = el("cor");
   const data = el("data");
-  const lote = el("lote");
 
   if (!equipamento || !cor) return;
 
@@ -1392,7 +1402,6 @@ async function disponivel() {
   const loc = localizacao ? localizacao.value : "";
   const corValue = cor.value;
   const dataValue = data ? data.value : "";
-  const loteValue = lote ? lote.value : "";
 
   if (!eq || !corValue) {
     mostrarMensagem("Preenche o equipamento e a cor.", "erro");
@@ -1409,7 +1418,6 @@ async function disponivel() {
       cor: corValue,
       data: dataValue || "Sem Data",
       dataFolha: (el("dataFolha") && el("dataFolha").value) || "Sem Data da Folha",
-      lote: loteValue || "",
       created: new Date()
     });
 
@@ -1418,7 +1426,6 @@ async function disponivel() {
     cor.value = "";
     if (data) data.value = "";
     if (el("dataFolha")) el("dataFolha").value = "";
-    if (lote) lote.value = "";
 
     mostrarMensagem("Toner adicionado com sucesso.");
   } catch (error) {
@@ -1441,10 +1448,7 @@ db.collection("stock").orderBy("created", "desc").onSnapshot(snap => {
   hideBackupBadge();
   renderDashboardCards(stockGlobal);
   renderStockCards(stockGlobal);
-  renderStockMinimoPainel();
-  renderAlertasInteligentes();
   renderDashboardResumoInteligente();
-  renderAlertasInteligentes();
   renderModoGestorExtremo();
 }, error => {
   console.error(error);
@@ -1453,10 +1457,7 @@ db.collection("stock").orderBy("created", "desc").onSnapshot(snap => {
   showBackupBadge();
   renderDashboardCards(stockGlobal);
   renderStockCards(stockGlobal);
-  renderStockMinimoPainel();
-  renderAlertasInteligentes();
   renderDashboardResumoInteligente();
-  renderAlertasInteligentes();
   renderModoGestorExtremo();
 });
 
@@ -1473,10 +1474,8 @@ db.collection("historico").orderBy("created", "desc").onSnapshot(snap => {
   saveBackupAppBraga(BACKUP_KEYS_APP_BRAGA.historico, historicoGlobal);
   hideBackupBadge();
   renderHistoricoCards(historicoGlobal);
-  renderAlertasInteligentes();
   renderModoGestorExtremo();
   renderDashboardResumoInteligente();
-  renderAlertasInteligentes();
   renderModoGestorExtremo();
 }, error => {
   console.error(error);
@@ -1484,10 +1483,8 @@ db.collection("historico").orderBy("created", "desc").onSnapshot(snap => {
   setText("countUsados", historicoGlobal.length);
   showBackupBadge();
   renderHistoricoCards(historicoGlobal);
-  renderAlertasInteligentes();
   renderModoGestorExtremo();
   renderDashboardResumoInteligente();
-  renderAlertasInteligentes();
   renderModoGestorExtremo();
 });
 
@@ -1546,52 +1543,36 @@ function atualizarContadoresManutencao() {
 
 
 function getCriticalityBucketsAppBraga() {
-  let critical = 0;
-  let warning = 0;
-  let normal = 0;
-
+  let critical = 0, warning = 0, normal = 0;
   impressorasData.forEach(item => {
     const info = tonerInfoState[item.ip] || null;
     const colors = Array.isArray(info?.colors) ? info.colors : [];
-    const monoPercent = typeof info?.percent === "number" ? info.percent : null;
-    const allPercents = colors.map(c => c.percent).filter(v => typeof v === "number");
-    if (!allPercents.length && monoPercent !== null) allPercents.push(monoPercent);
-
-    if (!allPercents.length) {
-      normal++;
-      return;
-    }
-
-    const minValue = Math.min(...allPercents);
-    if (minValue < 10) critical++;
-    else if (minValue <= 25) warning++;
+    const mono = typeof info?.percent === "number" ? info.percent : null;
+    const values = colors.map(c => c.percent).filter(v => typeof v === "number");
+    if (!values.length && mono !== null) values.push(mono);
+    if (!values.length) { normal++; return; }
+    const minv = Math.min(...values);
+    if (minv < 10) critical++;
+    else if (minv <= 25) warning++;
     else normal++;
   });
-
   return { critical, warning, normal };
 }
-
 function getTopLocalizacoesHistorico(limit = 3) {
   const counts = {};
   historicoGlobal.forEach(item => {
     const key = String(item.localizacao || "Sem Localização");
     counts[key] = (counts[key] || 0) + 1;
   });
-  return Object.entries(counts)
-    .sort((a,b) => b[1] - a[1])
-    .slice(0, limit);
+  return Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,limit);
 }
-
 function getUltimosMovimentos(limit = 3) {
-  return [...historicoGlobal]
-    .sort((a,b) => {
-      const ad = a.created && a.created.seconds ? a.created.seconds : 0;
-      const bd = b.created && b.created.seconds ? b.created.seconds : 0;
-      return bd - ad;
-    })
-    .slice(0, limit);
+  return [...historicoGlobal].sort((a,b)=> {
+    const ad = a.created && a.created.seconds ? a.created.seconds : 0;
+    const bd = b.created && b.created.seconds ? b.created.seconds : 0;
+    return bd - ad;
+  }).slice(0,limit);
 }
-
 function renderDashboardResumoInteligente() {
   const host = el("dashboardResumoInteligente");
   if (!host) return;
@@ -1674,7 +1655,7 @@ function renderDashboardCards(items) {
         <div class="stock-id">${item.modelo}</div>
         <div class="meta-line">Série: <span class="meta-value">${item.serie}</span></div>
         <div class="meta-line">Local: <span class="meta-value">${item.localizacao} (${item.armazem})</span></div>
-        <div class="meta-line">IP: <span class="meta-value"><a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a></span></div>
+        <div class="meta-line">IP: <span class="meta-value">${item.ip}</span></div>
         <div class="printer-toners-grid" style="margin-top:10px;">${supplyHtml}${residueHtml}</div>
       </div>
     `;
@@ -1696,13 +1677,11 @@ function renderStockCards(items) {
       <div class="meta-line">Equipamento: <span class="meta-value">${t.equipamento}</span></div>
       <div class="meta-line">Cor: <span class="meta-value">${t.cor}</span></div>
       <div class="meta-line">Localização: <span class="meta-value">${t.localizacao}</span></div>
-      <div class="meta-line">Lote: <span class="meta-value">${t.lote || "-"}</span></div>
-      <div class="meta-line">Data Scan: <span class="meta-value">${t.data || "Sem Data"}</span></div>
-      <div class="meta-line">Data Folha: <span class="meta-value">${t.dataFolha || "Sem Data da Folha"}</span></div>
+      <div class="meta-line">Data scan: <span class="meta-value">${t.data || "Sem Data"}</span></div>
+      <div class="meta-line">Data folha: <span class="meta-value">${t.dataFolha || "Sem Data da Folha"}</span></div>
       <div class="card-actions">
         <button class="small-btn btn-use" onclick="usar('${t.idDoc}')">Marcar usado</button>
-        <button class="small-btn btn-edit" onclick="abrirEditarStockModal('${t.idDoc}')">Editar</button>
-        <button class="small-btn btn-delete" onclick="apagarStockItem('${t.idDoc}')">Apagar</button>
+        <button class="small-btn btn-edit" onclick="editar('${t.idDoc}')">Editar</button>
       </div>
     </div>
   `).join("");
@@ -1723,11 +1702,9 @@ function renderHistoricoCards(items) {
       <div class="meta-line">Equipamento: <span class="meta-value">${t.equipamento}</span></div>
       <div class="meta-line">Cor: <span class="meta-value">${t.cor || "-"}</span></div>
       <div class="meta-line">Localização: <span class="meta-value">${t.localizacao || "Sem Localização"}</span></div>
-      <div class="meta-line">Lote: <span class="meta-value">${t.lote || "-"}</span></div>
-      <div class="meta-line">Data Scan: <span class="meta-value">${t.data || "Sem Data"}</span></div>
-      <div class="meta-line">Data Folha: <span class="meta-value">${t.dataFolha || "Sem Data da Folha"}</span></div>
+      <div class="meta-line">Data scan: <span class="meta-value">${t.data || "Sem Data"}</span></div>
+      <div class="meta-line">Data folha: <span class="meta-value">${t.dataFolha || "Sem Data da Folha"}</span></div>
       <div class="card-actions">
-        <button class="small-btn btn-edit" onclick="abrirEditarHistoricoModal('${t.idDoc}')">Editar</button>
         <button class="small-btn btn-delete" onclick="apagar('${t.idDoc}')">Apagar</button>
       </div>
     </div>
@@ -1775,11 +1752,42 @@ function editar(id) {
   window.location.href = "add-toner.html";
 }
 
-function exportar() { exportarExcelStock(); }
+function exportar() {
+  if (!stockGlobal.length) {
+    mostrarMensagem("Não há dados para exportar.", "erro");
+    return;
+  }
 
-function filtrar() { filtrarStockDebounced(); }
+  let csv = "ID;Equipamento;Localização;Cor;Data Scan;Data Folha\n";
+  stockGlobal.forEach(t => {
+    csv += `${t.idInterno};${t.equipamento};${t.localizacao};${t.cor};${t.data || ""};${t.dataFolha || ""}\n`;
+  });
 
-function filtrarDashboard() { filtrarDashDebounced(); }
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "stock.csv";
+  a.click();
+}
+
+function filtrar() {
+  const input = el("search");
+  if (!input) return;
+
+  const txt = input.value.toLowerCase();
+  const filtrados = stockGlobal.filter(t =>
+    normalizarTexto(t.idInterno).includes(txt) ||
+    normalizarTexto(t.equipamento).includes(txt) ||
+    normalizarTexto(t.cor).includes(txt) ||
+    normalizarTexto(t.localizacao).includes(txt)
+  );
+
+  renderStockCards(filtrados);
+}
+
+function filtrarDashboard() {
+  renderDashboardCards();
+}
 
 /* =========================
    COMPUTADORES
@@ -1962,7 +1970,7 @@ function renderManutencoes(items) {
       <div class="meta-line">Técnico: <span class="meta-value">${item.tecnico}</span></div>
       <div class="meta-line">Armazém: <span class="meta-value">${item.armazem}</span></div>
       <div class="meta-line">Localização: <span class="meta-value">${item.localizacao}</span></div>
-      <div class="meta-line">IP: <span class="meta-value"><a href="http://<a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a>" target="_blank" rel="noopener noreferrer"><a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a></a></span></div>
+      <div class="meta-line">IP: <span class="meta-value"><a href="http://${item.ip}" target="_blank" rel="noopener noreferrer">${item.ip}</a></span></div>
       <div class="meta-line">Pedido: <span class="meta-value">${item.dataPedido}</span></div>
       <div class="meta-line">Resolução: <span class="meta-value">${item.dataResolucao || "Sem resolução"}</span></div>
       <div class="meta-line">Motivo: <span class="meta-value">${item.motivo}</span></div>
@@ -2031,49 +2039,26 @@ function carregarEdicaoToner() {
     el("localizacao").value = toner.localizacao || "";
     el("cor").value = toner.cor || "";
     el("data").value = toner.data || "";
-    if (el("lote")) el("lote").value = toner.lote || "";
-    if (el("dataFolha")) el("dataFolha").value = toner.dataFolha || "";
   } catch (e) {
     console.error(e);
   }
 }
 
-function extrairPercentagemTonerDoHTML(html){
+function extrairPercentagemTonerDoHTML(html) {
+  if (!html) return null;
 
-  if(!html) return null;
-
-  const regexes = [
-
-    /Black[\s\S]{0,120}?(\d{1,3})%/i,
-    /Preto[\s\S]{0,120}?(\d{1,3})%/i,
-    /Toner Preto[\s\S]{0,120}?(\d{1,3})%/i
-
-  ];
-
-  for(const rgx of regexes){
-
-    const match = html.match(rgx);
-
-    if(match){
-
-      const valor = parseInt(match[1]);
-
-      if(
-        !Number.isNaN(valor) &&
-        valor >= 0 &&
-        valor <= 100
-      ){
-
-        console.log('TONER PRETO:', valor);
-
-        return valor;
-
-      }
-
-    }
-
+  const texto = String(html);
+  const linhaPreto = texto.match(/Preto[\s\S]{0,160}?(\d{1,3})\s*%/i) || texto.match(/Black[\s\S]{0,160}?(\d{1,3})\s*%/i);
+  if (linhaPreto) {
+    const valor = parseInt(linhaPreto[1], 10);
+    if (!Number.isNaN(valor) && valor >= 0 && valor <= 100) return valor;
   }
 
+  const match = texto.match(/(\d{1,3})\s?%/i);
+  if (match) {
+    const valor = parseInt(match[1], 10);
+    if (!Number.isNaN(valor) && valor >= 0 && valor <= 100) return valor;
+  }
   return null;
 }
 
@@ -2219,28 +2204,20 @@ async function obterTonerInfo(ip) {
     if (!window.electronAPI || !window.electronAPI.getTonerSNMP) return null;
     const resposta = await window.electronAPI.getTonerSNMP(ip);
 
-    if (window.electronAPI.getPrinterHTML) {
-      const htmlResp = await window.electronAPI.getPrinterHTML(ip);
-
-      if (htmlResp && htmlResp.ok && htmlResp.body) {
-        const percent = extrairPercentagemTonerDoHTML(htmlResp.body);
-
-        if (typeof percent === "number" && !Number.isNaN(percent)) {
-          return {
-            colors: [{ key: "black", label: "Preto", percent }],
-            residue: null,
-            percent
-          };
-        }
-      }
-    }
-
     if (resposta && resposta.ok) {
       return {
         colors: Array.isArray(resposta.colors) ? resposta.colors : [],
         residue: resposta.residue || null,
         percent: typeof resposta.percent === "number" ? resposta.percent : null
       };
+    }
+
+    if (window.electronAPI.getPrinterHTML) {
+      const htmlResp = await window.electronAPI.getPrinterHTML(ip);
+      if (htmlResp && htmlResp.ok && htmlResp.body) {
+        const percent = extrairPercentagemTonerDoHTML(htmlResp.body);
+        return { colors: [{ key: "black", label: "Preto", percent }], residue: null };
+      }
     }
     return null;
   } catch (error) {
@@ -2273,8 +2250,6 @@ async function testarTonerImpressora(ip, outputId) {
 
   if (output) output.innerHTML = gerarHTMLToners(info);
   if (info) maybeNotifyCriticalSupply(ip, info);
-  updateTonerDiagnosticStatus(info ? "ok" : "error", { running: false, lastRunAt: new Date(), successCount: info ? 1 : 0, totalCount: 1, source: resolveDiagSource() });
-  pushTonerDiagnosticLog(ip, info ? summarizeTonerInfo(info) : "sem resposta");
   renderDashboardCards();
 }
 
@@ -2301,44 +2276,24 @@ function filtrarHistoricoPorImpressora(item) {
   const serie = String(item.serie || "");
   const loc = String(item.localizacao || "");
   const arm = String(item.armazem || "");
-
   return historicoGlobal.filter(h => {
     const hLoc = String(h.localizacao || "");
     const hEq = String(h.equipamento || "");
-    return hLoc.includes(serie) ||
-      hLoc.includes(loc) ||
-      (hLoc.includes(arm) && hLoc.includes(loc)) ||
-      normalizarTexto(hEq).includes(normalizarTexto(item.modelo));
+    return hLoc.includes(serie) || hLoc.includes(loc) || (hLoc.includes(arm) && hLoc.includes(loc)) || normalizarTexto(hEq).includes(normalizarTexto(item.modelo));
   });
 }
-
 function abrirHistoricoImpressora(item) {
   const host = el("historicoImpressoraPanel");
   if (!host) return;
-
   const itens = filtrarHistoricoPorImpressora(item);
   const ultimo = itens[0] || null;
-
   host.innerHTML = `
     <div class="printer-history-card">
-      <div class="section-header">
-        <div>
-          <h3>${item.modelo} — ${item.serie}</h3>
-          <p class="section-subtitle">${item.armazem} · ${item.localizacao}</p>
-        </div>
-      </div>
-
+      <div class="section-header"><div><h3>${item.modelo} — ${item.serie}</h3><p class="section-subtitle">${item.armazem} · ${item.localizacao}</p></div></div>
       <div class="history-mini-grid">
-        <div class="summary-card">
-          <h4>Total de Toners</h4>
-          <div class="summary-value">${itens.length}</div>
-        </div>
-        <div class="summary-card">
-          <h4>Último Registo</h4>
-          <div class="meta-line">${ultimo ? `${ultimo.cor || "-"} · ${ultimo.data || "Sem Data"}` : "Sem registos"}</div>
-        </div>
+        <div class="summary-card"><h4>Total de Toners</h4><div class="summary-value">${itens.length}</div></div>
+        <div class="summary-card"><h4>Último Registo</h4><div class="meta-line">${ultimo ? `${ultimo.cor || "-"} · ${ultimo.data || "Sem Data"}` : "Sem registos"}</div></div>
       </div>
-
       <div class="printer-history-items">
         ${itens.length ? itens.slice(0,8).map(h => `
           <div class="printer-history-item">
@@ -2346,29 +2301,9 @@ function abrirHistoricoImpressora(item) {
             <div class="meta-line">Cor: <span class="meta-value">${h.cor || "-"}</span></div>
             <div class="meta-line">Data: <span class="meta-value">${h.data || "Sem Data"}</span></div>
             <div class="meta-line">Localização: <span class="meta-value">${h.localizacao || "Sem Localização"}</span></div>
-          </div>
-        `).join("") : `<div class="panel empty-state"><h3>Sem histórico para esta impressora</h3><p>Quando houver movimentos associados, aparecem aqui.</p></div>`}
+          </div>`).join("") : `<div class="panel empty-state"><h3>Sem histórico para esta impressora</h3><p>Quando houver movimentos associados, aparecem aqui.</p></div>`}
       </div>
-    </div>
-  `;
-}
-
-function guardarImpressorasLocal() {
-  try {
-    impressorasData.forEach((item, i) => { if (!item._ref) item._ref = item.idDoc || `local-impressora-${i}`; });
-    localStorage.setItem(IMPRESSORAS_STORAGE_KEY, JSON.stringify(impressorasData.map(i => ({ ...i }))));
-  } catch (e) { console.warn('Nao foi possivel guardar impressoras no localStorage.', e); }
-}
-
-function carregarImpressorasLocal() {
-  try {
-    const raw = localStorage.getItem(IMPRESSORAS_STORAGE_KEY);
-    if (!raw) return;
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed) || !parsed.length) return;
-    parsed.forEach((item, i) => { if (!item._ref) item._ref = item.idDoc || `local-impressora-${i}`; });
-    impressorasData.splice(0, impressorasData.length, ...parsed);
-  } catch (e) { console.warn('Nao foi possivel carregar impressoras do localStorage.', e); }
+    </div>`;
 }
 
 function renderImpressoras(lista = impressorasData) {
@@ -2398,15 +2333,15 @@ function renderImpressoras(lista = impressorasData) {
         <td>${item.serie}</td>
         <td>${item.armazem}</td>
         <td>${item.localizacao}</td>
-        <td><a href="http://<a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a>" target="_blank" rel="noopener noreferrer"><a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a></a></td>
+        <td><a href="http://${item.ip}" target="_blank" rel="noopener noreferrer">${item.ip}</a></td>
         <td>${badgeEstado(estado)}</td>
         <td>
           <div id="${tonerId}">${gerarHTMLBarraToner(null)}</div>
           <div class="table-actions" style="margin-top:8px;">
-            <button class="action-btn ip" onclick="abrirIP('<a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a>')">Abrir IP</button>
+            <button class="action-btn ip" onclick="abrirIP('${item.ip}')">Abrir IP</button>
             <button class="action-btn manut" onclick='abrirManutencaoDireta(${JSON.stringify(item)})'>Manutenção</button>
             <button class="action-btn" onclick='abrirHistoricoImpressora(${JSON.stringify(item)})'>Histórico</button>
-            <button class="action-btn" onclick="window.testarTonerImpressora('<a href="http://<a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a>" target="_blank" style="color:#60a5fa;text-decoration:underline;">🌐 <a href="http://<a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a>" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;"><a href="http://${item.ip}" target="_blank" style="color:#60a5fa;text-decoration:none;font-weight:700;">${item.ip}</a></a></a>', '${tonerId}')">Testar toner</button>
+            <button class="action-btn" onclick="window.testarTonerImpressora('${item.ip}', '${tonerId}')">Testar toner</button>
           </div>
         </td>
       </tr>
@@ -2441,6 +2376,7 @@ function filtrarImpressoras() {
 /* =========================
    PISTOLAS - EMPRESA EXTREMO
 ========================= */
+
 function contarReservasPistolas(lista = pistolasData) {
   return lista.filter(p => normalizarTexto(p.operador) === "reserva").length;
 }
