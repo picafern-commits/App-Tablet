@@ -9,7 +9,7 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.firestore();
-
+window.db = db;
 
 const BACKUP_KEYS_APP_BRAGA = {
   stock: "appBraga_backup_stock",
