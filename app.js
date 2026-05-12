@@ -129,6 +129,47 @@ const manutencaoLocais = [
   "Escritorio"
 ];
 
+/* =========================
+   DADOS PORTAS DE REDE
+========================= */
+
+const USERS_STORAGE_KEY = 'appbraga_users_custom_v1';
+
+function prepararRefsUsers() {
+  usersData.forEach((u, i) => {
+    if (!u.idDoc && !u._ref) u._ref = `local-user-${i}`;
+  });
+}
+
+function guardarUsersLocal() {
+  try {
+    const serializavel = usersData.map(u => ({ ...u }));
+    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(serializavel));
+  } catch (e) {
+    console.warn('Nao foi possivel guardar users no localStorage.', e);
+  }
+}
+
+function carregarUsersLocal() {
+  try {
+    const raw = localStorage.getItem(USERS_STORAGE_KEY);
+    if (!raw) {
+      prepararRefsUsers();
+      return;
+    }
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || !parsed.length) {
+      prepararRefsUsers();
+      return;
+    }
+    usersData.splice(0, usersData.length, ...parsed);
+    prepararRefsUsers();
+  } catch (e) {
+    console.warn('Nao foi possivel carregar users do localStorage.', e);
+    prepararRefsUsers();
+  }
+}
+
 
 /* =========================
    IMPRESSORAS / MANUTENÇÃO
