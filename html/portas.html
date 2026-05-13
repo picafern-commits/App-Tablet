@@ -17,21 +17,6 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="format-detection" content="telephone=no">
   <meta name="msapplication-tap-highlight" content="no">
-
-<style>
-.firestore-id{
-  display:none;
-  margin-top:8px;
-  font-size:12px;
-  opacity:.7;
-  word-break:break-all;
-}
-
-.show-firestore-ids .firestore-id{
-  display:block;
-}
-</style>
-
 </head>
 <body>
 <aside class="sidebar">
@@ -71,10 +56,11 @@
   <div class="panel">
     <div class="toolbar">
       <button class="primary-btn" type="button" onclick="abrirAdicionarPorta()">+ Adicionar Porta</button>
+      <button id="btnMigrarPortas" class="secondary-btn" onclick="migrarPortasParaFirebase()">Migrar portas para Firebase</button>
       <input id="searchPortas" type="text" placeholder="Pesquisar..." oninput="filtrarPortasComEstado()">
       <select id="filterEstadoPortas" onchange="filtrarPortasComEstado()"><option value="">Todos os estados</option><option value="ocupado">Ocupado</option><option value="livre">Livre</option><option value="semuser">Sem user</option></select>
     </div>
-    <div id="listaPortas" class="cards-grid"></div>
+    <div id="listaPortas" class="cards-list"></div>
   </div>
 
 
