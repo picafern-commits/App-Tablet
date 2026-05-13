@@ -41,8 +41,6 @@ const BACKUP_KEYS_APP_BRAGA = {
 };
 
 function saveBackupAppBraga(key, data) {
-  payload.codigo = payload.codigo || gerarCodigoAutomatico(window.usersData || [], "USR");
-
   try {
     localStorage.setItem(key, JSON.stringify(data || []));
   } catch (e) {
@@ -3017,6 +3015,7 @@ function fecharEditarUser() {
 }
 
 
+
 async function guardarEdicaoUser() {
 
   if (userEditRef === null || typeof userEditRef === "undefined") {
@@ -3025,36 +3024,30 @@ async function guardarEdicaoUser() {
 
   const isNovoUser = userEditRef === "__new__";
 
-  const payload = {};
+  const payload = {
+    codigo: document.getElementById("editUser_codigo")?.value?.trim() || "",
+    nome: document.getElementById("editUser_nome")?.value?.trim() || "",
+    zona: document.getElementById("editUser_zona")?.value?.trim() || "",
+    user_pc_eye: document.getElementById("editUser_user_pc_eye")?.value?.trim() || "",
+    pass_remote: document.getElementById("editUser_pass_remote")?.value?.trim() || "",
+    pass_eye_peak: document.getElementById("editUser_pass_eye_peak")?.value?.trim() || "",
+    op_pistola: document.getElementById("editUser_op_pistola")?.value?.trim() || "",
+    pass_pistola: document.getElementById("editUser_pass_pistola")?.value?.trim() || "",
+    nome_pc: document.getElementById("editUser_nome_pc")?.value?.trim() || "",
+    teamviewer: document.getElementById("editUser_teamviewer")?.value?.trim() || "",
+    user_mo365: document.getElementById("editUser_user_mo365")?.value?.trim() || "",
+    pw_mo365: document.getElementById("editUser_pw_mo365")?.value?.trim() || "",
+    email_bragalis: document.getElementById("editUser_email_bragalis")?.value?.trim() || "",
+    pass_bragalis: document.getElementById("editUser_pass_bragalis")?.value?.trim() || ""
+  };
 
-  [
-    "codigo",
-    "nome",
-    "zona",
-    "user_pc_eye",
-    "pass_remote",
-    "pass_eye_peak",
-    "op_pistola",
-    "pass_pistola",
-    "nome_pc",
-    "teamviewer",
-    "user_mo365",
-    "pw_mo365",
-    "email_bragalis",
-    "pass_bragalis"
-  ].forEach(f => {
-
-    payload[f] =
-      el("editUser_" + f)
-        ? el("editUser_" + f).value
-        : "";
-
-  });
+  if (!payload.codigo) {
+    payload.codigo = gerarCodigoAutomatico(window.usersData || [], "USR");
+  }
 
   try {
 
-    const userAtual =
-      itemPorRef(window.usersData, userEditRef);
+    const userAtual = itemPorRef(window.usersData, userEditRef);
 
     const temFirebaseId =
       userAtual &&
@@ -3065,8 +3058,7 @@ async function guardarEdicaoUser() {
 
       if (window.db) {
 
-        const docRef =
-          await db.collection("users").add(payload);
+        const docRef = await db.collection("users").add(payload);
 
         window.usersData.unshift({
           idDoc: docRef.id,
@@ -3089,59 +3081,30 @@ async function guardarEdicaoUser() {
         .doc(userAtual.idDoc)
         .update(payload);
 
-      const idx =
-        idxPorRef(window.usersData, userEditRef);
+      const idx = idxPorRef(window.usersData, userEditRef);
 
       if (idx >= 0) {
-
         window.usersData[idx] = {
           ...window.usersData[idx],
           ...payload
         };
-
       }
 
     } else {
 
-      if (window.db) {
+      const idx = idxPorRef(window.usersData, userEditRef);
 
-        const docRef =
-          await db.collection("users").add(payload);
-
-        const idx =
-          idxPorRef(window.usersData, userEditRef);
-
-        if (idx >= 0) {
-
-          window.usersData[idx] = {
-            idDoc: docRef.id,
-            ...payload
-          };
-
-        }
-
-      } else {
-
-        const idx =
-          idxPorRef(window.usersData, userEditRef);
-
-        if (idx >= 0) {
-
-          window.usersData[idx] = {
-            ...window.usersData[idx],
-            ...payload
-          };
-
-        }
-
+      if (idx >= 0) {
+        window.usersData[idx] = {
+          ...window.usersData[idx],
+          ...payload
+        };
       }
 
     }
 
     guardarUsersLocal();
-
     fecharEditarUser();
-
     filtrarUsersComFiltros();
 
     mostrarMensagem(
@@ -5014,82 +4977,11 @@ window.gerarCodigoBadge =
 
 
 
-// removed old helper
-/*
- const el = document.getElementById("codigoInputUser");
- if(el && user){
-   el.value = user.codigo || "";
- }
-};
-
-*/
-/* removed old helper */
-function _unused(){
- const el = document.getElementById("codigoInputUser");
- return el ? el.value.trim() : "";
-};
 
 
 
-/* ===== FIX AUTO CODIGOS FIREBASE ===== */
 
-async function sincronizarCodigosUsersFirebase(){
-
-  try{
-
-    if(!window.db || !window.usersData) return;
-
-    let contador = 1;
-
-    for(const user of window.usersData){
-
-      if(!user.codigo || !String(user.codigo).trim()){
-
-        const codigo =
-          "USR-" +
-          String(contador).padStart(3,"0");
-
-        user.codigo = codigo;
-
-        if(user.idDoc){
-
-          await db
-            .collection("users")
-            .doc(user.idDoc)
-            .update({
-              codigo
-            });
-
-        }
-
-      }
-
-      contador++;
-
-    }
-
-  }catch(error){
-
-    console.error(
-      "Erro sincronizar códigos",
-      error
-    );
-
-  }
-
-}
-
-window.addEventListener(
-  "load",
-  ()=>{
-
-    setTimeout(()=>{
-
-      try{
-
-        sincronizarCodigosUsersFirebase();
-
-      }catch(e){
+}catch(e){
 
         console.error(e);
 
