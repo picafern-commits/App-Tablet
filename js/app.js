@@ -3016,39 +3016,153 @@ function fecharEditarUser() {
   if (el("modalEditarUser")) el("modalEditarUser").style.display = "none";
 }
 
+
 async function guardarEdicaoUser() {
-  if (userEditRef === null || typeof userEditRef === "undefined") return mostrarMensagem("Nenhum user selecionado.", "erro");
+
+  if (userEditRef === null || typeof userEditRef === "undefined") {
+    return mostrarMensagem("Nenhum user selecionado.", "erro");
+  }
+
   const isNovoUser = userEditRef === "__new__";
+
   const payload = {};
-  ["codigo","nome","zona","user_pc_eye","pass_remote","pass_eye_peak","op_pistola","pass_pistola","nome_pc","teamviewer","user_mo365","pw_mo365","email_bragalis","pass_bragalis"].forEach(f => {
-    payload[f] = el("editUser_" + f) ? el("editUser_" + f).value : "";
+
+  [
+    "codigo",
+    "nome",
+    "zona",
+    "user_pc_eye",
+    "pass_remote",
+    "pass_eye_peak",
+    "op_pistola",
+    "pass_pistola",
+    "nome_pc",
+    "teamviewer",
+    "user_mo365",
+    "pw_mo365",
+    "email_bragalis",
+    "pass_bragalis"
+  ].forEach(f => {
+
+    payload[f] =
+      el("editUser_" + f)
+        ? el("editUser_" + f).value
+        : "";
+
   });
 
   try {
+
+    const userAtual =
+      itemPorRef(window.usersData, userEditRef);
+
+    const temFirebaseId =
+      userAtual &&
+      userAtual.idDoc &&
+      !String(userAtual.idDoc).startsWith("local-user-");
+
     if (isNovoUser) {
+
       if (window.db) {
-        const docRef = await db.collection("users").add(payload);
-        window.usersData.unshift({ idDoc: docRef.id, ...payload });
+
+        const docRef =
+          await db.collection("users").add(payload);
+
+        window.usersData.unshift({
+          idDoc: docRef.id,
+          ...payload
+        });
+
       } else {
-        window.usersData.unshift({ _ref: `local-user-${Date.now()}`, ...payload });
+
+        window.usersData.unshift({
+          _ref: `local-user-${Date.now()}`,
+          ...payload
+        });
+
       }
-    } else if (typeof userEditRef === "string" && window.db) {
-      await db.collection("users").doc(userEditRef).update(payload);
-      const idx = idxPorRef(window.usersData, userEditRef);
-      if (idx >= 0) window.usersData[idx] = { ...window.usersData[idx], ...payload };
+
+    } else if (temFirebaseId && window.db) {
+
+      await db
+        .collection("users")
+        .doc(userAtual.idDoc)
+        .update(payload);
+
+      const idx =
+        idxPorRef(window.usersData, userEditRef);
+
+      if (idx >= 0) {
+
+        window.usersData[idx] = {
+          ...window.usersData[idx],
+          ...payload
+        };
+
+      }
+
     } else {
-      const idx = idxPorRef(window.usersData, userEditRef);
-      if (idx >= 0) window.usersData[idx] = { ...window.usersData[idx], ...payload };
+
+      if (window.db) {
+
+        const docRef =
+          await db.collection("users").add(payload);
+
+        const idx =
+          idxPorRef(window.usersData, userEditRef);
+
+        if (idx >= 0) {
+
+          window.usersData[idx] = {
+            idDoc: docRef.id,
+            ...payload
+          };
+
+        }
+
+      } else {
+
+        const idx =
+          idxPorRef(window.usersData, userEditRef);
+
+        if (idx >= 0) {
+
+          window.usersData[idx] = {
+            ...window.usersData[idx],
+            ...payload
+          };
+
+        }
+
+      }
+
     }
+
     guardarUsersLocal();
+
     fecharEditarUser();
+
     filtrarUsersComFiltros();
-    mostrarMensagem(isNovoUser ? "User adicionado com sucesso." : "User atualizado com sucesso.");
+
+    mostrarMensagem(
+      isNovoUser
+        ? "User adicionado com sucesso."
+        : "User atualizado com sucesso."
+    );
+
   } catch (e) {
+
     console.error(e);
-    mostrarMensagem("Erro ao atualizar o user.", "erro");
+
+    mostrarMensagem(
+      "Erro ao atualizar o user.",
+      "erro"
+    );
+
   }
+
 }
+
 
 async function apagarUser(ref) {
   if (!confirm("Queres apagar este user?")) return;
