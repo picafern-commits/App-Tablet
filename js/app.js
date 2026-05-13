@@ -4847,3 +4847,40 @@ window.importarPortasJSONFirebase =
 
 
 window.db = firebase.firestore();
+
+
+/* ===== FIRESTORE IDS ===== */
+
+window.showFirestoreIds =
+  localStorage.getItem("showFirestoreIds") === "true";
+
+function toggleFirestoreIds(){
+
+  window.showFirestoreIds =
+    !window.showFirestoreIds;
+
+  localStorage.setItem(
+    "showFirestoreIds",
+    window.showFirestoreIds
+  );
+
+  document.body.classList.toggle(
+    "show-firestore-ids",
+    window.showFirestoreIds
+  );
+
+  location.reload();
+
+}
+
+if(window.showFirestoreIds){
+
+  document.body.classList.add(
+    "show-firestore-ids"
+  );
+
+}
+
+window.toggleFirestoreIds =
+  toggleFirestoreIds;
+
