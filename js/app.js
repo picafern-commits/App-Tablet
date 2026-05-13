@@ -41,6 +41,8 @@ const BACKUP_KEYS_APP_BRAGA = {
 };
 
 function saveBackupAppBraga(key, data) {
+  payload.codigo = payload.codigo || gerarCodigoAutomatico(window.usersData || [], "USR");
+
   try {
     localStorage.setItem(key, JSON.stringify(data || []));
   } catch (e) {
@@ -3041,70 +3043,58 @@ async function guardarEdicaoUser() {
     pass_bragalis: document.getElementById("editUser_pass_bragalis")?.value?.trim() || ""
   };
 
-  if (!payload.codigo) {
-    payload.codigo = gerarCodigoAutomatico(window.usersData || [], "USR");
-  }
-
   try {
 
-    const userAtual = itemPorRef(window.usersData, userEditRef);
+    const userAtual =
+      itemPorRef(window.usersData || usersData, userEditRef);
 
-    const temFirebaseId =
-      userAtual &&
-      userAtual.idDoc &&
-      !String(userAtual.idDoc).startsWith("local-user-");
+    const firebaseId =
+      userAtual?.idDoc || userEditRef;
 
     if (isNovoUser) {
 
       if (window.db) {
 
-        const docRef = await db.collection("users").add(payload);
+        const docRef =
+          await db.collection("users").add(payload);
 
-        window.usersData.unshift({
+        (window.usersData || usersData).unshift({
           idDoc: docRef.id,
           ...payload
         });
 
-      } else {
-
-        window.usersData.unshift({
-          _ref: `local-user-${Date.now()}`,
-          ...payload
-        });
-
       }
 
-    } else if (temFirebaseId && window.db) {
+    } else if (
+      firebaseId &&
+      typeof firebaseId === "string" &&
+      !firebaseId.startsWith("local-user-") &&
+      window.db
+    ) {
 
       await db
         .collection("users")
-        .doc(userAtual.idDoc)
+        .doc(firebaseId)
         .update(payload);
 
-      const idx = idxPorRef(window.usersData, userEditRef);
+      const idx =
+        idxPorRef(window.usersData || usersData, userEditRef);
 
       if (idx >= 0) {
-        window.usersData[idx] = {
-          ...window.usersData[idx],
+
+        (window.usersData || usersData)[idx] = {
+          ...(window.usersData || usersData)[idx],
           ...payload
         };
-      }
 
-    } else {
-
-      const idx = idxPorRef(window.usersData, userEditRef);
-
-      if (idx >= 0) {
-        window.usersData[idx] = {
-          ...window.usersData[idx],
-          ...payload
-        };
       }
 
     }
 
     guardarUsersLocal();
+
     fecharEditarUser();
+
     filtrarUsersComFiltros();
 
     mostrarMensagem(
@@ -3125,6 +3115,7 @@ async function guardarEdicaoUser() {
   }
 
 }
+
 
 
 async function apagarUser(ref) {
@@ -4977,7 +4968,20 @@ window.gerarCodigoBadge =
 
 
 
+// removed old helper
+/*
+ const el = document.getElementById("codigoInputUser");
+ if(el && user){
+   el.value = user.codigo || "";
+ }
+};
 
+*/
+/* removed old helper */
+function _unused(){
+ const el = document.getElementById("codigoInputUser");
+ return el ? el.value.trim() : "";
+};
 
 
 
