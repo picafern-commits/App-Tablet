@@ -1,6 +1,5 @@
 
-
-/* ===== SISTEMA IDS ORGANIZADOS ===== */
+/* ===== SISTEMA IDS ===== */
 
 function gerarCodigoAutomatico(lista, prefixo){
 
@@ -12,11 +11,13 @@ function gerarCodigoAutomatico(lista, prefixo){
     const match = codigo.match(/(\d+)/);
 
     if(match){
+
       const numero = parseInt(match[1]);
 
       if(numero > max){
         max = numero;
       }
+
     }
 
   });
@@ -28,20 +29,21 @@ function gerarCodigoAutomatico(lista, prefixo){
 window.gerarCodigoAutomatico =
   gerarCodigoAutomatico;
 
-function gerarCodigoBadge(obj){
+function garantirCodigo(item, lista, prefixo){
 
-  if(!obj || !obj.codigo) return "";
+  if(!item.codigo){
 
-  return `
-    <div class="codigo-badge">
-      ${obj.codigo}
-    </div>
-  `;
+    item.codigo =
+      gerarCodigoAutomatico(lista, prefixo);
+
+  }
+
+  return item;
 
 }
 
-window.gerarCodigoBadge =
-  gerarCodigoBadge;
+window.garantirCodigo =
+  garantirCodigo;
 
 
 
@@ -1679,7 +1681,7 @@ function renderUsers(lista = window.usersData) {
     const ref = u.idDoc ? `'${u.idDoc}'` : `'${u._ref || `local-user-${index}`}'`;
     return `
     <div class="pc-card">
-      <div class="pc-name">${u.nome}</div>
+      <div class="codigo-badge">${u.codigo || "USR-000"}</div><div class="pc-name">${u.nome}</div>
       <div class="meta-line">Zona: <span class="meta-value">${u.zona || "-"}</span></div>
       <div class="meta-line">User PC/EYE: <span class="meta-value">${u.user_pc_eye || "-"}</span></div>
       <div class="meta-line">Pass Remote: <span class="meta-value">${u.pass_remote || "-"}</span></div>
@@ -1693,7 +1695,7 @@ function renderUsers(lista = window.usersData) {
       <div class="meta-line">Email Bragalis: <span class="meta-value">${u.email_bragalis || "-"}</span></div>
       <div class="meta-line">Pass Bragalis: <span class="meta-value">${u.pass_bragalis || "-"}</span></div>
       <div class="item-actions">
-        <button class="secondary-btn" onclick="editarUser(\'${user.id || user.codigo}\')">Editar</button>
+        <button class="secondary-btn" onclick="editarUser(${ref})">Editar</button>
         <button class="secondary-btn" onclick="imprimirUser(${ref})">Imprimir Dados</button>
         <button class="secondary-btn" onclick="apagarUser(${ref})">Apagar</button>
       </div>
@@ -3044,20 +3046,7 @@ function abrirAdicionarUser() {
   if (el("modalEditarUser")) el("modalEditarUser").style.display = "flex";
 }
 
-function editarUser(id){
-
-  const lista =
-    window.usersData || [];
-
-  const user =
-    lista.find(u =>
-      u.id === id ||
-      u.codigo === id
-    );
-
-  if(!user) return;
-
-
+function editarUser(ref) {
   const item = itemPorRef(window.usersData, ref);
   if (!item) return mostrarMensagem("User não encontrado.", "erro");
   userEditRef = ref;
@@ -4908,53 +4897,49 @@ window.importarPortasJSONFirebase =
 window.db = firebase.firestore();
 
 
-/* ===== AUTO CODIGOS ===== */
+/* ===== SISTEMA AUTO IDS ===== */
 
-function garantirCodigoUser(user){
+function gerarCodigoAutomatico(lista, prefixo){
 
-  if(!user.codigo){
+  let max = 0;
 
-    user.codigo =
-      gerarCodigoAutomatico(
-        window.usersData || [],
-        "USR"
-      );
+  (lista || []).forEach(item=>{
 
-  }
+    const codigo = item.codigo || "";
 
-  return user;
+    const match = codigo.match(/(\d+)/);
 
-}
+    if(match){
 
-function garantirCodigoPistola(item){
+      const numero = parseInt(match[1]);
 
-  if(!item.codigo){
+      if(numero > max){
+        max = numero;
+      }
 
-    item.codigo =
-      gerarCodigoAutomatico(
-        window.pistolasData || [],
-        "PST"
-      );
+    }
 
-  }
+  });
 
-  return item;
+  return `${prefixo}-${String(max + 1).padStart(3,"0")}`;
 
 }
 
-function garantirCodigoPorta(item){
+window.gerarCodigoAutomatico =
+  gerarCodigoAutomatico;
 
-  if(!item.codigo){
+function gerarCodigoBadge(obj){
 
-    item.codigo =
-      gerarCodigoAutomatico(
-        window.portasData || [],
-        "PRT"
-      );
+  if(!obj || !obj.codigo) return "";
 
-  }
-
-  return item;
+  return `
+    <div class="codigo-badge">
+      ${obj.codigo}
+    </div>
+  `;
 
 }
+
+window.gerarCodigoBadge =
+  gerarCodigoBadge;
 
