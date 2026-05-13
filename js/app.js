@@ -1627,7 +1627,7 @@ function renderUsers(lista = window.usersData) {
     const ref = u.idDoc ? `'${u.idDoc}'` : `'${u._ref || `local-user-${index}`}'`;
     return `
     <div class="pc-card">
-      <div class="codigo-badge">${u.codigo || "SEM-ID"}</div><div class="pc-name">${u.nome}</div>
+      <div class="pc-name">${u.nome}</div>
       <div class="meta-line">Zona: <span class="meta-value">${u.zona || "-"}</span></div>
       <div class="meta-line">User PC/EYE: <span class="meta-value">${u.user_pc_eye || "-"}</span></div>
       <div class="meta-line">Pass Remote: <span class="meta-value">${u.pass_remote || "-"}</span></div>
@@ -3175,7 +3175,6 @@ async function apagarUser(ref) {
 
 function formatUserFieldLabel(chave) {
   const labels = {
-    codigo: "Código / ID",
     nome: "Nome",
     zona: "Zona",
     user_pc_eye: "User PC/EYE",
@@ -4976,4 +4975,21 @@ function _unused(){
  return el ? el.value.trim() : "";
 };
 
+
+
+
+/* ORDENAÇÃO ALFANUMÉRICA USERS */
+setInterval(() => {
+  try{
+    if(Array.isArray(window.usersData)){
+      window.usersData.sort((a,b)=>{
+        const na = String(a?.nome || '').toLowerCase();
+        const nb = String(b?.nome || '').toLowerCase();
+        return na.localeCompare(nb,'pt',{numeric:true});
+      });
+    }
+  }catch(e){
+    console.error(e);
+  }
+},1000);
 
