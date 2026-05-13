@@ -2991,7 +2991,7 @@ let userEditRef = null;
 
 function abrirAdicionarUser() {
   userEditRef = "__new__";
-  const fields = ["nome","zona","user_pc_eye","pass_remote","pass_eye_peak","op_pistola","pass_pistola","nome_pc","teamviewer","user_mo365","pw_mo365","email_bragalis","pass_bragalis"];
+  const fields = ["codigo","nome","zona","user_pc_eye","pass_remote","pass_eye_peak","op_pistola","pass_pistola","nome_pc","teamviewer","user_mo365","pw_mo365","email_bragalis","pass_bragalis"];
   fields.forEach(f => { const node = el("editUser_" + f); if (node) node.value = ""; });
   const h3 = document.querySelector('#modalEditarUser h3'); if (h3) h3.textContent = 'Adicionar User';
   const sub = document.querySelector('#modalEditarUser .section-subtitle'); if (sub) sub.textContent = 'Criar um novo utilizador';
@@ -3002,7 +3002,7 @@ function editarUser(ref) {
   const item = itemPorRef(window.usersData, ref);
   if (!item) return mostrarMensagem("User não encontrado.", "erro");
   userEditRef = ref;
-  const fields = ["nome","zona","user_pc_eye","pass_remote","pass_eye_peak","op_pistola","pass_pistola","nome_pc","teamviewer","user_mo365","pw_mo365","email_bragalis","pass_bragalis"];
+  const fields = ["codigo","nome","zona","user_pc_eye","pass_remote","pass_eye_peak","op_pistola","pass_pistola","nome_pc","teamviewer","user_mo365","pw_mo365","email_bragalis","pass_bragalis"];
   fields.forEach(f => { const node = el("editUser_" + f); if (node) node.value = item[f] || ""; });
   if (el("modalEditarUser")) el("modalEditarUser").style.display = "flex";
 }
@@ -3018,7 +3018,7 @@ async function guardarEdicaoUser() {
   if (userEditRef === null || typeof userEditRef === "undefined") return mostrarMensagem("Nenhum user selecionado.", "erro");
   const isNovoUser = userEditRef === "__new__";
   const payload = {};
-  ["nome","zona","user_pc_eye","pass_remote","pass_eye_peak","op_pistola","pass_pistola","nome_pc","teamviewer","user_mo365","pw_mo365","email_bragalis","pass_bragalis"].forEach(f => {
+  ["codigo","nome","zona","user_pc_eye","pass_remote","pass_eye_peak","op_pistola","pass_pistola","nome_pc","teamviewer","user_mo365","pw_mo365","email_bragalis","pass_bragalis"].forEach(f => {
     payload[f] = el("editUser_" + f) ? el("editUser_" + f).value : "";
   });
 
@@ -3068,6 +3068,7 @@ async function apagarUser(ref) {
 
 function formatUserFieldLabel(chave) {
   const labels = {
+    codigo: "Código / ID",
     nome: "Nome",
     zona: "Zona",
     user_pc_eye: "User PC/EYE",
