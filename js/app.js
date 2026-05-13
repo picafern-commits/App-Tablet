@@ -2188,12 +2188,12 @@ document.addEventListener("DOMContentLoaded", atualizarEstadoLigacaoAppBraga);
    ADD TONER - ESTÁVEL
 ========================= */
 const tonerMapStable = {
-  "TK-3190": { equipamento: "P3155DN", cor: "Preto", codigo: "TK-3190" },
-  "TK-8365Y": { equipamento: "TASKalfa_255ci", cor: "Amarelo", codigo: "TK-8365Y" },
-  "TK-8365C": { equipamento: "TASKalfa_255ci", cor: "Azul", codigo: "TK-8365C" },
-  "TK-8365M": { equipamento: "TASKalfa_255ci", cor: "Vermelho", codigo: "TK-8365M" },
-  "TK-8365K": { equipamento: "TASKalfa_255ci", cor: "Preto", codigo: "TK-8365K" },
-  "TK-3430": { equipamento: "PA5500x", cor: "Preto", codigo: "TK-3430" }
+  "TK-3190": { equipamento: "P3155DN", cor: "Preto", : "TK-3190" },
+  "TK-8365Y": { equipamento: "TASKalfa_255ci", cor: "Amarelo", : "TK-8365Y" },
+  "TK-8365C": { equipamento: "TASKalfa_255ci", cor: "Azul", : "TK-8365C" },
+  "TK-8365M": { equipamento: "TASKalfa_255ci", cor: "Vermelho", : "TK-8365M" },
+  "TK-8365K": { equipamento: "TASKalfa_255ci", cor: "Preto", : "TK-8365K" },
+  "TK-3430": { equipamento: "PA5500x", cor: "Preto", : "TK-3430" }
 };
 
 let scannerInstanceStable = null;
@@ -2362,7 +2362,7 @@ function processarTextoLidoStable(textoLido) {
     const toner = tonerMapStable[tk] || null;
     if (toner) {
       aplicarDadosTonerStable(toner);
-      mostrarMensagem(`Toner identificado: ${toner.codigo}`);
+      mostrarMensagem(`Toner identificado: ${toner.}`);
       abrirSerie3DigitosStable();
       return true;
     }
@@ -3738,7 +3738,7 @@ function ensureLoteFieldOnEdit() {
 
 function extractLoteFromText(text) {
   const t = String(text || "").toUpperCase();
-  const m = t.match(/(?:LOTE|LOT|BATCH)\s*[:#-]?\s*([A-Z0-9-]{4,})/);
+  const m = t.match(/(?:LOTE|LOT|BATCH)\s*[:#-]?\s*([A-Z0-9-]{4})/);
   return m ? m[1] : "";
 }
 
@@ -4962,16 +4962,16 @@ window.db = firebase.firestore();
 
 // removed old helper
 /*
- const el = document.getElementById("codigoInputUser");
+ const el = document.getElementById("InputUser");
  if(el && user){
-   el.value = user.codigo || "";
+   el.value = user. || "";
  }
 };
 
 */
 /* removed old helper */
 function _unused(){
- const el = document.getElementById("codigoInputUser");
+ const el = document.getElementById("InputUser");
  return el ? el.value.trim() : "";
 };
 
