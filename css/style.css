@@ -2011,3 +2011,21 @@ button, a, .nav-item, .sidebar a { touch-action: manipulation; }
   overflow:hidden;
   text-overflow:ellipsis;
 }
+
+
+/* ===== CODIGO BADGES ===== */
+
+.codigo-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:6px 12px;
+  border-radius:999px;
+  background:linear-gradient(135deg,#2563eb,#1d4ed8);
+  color:#fff;
+  font-size:12px;
+  font-weight:700;
+  margin-bottom:10px;
+  box-shadow:0 4px 14px rgba(37,99,235,.35);
+}
+
