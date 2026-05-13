@@ -1,35 +1,15 @@
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
-  authDomain: "toner-manager-756c4.firebaseapp.com",
-  projectId: "toner-manager-756c4"
-};
-
 (function(){
 
   try{
 
-    if(typeof firebase === "undefined"){
-      console.log("Firebase library não carregada.");
+    if(!window.db){
+      console.log("window.db não disponível.");
       return;
     }
 
-    if(!firebase.apps.length){
-      firebase.initializeApp(firebaseConfig);
-    }
-
-    const db = firebase.firestore();
-
-    window.db = db;
-
-    function iniciarUsersRealtime(){
-
-      if(typeof usersData === "undefined"){
-        console.log("usersData ainda não existe.");
-        return;
-      }
-
-      db.collection("users")
+    window.db
+      .collection("users")
       .onSnapshot((snapshot)=>{
 
         const dados =
@@ -38,21 +18,28 @@ const firebaseConfig = {
             ...doc.data()
           }));
 
-        usersData.length = 0;
+        if(typeof usersData !== "undefined"){
 
-        dados.forEach(u=>usersData.push(u));
+          usersData.length = 0;
 
-        console.log("Users Firebase:", dados.length);
+          dados.forEach(u=>usersData.push(u));
+
+        }else{
+
+          window.usersData = dados;
+
+        }
+
+        console.log(
+          "Users Firebase:",
+          dados.length
+        );
 
         if(typeof renderUsers === "function"){
           renderUsers(usersData);
         }
 
       });
-
-    }
-
-    setTimeout(iniciarUsersRealtime, 3000);
 
   }catch(error){
 
