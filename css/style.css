@@ -1964,8 +1964,6 @@ button, a, .nav-item, .sidebar a { touch-action: manipulation; }
 }
 
 
-/* ===== FIRESTORE IDS ===== */
-
 .firestore-id-inline{
   display:inline-flex;
   align-items:center;
@@ -1977,17 +1975,9 @@ button, a, .nav-item, .sidebar a { touch-action: manipulation; }
   color:#bfdbfe;
   font-size:11px;
   margin-right:8px;
-  vertical-align:middle;
 }
 
 .firestore-id-inline code{
   font-family:monospace;
-  font-size:11px;
   color:#fff;
 }
-
-.firestore-id-label{
-  font-weight:700;
-  opacity:.8;
-}
-

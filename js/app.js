@@ -1,26 +1,4 @@
 
-/* ===== FIRESTORE INLINE IDS ===== */
-
-function gerarFirestoreBadge(obj){
-
-  if(!window.showFirestoreIds) return "";
-
-  if(!obj || !obj.id) return "";
-
-  return `
-    <span class="firestore-id-inline">
-      <span class="firestore-id-label">ID</span>
-      <code>${obj.id}</code>
-    </span>
-  `;
-
-}
-
-window.gerarFirestoreBadge =
-  gerarFirestoreBadge;
-
-
-
 /* ===== FIRESTORE ID BADGE ===== */
 .firestore-id-inline{
   display:inline-flex;
@@ -691,8 +669,7 @@ function renderStockCards(items) {
       <div class="card-actions">
         <button class="small-btn btn-use" onclick="usar('${t.idDoc}')">Marcar usado</button>
         <button class="small-btn btn-edit" onclick="abrirEditarStockModal('${t.idDoc}')">Editar</button>
-        ${gerarFirestoreIdInline(item)}
-${gerarFirestoreBadge(item)}
+        ${gerarFirestoreIdInline(u)}
 <button class="small-btn btn-delete" onclick="apagarStockItem('${t.idDoc}')">Apagar</button>
       </div>
     </div>
@@ -719,8 +696,7 @@ function renderHistoricoCards(items) {
       <div class="meta-line">Data Folha: <span class="meta-value">${t.dataFolha || "Sem Data da Folha"}</span></div>
       <div class="card-actions">
         <button class="small-btn btn-edit" onclick="abrirEditarHistoricoModal('${t.idDoc}')">Editar</button>
-        ${gerarFirestoreIdInline(item)}
-${gerarFirestoreBadge(item)}
+        ${gerarFirestoreIdInline(p)}
 <button class="small-btn btn-delete" onclick="apagar('${t.idDoc}')">Apagar</button>
       </div>
     </div>
@@ -826,8 +802,7 @@ function renderPCCards(items) {
           ${htmlPassos}
         </div>
         <div class="card-actions">
-          ${gerarFirestoreIdInline(item)}
-${gerarFirestoreBadge(item)}
+          ${gerarFirestoreIdInline(p)}
 <button class="small-btn btn-delete" onclick="apagarPC('${d.idDoc}')">Apagar</button>
         </div>
       </div>
@@ -965,7 +940,6 @@ function renderManutencoes(items) {
       <div class="card-actions">
         <button class="small-btn btn-use" onclick="marcarResolvido('${item.idDoc}')">Resolver</button>
         ${gerarFirestoreIdInline(item)}
-${gerarFirestoreBadge(item)}
 <button class="small-btn btn-delete" onclick="apagarManutencao('${item.idDoc}')">Apagar</button>
       </div>
     </div>
@@ -1448,8 +1422,6 @@ function renderPistolas(lista = window.pistolasData) {
       <div class="item-actions">
         <button class="secondary-btn" onclick="editarPistola(${ref})">Editar</button>
         ${gerarFirestoreIdInline(item)}
-${gerarFirestoreBadge(pistola)}
-${gerarFirestoreBadge(item)}
 <button class="secondary-btn" onclick="apagarPistola(${ref})">Apagar</button>
       </div>
     </div>
@@ -1550,8 +1522,6 @@ function renderPortas(lista = window.portasData) {
         <div class="item-actions">
           <button class="secondary-btn" onclick="editarPorta(${ref})">Editar</button>
           ${gerarFirestoreIdInline(item)}
-${gerarFirestoreBadge(porta)}
-${gerarFirestoreBadge(item)}
 <button class="secondary-btn" onclick="apagarPorta(${ref})">Apagar</button>
         </div>
       </div>
@@ -1710,8 +1680,6 @@ function renderUsers(lista = window.usersData) {
         <button class="secondary-btn" onclick="editarUser(${ref})">Editar</button>
         <button class="secondary-btn" onclick="imprimirUser(${ref})">Imprimir Dados</button>
         ${gerarFirestoreIdInline(item)}
-${gerarFirestoreBadge(user)}
-${gerarFirestoreBadge(item)}
 <button class="secondary-btn" onclick="apagarUser(${ref})">Apagar</button>
       </div>
     </div>
@@ -4047,7 +4015,6 @@ function renderEtiquetasWordCards() {
       <div class="card-actions">
         <button class="small-btn btn-use" onclick="regerarEtiquetaWordPartilhada('${t.idDoc}')">Imprimir</button>
         ${gerarFirestoreIdInline(item)}
-${gerarFirestoreBadge(item)}
 <button class="small-btn btn-delete" onclick="apagarEtiquetaWordPartilhada('${t.idDoc}')">Apagar</button>
       </div>
     </div>`).join("");
