@@ -25,13 +25,6 @@ if(typeof firebase !== "undefined"){
 const APP_VERSION = "1.5.0";
 
 
-if (!firebase.apps.length) {
-
-  const db = firebase.firestore()
-
-  window.db = db
-
-}
 
 const BACKUP_KEYS_APP_BRAGA = {
   stock: "appBraga_backup_stock",
@@ -41,7 +34,6 @@ const BACKUP_KEYS_APP_BRAGA = {
 };
 
 function saveBackupAppBraga(key, data) {
-  payload.codigo = payload.codigo || gerarCodigoAutomatico(window.usersData || [], "USR");
 
   try {
     localStorage.setItem(key, JSON.stringify(data || []));
