@@ -25,13 +25,6 @@ if(typeof firebase !== "undefined"){
 const APP_VERSION = "1.5.0";
 
 
-if (!firebase.apps.length) {
-
-  const db = firebase.firestore()
-
-  window.db = db
-
-}
 
 const BACKUP_KEYS_APP_BRAGA = {
   stock: "appBraga_backup_stock",
@@ -41,6 +34,7 @@ const BACKUP_KEYS_APP_BRAGA = {
 };
 
 function saveBackupAppBraga(key, data) {
+
   try {
     localStorage.setItem(key, JSON.stringify(data || []));
   } catch (e) {
@@ -1633,7 +1627,7 @@ function renderUsers(lista = window.usersData) {
     const ref = u.idDoc ? `'${u.idDoc}'` : `'${u._ref || `local-user-${index}`}'`;
     return `
     <div class="pc-card">
-      <div class="pc-name">${u.nome}</div>
+      <div class="codigo-badge">${u.codigo || "SEM-ID"}</div><div class="pc-name">${u.nome}</div>
       <div class="meta-line">Zona: <span class="meta-value">${u.zona || "-"}</span></div>
       <div class="meta-line">User PC/EYE: <span class="meta-value">${u.user_pc_eye || "-"}</span></div>
       <div class="meta-line">Pass Remote: <span class="meta-value">${u.pass_remote || "-"}</span></div>
@@ -3014,39 +3008,152 @@ function fecharEditarUser() {
   if (el("modalEditarUser")) el("modalEditarUser").style.display = "none";
 }
 
+
 async function guardarEdicaoUser() {
-  if (userEditRef === null || typeof userEditRef === "undefined") return mostrarMensagem("Nenhum user selecionado.", "erro");
+
+  if (userEditRef === null || typeof userEditRef === "undefined") {
+    return mostrarMensagem("Nenhum user selecionado.", "erro");
+  }
+
   const isNovoUser = userEditRef === "__new__";
+
   const payload = {};
-  ["nome","zona","user_pc_eye","pass_remote","pass_eye_peak","op_pistola","pass_pistola","nome_pc","teamviewer","user_mo365","pw_mo365","email_bragalis","pass_bragalis"].forEach(f => {
-    payload[f] = el("editUser_" + f) ? el("editUser_" + f).value : "";
+
+  [
+    "nome",
+    "zona",
+    "user_pc_eye",
+    "pass_remote",
+    "pass_eye_peak",
+    "op_pistola",
+    "pass_pistola",
+    "nome_pc",
+    "teamviewer",
+    "user_mo365",
+    "pw_mo365",
+    "email_bragalis",
+    "pass_bragalis"
+  ].forEach(f => {
+
+    payload[f] =
+      el("editUser_" + f)
+        ? el("editUser_" + f).value
+        : "";
+
   });
 
   try {
+
+    const userAtual =
+      itemPorRef(window.usersData, userEditRef);
+
+    const temFirebaseId =
+      userAtual &&
+      userAtual.idDoc &&
+      !String(userAtual.idDoc).startsWith("local-user-");
+
     if (isNovoUser) {
+
       if (window.db) {
-        const docRef = await db.collection("users").add(payload);
-        window.usersData.unshift({ idDoc: docRef.id, ...payload });
+
+        const docRef =
+          await db.collection("users").add(payload);
+
+        window.usersData.unshift({
+          idDoc: docRef.id,
+          ...payload
+        });
+
       } else {
-        window.usersData.unshift({ _ref: `local-user-${Date.now()}`, ...payload });
+
+        window.usersData.unshift({
+          _ref: `local-user-${Date.now()}`,
+          ...payload
+        });
+
       }
-    } else if (typeof userEditRef === "string" && window.db) {
-      await db.collection("users").doc(userEditRef).update(payload);
-      const idx = idxPorRef(window.usersData, userEditRef);
-      if (idx >= 0) window.usersData[idx] = { ...window.usersData[idx], ...payload };
+
+    } else if (temFirebaseId && window.db) {
+
+      await db
+        .collection("users")
+        .doc(userAtual.idDoc)
+        .update(payload);
+
+      const idx =
+        idxPorRef(window.usersData, userEditRef);
+
+      if (idx >= 0) {
+
+        window.usersData[idx] = {
+          ...window.usersData[idx],
+          ...payload
+        };
+
+      }
+
     } else {
-      const idx = idxPorRef(window.usersData, userEditRef);
-      if (idx >= 0) window.usersData[idx] = { ...window.usersData[idx], ...payload };
+
+      if (window.db) {
+
+        const docRef =
+          await db.collection("users").add(payload);
+
+        const idx =
+          idxPorRef(window.usersData, userEditRef);
+
+        if (idx >= 0) {
+
+          window.usersData[idx] = {
+            idDoc: docRef.id,
+            ...payload
+          };
+
+        }
+
+      } else {
+
+        const idx =
+          idxPorRef(window.usersData, userEditRef);
+
+        if (idx >= 0) {
+
+          window.usersData[idx] = {
+            ...window.usersData[idx],
+            ...payload
+          };
+
+        }
+
+      }
+
     }
+
     guardarUsersLocal();
+
     fecharEditarUser();
+
     filtrarUsersComFiltros();
-    mostrarMensagem(isNovoUser ? "User adicionado com sucesso." : "User atualizado com sucesso.");
+
+    mostrarMensagem(
+      isNovoUser
+        ? "User adicionado com sucesso."
+        : "User atualizado com sucesso."
+    );
+
   } catch (e) {
+
     console.error(e);
-    mostrarMensagem("Erro ao atualizar o user.", "erro");
+
+    mostrarMensagem(
+      "Erro ao atualizar o user.",
+      "erro"
+    );
+
   }
+
 }
+
 
 async function apagarUser(ref) {
   if (!confirm("Queres apagar este user?")) return;
@@ -3068,6 +3175,7 @@ async function apagarUser(ref) {
 
 function formatUserFieldLabel(chave) {
   const labels = {
+    codigo: "Código / ID",
     nome: "Nome",
     zona: "Zona",
     user_pc_eye: "User PC/EYE",
@@ -4847,3 +4955,25 @@ window.importarPortasJSONFirebase =
 
 
 window.db = firebase.firestore();
+
+
+
+
+
+
+// removed old helper
+/*
+ const el = document.getElementById("codigoInputUser");
+ if(el && user){
+   el.value = user.codigo || "";
+ }
+};
+
+*/
+/* removed old helper */
+function _unused(){
+ const el = document.getElementById("codigoInputUser");
+ return el ? el.value.trim() : "";
+};
+
+
