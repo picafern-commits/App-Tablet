@@ -4884,3 +4884,22 @@ if(window.showFirestoreIds){
 window.toggleFirestoreIds =
   toggleFirestoreIds;
 
+
+
+/* ===== FIRESTORE ID HELPERS ===== */
+
+function gerarFirestoreIdHTML(obj){
+
+  if(!obj || !obj.id) return "";
+
+  return `
+    <div class="firestore-id">
+      ID: ${obj.id}
+    </div>
+  `;
+
+}
+
+window.gerarFirestoreIdHTML =
+  gerarFirestoreIdHTML;
+
