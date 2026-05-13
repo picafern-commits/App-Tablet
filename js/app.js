@@ -4943,3 +4943,34 @@ function gerarCodigoBadge(obj){
 window.gerarCodigoBadge =
   gerarCodigoBadge;
 
+
+
+/* ===== CODIGO EDITAVEL ===== */
+
+function preencherCodigoInput(user){
+
+  const input =
+    document.getElementById("codigoInput");
+
+  if(input && user){
+    input.value =
+      user.codigo || "";
+  }
+
+}
+
+window.preencherCodigoInput =
+  preencherCodigoInput;
+
+function obterCodigoInput(){
+
+  const input =
+    document.getElementById("codigoInput");
+
+  return input?.value?.trim() || "";
+
+}
+
+window.obterCodigoInput =
+  obterCodigoInput;
+
