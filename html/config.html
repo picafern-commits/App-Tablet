@@ -49,6 +49,58 @@
 
   <div class="panel"><label class="switch-row"><input type="checkbox" id="darkSwitch"> <span>Modo escuro</span></label></div>
 
+
+<div class="panel">
+  <div class="section-header">
+    <div>
+      <h3>Firebase / Backups</h3>
+      <p class="section-subtitle">
+        Gestão de backups e sincronização
+      </p>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+
+    <div class="card">
+      <h4>Users</h4>
+      <div class="card-actions">
+        <button class="primary-btn" onclick="exportUsersJSON()">
+          Export JSON
+        </button>
+        <button class="secondary-btn" onclick="importarUsersJSONFirebase()">
+          Import Firebase
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4>Pistolas CK65</h4>
+      <div class="card-actions">
+        <button class="primary-btn" onclick="exportPistolasJSON()">
+          Export JSON
+        </button>
+        <button class="secondary-btn" onclick="importarPistolasJSONFirebase()">
+          Import Firebase
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4>Portas Rede</h4>
+      <div class="card-actions">
+        <button class="primary-btn" onclick="exportPortasJSON()">
+          Export JSON
+        </button>
+        <button class="secondary-btn" onclick="importarPortasJSONFirebase()">
+          Import Firebase
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 </main>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
