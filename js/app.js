@@ -1,28 +1,4 @@
 
-/* ===== FIRESTORE ID BADGE ===== */
-.firestore-id-inline{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:4px 10px;
-  border-radius:999px;
-  background:rgba(255,255,255,.08);
-  border:1px solid rgba(255,255,255,.12);
-  font-size:11px;
-  color:#cbd5e1;
-  margin-right:8px;
-  max-width:220px;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-
-.firestore-id-inline code{
-  font-family:monospace;
-  opacity:.9;
-}
-
-
 window.usersData = window.usersData || [];
 window.pistolasData = window.pistolasData || [];
 window.portasData = window.portasData || [];
@@ -49,13 +25,7 @@ if(typeof firebase !== "undefined"){
 const APP_VERSION = "1.5.0";
 
 
-if (!firebase.apps.length) {
 
-  const db = firebase.firestore()
-
-  window.db = db
-
-}
 
 const BACKUP_KEYS_APP_BRAGA = {
   stock: "appBraga_backup_stock",
