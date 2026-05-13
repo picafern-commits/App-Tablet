@@ -41,6 +41,8 @@ const BACKUP_KEYS_APP_BRAGA = {
 };
 
 function saveBackupAppBraga(key, data) {
+  payload.codigo = payload.codigo || gerarCodigoAutomatico(window.usersData || [], "USR");
+
   try {
     localStorage.setItem(key, JSON.stringify(data || []));
   } catch (e) {
@@ -1633,7 +1635,7 @@ function renderUsers(lista = window.usersData) {
     const ref = u.idDoc ? `'${u.idDoc}'` : `'${u._ref || `local-user-${index}`}'`;
     return `
     <div class="pc-card">
-      <div class="pc-name">${u.nome}</div>
+      <div class="codigo-badge">${u.codigo || "SEM-ID"}</div><div class="pc-name">${u.nome}</div>
       <div class="meta-line">Zona: <span class="meta-value">${u.zona || "-"}</span></div>
       <div class="meta-line">User PC/EYE: <span class="meta-value">${u.user_pc_eye || "-"}</span></div>
       <div class="meta-line">Pass Remote: <span class="meta-value">${u.pass_remote || "-"}</span></div>
@@ -4898,14 +4900,17 @@ window.gerarCodigoBadge =
 
 
 
-window.preencherCodigoUser = function(user){
+// removed old helper
+/*
  const el = document.getElementById("codigoInputUser");
  if(el && user){
    el.value = user.codigo || "";
  }
 };
 
-window.obterCodigoUser = function(){
+*/
+/* removed old helper */
+function _unused(){
  const el = document.getElementById("codigoInputUser");
  return el ? el.value.trim() : "";
 };
