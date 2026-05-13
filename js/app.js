@@ -4963,3 +4963,104 @@ function gerarFirestoreIdInline(obj){
 
 window.gerarFirestoreIdInline =
   gerarFirestoreIdInline;
+
+
+/* ===== FIREBASE ORGANIZER ===== */
+
+function abrirOrganizadorFirebase(){
+
+  const modal =
+    document.getElementById("firebaseOrganizerModal");
+
+  if(modal){
+    modal.style.display = "flex";
+  }
+
+  renderFirebaseOrganizer();
+
+}
+
+function fecharOrganizadorFirebase(){
+
+  const modal =
+    document.getElementById("firebaseOrganizerModal");
+
+  if(modal){
+    modal.style.display = "none";
+  }
+
+}
+
+function copiarFirestoreId(id){
+
+  navigator.clipboard.writeText(id);
+
+  alert("ID copiado: " + id);
+
+}
+
+function renderFirebaseOrganizer(){
+
+  const lista =
+    document.getElementById("firebaseOrganizerList");
+
+  if(!lista) return;
+
+  const users = window.usersData || [];
+  const pistolas = window.pistolasData || [];
+  const portas = window.portasData || [];
+
+  let html = "";
+
+  users.forEach(u=>{
+
+    html += `
+      <div class="firebase-row">
+        <div>User</div>
+        <div>${u.nome || u.name || "-"}</div>
+        <div class="firebase-id">${u.id || "-"}</div>
+        <button class="primary-btn"
+          onclick="copiarFirestoreId('${u.id || ""}')">
+          Copiar
+        </button>
+      </div>
+    `;
+
+  });
+
+  pistolas.forEach(p=>{
+
+    html += `
+      <div class="firebase-row">
+        <div>Pistola</div>
+        <div>${p.nome || p.modelo || "-"}</div>
+        <div class="firebase-id">${p.id || "-"}</div>
+        <button class="primary-btn"
+          onclick="copiarFirestoreId('${p.id || ""}')">
+          Copiar
+        </button>
+      </div>
+    `;
+
+  });
+
+  portas.forEach(p=>{
+
+    html += `
+      <div class="firebase-row">
+        <div>Porta</div>
+        <div>${p.nome || p.ip || "-"}</div>
+        <div class="firebase-id">${p.id || "-"}</div>
+        <button class="primary-btn"
+          onclick="copiarFirestoreId('${p.id || ""}')">
+          Copiar
+        </button>
+      </div>
+    `;
+
+  });
+
+  lista.innerHTML = html;
+
+}
+

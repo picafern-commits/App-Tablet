@@ -1982,3 +1982,32 @@ button, a, .nav-item, .sidebar a { touch-action: manipulation; }
   color:#fff;
 }
 
+
+
+.firebase-organizer-list{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:16px;
+  max-height:70vh;
+  overflow:auto;
+}
+
+.firebase-row{
+  display:grid;
+  grid-template-columns:120px 1fr 1.5fr 120px;
+  gap:12px;
+  align-items:center;
+  padding:14px;
+  border-radius:14px;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);
+}
+
+.firebase-id{
+  font-family:monospace;
+  font-size:12px;
+  color:#93c5fd;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
