@@ -4993,3 +4993,77 @@ setInterval(() => {
   }
 },1000);
 
+
+
+/* ===== ORGANIZAÇÃO ALFANUMÉRICA ===== */
+
+function ordenarColecaoAlfaNumerica(lista,campo="nome"){
+
+  try{
+
+    if(!Array.isArray(lista)) return lista;
+
+    return lista.sort((a,b)=>{
+
+      const aTxt =
+        String(a?.[campo] || "")
+        .toLowerCase();
+
+      const bTxt =
+        String(b?.[campo] || "")
+        .toLowerCase();
+
+      return aTxt.localeCompare(
+        bTxt,
+        'pt',
+        {
+          numeric:true,
+          sensitivity:'base'
+        }
+      );
+
+    });
+
+  }catch(e){
+
+    console.error(e);
+
+    return lista;
+
+  }
+
+}
+
+setInterval(()=>{
+
+  try{
+
+    if(window.usersData){
+      ordenarColecaoAlfaNumerica(
+        window.usersData,
+        "nome"
+      );
+    }
+
+    if(window.pistolasData){
+      ordenarColecaoAlfaNumerica(
+        window.pistolasData,
+        "nome"
+      );
+    }
+
+    if(window.portasData){
+      ordenarColecaoAlfaNumerica(
+        window.portasData,
+        "nome"
+      );
+    }
+
+  }catch(e){
+
+    console.error(e);
+
+  }
+
+},1500);
+
