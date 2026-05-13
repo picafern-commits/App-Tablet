@@ -1980,3 +1980,7 @@ button, a, .nav-item, .sidebar a { touch-action: manipulation; }
   box-shadow:0 4px 14px rgba(37,99,235,.35);
 }
 
+
+.codigo-group{
+  margin-bottom:12px;
+}
