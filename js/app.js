@@ -4895,3 +4895,17 @@ function gerarCodigoBadge(obj){
 window.gerarCodigoBadge =
   gerarCodigoBadge;
 
+
+
+window.preencherCodigoUser = function(user){
+ const el = document.getElementById("codigoInputUser");
+ if(el && user){
+   el.value = user.codigo || "";
+ }
+};
+
+window.obterCodigoUser = function(){
+ const el = document.getElementById("codigoInputUser");
+ return el ? el.value.trim() : "";
+};
+
