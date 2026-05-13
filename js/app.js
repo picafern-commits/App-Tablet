@@ -3065,8 +3065,8 @@ async function guardarEdicaoUser() {
 
       if (window.db) {
 
-        // atualizar user existente sem criar duplicado
-        const docRef = null;
+        const docRef =
+          await db.collection("users").add(payload);
 
         window.usersData.unshift({
           idDoc: docRef.id,
@@ -3105,8 +3105,8 @@ async function guardarEdicaoUser() {
 
       if (window.db) {
 
-        // atualizar user existente sem criar duplicado
-        const docRef = null;
+        const docRef =
+          await db.collection("users").add(payload);
 
         const idx =
           idxPorRef(window.usersData, userEditRef);
@@ -5031,20 +5031,7 @@ function _unused(){
 
 
 
-}catch(e){
-
-        console.error(e);
-
-      }
-
-    },2000);
-
-  }
-);
-
-
-
-/* ===== FIX IDS USERS FIREBASE ===== */
+/* ===== FIX AUTO CODIGOS FIREBASE ===== */
 
 async function sincronizarCodigosUsersFirebase(){
 
@@ -5056,11 +5043,7 @@ async function sincronizarCodigosUsersFirebase(){
 
     for(const user of window.usersData){
 
-      const codigoAtual =
-        user.codigo &&
-        String(user.codigo).trim();
-
-      if(!codigoAtual){
+      if(!user.codigo || !String(user.codigo).trim()){
 
         const codigo =
           "USR-" +
@@ -5068,13 +5051,13 @@ async function sincronizarCodigosUsersFirebase(){
 
         user.codigo = codigo;
 
-        if(user.idDoc && !String(user.idDoc).startsWith("local-user-")){
+        if(user.idDoc){
 
           await db
             .collection("users")
             .doc(user.idDoc)
             .update({
-              codigo: codigo
+              codigo
             });
 
         }
@@ -5084,8 +5067,6 @@ async function sincronizarCodigosUsersFirebase(){
       contador++;
 
     }
-
-    filtrarUsersComFiltros();
 
   }catch(error){
 
@@ -5104,9 +5085,17 @@ window.addEventListener(
 
     setTimeout(()=>{
 
-      sincronizarCodigosUsersFirebase();
+      try{
 
-    },1500);
+        sincronizarCodigosUsersFirebase();
+
+      }catch(e){
+
+        console.error(e);
+
+      }
+
+    },2000);
 
   }
 );
