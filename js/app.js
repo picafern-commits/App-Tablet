@@ -1,4 +1,50 @@
 
+
+/* ===== SISTEMA IDS ORGANIZADOS ===== */
+
+function gerarCodigoAutomatico(lista, prefixo){
+
+  let max = 0;
+
+  (lista || []).forEach(item => {
+
+    const codigo = item?.codigo || "";
+    const match = codigo.match(/(\d+)/);
+
+    if(match){
+      const numero = parseInt(match[1]);
+
+      if(numero > max){
+        max = numero;
+      }
+    }
+
+  });
+
+  return `${prefixo}-${String(max + 1).padStart(3,"0")}`;
+
+}
+
+window.gerarCodigoAutomatico =
+  gerarCodigoAutomatico;
+
+function gerarCodigoBadge(obj){
+
+  if(!obj || !obj.codigo) return "";
+
+  return `
+    <div class="codigo-badge">
+      ${obj.codigo}
+    </div>
+  `;
+
+}
+
+window.gerarCodigoBadge =
+  gerarCodigoBadge;
+
+
+
 window.usersData = window.usersData || [];
 window.pistolasData = window.pistolasData || [];
 window.portasData = window.portasData || [];
@@ -1647,7 +1693,7 @@ function renderUsers(lista = window.usersData) {
       <div class="meta-line">Email Bragalis: <span class="meta-value">${u.email_bragalis || "-"}</span></div>
       <div class="meta-line">Pass Bragalis: <span class="meta-value">${u.pass_bragalis || "-"}</span></div>
       <div class="item-actions">
-        <button class="secondary-btn" onclick="editarUser(${ref})">Editar</button>
+        <button class="secondary-btn" onclick="editarUser(\'${user.id || user.codigo}\')">Editar</button>
         <button class="secondary-btn" onclick="imprimirUser(${ref})">Imprimir Dados</button>
         <button class="secondary-btn" onclick="apagarUser(${ref})">Apagar</button>
       </div>
@@ -2998,7 +3044,20 @@ function abrirAdicionarUser() {
   if (el("modalEditarUser")) el("modalEditarUser").style.display = "flex";
 }
 
-function editarUser(ref) {
+function editarUser(id){
+
+  const lista =
+    window.usersData || [];
+
+  const user =
+    lista.find(u =>
+      u.id === id ||
+      u.codigo === id
+    );
+
+  if(!user) return;
+
+
   const item = itemPorRef(window.usersData, ref);
   if (!item) return mostrarMensagem("User não encontrado.", "erro");
   userEditRef = ref;
@@ -4849,49 +4908,53 @@ window.importarPortasJSONFirebase =
 window.db = firebase.firestore();
 
 
-/* ===== SISTEMA AUTO IDS ===== */
+/* ===== AUTO CODIGOS ===== */
 
-function gerarCodigoAutomatico(lista, prefixo){
+function garantirCodigoUser(user){
 
-  let max = 0;
+  if(!user.codigo){
 
-  (lista || []).forEach(item=>{
+    user.codigo =
+      gerarCodigoAutomatico(
+        window.usersData || [],
+        "USR"
+      );
 
-    const codigo = item.codigo || "";
+  }
 
-    const match = codigo.match(/(\d+)/);
-
-    if(match){
-
-      const numero = parseInt(match[1]);
-
-      if(numero > max){
-        max = numero;
-      }
-
-    }
-
-  });
-
-  return `${prefixo}-${String(max + 1).padStart(3,"0")}`;
+  return user;
 
 }
 
-window.gerarCodigoAutomatico =
-  gerarCodigoAutomatico;
+function garantirCodigoPistola(item){
 
-function gerarCodigoBadge(obj){
+  if(!item.codigo){
 
-  if(!obj || !obj.codigo) return "";
+    item.codigo =
+      gerarCodigoAutomatico(
+        window.pistolasData || [],
+        "PST"
+      );
 
-  return `
-    <div class="codigo-badge">
-      ${obj.codigo}
-    </div>
-  `;
+  }
+
+  return item;
 
 }
 
-window.gerarCodigoBadge =
-  gerarCodigoBadge;
+function garantirCodigoPorta(item){
+
+  if(!item.codigo){
+
+    item.codigo =
+      gerarCodigoAutomatico(
+        window.portasData || [],
+        "PRT"
+      );
+
+  }
+
+  return item;
+
+}
 
