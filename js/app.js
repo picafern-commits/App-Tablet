@@ -1,4 +1,9 @@
 
+window.usersData = window.usersData || [];
+window.pistolasData = window.pistolasData || [];
+window.portasData = window.portasData || [];
+
+
 const firebaseConfig = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
   authDomain: "toner-manager-756c4.firebaseapp.com",
@@ -149,14 +154,14 @@ const manutencaoLocais = [
 const USERS_STORAGE_KEY = 'appbraga_users_custom_v1';
 
 function prepararRefsUsers() {
-  usersData.forEach((u, i) => {
+  window.usersData.forEach((u, i) => {
     if (!u.idDoc && !u._ref) u._ref = `local-user-${i}`;
   });
 }
 
 function guardarUsersLocal() {
   try {
-    const serializavel = usersData.map(u => ({ ...u }));
+    const serializavel = window.usersData.map(u => ({ ...u }));
     localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(serializavel));
   } catch (e) {
     console.warn('Nao foi possivel guardar users no localStorage.', e);
@@ -175,7 +180,7 @@ function carregarUsersLocal() {
       prepararRefsUsers();
       return;
     }
-    usersData.splice(0, usersData.length, ...parsed);
+    window.usersData.splice(0, window.usersData.length, ...parsed);
     prepararRefsUsers();
   } catch (e) {
     console.warn('Nao foi possivel carregar users do localStorage.', e);
@@ -1350,11 +1355,11 @@ function filtrarImpressoras() {
 /* =========================
    PISTOLAS - EMPRESA EXTREMO
 ========================= */
-function contarReservasPistolas(lista = pistolasData) {
+function contarReservasPistolas(lista = window.pistolasData) {
   return lista.filter(p => normalizarTexto(p.operador) === "reserva").length;
 }
 
-function atualizarContadoresPistolas(lista = pistolasData) {
+function atualizarContadoresPistolas(lista = window.pistolasData) {
   setText("countPistolas", lista.length);
   setText("countPistolasBraga", lista.filter(p => normalizarTexto(p.armazem) === "braga").length);
   setText("countPistolasReserva", contarReservasPistolas(lista));
@@ -1366,14 +1371,14 @@ function badgePistolaReserva(valor) {
     : `<span class="badge ok">Ativa</span>`;
 }
 
-function renderPistolas(lista = pistolasData) {
+function renderPistolas(lista = window.pistolasData) {
   const container = el("listaPistolas");
   if (!container) return;
 
   atualizarContadoresPistolas(lista);
 
   container.innerHTML = lista.map((p, index) => {
-    const ref = p.idDoc ? `'${p.idDoc}'` : `'${p._ref || `local-pistola-${pistolasData.indexOf(p)}`}'`;
+    const ref = p.idDoc ? `'${p.idDoc}'` : `'${p._ref || `local-pistola-${window.pistolasData.indexOf(p)}`}'`;
     return `
     <div class="pc-card">
       <div class="pc-name">${p.nome}</div>
@@ -1400,7 +1405,7 @@ function filtrarPistolas(txt = "") {
   const armazemSelecionado = normalizarTexto(el("filterarmazemPistolas")?.value || "");
   const tipoSelecionado = normalizarTexto(el("filterTipoPistolas")?.value || "");
 
-  const filtradas = pistolasData.filter(p => {
+  const filtradas = window.pistolasData.filter(p => {
     const passaTexto =
       normalizarTexto(p.num).includes(texto) ||
       normalizarTexto(p.nome).includes(texto) ||
@@ -1449,7 +1454,7 @@ function badgePorta(estado) {
   return `<span class="badge">-</span>`;
 }
 
-function atualizarContadoresPortas(lista = portasData) {
+function atualizarContadoresPortas(lista = window.portasData) {
   let total = lista.length;
   let usadas = 0;
   let livres = 0;
@@ -1468,7 +1473,7 @@ function atualizarContadoresPortas(lista = portasData) {
   setText("countPortasSemUser", semUser);
 }
 
-function renderPortas(lista = portasData) {
+function renderPortas(lista = window.portasData) {
   const container = el("listaPortas");
   if (!container) return;
 
@@ -1476,7 +1481,7 @@ function renderPortas(lista = portasData) {
 
   container.innerHTML = lista.map((p, index) => {
     const estado = estadoPorta(p);
-    const ref = p.idDoc ? `'${p.idDoc}'` : `'${p._ref || `local-porta-${portasData.indexOf(p)}`}'`;
+    const ref = p.idDoc ? `'${p.idDoc}'` : `'${p._ref || `local-porta-${window.portasData.indexOf(p)}`}'`;
     return `
       <div class="pc-card">
         <div class="pc-name">Porta ${p.porta || "-"}</div>
@@ -1498,7 +1503,7 @@ function filtrarPortas(txt = "") {
   const texto = normalizarTexto(txt);
   const estadoSelecionado = normalizarTexto(el("filterEstadoPortas")?.value || "");
 
-  const filtradas = portasData.filter(p => {
+  const filtradas = window.portasData.filter(p => {
     const passaTexto =
       normalizarTexto(p.porta).includes(texto) ||
       normalizarTexto(p.local).includes(texto) ||
@@ -1523,14 +1528,14 @@ const PISTOLAS_STORAGE_KEY = 'appbraga_pistolas_custom_v1';
 const PORTAS_STORAGE_KEY = 'appbraga_portas_custom_v1';
 
 function prepararRefsPistolas() {
-  pistolasData.forEach((p, i) => {
+  window.pistolasData.forEach((p, i) => {
     if (!p.idDoc && !p._ref) p._ref = `local-pistola-${i}`;
   });
 }
 
 function guardarPistolasLocal() {
   try {
-    const serializavel = pistolasData.map(p => ({ ...p }));
+    const serializavel = window.pistolasData.map(p => ({ ...p }));
     localStorage.setItem(PISTOLAS_STORAGE_KEY, JSON.stringify(serializavel));
   } catch (e) {
     console.warn('Nao foi possivel guardar pistolas no localStorage.', e);
@@ -1549,7 +1554,7 @@ function carregarPistolasLocal() {
       prepararRefsPistolas();
       return;
     }
-    pistolasData.splice(0, pistolasData.length, ...parsed);
+    window.pistolasData.splice(0, window.pistolasData.length, ...parsed);
     prepararRefsPistolas();
   } catch (e) {
     console.warn('Nao foi possivel carregar pistolas do localStorage.', e);
@@ -1558,14 +1563,14 @@ function carregarPistolasLocal() {
 }
 
 function prepararRefsPortas() {
-  portasData.forEach((p, i) => {
+  window.portasData.forEach((p, i) => {
     if (!p.idDoc && !p._ref) p._ref = `local-porta-${i}`;
   });
 }
 
 function guardarPortasLocal() {
   try {
-    const serializavel = portasData.map(p => ({ ...p }));
+    const serializavel = window.portasData.map(p => ({ ...p }));
     localStorage.setItem(PORTAS_STORAGE_KEY, JSON.stringify(serializavel));
   } catch (e) {
     console.warn('Nao foi possivel guardar portas no localStorage.', e);
@@ -1584,7 +1589,7 @@ function carregarPortasLocal() {
       prepararRefsPortas();
       return;
     }
-    portasData.splice(0, portasData.length, ...parsed);
+    window.portasData.splice(0, window.portasData.length, ...parsed);
     prepararRefsPortas();
   } catch (e) {
     console.warn('Nao foi possivel carregar portas do localStorage.', e);
@@ -1611,14 +1616,14 @@ function badgeUser(valor) {
   return valor ? `<span class="badge ok">Sim</span>` : `<span class="badge livre">Não</span>`;
 }
 
-function atualizarContadoresUsers(lista = usersData) {
+function atualizarContadoresUsers(lista = window.usersData) {
   setText("countUsers", lista.length);
   setText("countUsersMO365", lista.filter(utilizadorTemMO365).length);
   setText("countUsersPistola", lista.filter(utilizadorTemPistola).length);
   setText("countUsersTV", lista.filter(utilizadorTemTeamviewer).length);
 }
 
-function renderUsers(lista = usersData) {
+function renderUsers(lista = window.usersData) {
   const container = el("listaUsers");
   if (!container) return;
 
@@ -1656,7 +1661,7 @@ function filtrarUsers(txt = "") {
   const filtroMO365 = normalizarTexto(el("filterUsersMO365")?.value || "");
   const filtroPistola = normalizarTexto(el("filterUsersPistola")?.value || "");
 
-  const filtrado = usersData.filter(u => {
+  const filtrado = window.usersData.filter(u => {
     const passaTexto =
       normalizarTexto(u.nome).includes(texto) ||
       normalizarTexto(u.zona).includes(texto) ||
@@ -2674,7 +2679,7 @@ async function migrarPortasParaFirebase() {
       return;
     }
 
-    for (const p of portasData) {
+    for (const p of window.portasData) {
       const payload = {
         porta: p.porta || "",
         local: p.local || "",
@@ -2696,7 +2701,7 @@ async function migrarPortasParaFirebase() {
 async function carregarPortasComFallback() {
   if (!window.db) {
     carregarPortasLocal();
-    renderPortas(portasData);
+    renderPortas(window.portasData);
     return;
   }
 
@@ -2704,23 +2709,23 @@ async function carregarPortasComFallback() {
     db.collection("portas").onSnapshot(snap => {
       if (snap.empty) {
         carregarPortasLocal();
-        renderPortas(portasData);
+        renderPortas(window.portasData);
         const countEl = document.getElementById("countPortas");
-        if (countEl) countEl.innerText = String(portasData.length);
+        if (countEl) countEl.innerText = String(window.portasData.length);
         return;
       }
 
-      portasData = snap.docs.map(doc => ({ idDoc: doc.id, ...doc.data() }));
+      window.portasData = snap.docs.map(doc => ({ idDoc: doc.id, ...doc.data() }));
       prepararRefsPortas();
       guardarPortasLocal();
-      renderPortas(portasData);
+      renderPortas(window.portasData);
     }, error => {
       console.error(error);
-      renderPortas(portasData);
+      renderPortas(window.portasData);
     });
   } catch (e) {
     console.error(e);
-    renderPortas(portasData);
+    renderPortas(window.portasData);
   }
 }
 
@@ -2909,7 +2914,7 @@ function abrirAdicionarPorta() {
 }
 
 function editarPorta(ref) {
-  const item = itemPorRef(portasData, ref);
+  const item = itemPorRef(window.portasData, ref);
   if (!item) return mostrarMensagem("Porta não encontrada.", "erro");
   portaEditRef = ref;
   if (el("editPorta")) el("editPorta").value = item.porta || "";
@@ -2942,17 +2947,17 @@ async function guardarEdicaoPorta() {
     if (isNovaPorta) {
       if (window.db) {
         const docRef = await db.collection("portas").add(payload);
-        portasData.unshift({ idDoc: docRef.id, ...payload });
+        window.portasData.unshift({ idDoc: docRef.id, ...payload });
       } else {
-        portasData.unshift({ _ref: `local-porta-${Date.now()}`, ...payload });
+        window.portasData.unshift({ _ref: `local-porta-${Date.now()}`, ...payload });
       }
     } else if (typeof portaEditRef === "string" && window.db) {
       await db.collection("portas").doc(portaEditRef).update(payload);
-      const idx = idxPorRef(portasData, portaEditRef);
-      if (idx >= 0) portasData[idx] = { ...portasData[idx], ...payload };
+      const idx = idxPorRef(window.portasData, portaEditRef);
+      if (idx >= 0) window.portasData[idx] = { ...window.portasData[idx], ...payload };
     } else {
-      const idx = idxPorRef(portasData, portaEditRef);
-      if (idx >= 0) portasData[idx] = { ...portasData[idx], ...payload };
+      const idx = idxPorRef(window.portasData, portaEditRef);
+      if (idx >= 0) window.portasData[idx] = { ...window.portasData[idx], ...payload };
     }
     guardarPortasLocal();
     fecharEditarPorta();
@@ -2970,8 +2975,8 @@ async function apagarPorta(ref) {
     if (typeof ref === "string" && window.db) {
       await db.collection("portas").doc(ref).delete();
     }
-    const idx = idxPorRef(portasData, ref);
-    if (idx >= 0) portasData.splice(idx, 1);
+    const idx = idxPorRef(window.portasData, ref);
+    if (idx >= 0) window.portasData.splice(idx, 1);
     guardarPortasLocal();
     filtrarPortasComEstado();
     mostrarMensagem("Porta apagada com sucesso.");
@@ -2994,7 +2999,7 @@ function abrirAdicionarUser() {
 }
 
 function editarUser(ref) {
-  const item = itemPorRef(usersData, ref);
+  const item = itemPorRef(window.usersData, ref);
   if (!item) return mostrarMensagem("User não encontrado.", "erro");
   userEditRef = ref;
   const fields = ["nome","zona","user_pc_eye","pass_remote","pass_eye_peak","op_pistola","pass_pistola","nome_pc","teamviewer","user_mo365","pw_mo365","email_bragalis","pass_bragalis"];
@@ -3021,17 +3026,17 @@ async function guardarEdicaoUser() {
     if (isNovoUser) {
       if (window.db) {
         const docRef = await db.collection("users").add(payload);
-        usersData.unshift({ idDoc: docRef.id, ...payload });
+        window.usersData.unshift({ idDoc: docRef.id, ...payload });
       } else {
-        usersData.unshift({ _ref: `local-user-${Date.now()}`, ...payload });
+        window.usersData.unshift({ _ref: `local-user-${Date.now()}`, ...payload });
       }
     } else if (typeof userEditRef === "string" && window.db) {
       await db.collection("users").doc(userEditRef).update(payload);
-      const idx = idxPorRef(usersData, userEditRef);
-      if (idx >= 0) usersData[idx] = { ...usersData[idx], ...payload };
+      const idx = idxPorRef(window.usersData, userEditRef);
+      if (idx >= 0) window.usersData[idx] = { ...window.usersData[idx], ...payload };
     } else {
-      const idx = idxPorRef(usersData, userEditRef);
-      if (idx >= 0) usersData[idx] = { ...usersData[idx], ...payload };
+      const idx = idxPorRef(window.usersData, userEditRef);
+      if (idx >= 0) window.usersData[idx] = { ...window.usersData[idx], ...payload };
     }
     guardarUsersLocal();
     fecharEditarUser();
@@ -3049,8 +3054,8 @@ async function apagarUser(ref) {
     if (typeof ref === "string" && window.db) {
       await db.collection("users").doc(ref).delete();
     }
-    const idx = idxPorRef(usersData, ref);
-    if (idx >= 0) usersData.splice(idx, 1);
+    const idx = idxPorRef(window.usersData, ref);
+    if (idx >= 0) window.usersData.splice(idx, 1);
     guardarUsersLocal();
     filtrarUsersComFiltros();
     mostrarMensagem("User apagado com sucesso.");
@@ -3090,7 +3095,7 @@ function escapeHtmlAppBraga(valor) {
 }
 
 function imprimirUser(ref) {
-  const item = itemPorRef(usersData, ref);
+  const item = itemPorRef(window.usersData, ref);
   if (!item) return mostrarMensagem("User não encontrado.", "erro");
 
   const campos = [
@@ -3242,7 +3247,7 @@ function abrirAdicionarPistola() {
 }
 
 function editarPistola(ref) {
-  const item = itemPorRef(pistolasData, ref);
+  const item = itemPorRef(window.pistolasData, ref);
   if (!item) return mostrarMensagem("Pistola não encontrada.", "erro");
   pistolaEditRef = ref;
   ["num","nome","password","cn","sn","mac","operador","armazem","prontas"].forEach(f => {
@@ -3271,17 +3276,17 @@ async function guardarEdicaoPistola() {
     if (isNovaPistola) {
       if (window.db) {
         const docRef = await db.collection("pistolas").add(payload);
-        pistolasData.unshift({ idDoc: docRef.id, ...payload });
+        window.pistolasData.unshift({ idDoc: docRef.id, ...payload });
       } else {
-        pistolasData.unshift({ _ref: `local-pistola-${Date.now()}`, ...payload });
+        window.pistolasData.unshift({ _ref: `local-pistola-${Date.now()}`, ...payload });
       }
     } else if (typeof pistolaEditRef === "string" && window.db) {
       await db.collection("pistolas").doc(pistolaEditRef).update(payload);
-      const idx = idxPorRef(pistolasData, pistolaEditRef);
-      if (idx >= 0) pistolasData[idx] = { ...pistolasData[idx], ...payload };
+      const idx = idxPorRef(window.pistolasData, pistolaEditRef);
+      if (idx >= 0) window.pistolasData[idx] = { ...window.pistolasData[idx], ...payload };
     } else {
-      const idx = idxPorRef(pistolasData, pistolaEditRef);
-      if (idx >= 0) pistolasData[idx] = { ...pistolasData[idx], ...payload };
+      const idx = idxPorRef(window.pistolasData, pistolaEditRef);
+      if (idx >= 0) window.pistolasData[idx] = { ...window.pistolasData[idx], ...payload };
     }
     guardarPistolasLocal();
     fecharEditarPistola();
@@ -3299,8 +3304,8 @@ async function apagarPistola(ref) {
     if (typeof ref === "string" && window.db) {
       await db.collection("pistolas").doc(ref).delete();
     }
-    const idx = idxPorRef(pistolasData, ref);
-    if (idx >= 0) pistolasData.splice(idx, 1);
+    const idx = idxPorRef(window.pistolasData, ref);
+    if (idx >= 0) window.pistolasData.splice(idx, 1);
     guardarPistolasLocal();
     filtrarPistolasComFiltros();
     mostrarMensagem("Pistola apagada com sucesso.");
@@ -4357,8 +4362,8 @@ function exportUsersJSON(){
 
   descarregarJSON(
     "users_backup",
-    typeof usersData !== "undefined"
-      ? usersData
+    typeof window.usersData !== "undefined"
+      ? window.usersData
       : []
   );
 
@@ -4370,8 +4375,8 @@ function exportPistolasJSON(){
 
   descarregarJSON(
     "pistolas_backup",
-    typeof pistolasData !== "undefined"
-      ? pistolasData
+    typeof window.pistolasData !== "undefined"
+      ? window.pistolasData
       : []
   );
 
@@ -4383,8 +4388,8 @@ function exportPortasJSON(){
 
   descarregarJSON(
     "portas_backup",
-    typeof portasData !== "undefined"
-      ? portasData
+    typeof window.portasData !== "undefined"
+      ? window.portasData
       : []
   );
 
@@ -4558,8 +4563,8 @@ function exportUsersJSON(){
 
   descarregarJSON(
     "users_backup",
-    typeof usersData !== "undefined"
-      ? usersData
+    typeof window.usersData !== "undefined"
+      ? window.usersData
       : []
   );
 
@@ -4569,8 +4574,8 @@ function exportPistolasJSON(){
 
   descarregarJSON(
     "pistolas_backup",
-    typeof pistolasData !== "undefined"
-      ? pistolasData
+    typeof window.pistolasData !== "undefined"
+      ? window.pistolasData
       : []
   );
 
@@ -4580,8 +4585,8 @@ function exportPortasJSON(){
 
   descarregarJSON(
     "portas_backup",
-    typeof portasData !== "undefined"
-      ? portasData
+    typeof window.portasData !== "undefined"
+      ? window.portasData
       : []
   );
 
