@@ -1964,6 +1964,8 @@ button, a, .nav-item, .sidebar a { touch-action: manipulation; }
 }
 
 
+/* ===== CODIGO BADGES ===== */
+
 .codigo-badge{
   display:inline-flex;
   align-items:center;
@@ -1974,7 +1976,7 @@ button, a, .nav-item, .sidebar a { touch-action: manipulation; }
   color:#fff;
   font-size:12px;
   font-weight:700;
-  margin-bottom:12px;
+  margin-bottom:10px;
   box-shadow:0 4px 14px rgba(37,99,235,.35);
 }
 
