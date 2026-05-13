@@ -2993,7 +2993,7 @@ let userEditRef = null;
 
 function abrirAdicionarUser() {
   userEditRef = "__new__";
-  const fields = ["codigo","nome","zona","user_pc_eye","pass_remote","pass_eye_peak","op_pistola","pass_pistola","nome_pc","teamviewer","user_mo365","pw_mo365","email_bragalis","pass_bragalis"];
+  const fields = ["nome","zona","user_pc_eye","pass_remote","pass_eye_peak","op_pistola","pass_pistola","nome_pc","teamviewer","user_mo365","pw_mo365","email_bragalis","pass_bragalis"];
   fields.forEach(f => { const node = el("editUser_" + f); if (node) node.value = ""; });
   const h3 = document.querySelector('#modalEditarUser h3'); if (h3) h3.textContent = 'Adicionar User';
   const sub = document.querySelector('#modalEditarUser .section-subtitle'); if (sub) sub.textContent = 'Criar um novo utilizador';
@@ -3004,7 +3004,7 @@ function editarUser(ref) {
   const item = itemPorRef(window.usersData, ref);
   if (!item) return mostrarMensagem("User não encontrado.", "erro");
   userEditRef = ref;
-  const fields = ["codigo","nome","zona","user_pc_eye","pass_remote","pass_eye_peak","op_pistola","pass_pistola","nome_pc","teamviewer","user_mo365","pw_mo365","email_bragalis","pass_bragalis"];
+  const fields = ["nome","zona","user_pc_eye","pass_remote","pass_eye_peak","op_pistola","pass_pistola","nome_pc","teamviewer","user_mo365","pw_mo365","email_bragalis","pass_bragalis"];
   fields.forEach(f => { const node = el("editUser_" + f); if (node) node.value = item[f] || ""; });
   if (el("modalEditarUser")) el("modalEditarUser").style.display = "flex";
 }
@@ -3017,7 +3017,6 @@ function fecharEditarUser() {
 }
 
 
-
 async function guardarEdicaoUser() {
 
   if (userEditRef === null || typeof userEditRef === "undefined") {
@@ -3026,30 +3025,40 @@ async function guardarEdicaoUser() {
 
   const isNovoUser = userEditRef === "__new__";
 
-  const payload = {
-    codigo: document.getElementById("editUser_codigo")?.value?.trim() || "",
-    nome: document.getElementById("editUser_nome")?.value?.trim() || "",
-    zona: document.getElementById("editUser_zona")?.value?.trim() || "",
-    user_pc_eye: document.getElementById("editUser_user_pc_eye")?.value?.trim() || "",
-    pass_remote: document.getElementById("editUser_pass_remote")?.value?.trim() || "",
-    pass_eye_peak: document.getElementById("editUser_pass_eye_peak")?.value?.trim() || "",
-    op_pistola: document.getElementById("editUser_op_pistola")?.value?.trim() || "",
-    pass_pistola: document.getElementById("editUser_pass_pistola")?.value?.trim() || "",
-    nome_pc: document.getElementById("editUser_nome_pc")?.value?.trim() || "",
-    teamviewer: document.getElementById("editUser_teamviewer")?.value?.trim() || "",
-    user_mo365: document.getElementById("editUser_user_mo365")?.value?.trim() || "",
-    pw_mo365: document.getElementById("editUser_pw_mo365")?.value?.trim() || "",
-    email_bragalis: document.getElementById("editUser_email_bragalis")?.value?.trim() || "",
-    pass_bragalis: document.getElementById("editUser_pass_bragalis")?.value?.trim() || ""
-  };
+  const payload = {};
+
+  [
+    "nome",
+    "zona",
+    "user_pc_eye",
+    "pass_remote",
+    "pass_eye_peak",
+    "op_pistola",
+    "pass_pistola",
+    "nome_pc",
+    "teamviewer",
+    "user_mo365",
+    "pw_mo365",
+    "email_bragalis",
+    "pass_bragalis"
+  ].forEach(f => {
+
+    payload[f] =
+      el("editUser_" + f)
+        ? el("editUser_" + f).value
+        : "";
+
+  });
 
   try {
 
     const userAtual =
-      itemPorRef(window.usersData || usersData, userEditRef);
+      itemPorRef(window.usersData, userEditRef);
 
-    const firebaseId =
-      userAtual?.idDoc || userEditRef;
+    const temFirebaseId =
+      userAtual &&
+      userAtual.idDoc &&
+      !String(userAtual.idDoc).startsWith("local-user-");
 
     if (isNovoUser) {
 
@@ -3058,34 +3067,71 @@ async function guardarEdicaoUser() {
         const docRef =
           await db.collection("users").add(payload);
 
-        (window.usersData || usersData).unshift({
+        window.usersData.unshift({
           idDoc: docRef.id,
+          ...payload
+        });
+
+      } else {
+
+        window.usersData.unshift({
+          _ref: `local-user-${Date.now()}`,
           ...payload
         });
 
       }
 
-    } else if (
-      firebaseId &&
-      typeof firebaseId === "string" &&
-      !firebaseId.startsWith("local-user-") &&
-      window.db
-    ) {
+    } else if (temFirebaseId && window.db) {
 
       await db
         .collection("users")
-        .doc(firebaseId)
+        .doc(userAtual.idDoc)
         .update(payload);
 
       const idx =
-        idxPorRef(window.usersData || usersData, userEditRef);
+        idxPorRef(window.usersData, userEditRef);
 
       if (idx >= 0) {
 
-        (window.usersData || usersData)[idx] = {
-          ...(window.usersData || usersData)[idx],
+        window.usersData[idx] = {
+          ...window.usersData[idx],
           ...payload
         };
+
+      }
+
+    } else {
+
+      if (window.db) {
+
+        const docRef =
+          await db.collection("users").add(payload);
+
+        const idx =
+          idxPorRef(window.usersData, userEditRef);
+
+        if (idx >= 0) {
+
+          window.usersData[idx] = {
+            idDoc: docRef.id,
+            ...payload
+          };
+
+        }
+
+      } else {
+
+        const idx =
+          idxPorRef(window.usersData, userEditRef);
+
+        if (idx >= 0) {
+
+          window.usersData[idx] = {
+            ...window.usersData[idx],
+            ...payload
+          };
+
+        }
 
       }
 
@@ -3115,7 +3161,6 @@ async function guardarEdicaoUser() {
   }
 
 }
-
 
 
 async function apagarUser(ref) {
@@ -4920,51 +4965,7 @@ window.importarPortasJSONFirebase =
 window.db = firebase.firestore();
 
 
-/* ===== SISTEMA AUTO IDS ===== */
 
-function gerarCodigoAutomatico(lista, prefixo){
-
-  let max = 0;
-
-  (lista || []).forEach(item=>{
-
-    const codigo = item.codigo || "";
-
-    const match = codigo.match(/(\d+)/);
-
-    if(match){
-
-      const numero = parseInt(match[1]);
-
-      if(numero > max){
-        max = numero;
-      }
-
-    }
-
-  });
-
-  return `${prefixo}-${String(max + 1).padStart(3,"0")}`;
-
-}
-
-window.gerarCodigoAutomatico =
-  gerarCodigoAutomatico;
-
-function gerarCodigoBadge(obj){
-
-  if(!obj || !obj.codigo) return "";
-
-  return `
-    <div class="codigo-badge">
-      ${obj.codigo}
-    </div>
-  `;
-
-}
-
-window.gerarCodigoBadge =
-  gerarCodigoBadge;
 
 
 
