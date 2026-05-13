@@ -5029,3 +5029,74 @@ function _unused(){
  return el ? el.value.trim() : "";
 };
 
+
+
+/* ===== FIX AUTO CODIGOS FIREBASE ===== */
+
+async function sincronizarCodigosUsersFirebase(){
+
+  try{
+
+    if(!window.db || !window.usersData) return;
+
+    let contador = 1;
+
+    for(const user of window.usersData){
+
+      if(!user.codigo || !String(user.codigo).trim()){
+
+        const codigo =
+          "USR-" +
+          String(contador).padStart(3,"0");
+
+        user.codigo = codigo;
+
+        if(user.idDoc){
+
+          await db
+            .collection("users")
+            .doc(user.idDoc)
+            .update({
+              codigo
+            });
+
+        }
+
+      }
+
+      contador++;
+
+    }
+
+  }catch(error){
+
+    console.error(
+      "Erro sincronizar códigos",
+      error
+    );
+
+  }
+
+}
+
+window.addEventListener(
+  "load",
+  ()=>{
+
+    setTimeout(()=>{
+
+      try{
+
+        sincronizarCodigosUsersFirebase();
+
+      }catch(e){
+
+        console.error(e);
+
+      }
+
+    },2000);
+
+  }
+);
+
