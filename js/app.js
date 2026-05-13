@@ -515,7 +515,134 @@ function getTopLocalizacoesHistorico(limit = 3) {
     counts[key] = (counts[key] || 0) + 1;
   });
   return Object.entries(counts)
-    
+    .sort((a,b) => b[1] - a[1])
+    .slice(0, limit);
+}
+
+function getUltimosMovimentos(limit = 3) {
+  return [...historicoGlobal]
+    .sort((a,b) => {
+      const ad = a.created && a.created.seconds ? a.created.seconds : 0;
+      const bd = b.created && b.created.seconds ? b.created.seconds : 0;
+      return bd - ad;
+    })
+    .slice(0, limit);
+}
+
+function renderDashboardResumoInteligente() {
+  const host = el("dashboardResumoInteligente");
+  if (!host) return;
+
+  const buckets = getCriticalityBucketsAppBraga();
+  const topLocs = getTopLocalizacoesHistorico(4);
+  const ultimos = getUltimosMovimentos(4);
+
+  const critLabel = buckets.critical > 0 ? "Ação imediata" : "Sem críticos";
+  const warnLabel = buckets.warning > 0 ? "Vigiar" : "Sem avisos";
+
+  host.innerHTML = `
+    <div class="summary-grid">
+      <div class="summary-card">
+        <h4>Criticidade Real</h4>
+        <div class="summary-value">${buckets.critical}</div>
+        <div class="meta-line">${critLabel} · toner abaixo de 10%</div>
+      </div>
+      <div class="summary-card">
+        <h4>Atenção</h4>
+        <div class="summary-value">${buckets.warning}</div>
+        <div class="meta-line">${warnLabel} · entre 10% e 25%</div>
+      </div>
+      <div class="summary-card">
+        <h4>Top Localizações</h4>
+        <ul class="summary-list">${topLocs.length ? topLocs.map(([k,v]) => `<li>${k} — ${v}</li>`).join("") : "<li>Sem dados ainda</li>"}</ul>
+      </div>
+      <div class="summary-card">
+        <h4>Últimos Movimentos</h4>
+        <ul class="summary-list">${ultimos.length ? ultimos.map(item => `<li>${item.equipamento || "-"} · ${item.cor || "-"} · ${item.localizacao || "-"}</li>`).join("") : "<li>Sem histórico ainda</li>"}</ul>
+      </div>
+    </div>`;
+}
+
+function renderDashboardCards(items) {
+  const lista = el("listaDashboardStock");
+  if (!lista) return;
+
+  const searchTxt = normalizarTexto(el("searchDashboard")?.value || "");
+
+  const criticas = impressorasData.map(item => {
+    const info = tonerInfoState[item.ip] || null;
+    const colors = Array.isArray(info?.colors) ? info.colors : [];
+    const residue = info?.residue || null;
+
+    const criticalColors = colors.filter(c => typeof c.percent === "number" && c.percent <= 25);
+    const monoPercent = typeof info?.percent === "number" ? info.percent : null;
+    const monoCritical = colors.length === 0 && monoPercent !== null && monoPercent <= 25;
+
+    const isCritical = criticalColors.length > 0 || monoCritical;
+    return { item, info, criticalColors, monoCritical, residue, isCritical };
+  }).filter(entry => entry.isCritical).filter(entry => {
+    if (!searchTxt) return true;
+    const haystack = [
+      entry.item.modelo,
+      entry.item.serie,
+      entry.item.ip,
+      entry.item.localizacao,
+      entry.item.armazem,
+      ...(entry.criticalColors || []).map(c => c.label),
+      entry.monoCritical ? "Preto" : ""
+    ].join(" ");
+    return normalizarTexto(haystack).includes(searchTxt);
+  });
+
+  if (!criticas.length) {
+    lista.innerHTML = `<div class="panel empty-state"><h3>Sem impressoras críticas</h3><p>As impressoras com toner a 25% ou menos vão aparecer aqui automaticamente.</p></div>`;
+    return;
+  }
+
+  lista.innerHTML = criticas.map(({ item, info, criticalColors, monoCritical, residue }) => {
+    const supplyHtml = criticalColors.length
+      ? criticalColors.map(c => gerarHTMLBarraToner(c.percent, c.label, c.key)).join("")
+      : (monoCritical ? gerarHTMLBarraToner(info.percent, "Preto", "black") : "");
+
+    const residueHtml = residue ? gerarHTMLBarraToner(residue.percent, residue.label || "Resíduo", "waste") : "";
+
+    return `
+      <div class="dashboard-card dashboard-critical-card">
+        <div class="stock-id">${item.modelo}</div>
+        <div class="meta-line">Série: <span class="meta-value">${item.serie}</span></div>
+        <div class="meta-line">Local: <span class="meta-value">${item.localizacao} (${item.armazem})</span></div>
+        <div class="meta-line">IP: <span class="meta-value">${item.ip}</span></div>
+        <div class="printer-toners-grid" style="margin-top:10px;">${supplyHtml}${residueHtml}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderStockCards(items) {
+  const lista = el("listaStock");
+  if (!lista) return;
+
+  if (!items.length) {
+    lista.innerHTML = `<div class="panel empty-state"><h3>Sem toners em stock</h3><p>Quando adicionares toners, aparecem aqui.</p></div>`;
+    return;
+  }
+
+  lista.innerHTML = items.map(t => `
+    <div class="stock-card">
+      <div class="stock-id">${t.idInterno}</div>
+      <div class="meta-line">Equipamento: <span class="meta-value">${t.equipamento}</span></div>
+      <div class="meta-line">Cor: <span class="meta-value">${t.cor}</span></div>
+      <div class="meta-line">Localização: <span class="meta-value">${t.localizacao}</span></div>
+      <div class="meta-line">Lote: <span class="meta-value">${t.lote || "-"}</span></div>
+      <div class="meta-line">Data Scan: <span class="meta-value">${t.data || "Sem Data"}</span></div>
+      <div class="meta-line">Data Folha: <span class="meta-value">${t.dataFolha || "Sem Data da Folha"}</span></div>
+      <div class="card-actions">
+        <button class="small-btn btn-use" onclick="usar('${t.idDoc}')">Marcar usado</button>
+        <button class="small-btn btn-edit" onclick="abrirEditarStockModal('${t.idDoc}')">Editar</button>
+        <button class="small-btn btn-delete" onclick="apagarStockItem('${t.idDoc}')">Apagar</button>
+      </div>
+    </div>
+  `).join("");
 }
 
 function renderHistoricoCards(items) {
@@ -3368,7 +3495,307 @@ function getTopConsumoEquipamentos(limit = 4) {
     const key = `${item.equipamento || "-"} · ${item.localizacao || "-"}`;
     map.set(key, (map.get(key) || 0) + 1);
   });
-  return [...map.entries()]
+  return [...map.entries()].sort((a,b) => b[1]-a[1]).slice(0, limit);
+}
+
+function getTopProblemasDoDia(limit = 3) {
+  const buckets = getCriticalityBucketsAppBraga();
+  const topLocs = getTopLocalizacoesHistorico(2);
+  const ultimos = getUltimosMovimentos(1);
+  const problems = [];
+
+  if (buckets.critical > 0) {
+    problems.push(`Existem ${buckets.critical} impressoras em estado crítico.`);
+  }
+  if (buckets.warning > 0) {
+    problems.push(`Existem ${buckets.warning} impressoras em zona de atenção.`);
+  }
+  if (topLocs.length) {
+    problems.push(`Maior pressão recente em ${topLocs[0][0]} com ${topLocs[0][1]} movimentos.`);
+  }
+  if (ultimos.length) {
+    const u = ultimos[0];
+    problems.push(`Último movimento: ${u.equipamento || "-"} · ${u.cor || "-"} · ${u.localizacao || "-"}.`);
+  }
+
+  return problems.slice(0, limit);
+}
+
+function getPrioridadeMaximaGestor(limit = 4) {
+  const rows = [];
+  impressorasData.forEach(item => {
+    const info = tonerInfoState[item.ip] || null;
+    const colors = Array.isArray(info?.colors) ? info.colors : [];
+    const crit = colors.filter(c => typeof c.percent === "number" && c.percent <= 10);
+    if (crit.length) {
+      rows.push({
+        label: `${item.modelo} · ${item.localizacao}`,
+        detail: crit.map(c => `${c.label}: ${c.percent}%`).join(" | ")
+      });
+    }
+  });
+  return rows.slice(0, limit);
+}
+
+function renderModoGestorExtremo() {
+  const board = el("gestorExtremeBoard");
+  const prioridade = el("gestorPrioridadeMaxima");
+  const consumo = el("gestorTopConsumo");
+  const problemas = el("gestorTopProblemas");
+  if (!board && !prioridade && !consumo && !problemas) return;
+
+  const buckets = getCriticalityBucketsAppBraga();
+  const topLocs = getTopLocalizacoesHistorico(4);
+  const topEquip = getTopConsumoEquipamentos(4);
+  const topProb = getTopProblemasDoDia(3);
+  const maxRows = getPrioridadeMaximaGestor(4);
+
+  if (board) {
+    board.innerHTML = `
+      <div class="gestor-grid-hero">
+        <div class="gestor-hero-card">
+          <div class="gestor-hero-title">Estado executivo</div>
+          <div class="gestor-hero-value">${buckets.critical > 0 ? "Pressão" : "Estável"}</div>
+          <div class="gestor-hero-note">Visão imediata da operação para decidir onde agir primeiro.</div>
+          <div class="gestor-chip-row">
+            <span class="gestor-chip red">Críticos: ${buckets.critical}</span>
+            <span class="gestor-chip yellow">Atenção: ${buckets.warning}</span>
+            <span class="gestor-chip green">Stock: ${stockGlobal.length}</span>
+          </div>
+        </div>
+        <div class="gestor-card">
+          <h4>Movimento recente</h4>
+          <div class="gestor-mini-value">${historicoGlobal.length}</div>
+          <div class="meta-line">Total de registos usados no histórico.</div>
+        </div>
+        <div class="gestor-card">
+          <h4>Capacidade atual</h4>
+          <div class="gestor-mini-value">${stockGlobal.length}</div>
+          <div class="meta-line">Itens disponíveis agora em stock.</div>
+        </div>
+        <div class="gestor-card">
+          <h4>Base instalada</h4>
+          <div class="gestor-mini-value">${pcsGlobal.length}</div>
+          <div class="meta-line">PCs registados no sistema.</div>
+        </div>
+      </div>
+    `;
+  }
+
+  if (prioridade) {
+    prioridade.innerHTML = maxRows.length
+      ? maxRows.map(item => `<div class="gestor-priority-card"><h4>${item.label}</h4><div class="meta-line">${item.detail}</div></div>`).join("")
+      : `<div class="gestor-priority-card"><h4>Sem prioridade máxima</h4><div class="meta-line">Não existem impressoras abaixo de 10% neste momento.</div></div>`;
+  }
+
+  if (consumo) {
+    consumo.innerHTML = `
+      <div class="gestor-card">
+        <h4>Top Localizações</h4>
+        <ul class="gestor-list">
+          ${topLocs.length ? topLocs.map(([k,v]) => `<li>${k} — ${v} movimentos</li>`).join("") : "<li>Sem dados suficientes</li>"}
+        </ul>
+      </div>
+      <div class="gestor-card">
+        <h4>Top Equipamentos</h4>
+        <ul class="gestor-list">
+          ${topEquip.length ? topEquip.map(([k,v]) => `<li>${k} — ${v}</li>`).join("") : "<li>Sem dados suficientes</li>"}
+        </ul>
+      </div>
+    `;
+  }
+
+  if (problemas) {
+    problemas.innerHTML = topProb.length
+      ? topProb.map(txt => `<div class="gestor-alert-card"><h4>Ponto de gestão</h4><div class="meta-line">${txt}</div></div>`).join("")
+      : `<div class="gestor-alert-card"><h4>Sem alertas do dia</h4><div class="meta-line">Ainda não há dados suficientes para destacar problemas.</div></div>`;
+  }
+}
+
+
+
+/* ===== MELHORIAS 1 2 3 4 5 7 8 10 ===== */
+const STOCK_MIN_DEFAULTS = {
+  "Braga - Ilha 01": 1,
+  "Braga - Ilha 02": 1,
+  "Braga - Ilha 03": 1,
+  "Braga - Ilha 04": 1,
+  "Braga - Ilha 05": 1,
+  "Braga - Balcão 01": 2,
+  "Braga - Balcão 02": 2,
+  "Braga - Dep. Logistica": 2,
+  "Braga - G/Encomendas": 1,
+  "Braga - Devoluções": 1,
+  "Braga - Escritorio": 1,
+  "Vila Real - Ilha 01": 1,
+  "Vila Real - Ilha 02": 1,
+  "Vila Real - Ilha 03": 1,
+  "Sem Localização": 1
+};
+
+let stockEditModalId = null;
+let historicoEditModalId = null;
+
+function debounceAppBraga(fn, wait = 180) {
+  let t = null;
+  return function(...args) {
+    clearTimeout(t);
+    t = setTimeout(() => fn.apply(this, args), wait);
+  };
+}
+
+function tryRenderAppBraga(fn) {
+  try { fn(); } catch (e) { console.error(e); }
+}
+
+function loadStockMinConfig() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("stockMinConfig") || "{}");
+    return { ...STOCK_MIN_DEFAULTS, ...saved };
+  } catch (e) {
+    console.error(e);
+    return { ...STOCK_MIN_DEFAULTS };
+  }
+}
+
+function saveStockMinConfig(cfg) {
+  localStorage.setItem("stockMinConfig", JSON.stringify(cfg || {}));
+}
+
+function normalizeLocMin(loc) {
+  const raw = String(loc || "Sem Localização");
+  if (raw.includes(" - ")) {
+    const parts = raw.split(" - ");
+    if (parts.length >= 3) return `${parts[1]} - ${parts[2]}`;
+  }
+  return raw;
+}
+
+function getStockByLocationCounts() {
+  const map = {};
+  stockGlobal.forEach(item => {
+    const key = normalizeLocMin(item.localizacao);
+    map[key] = (map[key] || 0) + 1;
+  });
+  return map;
+}
+
+function renderStockMinimoPainel() {
+  const host = el("stockMinimoPainel");
+  if (!host) return;
+  const config = loadStockMinConfig();
+  const counts = getStockByLocationCounts();
+  host.innerHTML = Object.keys(config).map(loc => {
+    const atual = counts[loc] || 0;
+    const minimo = Number(config[loc] || 0);
+    const cls = atual < minimo ? "item-danger" : atual === minimo ? "item-warning" : "item-ok";
+    const estado = atual < minimo ? "Abaixo do mínimo" : atual === minimo ? "No mínimo" : "Acima do mínimo";
+    return `<div class="stock-min-card"><strong>${loc}</strong><div class="meta-line">Atual: <span class="meta-value ${cls}">${atual}</span></div><div class="meta-line">Mínimo: <span class="meta-value">${minimo}</span></div><div class="meta-line">${estado}</div></div>`;
+  }).join("");
+}
+
+function renderStockMinimoConfig() {
+  const host = el("stockMinimoConfigList");
+  if (!host) return;
+  const cfg = loadStockMinConfig();
+  host.innerHTML = `<div class="minimo-grid">${
+    Object.keys(cfg).map(loc => `
+      <div class="minimo-item">
+        <label>${loc}</label>
+        <input type="number" min="0" value="${cfg[loc]}" data-stock-min-loc="${loc}">
+      </div>
+    `).join("")
+  }</div>`;
+}
+
+function guardarStockMinimoConfig() {
+  const inputs = document.querySelectorAll("[data-stock-min-loc]");
+  const cfg = {};
+  inputs.forEach(inp => { cfg[inp.getAttribute("data-stock-min-loc")] = Math.max(0, parseInt(inp.value || "0", 10) || 0); });
+  saveStockMinConfig(cfg);
+  mostrarMensagem("Stock mínimo guardado com sucesso.");
+  tryRenderAppBraga(renderStockMinimoPainel);
+  tryRenderAppBraga(renderAlertasInteligentes);
+}
+
+function resetStockMinimoConfig() {
+  saveStockMinConfig(STOCK_MIN_DEFAULTS);
+  renderStockMinimoConfig();
+  renderStockMinimoPainel();
+  renderAlertasInteligentes();
+  mostrarMensagem("Stock mínimo reposto.");
+}
+
+function ensureLoteFieldOnEdit() {
+  const item = localStorage.getItem("editarToner");
+  if (!item || !el("lote")) return;
+  try {
+    const toner = JSON.parse(item);
+    el("lote").value = toner.lote || "";
+    if (el("dataFolha")) el("dataFolha").value = toner.dataFolha || "";
+  } catch (e) { console.error(e); }
+}
+
+function extractLoteFromText(text) {
+  const t = String(text || "").toUpperCase();
+  const m = t.match(/(?:LOTE|LOT|BATCH)\s*[:#-]?\s*([A-Z0-9-]{4})/);
+  return m ? m[1] : "";
+}
+
+function enhanceScannerStatus(extra = "") {
+  const box = el("scannerSmartStatus");
+  if (!box) return;
+  box.innerText = extra || "Leitura pronta.";
+}
+
+function exportCsvFile(filename, headers, rows) {
+  const content = [headers.join(";"), ...rows.map(r => headers.map(h => String(r[h] ?? "").replace(/\n/g, " ")).join(";"))].join("\n");
+  const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+
+function exportarExcelStock() {
+  if (!stockGlobal.length) return mostrarMensagem("Não há stock para exportar.", "erro");
+  exportCsvFile("stock_app_braga.csv", ["idInterno","equipamento","localizacao","cor","lote","data","dataFolha"], stockGlobal);
+}
+
+function exportarExcelHistorico() {
+  if (!historicoGlobal.length) return mostrarMensagem("Não há histórico para exportar.", "erro");
+  exportCsvFile("historico_app_braga.csv", ["idInterno","equipamento","localizacao","cor","lote","data","dataFolha"], historicoGlobal);
+}
+
+function exportarExcelTudo() {
+  const rows = [...stockGlobal.map(x => ({...x, origem:"stock"})), ...historicoGlobal.map(x => ({...x, origem:"historico"}))];
+  if (!rows.length) return mostrarMensagem("Não há dados para exportar.", "erro");
+  exportCsvFile("dados_completos_app_braga.csv", ["origem","idInterno","equipamento","localizacao","cor","lote","data","dataFolha"], rows);
+}
+
+function filtrarHistoricoAvancado() {
+  const texto = normalizarTexto(el("searchHistorico")?.value || "");
+  const dFrom = el("filterHistoricoFrom")?.value || "";
+  const dTo = el("filterHistoricoTo")?.value || "";
+  const fLoc = normalizarTexto(el("filterHistoricoLocal")?.value || "");
+  const fEq = normalizarTexto(el("filterHistoricoEquipamento")?.value || "");
+  const fCor = normalizarTexto(el("filterHistoricoCor")?.value || "");
+
+  const items = historicoGlobal.filter(t => {
+    const data = String(t.data || "");
+    const okText = !texto || [t.idInterno,t.equipamento,t.localizacao,t.cor,t.lote].some(v => normalizarTexto(v).includes(texto));
+    const okFrom = !dFrom || data >= dFrom;
+    const okTo = !dTo || data <= dTo;
+    const okLoc = !fLoc || normalizarTexto(t.localizacao).includes(fLoc);
+    const okEq = !fEq || normalizarTexto(t.equipamento).includes(fEq);
+    const okCor = !fCor || normalizarTexto(t.cor).includes(fCor);
+    return okText && okFrom && okTo && okLoc && okEq && okCor;
+  });
+  renderHistoricoCards(items);
+}
+
+function abrirEditarStockModal(id) {
+  const item = stockGlobal.find(x => x.idDoc === id);
   if (!item) return mostrarMensagem("Item de stock não encontrado.", "erro");
   stockEditModalId = id;
   if (el("editStockEquipamento")) el("editStockEquipamento").value = item.equipamento || "";
@@ -4642,25 +5069,23 @@ setInterval(()=>{
 
 
 
-/* ===== ORDENAÇÃO ALFANUMÉRICA REALTIME ===== */
+/* ===== ORDENAÇÃO ALFANUMÉRICA SEGURA ===== */
 
-function ordenarListaAlfa(lista,campo="nome"){
+window.safeOrdenacaoAlfa = function(lista,campo="nome"){
 
   try{
 
-    if(!Array.isArray(lista)) return;
+    if(!Array.isArray(lista)) return lista;
 
-    lista.sort((a,b)=>{
+    return lista.sort((a,b)=>{
 
       const aTxt =
         String(a?.[campo] || "")
-        .toLowerCase()
-        .trim();
+          .toLowerCase();
 
       const bTxt =
         String(b?.[campo] || "")
-        .toLowerCase()
-        .trim();
+          .toLowerCase();
 
       return aTxt.localeCompare(
         bTxt,
@@ -4677,44 +5102,9 @@ function ordenarListaAlfa(lista,campo="nome"){
 
     console.error(e);
 
-  }
-
-}
-
-function aplicarOrdenacaoAlfanumericaRealtime(){
-
-  try{
-
-    if(window.usersData){
-      ordenarListaAlfa(
-        window.usersData,
-        "nome"
-      );
-    }
-
-    if(window.pistolasData){
-      ordenarListaAlfa(
-        window.pistolasData,
-        "nome"
-      );
-    }
-
-    if(window.portasData){
-      ordenarListaAlfa(
-        window.portasData,
-        "nome"
-      );
-    }
-
-  }catch(e){
-
-    console.error(e);
+    return lista;
 
   }
 
-}
-
-setInterval(()=>{
-  aplicarOrdenacaoAlfanumericaRealtime();
-},1000);
+};
 
