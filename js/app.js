@@ -4847,3 +4847,51 @@ window.importarPortasJSONFirebase =
 
 
 window.db = firebase.firestore();
+
+
+/* ===== SISTEMA AUTO IDS ===== */
+
+function gerarCodigoAutomatico(lista, prefixo){
+
+  let max = 0;
+
+  (lista || []).forEach(item=>{
+
+    const codigo = item.codigo || "";
+
+    const match = codigo.match(/(\d+)/);
+
+    if(match){
+
+      const numero = parseInt(match[1]);
+
+      if(numero > max){
+        max = numero;
+      }
+
+    }
+
+  });
+
+  return `${prefixo}-${String(max + 1).padStart(3,"0")}`;
+
+}
+
+window.gerarCodigoAutomatico =
+  gerarCodigoAutomatico;
+
+function gerarCodigoBadge(obj){
+
+  if(!obj || !obj.codigo) return "";
+
+  return `
+    <div class="codigo-badge">
+      ${obj.codigo}
+    </div>
+  `;
+
+}
+
+window.gerarCodigoBadge =
+  gerarCodigoBadge;
+
