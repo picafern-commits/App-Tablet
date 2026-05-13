@@ -1,52 +1,4 @@
 
-/* ===== SISTEMA IDS ===== */
-
-function gerarCodigoAutomatico(lista, prefixo){
-
-  let max = 0;
-
-  (lista || []).forEach(item => {
-
-    const codigo = item?.codigo || "";
-    const match = codigo.match(/(\d+)/);
-
-    if(match){
-
-      const numero = parseInt(match[1]);
-
-      if(numero > max){
-        max = numero;
-      }
-
-    }
-
-  });
-
-  return `${prefixo}-${String(max + 1).padStart(3,"0")}`;
-
-}
-
-window.gerarCodigoAutomatico =
-  gerarCodigoAutomatico;
-
-function garantirCodigo(item, lista, prefixo){
-
-  if(!item.codigo){
-
-    item.codigo =
-      gerarCodigoAutomatico(lista, prefixo);
-
-  }
-
-  return item;
-
-}
-
-window.garantirCodigo =
-  garantirCodigo;
-
-
-
 window.usersData = window.usersData || [];
 window.pistolasData = window.pistolasData || [];
 window.portasData = window.portasData || [];
@@ -1681,7 +1633,7 @@ function renderUsers(lista = window.usersData) {
     const ref = u.idDoc ? `'${u.idDoc}'` : `'${u._ref || `local-user-${index}`}'`;
     return `
     <div class="pc-card">
-      <div class="codigo-badge">${u.codigo || "USR-000"}</div><div class="pc-name">${u.nome}</div>
+      <div class="pc-name">${u.nome}</div>
       <div class="meta-line">Zona: <span class="meta-value">${u.zona || "-"}</span></div>
       <div class="meta-line">User PC/EYE: <span class="meta-value">${u.user_pc_eye || "-"}</span></div>
       <div class="meta-line">Pass Remote: <span class="meta-value">${u.pass_remote || "-"}</span></div>
@@ -4942,35 +4894,4 @@ function gerarCodigoBadge(obj){
 
 window.gerarCodigoBadge =
   gerarCodigoBadge;
-
-
-
-/* ===== CODIGO EDITAVEL ===== */
-
-function preencherCodigoInput(user){
-
-  const input =
-    document.getElementById("codigoInput");
-
-  if(input && user){
-    input.value =
-      user.codigo || "";
-  }
-
-}
-
-window.preencherCodigoInput =
-  preencherCodigoInput;
-
-function obterCodigoInput(){
-
-  const input =
-    document.getElementById("codigoInput");
-
-  return input?.value?.trim() || "";
-
-}
-
-window.obterCodigoInput =
-  obterCodigoInput;
 
