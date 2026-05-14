@@ -1,16 +1,9 @@
-/* =========================
-   APP BOOTSTRAP
-========================= */
 
 window.appReady = false;
 
-function waitFirebase(){
+function bootCheck(){
 
-  if(
-    window.firebaseReady &&
-    window.db &&
-    window.auth
-  ){
+  if(window.firebaseReady && window.db){
 
     window.appReady = true;
 
@@ -19,13 +12,11 @@ function waitFirebase(){
     );
 
     console.log("APP READY");
-
     return;
-
   }
 
-  setTimeout(waitFirebase, 200);
+  setTimeout(bootCheck, 100);
 
 }
 
-waitFirebase();
+bootCheck();
