@@ -307,7 +307,7 @@ function limparFormularioManutencao() {
 }
 
 async function gerarID() {
-  const ref = `'${p.idDoc || p._ref}'`;
+  const ref = `'${p.idDoc}'`;
   return db.runTransaction(async t => {
     const doc = await t.get(ref);
     const n = doc.exists ? doc.data().valor + 1 : 1;
@@ -1550,7 +1550,7 @@ function renderPortas(lista = window.portasData) {
 
   container.innerHTML = lista.map((p, index) => {
     const estado = estadoPorta(p);
-    const ref = p.idDoc ? `'${p.idDoc}'` : `'${p._ref || `local-porta-${window.portasData.indexOf(p)}`}'`;
+    const ref = p.idDoc ? `'${p.idDoc}'` : `'${ `local-porta-${window.portasData.indexOf(p)}`}'`;
     return `
       <div class="pc-card">
         <div class="pc-name">Porta ${p.porta || "-"}</div>
@@ -1598,7 +1598,7 @@ const PORTAS_STORAGE_KEY = 'appbraga_portas_custom_v1';
 
 function prepararRefsPistolas() {
   window.pistolasData.forEach((p, i) => {
-    if (!p.idDoc && !p._ref) p._ref = `local-pistola-${i}`;
+    if (!p.idDoc && !p._ref) p._ref = ``;
   });
 }
 
@@ -3507,7 +3507,7 @@ async function guardarEdicaoPistola() {
         const docRef = await db.collection("pistolas").add(payload);
         window.pistolasData.unshift({ idDoc: docRef.id, ...payload });
       } else {
-        window.pistolasData.unshift({ _ref: `local-pistola-${Date.now()}`, ...payload });
+        window.pistolasData.unshift({ _ref: ``, ...payload });
       }
     } else if (typeof pistolaEditRef === "string" && window.db) {
       await db.collection("pistolas").doc(pistolaEditRef).update(payload);
@@ -5236,3 +5236,28 @@ window.addEventListener('error',function(e){
   console.error('GLOBAL APP ERROR:',e.error||e.message);
 });
 
+
+
+function filtrarPistolasComFiltros() {
+  const texto = (el("searchPistolas")?.value || "").toLowerCase();
+
+  const filtradas = (window.pistolasData || []).filter(p => {
+
+    return [
+      p.nome,
+      p.num,
+      p.password,
+      p.cn,
+      p.sn,
+      p.mac,
+      p.operador,
+      p.armazem,
+      p.prontas
+    ].some(v =>
+      String(v || "").toLowerCase().includes(texto)
+    );
+
+  });
+
+  renderPistolas(filtradas);
+}
