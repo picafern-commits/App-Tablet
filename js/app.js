@@ -5067,3 +5067,50 @@ setInterval(()=>{
 
 },1500);
 
+
+
+/* ===== ORDENAÇÃO ALFANUMÉRICA SEGURA ===== */
+
+window.safeOrdenacaoAlfa = function(lista,campo="nome"){
+
+  try{
+
+    if(!Array.isArray(lista)) return lista;
+
+    return lista.sort((a,b)=>{
+
+      const aTxt =
+        String(a?.[campo] || "")
+          .toLowerCase();
+
+      const bTxt =
+        String(b?.[campo] || "")
+          .toLowerCase();
+
+      return aTxt.localeCompare(
+        bTxt,
+        'pt',
+        {
+          numeric:true,
+          sensitivity:'base'
+        }
+      );
+
+    });
+
+  }catch(e){
+
+    console.error(e);
+
+    return lista;
+
+  }
+
+};
+
+
+
+window.addEventListener('error',function(e){
+  console.error('GLOBAL APP ERROR:',e.error||e.message);
+});
+
