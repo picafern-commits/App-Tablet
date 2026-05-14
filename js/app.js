@@ -1394,9 +1394,7 @@ function renderPistolas(lista = window.pistolasData) {
  
   container.innerHTML = lista.map((p, index) => {
  
-    const ref = p.idDoc
-      ? `'${p.idDoc}'`
-      : `'${p._ref || `local-pistola-${index}`}'`;
+	const ref = "'" + (p.idDoc || ("local-pistola-" + index)) + "'";
  
     return `
     <div class="pc-card">
