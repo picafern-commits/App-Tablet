@@ -2188,12 +2188,12 @@ document.addEventListener("DOMContentLoaded", atualizarEstadoLigacaoAppBraga);
    ADD TONER - ESTÁVEL
 ========================= */
 const tonerMapStable = {
-  "TK-3190": { equipamento: "P3155DN", cor: "Preto", : "TK-3190" },
-  "TK-8365Y": { equipamento: "TASKalfa_255ci", cor: "Amarelo", : "TK-8365Y" },
-  "TK-8365C": { equipamento: "TASKalfa_255ci", cor: "Azul", : "TK-8365C" },
-  "TK-8365M": { equipamento: "TASKalfa_255ci", cor: "Vermelho", : "TK-8365M" },
-  "TK-8365K": { equipamento: "TASKalfa_255ci", cor: "Preto", : "TK-8365K" },
-  "TK-3430": { equipamento: "PA5500x", cor: "Preto", : "TK-3430" }
+  "TK-3190": { equipamento: "P3155DN", cor: "Preto" },
+  "TK-8365Y": { equipamento: "TASKalfa_255ci", cor: "Amarelo" },
+  "TK-8365C": { equipamento: "TASKalfa_255ci", cor: "Azul" },
+  "TK-8365M": { equipamento: "TASKalfa_255ci", cor: "Vermelho" },
+  "TK-8365K": { equipamento: "TASKalfa_255ci", cor: "Preto" },
+  "TK-3430": { equipamento: "PA5500x", cor: "Preto" }
 };
 
 let scannerInstanceStable = null;
@@ -2362,7 +2362,7 @@ function processarTextoLidoStable(textoLido) {
     const toner = tonerMapStable[tk] || null;
     if (toner) {
       aplicarDadosTonerStable(toner);
-      mostrarMensagem(`Toner identificado: ${toner.}`);
+      mostrarMensagem(`Toner identificado: ${tk}`);
       abrirSerie3DigitosStable();
       return true;
     }
