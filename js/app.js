@@ -1623,6 +1623,29 @@ function renderUsers(lista = window.usersData) {
 
   atualizarContadoresUsers(lista);
 
+window.usersData.sort((a,b)=>{
+ 
+  const aTxt =
+    String(a.nome || "")
+      .toLowerCase()
+      .trim();
+ 
+  const bTxt =
+    String(b.nome || "")
+      .toLowerCase()
+      .trim();
+ 
+  return aTxt.localeCompare(
+    bTxt,
+    'pt',
+    {
+      numeric:true,
+      sensitivity:'base'
+    }
+  );
+ 
+});
+  
   container.innerHTML = lista.map((u, index) => {
     const ref = u.idDoc ? `'${u.idDoc}'` : `'${u._ref || `local-user-${index}`}'`;
     return `
