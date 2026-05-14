@@ -1349,28 +1349,10 @@ function filtrarImpressoras() {
 /* =========================
    PISTOLAS - EMPRESA EXTREMO
 ========================= */
-function contarReservasPistolas(lista = window.pistolasData) {
-  return lista.filter(p => normalizarTexto(p.operador) === "reserva").length;
-}
-
-function atualizarContadoresPistolas(lista = window.pistolasData) {
-  setText("countPistolas", lista.length);
-  setText("countPistolasBraga", lista.filter(p => normalizarTexto(p.armazem) === "braga").length);
-  setText("countPistolasReserva", contarReservasPistolas(lista));
-}
-
-function badgePistolaReserva(valor) {
-  return normalizarTexto(valor) === "reserva"
-    ? `<span class="badge reserva">Reserva</span>`
-    : `<span class="badge ok">Ativa</span>`;
-}
-
 function renderPistolas(lista = window.pistolasData) {
  
-  
-
   lista.sort((a,b)=>{
-
+ 
     const aTxt =
       String(
         a.nome ||
@@ -1381,7 +1363,7 @@ function renderPistolas(lista = window.pistolasData) {
       )
       .toLowerCase()
       .trim();
-
+ 
     const bTxt =
       String(
         b.nome ||
@@ -1392,39 +1374,6 @@ function renderPistolas(lista = window.pistolasData) {
       )
       .toLowerCase()
       .trim();
-
-    return aTxt.localeCompare(
-      bTxt,
-      'pt',
-      {
-        numeric:true,
-        sensitivity:'base'
-      }
-    );
-
-  });
-
-lista.sort((a,b)=>{
- 
-    const aTxt =
-      String(
-        a.nome ||
-        a.codigo ||
-        a.numero ||
-        ""
-      )
-      .toLowerCase()
-      .trim();
- 
-    const bTxt =
-      String(
-        b.nome ||
-        b.codigo ||
-        b.numero ||
-        ""
-      )
-      .toLowerCase()
-      .trim();
  
     return aTxt.localeCompare(
       bTxt,
@@ -1437,65 +1386,85 @@ lista.sort((a,b)=>{
  
   });
  
-const container = document.querySelector("#listaPistolas");
+  atualizarContadoresPistolas(lista);
+ 
+  const container = document.querySelector("#listaPistolas");
  
   if (!container) return;
-  
+ 
   container.innerHTML = lista.map((p, index) => {
-    const ref = p.idDoc ? `'${p.idDoc}'` : `'${p._ref || `local-pistola-${window.pistolasData.indexOf(p)}`}'`;
+ 
+    const ref = p.idDoc
+      ? `'${p.idDoc}'`
+      : `'${p._ref || `local-pistola-${index}`}'`;
+ 
     return `
     <div class="pc-card">
+ 
       <div class="pc-name">${p.nome}</div>
-      <div class="meta-line">Nº: <span class="meta-value">${p.num}</span></div>
-      <div class="meta-line">Password: <span class="meta-value">${p.password}</span></div>
-      <div class="meta-line">CN: <span class="meta-value">${p.cn}</span></div>
-      <div class="meta-line">SN: <span class="meta-value">${p.sn}</span></div>
-      <div class="meta-line">MAC: <span class="meta-value">${p.mac}</span></div>
-      <div class="meta-line">Operador: <span class="meta-value">${p.operador}</span></div>
-      <div class="meta-line">Armazém: <span class="meta-value">${p.armazem}</span></div>
-      <div class="meta-line">Prontas: <span class="meta-value">${p.prontas}</span></div>
-      <div class="meta-line">Estado: <span class="meta-value">${badgePistolaReserva(p.operador)}</span></div>
-      <div class="item-actions">
-        <button class="secondary-btn" onclick="editarPistola(${ref})">Editar</button>
-        <button class="secondary-btn" onclick="apagarPistola(${ref})">Apagar</button>
+ 
+      <div class="meta-line">
+        Nº:
+        <span class="meta-value">${p.num}</span>
       </div>
+ 
+      <div class="meta-line">
+        Password:
+        <span class="meta-value">${p.password}</span>
+      </div>
+ 
+      <div class="meta-line">
+        CN:
+        <span class="meta-value">${p.cn}</span>
+      </div>
+ 
+      <div class="meta-line">
+        SN:
+        <span class="meta-value">${p.sn}</span>
+      </div>
+ 
+      <div class="meta-line">
+        MAC:
+        <span class="meta-value">${p.mac}</span>
+      </div>
+ 
+      <div class="meta-line">
+        Operador:
+        <span class="meta-value">${p.operador}</span>
+      </div>
+ 
+      <div class="meta-line">
+        Armazém:
+        <span class="meta-value">${p.armazem}</span>
+      </div>
+ 
+      <div class="meta-line">
+        Prontas:
+        <span class="meta-value">${p.prontas}</span>
+      </div>
+ 
+      <div class="meta-line">
+        Estado:
+        <span class="meta-value">
+          ${badgePistolaReserva(p.operador)}
+        </span>
+      </div>
+ 
+      <div class="item-actions">
+        <button class="secondary-btn" onclick="editarPistola(${ref})">
+          Editar
+        </button>
+ 
+        <button class="secondary-btn" onclick="apagarPistola(${ref})">
+          Apagar
+        </button>
+      </div>
+ 
     </div>
-  `;
+    `;
+ 
   }).join("");
-}
-
-function filtrarPistolas(txt = "") {
-  const texto = normalizarTexto(txt);
-  const armazemSelecionado = normalizarTexto(el("filterarmazemPistolas")?.value || "");
-  const tipoSelecionado = normalizarTexto(el("filterTipoPistolas")?.value || "");
-
-  const filtradas = window.pistolasData.filter(p => {
-    const passaTexto =
-      normalizarTexto(p.num).includes(texto) ||
-      normalizarTexto(p.nome).includes(texto) ||
-      normalizarTexto(p.password).includes(texto) ||
-      normalizarTexto(p.cn).includes(texto) ||
-      normalizarTexto(p.sn).includes(texto) ||
-      normalizarTexto(p.mac).includes(texto) ||
-      normalizarTexto(p.operador).includes(texto) ||
-      normalizarTexto(p.armazem).includes(texto) ||
-      normalizarTexto(p.prontas).includes(texto) ||
-      normalizarTexto(p.estado).includes(texto);
-
-    const passaarmazem = !armazemSelecionado || normalizarTexto(p.armazem) === armazemSelecionado;
-
-    const tipo = normalizarTexto(p.operador) === "reserva" ? "reserva" : "ativa";
-    const passaTipo = !tipoSelecionado || tipo === tipoSelecionado;
-
-    return passaTexto && passaarmazem && passaTipo;
-  });
-
-  renderPistolas(filtradas);
-}
-
-function filtrarPistolasComFiltros() {
-  const texto = el("searchPistolas")?.value || "";
-  filtrarPistolas(texto);
+ 
 }
 
 /* =========================
