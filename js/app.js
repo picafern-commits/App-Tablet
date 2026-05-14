@@ -149,7 +149,7 @@ const USERS_STORAGE_KEY = 'appbraga_users_custom_v1';
 
 function prepararRefsUsers() {
   window.usersData.forEach((u, i) => {
-    if (!u.idDoc && !u.) u. = `local-user-${i}`;
+    if (!u.idDoc && !u._ref) u._ref = `local-user-${i}`;
   });
 }
 
@@ -307,7 +307,7 @@ function limparFormularioManutencao() {
 }
 
 async function gerarID() {
-  const ref = p.idDoc;
+  const ref = `'${p.idDoc}'`;
   return db.runTransaction(async t => {
     const doc = await t.get(ref);
     const n = doc.exists ? doc.data().valor + 1 : 1;
@@ -673,7 +673,7 @@ function renderHistoricoCards(items) {
 
 async function usar(id) {
   try {
-    const ref = p.idDoc;
+    const ref = db.collection("stock").doc(id);
     const snap = await ref.get();
 
     if (!snap.exists) {
@@ -1263,7 +1263,7 @@ function abrirHistoricoImpressora(item) {
 
 function guardarImpressorasLocal() {
   try {
-    impressorasData.forEach((item, i) => { if (!item.) item. = item.idDoc || `local-impressora-${i}`; });
+    impressorasData.forEach((item, i) => { if (!item._ref) item._ref = item.idDoc || `local-impressora-${i}`; });
     localStorage.setItem(IMPRESSORAS_STORAGE_KEY, JSON.stringify(impressorasData.map(i => ({ ...i }))));
   } catch (e) { console.warn('Nao foi possivel guardar impressoras no localStorage.', e); }
 }
@@ -1274,7 +1274,7 @@ function carregarImpressorasLocal() {
     if (!raw) return;
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed) || !parsed.length) return;
-    parsed.forEach((item, i) => { if (!item.) item. = item.idDoc || `local-impressora-${i}`; });
+    parsed.forEach((item, i) => { if (!item._ref) item._ref = item.idDoc || `local-impressora-${i}`; });
     impressorasData.splice(0, impressorasData.length, ...parsed);
   } catch (e) { console.warn('Nao foi possivel carregar impressoras do localStorage.', e); }
 }
@@ -1430,9 +1430,9 @@ function renderPistolas(lista = window.pistolasData) {
  
   if (!container) return;
  
-  container.innerHTML = lista.map((p, ) => {
+  container.innerHTML = lista.map((p, index) => {
  
-	const ref = p.idDoc;
+	const ref = "'" + (p.idDoc || ("" + index)) + "'";
  
     return `
     <div class="pc-card">
@@ -1487,11 +1487,11 @@ function renderPistolas(lista = window.pistolasData) {
       </div>
  
       <div class="item-actions">
-        <button class="secondary-btn" onclick="editarPistola(\'${p.idDoc}\')">
+        <button class="secondary-btn" onclick="editarPistola('${p.idDoc}')">
           Editar
         </button>
  
-        <button class="secondary-btn" onclick="apagarPistola(\'${p.idDoc}\')">
+        <button class="secondary-btn" onclick="apagarPistola('${p.idDoc}')">
           Apagar
         </button>
       </div>
@@ -1548,9 +1548,9 @@ function renderPortas(lista = window.portasData) {
 
   atualizarContadoresPortas(lista);
 
-  container.innerHTML = lista.map((p, ) => {
+  container.innerHTML = lista.map((p, index) => {
     const estado = estadoPorta(p);
-    const ref = p.idDoc;
+    const ref = p.idDoc ? `'${p.idDoc}'` : `'${ `local-porta-${window.portasData.indexOf(p)}`}'`;
     return `
       <div class="pc-card">
         <div class="pc-name">Porta ${p.porta || "-"}</div>
@@ -1598,7 +1598,7 @@ const PORTAS_STORAGE_KEY = 'appbraga_portas_custom_v1';
 
 function prepararRefsPistolas() {
   window.pistolasData.forEach((p, i) => {
-    if (!p.idDoc && !p.) p. = `${i}`;
+    if (!p.idDoc && !p._ref) p._ref = ``;
   });
 }
 
@@ -1633,7 +1633,7 @@ function carregarPistolasLocal() {
 
 function prepararRefsPortas() {
   window.portasData.forEach((p, i) => {
-    if (!p.idDoc && !p.) p. = `local-porta-${i}`;
+    if (!p.idDoc && !p._ref) p._ref = `local-porta-${i}`;
   });
 }
 
@@ -1721,8 +1721,8 @@ window.usersData.sort((a,b)=>{
  
 });
   
-  container.innerHTML = lista.map((u, ) => {
-    const ref = p.idDoc;
+  container.innerHTML = lista.map((u, index) => {
+    const ref = u.idDoc ? `'${u.idDoc}'` : `'${u._ref || `local-user-${index}`}'`;
     return `
     <div class="pc-card">
       <div class="pc-name">${u.nome}</div>
@@ -2952,7 +2952,7 @@ function atualizarAppObrigatorio() {
     `;
   }
 
-  const target = APP_REMOTE_BASE + ".html?update=" + Date.now();
+  const target = APP_REMOTE_BASE + "index.html?update=" + Date.now();
   const currentBefore = window.location.href;
 
   setTimeout(async () => {
@@ -3004,7 +3004,7 @@ window.addEventListener("load", () => atualizarVersaoUI(APP_VERSION));
 /* ===== CRUD EXTRA: Portas, Users, Pistolas ===== */
 function itemPorRef(lista, ref) {
   if (typeof ref === "string") {
-    return lista.find(i => i.idDoc === ref || i. === ref) || null;
+    return lista.find(i => i.idDoc === ref || i._ref === ref) || null;
   }
   const idx = Number(ref);
   return Number.isNaN(idx) ? null : (lista[idx] || null);
@@ -3012,7 +3012,7 @@ function itemPorRef(lista, ref) {
 
 function idxPorRef(lista, ref) {
   if (typeof ref === "string") {
-    return lista.findIndex(i => i.idDoc === ref || i. === ref);
+    return lista.findIndex(i => i.idDoc === ref || i._ref === ref);
   }
   const idx = Number(ref);
   return Number.isNaN(idx) ? -1 : idx;
@@ -3065,7 +3065,7 @@ async function guardarEdicaoPorta() {
         const docRef = await db.collection("portas").add(payload);
         window.portasData.unshift({ idDoc: docRef.id, ...payload });
       } else {
-        window.portasData.unshift({ : `local-porta-${Date.now()}`, ...payload });
+        window.portasData.unshift({ _ref: `local-porta-${Date.now()}`, ...payload });
       }
     } else if (typeof portaEditRef === "string" && window.db) {
       await db.collection("portas").doc(portaEditRef).update(payload);
@@ -3189,7 +3189,7 @@ async function guardarEdicaoUser() {
       } else {
 
         window.usersData.unshift({
-          : `local-user-${Date.now()}`,
+          _ref: `local-user-${Date.now()}`,
           ...payload
         });
 
@@ -3475,7 +3475,7 @@ function abrirAdicionarPistola() {
   if (el("modalEditarPistola")) el("modalEditarPistola").style.display = "flex";
 }
 
-function editarPistola(idDoc) {
+function editarPistola(ref) {
   const item = itemPorRef(window.pistolasData, ref);
   if (!item) return mostrarMensagem("Pistola não encontrada.", "erro");
   pistolaEditRef = ref;
@@ -3507,7 +3507,7 @@ async function guardarEdicaoPistola() {
         const docRef = await db.collection("pistolas").add(payload);
         window.pistolasData.unshift({ idDoc: docRef.id, ...payload });
       } else {
-        window.pistolasData.unshift({ : `${Date.now()}`, ...payload });
+        window.pistolasData.unshift({ _ref: ``, ...payload });
       }
     } else if (typeof pistolaEditRef === "string" && window.db) {
       await db.collection("pistolas").doc(pistolaEditRef).update(payload);
@@ -3527,7 +3527,7 @@ async function guardarEdicaoPistola() {
   }
 }
 
-async function apagarPistola(idDoc) {
+async function apagarPistola(ref) {
   if (!confirm("Queres apagar esta pistola?")) return;
   try {
     if (typeof ref === "string" && window.db) {
@@ -3565,7 +3565,7 @@ async function guardarNovaImpressora() {
   if (!normalizarTexto(payload.modelo) || !normalizarTexto(payload.serie) || !normalizarTexto(payload.ip)) {
     return mostrarMensagem("Preenche pelo menos Modelo, Série e IP.", "erro");
   }
-  impressorasData.unshift({ : `local-impressora-${Date.now()}`, ...payload });
+  impressorasData.unshift({ _ref: `local-impressora-${Date.now()}`, ...payload });
   guardarImpressorasLocal();
   fecharAdicionarImpressora();
   filtrarImpressoras();
@@ -3596,14 +3596,14 @@ window.abrirAdicionarPistola = abrirAdicionarPistola;
 /* ===== MODO VISUAL ===== */
 function modoVisualInit() {
   document.body.classList.add("modo-visual-on");
-  document.querySelectorAll(".panel, .pc-card, .dashboard-card, .stock-card, .history-card").forEach((node, ) => {
+  document.querySelectorAll(".panel, .pc-card, .dashboard-card, .stock-card, .history-card").forEach((node, index) => {
     node.style.opacity = "0";
     node.style.transform = "translateY(8px)";
     setTimeout(() => {
       node.style.transition = "opacity 0.24s ease, transform 0.24s ease";
       node.style.opacity = "1";
       node.style.transform = "translateY(0)";
-    }, 25 * Math.min(, 10));
+    }, 25 * Math.min(index, 10));
   });
 }
 
@@ -4135,7 +4135,7 @@ async function guardarEtiquetaPartilhada(extra = {}) {
   if (!db || !db.collection) return null;
   try {
     const payload = montarPayloadEtiquetaPartilhada(extra);
-    const ref = p.idDoc;
+    const ref = await db.collection("etiquetasWord").add(payload);
     return { idDoc: ref.id, ...payload };
   } catch (e) {
     console.error("Erro ao guardar etiqueta partilhada:", e);
@@ -4382,7 +4382,7 @@ window.addEventListener("DOMContentLoaded", () => {
 (function(){
   function closestPanel(el){while(el&&el!==document.body){if(el.classList&&el.classList.contains('panel'))return el;el=el.parentElement;}return null;}
   function initBrinkaSidebar(){var sidebar=document.querySelector('.sidebar');if(!sidebar)return;if(!document.querySelector('.app-menu-toggle')){var btn=document.createElement('button');btn.className='app-menu-toggle';btn.type='button';btn.setAttribute('aria-label','Abrir menu');btn.textContent='☰';document.body.appendChild(btn);}if(!document.querySelector('.app-sidebar-overlay')){var ov=document.createElement('div');ov.className='app-sidebar-overlay';document.body.appendChild(ov);}var btn=document.querySelector('.app-menu-toggle');var overlay=document.querySelector('.app-sidebar-overlay');function open(){sidebar.classList.add('app-open');overlay.classList.add('show');btn.textContent='×';}function close(){sidebar.classList.remove('app-open');overlay.classList.remove('show');btn.textContent='☰';}btn.onclick=function(e){e.preventDefault();e.stopPropagation();sidebar.classList.contains('app-open')?close():open();};overlay.onclick=close;sidebar.querySelectorAll('a').forEach(function(a){a.addEventListener('click',close);});}
-  function cleanDashboard(){var path=(location.pathname||'').toLowerCase();var isDashboard=path.endsWith('/')||path.endsWith('/.html')||path.Of('.html')!==-1;if(!isDashboard)return;document.body.classList.add('dashboard-clean');var removeTitles=['Centro Operacional Inteligente','Prioridade Máxima','Top Consumo','Alertas do Dia','Alertas Inteligentes'];document.querySelectorAll('h3').forEach(function(h){var t=(h.textContent||'').trim();if(removeTitles.Of(t)>=0){var p=closestPanel(h);if(p)p.classList.add('is-dashboard-removed');}});}
+  function cleanDashboard(){var path=(location.pathname||'').toLowerCase();var isDashboard=path.endsWith('/')||path.endsWith('/index.html')||path.indexOf('index.html')!==-1;if(!isDashboard)return;document.body.classList.add('dashboard-clean');var removeTitles=['Centro Operacional Inteligente','Prioridade Máxima','Top Consumo','Alertas do Dia','Alertas Inteligentes'];document.querySelectorAll('h3').forEach(function(h){var t=(h.textContent||'').trim();if(removeTitles.indexOf(t)>=0){var p=closestPanel(h);if(p)p.classList.add('is-dashboard-removed');}});}
   if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){initBrinkaSidebar();cleanDashboard();});}else{initBrinkaSidebar();cleanDashboard();}
 })();
 
@@ -5236,3 +5236,28 @@ window.addEventListener('error',function(e){
   console.error('GLOBAL APP ERROR:',e.error||e.message);
 });
 
+
+
+function filtrarPistolasComFiltros() {
+  const texto = (el("searchPistolas")?.value || "").toLowerCase();
+
+  const filtradas = (window.pistolasData || []).filter(p => {
+
+    return [
+      p.nome,
+      p.num,
+      p.password,
+      p.cn,
+      p.sn,
+      p.mac,
+      p.operador,
+      p.armazem,
+      p.prontas
+    ].some(v =>
+      String(v || "").toLowerCase().includes(texto)
+    );
+
+  });
+
+  renderPistolas(filtradas);
+}

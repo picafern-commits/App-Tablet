@@ -2009,3 +2009,11 @@ button, a, .nav-item, .sidebar a { touch-action: manipulation; }
  font-weight:700;
  margin-bottom:10px;
 }
+
+
+/* FIX SELECT VISIBILITY */
+select,
+select option{
+  color:#fff !important;
+  background:#1e293b !important;
+}
