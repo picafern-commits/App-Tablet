@@ -1366,33 +1366,43 @@ function badgePistolaReserva(valor) {
 }
 
 function renderPistolas(lista = window.pistolasData) {
-  const container = el("listaPistolas");
+ 
+  lista.sort((a,b)=>{
+ 
+    const aTxt =
+      String(
+        a.nome ||
+        a.codigo ||
+        a.numero ||
+        ""
+      )
+      .toLowerCase()
+      .trim();
+ 
+    const bTxt =
+      String(
+        b.nome ||
+        b.codigo ||
+        b.numero ||
+        ""
+      )
+      .toLowerCase()
+      .trim();
+ 
+    return aTxt.localeCompare(
+      bTxt,
+      'pt',
+      {
+        numeric:true,
+        sensitivity:'base'
+      }
+    );
+ 
+  });
+ 
+  const container = q1("#listaPistolas");
+ 
   if (!container) return;
-
-  atualizarContadoresPistolas(lista);
-
-window.pistolasData.sort((a,b)=>{
- 
-  const aTxt =
-    String(a.nome || a.user || "")
-      .toLowerCase()
-      .trim();
- 
-  const bTxt =
-    String(b.nome || b.user || "")
-      .toLowerCase()
-      .trim();
- 
-  return aTxt.localeCompare(
-    bTxt,
-    'pt',
-    {
-      numeric:true,
-      sensitivity:'base'
-    }
-  );
- 
-});
   
   container.innerHTML = lista.map((p, index) => {
     const ref = p.idDoc ? `'${p.idDoc}'` : `'${p._ref || `local-pistola-${window.pistolasData.indexOf(p)}`}'`;
