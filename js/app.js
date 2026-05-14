@@ -307,7 +307,7 @@ function limparFormularioManutencao() {
 }
 
 async function gerarID() {
-  const ref = db.collection("config").doc("contador");
+  const ref = `'${p.idDoc || p._ref}'`;
   return db.runTransaction(async t => {
     const doc = await t.get(ref);
     const n = doc.exists ? doc.data().valor + 1 : 1;
@@ -1362,15 +1362,6 @@ function badgePistolaReserva(valor) {
 }
 
 function renderPistolas(lista = window.pistolasData) {
-
-  if (!Array.isArray(lista)) {
-    lista = [];
-  }
-
-  if (typeof atualizarContadoresPistolas === "function") {
-    atualizarContadoresPistolas(lista);
-  }
-
 
   lista = Array.isArray(lista) ? lista : [];
 
@@ -5245,22 +5236,3 @@ window.addEventListener('error',function(e){
   console.error('GLOBAL APP ERROR:',e.error||e.message);
 });
 
-
-
-function atualizarContadoresPistolas(lista = window.pistolasData || []) {
-  setText("countPistolas", lista.length || 0);
-
-  setText(
-    "countPistolasBraga",
-    lista.filter(p =>
-      String(p.armazem || "").toLowerCase().includes("braga")
-    ).length
-  );
-
-  setText(
-    "countPistolasReserva",
-    lista.filter(p =>
-      String(p.operador || "").toLowerCase().includes("reserva")
-    ).length
-  );
-}
