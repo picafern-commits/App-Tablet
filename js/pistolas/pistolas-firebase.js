@@ -7,12 +7,7 @@ import {
 
 window.pistolasData = [];
 
-function iniciarPistolas(){
-
-  if(!window.db){
-    setTimeout(iniciarPistolas, 500);
-    return;
-  }
+document.addEventListener("app-ready", ()=>{
 
   const pistolasRef =
     collection(window.db, "pistolas");
@@ -33,9 +28,9 @@ function iniciarPistolas(){
 
   });
 
-}
+  console.log("Pistolas connected");
 
-iniciarPistolas();
+});
 
 window.guardarEdicaoPistola =
 async function(){
@@ -73,5 +68,3 @@ async function(){
   hide("modalEditarPistola");
 
 };
-
-console.log("Pistolas realtime OK");

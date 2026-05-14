@@ -1,4 +1,3 @@
-
 import {
   collection,
   onSnapshot
@@ -6,12 +5,7 @@ import {
 
 window.usersData = [];
 
-function iniciarUsers(){
-
-  if(!window.db){
-    setTimeout(iniciarUsers, 500);
-    return;
-  }
+document.addEventListener("app-ready", ()=>{
 
   const usersRef =
     collection(window.db, "users");
@@ -32,8 +26,6 @@ function iniciarUsers(){
 
   });
 
-}
+  console.log("Users connected");
 
-iniciarUsers();
-
-console.log("Users realtime OK");
+});
