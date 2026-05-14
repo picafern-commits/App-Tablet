@@ -1,36 +1,41 @@
-/* =========================
-   PISTOLAS FIREBASE
-========================= */
-
 import {
   collection,
   onSnapshot,
-  addDoc,
   updateDoc,
-  deleteDoc,
   doc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-window.pistolasData = window.pistolasData || [];
+window.pistolasData = [];
 
-const pistolasRef =
-  collection(window.db, "pistolas");
+function iniciarPistolas(){
 
-onSnapshot(pistolasRef, (snapshot)=>{
-
-  window.pistolasData =
-    snapshot.docs.map(d => ({
-      idDoc: d.id,
-      ...d.data()
-    }));
-
-  if(window.renderPistolas){
-    window.renderPistolas(
-      window.pistolasData
-    );
+  if(!window.db){
+    setTimeout(iniciarPistolas, 500);
+    return;
   }
 
-});
+  const pistolasRef =
+    collection(window.db, "pistolas");
+
+  onSnapshot(pistolasRef, (snapshot)=>{
+
+    window.pistolasData =
+      snapshot.docs.map(d => ({
+        idDoc: d.id,
+        ...d.data()
+      }));
+
+    if(window.renderPistolas){
+      window.renderPistolas(
+        window.pistolasData
+      );
+    }
+
+  });
+
+}
+
+iniciarPistolas();
 
 window.guardarEdicaoPistola =
 async function(){
@@ -69,4 +74,4 @@ async function(){
 
 };
 
-console.log("Pistolas Firebase realtime OK");
+console.log("Pistolas realtime OK");

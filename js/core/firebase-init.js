@@ -1,5 +1,5 @@
 /* =========================
-   FIREBASE INIT
+   FIREBASE GLOBAL INIT
 ========================= */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -15,6 +15,15 @@ const firebaseConfig = {
   appId: "1:123:web"
 };
 
-window.firebaseApp = initializeApp(firebaseConfig);
-window.db = getFirestore(window.firebaseApp);
-window.auth = getAuth(window.firebaseApp);
+const firebaseApp = initializeApp(firebaseConfig);
+
+const db = getFirestore(firebaseApp);
+const auth = getAuth(firebaseApp);
+
+window.firebaseApp = firebaseApp;
+window.db = db;
+window.auth = auth;
+
+window.firebaseReady = true;
+
+console.log("Firebase global ready");
