@@ -1424,47 +1424,47 @@ function renderPistolas(lista = window.pistolasData) {
  
     return `
     <div class="pc-card">
- 
-      <div class="pc-name">${p.nome}</div>
+
+      <div class="pc-name">${p.nome || "-"}</div>
  
       <div class="meta-line">
         Nº:
-        <span class="meta-value">${p.num}</span>
+        <span class="meta-value">${p.num || "-"}</span>
       </div>
  
       <div class="meta-line">
         Password:
-        <span class="meta-value">${p.password}</span>
+        <span class="meta-value">${p.password || "-"}</span>
       </div>
  
       <div class="meta-line">
         CN:
-        <span class="meta-value">${p.cn}</span>
+        <span class="meta-value">${p.cn || "-"}</span>
       </div>
  
       <div class="meta-line">
         SN:
-        <span class="meta-value">${p.sn}</span>
+        <span class="meta-value">${p.sn || "-"}</span>
       </div>
  
       <div class="meta-line">
         MAC:
-        <span class="meta-value">${p.mac}</span>
+        <span class="meta-value">${p.mac || "-"}</span>
       </div>
  
       <div class="meta-line">
         Operador:
-        <span class="meta-value">${p.operador}</span>
+        <span class="meta-value">${p.operador || "-"}</span>
       </div>
  
       <div class="meta-line">
         Armazém:
-        <span class="meta-value">${p.armazem}</span>
+        <span class="meta-value">${p.armazem || "-"}</span>
       </div>
  
       <div class="meta-line">
         Prontas:
-        <span class="meta-value">${p.prontas}</span>
+        <span class="meta-value">${p.prontas || "-"}</span>
       </div>
  
       <div class="meta-line">
