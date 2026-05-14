@@ -1350,6 +1350,10 @@ function filtrarImpressoras() {
    PISTOLAS - EMPRESA EXTREMO
 ========================= */
 function renderPistolas(lista = window.pistolasData) {
+
+  lista = Array.isArray(lista) ? lista : [];
+
+
  
   lista = Array.isArray(lista) ? lista : [];
  
@@ -1388,7 +1392,27 @@ function renderPistolas(lista = window.pistolasData) {
  
   });
  
-  atualizarContadoresPistolas(lista);
+  
+  setText("countPistolas", lista.length);
+
+  setText(
+    "countPistolasBraga",
+    lista.filter(p =>
+      String(p.armazem || "")
+        .toLowerCase()
+        .includes("braga")
+    ).length
+  );
+
+  setText(
+    "countPistolasReserva",
+    lista.filter(p =>
+      String(p.operador || "")
+        .toLowerCase()
+        .includes("reserva")
+    ).length
+  );
+
  
   const container = document.querySelector("#listaPistolas");
  
