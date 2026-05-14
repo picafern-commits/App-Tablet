@@ -1437,7 +1437,7 @@ lista.sort((a,b)=>{
  
   });
  
-  const container = q1("#listaPistolas");
+const container = document.querySelector("#listaPistolas");
  
   if (!container) return;
   
