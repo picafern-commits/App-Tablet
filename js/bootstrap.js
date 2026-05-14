@@ -1,22 +1,40 @@
 
+/* APP BOOTSTRAP */
+
 window.appReady = false;
 
-function bootCheck(){
+(function(){
 
-  if(window.firebaseReady && window.db){
+  let tries = 0;
 
-    window.appReady = true;
+  function start(){
 
-    document.dispatchEvent(
-      new Event("app-ready")
-    );
+    tries++;
 
-    console.log("APP READY");
-    return;
+    if(
+      window.firebaseReady === true &&
+      window.db
+    ){
+
+      window.appReady = true;
+
+      console.log("APP READY");
+
+      document.dispatchEvent(
+        new Event("app-ready")
+      );
+
+      return;
+    }
+
+    if(tries < 200){
+      setTimeout(start, 150);
+    }else{
+      console.error("Firebase bootstrap timeout");
+    }
+
   }
 
-  setTimeout(bootCheck, 100);
+  start();
 
-}
-
-bootCheck();
+})();
