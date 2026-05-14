@@ -194,6 +194,16 @@ td, th, a, div {
   font-size: 14px;
 }
 
+select {
+  color: #ffffff !important;
+  background: #1e293b !important;
+}
+ 
+select option {
+  color: #ffffff !important;
+  background: #1e293b !important;
+}
+
 .stat-card-full{
     width:100%;
     max-width:none;
