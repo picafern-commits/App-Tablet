@@ -1363,6 +1363,15 @@ function badgePistolaReserva(valor) {
 
 function renderPistolas(lista = window.pistolasData) {
 
+  if (!Array.isArray(lista)) {
+    lista = [];
+  }
+
+  if (typeof atualizarContadoresPistolas === "function") {
+    atualizarContadoresPistolas(lista);
+  }
+
+
   lista = Array.isArray(lista) ? lista : [];
 
 
@@ -5236,3 +5245,22 @@ window.addEventListener('error',function(e){
   console.error('GLOBAL APP ERROR:',e.error||e.message);
 });
 
+
+
+function atualizarContadoresPistolas(lista = window.pistolasData || []) {
+  setText("countPistolas", lista.length || 0);
+
+  setText(
+    "countPistolasBraga",
+    lista.filter(p =>
+      String(p.armazem || "").toLowerCase().includes("braga")
+    ).length
+  );
+
+  setText(
+    "countPistolasReserva",
+    lista.filter(p =>
+      String(p.operador || "").toLowerCase().includes("reserva")
+    ).length
+  );
+}
