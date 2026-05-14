@@ -1,40 +1,20 @@
-
-/* APP BOOTSTRAP */
-
 window.appReady = false;
 
-(function(){
+(function waitFirebase(){
 
-  let tries = 0;
+  if(window.firebaseReady && window.db){
 
-  function start(){
+    window.appReady = true;
 
-    tries++;
+    document.dispatchEvent(
+      new Event("app-ready")
+    );
 
-    if(
-      window.firebaseReady === true &&
-      window.db
-    ){
+    console.log("APP READY");
 
-      window.appReady = true;
-
-      console.log("APP READY");
-
-      document.dispatchEvent(
-        new Event("app-ready")
-      );
-
-      return;
-    }
-
-    if(tries < 200){
-      setTimeout(start, 150);
-    }else{
-      console.error("Firebase bootstrap timeout");
-    }
-
+    return;
   }
 
-  start();
+  setTimeout(waitFirebase, 100);
 
 })();

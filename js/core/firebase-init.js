@@ -5,7 +5,7 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebas
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCSgwM...",
+  apiKey: "AIzaSyCSgw",
   authDomain: "toner-manager-756c4.firebaseapp.com",
   projectId: "toner-manager-756c4",
   storageBucket: "toner-manager-756c4.appspot.com",
