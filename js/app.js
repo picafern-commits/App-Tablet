@@ -5,20 +5,8 @@ window.usersData = [];
 window.pistolasData = [];
 window.portasData = [];
 
-function el(id){
-  return document.getElementById(id);
-}
 
-function setText(id, value){
-  const node = el(id);
-  if(node) node.textContent = value;
-}
 
-function normalizarTexto(v){
-  return String(v || "")
-    .toLowerCase()
-    .trim();
-}
 
 /* =========================
    PISTOLAS
