@@ -1367,7 +1367,44 @@ function badgePistolaReserva(valor) {
 
 function renderPistolas(lista = window.pistolasData) {
  
+  
+
   lista.sort((a,b)=>{
+
+    const aTxt =
+      String(
+        a.nome ||
+        a.codigo ||
+        a.numero ||
+        a.num ||
+        ""
+      )
+      .toLowerCase()
+      .trim();
+
+    const bTxt =
+      String(
+        b.nome ||
+        b.codigo ||
+        b.numero ||
+        b.num ||
+        ""
+      )
+      .toLowerCase()
+      .trim();
+
+    return aTxt.localeCompare(
+      bTxt,
+      'pt',
+      {
+        numeric:true,
+        sensitivity:'base'
+      }
+    );
+
+  });
+
+lista.sort((a,b)=>{
  
     const aTxt =
       String(
