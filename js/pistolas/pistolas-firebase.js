@@ -1,3 +1,16 @@
+
+function iniciar(){
+  
+console.log("Pistolas listener start");
+
+}
+
+if(window.appReady){
+  iniciar();
+}else{
+  document.addEventListener("app-ready", iniciar);
+}
+
 import {
   collection,
   onSnapshot,
