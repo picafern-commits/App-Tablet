@@ -2710,6 +2710,30 @@ async function carregarPortasComFallback() {
       }
 
       window.portasData = snap.docs.map(doc => ({ idDoc: doc.id, ...doc.data() }));
+
+      window.portasData.sort((a,b)=>{
+
+        const aTxt =
+          String(a.porta || a.nome || "")
+            .toLowerCase()
+            .trim();
+
+        const bTxt =
+          String(b.porta || b.nome || "")
+            .toLowerCase()
+            .trim();
+
+        return aTxt.localeCompare(
+          bTxt,
+          'pt',
+          {
+            numeric:true,
+            sensitivity:'base'
+          }
+        );
+
+      });
+
       prepararRefsPortas();
       guardarPortasLocal();
       renderPortas(window.portasData);
