@@ -1349,6 +1349,18 @@ function filtrarImpressoras() {
 /* =========================
    PISTOLAS - EMPRESA EXTREMO
 ========================= */
+function badgePistolaReserva(valor) {
+ 
+  return String(valor || "")
+    .toLowerCase()
+    .includes("reserva")
+ 
+    ? `<span class="badge reserva">Reserva</span>`
+ 
+    : `<span class="badge ok">Ativa</span>`;
+ 
+}
+
 function renderPistolas(lista = window.pistolasData) {
 
   lista = Array.isArray(lista) ? lista : [];
