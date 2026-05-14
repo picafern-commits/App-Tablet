@@ -1,7 +1,7 @@
 
 (function(){
 
-  try{
+
 
     if(!window.db){
       console.error("Firebase DB indisponível");
@@ -35,6 +35,5 @@
       error
     );
 
-  }
 
 })();
