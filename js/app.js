@@ -1351,6 +1351,8 @@ function filtrarImpressoras() {
 ========================= */
 function renderPistolas(lista = window.pistolasData) {
  
+  lista = Array.isArray(lista) ? lista : [];
+ 
   lista.sort((a,b)=>{
  
     const aTxt =
