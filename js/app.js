@@ -1500,7 +1500,13 @@ function renderPistolas(lista = window.pistolasData) {
     `;
  
   }).join("");
- 
+
+ renderUsers(filtrado);
+}	
+	
+function filtrarUsersComFiltros() {
+  const texto = el("searchUsers")?.value || "";
+  filtrarUsers(texto);
 }
 
 /* =========================
