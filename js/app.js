@@ -1799,26 +1799,62 @@ function filtrarUsersComFiltros() {
   filtrarUsers(texto);
 }
 
+function applyAppTheme(mode) {
+  const isDark = mode === "dark";
+  document.documentElement.classList.toggle("dark", isDark);
+  document.documentElement.classList.toggle("app-dark", isDark);
+  document.body.classList.toggle("dark", isDark);
+  document.body.classList.toggle("app-dark", isDark);
+  localStorage.setItem("modo", isDark ? "dark" : "light");
+
+  document.querySelectorAll(".theme-toggle").forEach((button) => {
+    button.textContent = isDark ? "Modo claro" : "Modo escuro";
+    button.setAttribute("aria-pressed", String(isDark));
+  });
+
+  const sw = el("darkSwitch");
+  if (sw) sw.checked = isDark;
+}
+
+function initGlobalTheme() {
+  const savedMode = localStorage.getItem("modo") === "dark" ? "dark" : "light";
+  applyAppTheme(savedMode);
+
+  const sidebar = document.querySelector(".sidebar");
+  if (sidebar && !document.querySelector(".theme-toggle")) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "theme-toggle";
+    button.addEventListener("click", () => {
+      const nextMode = document.body.classList.contains("app-dark") ? "light" : "dark";
+      applyAppTheme(nextMode);
+    });
+
+    const brand = sidebar.querySelector(".brand, .premium-brand, .brand-block");
+    if (brand && brand.parentNode) {
+      brand.insertAdjacentElement("afterend", button);
+    } else {
+      sidebar.insertBefore(button, sidebar.firstChild);
+    }
+  }
+
+  const sw = el("darkSwitch");
+  if (sw && !sw.dataset.themeBound) {
+    sw.dataset.themeBound = "1";
+    sw.addEventListener("change", () => {
+      applyAppTheme(sw.checked ? "dark" : "light");
+    });
+  }
+
+  applyAppTheme(localStorage.getItem("modo") === "dark" ? "dark" : "light");
+}
+
 /* =========================
    INIT
 ========================= */
 window.addEventListener("DOMContentLoaded", () => {
   if (el("historicoImpressoraPanel") && impressorasData && impressorasData.length) { abrirHistoricoImpressora(impressorasData[0]); }
-  const sw = el("darkSwitch");
-
-  if (localStorage.getItem("modo") === "dark") {
-    document.body.classList.add("dark");
-    document.documentElement.classList.add("dark");
-    if (sw) sw.checked = true;
-  }
-
-  if (sw) {
-    sw.addEventListener("change", () => {
-      document.body.classList.toggle("dark", sw.checked);
-      document.documentElement.classList.toggle("dark", sw.checked);
-      localStorage.setItem("modo", sw.checked ? "dark" : "light");
-    });
-  }
+  initGlobalTheme();
 
   carregarChecklist();
   carregarEdicaoToner();

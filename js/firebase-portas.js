@@ -41,20 +41,48 @@ function renderPortas(lista = []){
         )
     );
 
+    const estadoPortaLocal = (porta) => {
+        const temIP = String(porta.ip || '').trim() !== '';
+        const temUser = String(porta.user || '').trim() !== '';
+        if(!temIP && !temUser) return 'livre';
+        if(temIP && temUser) return 'ocupado';
+        if(temIP && !temUser) return 'semUser';
+        return 'livre';
+    };
+
+    const badgePortaLocal = (estado) => {
+        if(estado === 'ocupado') return '<span class="badge ocupado">Ocupado</span>';
+        if(estado === 'livre') return '<span class="badge livre">Livre</span>';
+        if(estado === 'semUser') return '<span class="badge aviso">Sem user</span>';
+        return '<span class="badge">-</span>';
+    };
+
+    const total = window.portasData.length;
+    const ocupadas = window.portasData.filter(p => estadoPortaLocal(p) === 'ocupado').length;
+    const livres = window.portasData.filter(p => estadoPortaLocal(p) === 'livre').length;
+
+    const totalEl = document.getElementById('countPortas');
+    const usadasEl = document.getElementById('countPortasUsadas');
+    const livresEl = document.getElementById('countPortasLivres');
+
+    if(totalEl) totalEl.textContent = total;
+    if(usadasEl) usadasEl.textContent = ocupadas;
+    if(livresEl) livresEl.textContent = livres;
+
     window.portasData.forEach((porta)=>{
 
         const card = document.createElement('div');
+        const estado = estadoPortaLocal(porta);
 
-        // FIX LAYOUT
-        card.className = 'pc-card stock-card pistola-card-layout porta-card';
+        card.className = 'pc-card entity-card porta-card';
 
         card.innerHTML = `
-            <div class="status-dot"></div>
-
-            <div class="pc-name">${porta.porta || '-'}</div>
-
-            <div>IP: ${porta.ip || '-'}</div>
-            <div>Local: ${porta.local || '-'}</div>
+            <div class="pc-name">Porta ${porta.porta || '-'}</div>
+            <div class="meta-line">Local: <span class="meta-value">${porta.local || '-'}</span></div>
+            <div class="meta-line">User: <span class="meta-value">${porta.user || '-'}</span></div>
+            <div class="meta-line">Equipamento: <span class="meta-value">${porta.equipamento || '-'}</span></div>
+            <div class="meta-line">IP: <span class="meta-value">${porta.ip || '-'}</span></div>
+            <div class="meta-line">Estado: <span class="meta-value">${badgePortaLocal(estado)}</span></div>
 
             <div class="item-actions">
 

@@ -2189,6 +2189,261 @@ select option{
 }
 
 
+/* ===== GLOBAL THEME + UNIFIED ENTITY CARDS ===== */
+.theme-toggle {
+  width: 100%;
+  min-height: 42px;
+  margin: 0 0 18px;
+  border-radius: 10px !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  background: rgba(255,255,255,0.08) !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  box-shadow: none !important;
+}
+
+.theme-toggle:hover {
+  background: rgba(37, 99, 235, 0.82) !important;
+  transform: translateY(-1px);
+}
+
+.cards-grid {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+  align-items: stretch !important;
+}
+
+.pc-card,
+.porta-card,
+.pistola-card-layout,
+.user-card,
+.entity-card {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  min-height: 100% !important;
+  padding: 18px !important;
+  background: var(--pro-surface) !important;
+  border: 1px solid var(--pro-line) !important;
+  border-radius: 14px !important;
+  box-shadow: var(--pro-shadow) !important;
+  color: var(--pro-text) !important;
+}
+
+.pc-card::before,
+.porta-card::before,
+.pistola-card-layout::before,
+.user-card::before,
+.entity-card::before {
+  display: none !important;
+}
+
+.pc-name {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  margin-bottom: 4px !important;
+  font-size: 17px !important;
+  font-weight: 850 !important;
+  color: var(--pro-text) !important;
+}
+
+.meta-line {
+  font-size: 14px !important;
+  line-height: 1.45 !important;
+}
+
+.meta-value {
+  font-weight: 750 !important;
+}
+
+.item-actions,
+.table-actions,
+.card-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  margin-top: auto !important;
+}
+
+.item-actions > button,
+.table-actions > button,
+.card-actions > button {
+  min-width: 112px !important;
+}
+
+.badge {
+  border-radius: 999px !important;
+  font-weight: 850 !important;
+}
+
+.badge.ok,
+.badge.livre {
+  color: #047857 !important;
+  background: #d1fae5 !important;
+}
+
+.badge.ocupado,
+.badge.pendente {
+  color: #b91c1c !important;
+  background: #fee2e2 !important;
+}
+
+.badge.aviso,
+.badge.reparacao {
+  color: #b45309 !important;
+  background: #fef3c7 !important;
+}
+
+html.app-dark,
+body.app-dark {
+  --pro-bg: #0b1220;
+  --pro-surface: #111827;
+  --pro-surface-soft: #172033;
+  --pro-sidebar: #050816;
+  --pro-sidebar-2: #0f172a;
+  --pro-line: #293548;
+  --pro-text: #f8fafc;
+  --pro-muted: #aab6c8;
+  --pro-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+  background:
+    radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.20), transparent 34rem),
+    radial-gradient(circle at 88% 12%, rgba(22, 163, 74, 0.10), transparent 28rem),
+    linear-gradient(180deg, #070b14, var(--pro-bg)) !important;
+  color: var(--pro-text) !important;
+}
+
+body.app-dark .page-hero,
+body.app-dark .topbar,
+body.app-dark .premium-topbar,
+body.app-dark .stat-card,
+body.app-dark .panel,
+body.app-dark .stock-card,
+body.app-dark .history-card,
+body.app-dark .dashboard-card,
+body.app-dark .card,
+body.app-dark .box,
+body.app-dark .pc-card,
+body.app-dark .porta-card,
+body.app-dark .pistola-card-layout,
+body.app-dark .user-card,
+body.app-dark .summary-card,
+body.app-dark .modal-card,
+body.app-dark .printer-toner-box {
+  background: var(--pro-surface) !important;
+  border-color: var(--pro-line) !important;
+  color: var(--pro-text) !important;
+  box-shadow: var(--pro-shadow) !important;
+}
+
+body.app-dark .page-hero-title,
+body.app-dark .topbar h1,
+body.app-dark .main h1,
+body.app-dark .pc-name,
+body.app-dark .meta-value,
+body.app-dark .stat-card strong,
+body.app-dark .summary-value,
+body.app-dark .printer-toner-title,
+body.app-dark .printer-toner-value {
+  color: var(--pro-text) !important;
+}
+
+body.app-dark .subtitle,
+body.app-dark .section-subtitle,
+body.app-dark .meta-line,
+body.app-dark .stock-meta,
+body.app-dark .history-meta,
+body.app-dark .pc-meta {
+  color: var(--pro-muted) !important;
+}
+
+body.app-dark input[type="text"],
+body.app-dark input[type="date"],
+body.app-dark input[type="number"],
+body.app-dark input[type="email"],
+body.app-dark input[type="password"],
+body.app-dark select,
+body.app-dark textarea {
+  color: var(--pro-text) !important;
+  background: var(--pro-surface-soft) !important;
+  border-color: var(--pro-line) !important;
+}
+
+body.app-dark select option {
+  color: var(--pro-text) !important;
+  background: var(--pro-surface-soft) !important;
+}
+
+body.app-dark table,
+body.app-dark .pro-table {
+  background: var(--pro-surface) !important;
+}
+
+body.app-dark th,
+body.app-dark .pro-table thead th {
+  color: var(--pro-muted) !important;
+  background: var(--pro-surface-soft) !important;
+}
+
+body.app-dark td,
+body.app-dark .pro-table tbody td {
+  color: var(--pro-text) !important;
+  background: var(--pro-surface) !important;
+}
+
+body.app-dark .secondary-btn,
+body.app-dark .soft-btn,
+body.app-dark .action-btn,
+body.app-dark .btn-secondary,
+body.app-dark .top-link {
+  color: var(--pro-text) !important;
+  background: var(--pro-surface-soft) !important;
+  border-color: var(--pro-line) !important;
+}
+
+body.app-dark .status-pill,
+body.app-dark .version-pill,
+body.app-dark .pill {
+  color: var(--pro-text) !important;
+  background: var(--pro-surface-soft) !important;
+  border-color: var(--pro-line) !important;
+}
+
+body.app-dark .printer-toner-bar-wrap {
+  background: #334155 !important;
+}
+
+body.app-dark .badge.ok,
+body.app-dark .badge.livre {
+  color: #86efac !important;
+  background: rgba(22, 163, 74, 0.18) !important;
+}
+
+body.app-dark .badge.ocupado,
+body.app-dark .badge.pendente {
+  color: #fca5a5 !important;
+  background: rgba(220, 38, 38, 0.18) !important;
+}
+
+body.app-dark .badge.aviso,
+body.app-dark .badge.reparacao {
+  color: #fcd34d !important;
+  background: rgba(217, 119, 6, 0.18) !important;
+}
+
+@media (max-width: 680px) {
+  .cards-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .item-actions > button,
+  .table-actions > button,
+  .card-actions > button {
+    width: 100% !important;
+  }
+}
+
+
 /* ===== APP BRAGA PRO LAYOUT 2026 ===== */
 :root {
   --pro-bg: #eef2f7;
