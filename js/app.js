@@ -1566,7 +1566,11 @@ function renderPortas(lista = window.portasData) {
         <div class="meta-line">IP: <span class="meta-value">${p.ip ? `<a href="http://${p.ip}" target="_blank">${p.ip}</a>` : "-"}</span></div>
         <div class="meta-line">Estado: <span class="meta-value">${badgePorta(estado)}</span></div>
         <div class="item-actions">
-          <button class="secondary-btn" onclick="editarPorta(${ref})">Editar</button>
+          <button
+            class="secondary-btn"
+            onclick="editarPorta(${ref})">
+            Editar
+          </button>
           <button class="secondary-btn" onclick="apagarPorta(${ref})">Apagar</button>
         </div>
       </div>
@@ -2271,7 +2275,7 @@ window.testarSistemaToner = testarSistemaToner;
 /* =========================
    VERSÃO / ONLINE-OFFLINE
 ========================= */
-const APP_BRAGA_VERSION = "v1.8 Premium";
+const APP_BRAGA_VERSION = `v${APP_VERSION} Premium`;
 
 function atualizarEstadoLigacaoAppBraga() {
   const online = navigator.onLine;
@@ -5242,3 +5246,535 @@ window.addEventListener('error',function(e){
   console.error('GLOBAL APP ERROR:',e.error||e.message);
 });
 
+
+
+
+
+/* ===== PISTOLAS STABLE REALTIME PATCH ===== */
+
+window.getListaPistolas = function(){
+
+  if(Array.isArray(window.pistolas)){
+    return window.pistolas;
+  }
+
+  if(Array.isArray(window.listaPistolas)){
+    return window.listaPistolas;
+  }
+
+  if(Array.isArray(window.pistolasData)){
+    return window.pistolasData;
+  }
+
+  return [];
+
+};
+
+window.renderPistolas = function(lista){
+
+  const container =
+    document.querySelector("#listaPistolas");
+
+  if(!container) return;
+
+  lista = Array.isArray(lista)
+    ? lista
+    : getListaPistolas();
+
+  const total = lista.length;
+
+  const braga = lista.filter(
+    p => String(p.armazem || "")
+      .toLowerCase()
+      .includes("braga")
+  ).length;
+
+  const reserva = lista.filter(
+    p => String(p.operador || "")
+      .toLowerCase()
+      .includes("reserva")
+  ).length;
+
+  const totalEl =
+    document.querySelector("#countPistolas");
+
+  const bragaEl =
+    document.querySelector("#countPistolasBraga");
+
+  const reservaEl =
+    document.querySelector("#countPistolasReserva");
+
+  if(totalEl) totalEl.textContent = total;
+  if(bragaEl) bragaEl.textContent = braga;
+  if(reservaEl) reservaEl.textContent = reserva;
+
+  container.innerHTML = lista.map((p,index)=>{
+
+    const id =
+      p.idDoc ||
+      p.id ||
+      p.docId ||
+      index;
+
+    return `
+
+      <div class="pc-card">
+
+        <div class="pc-name">
+          ${p.nome || "-"}
+        </div>
+
+        <div class="meta-line">
+          Nº: ${p.num || "-"}
+        </div>
+
+        <div class="meta-line">
+          Operador:
+          ${p.operador || "-"}
+        </div>
+
+        <button
+          class="secondary-btn"
+          onclick="editarPistola('${id}')">
+
+          Editar
+
+        </button>
+
+      </div>
+
+    `;
+
+  }).join("");
+
+};
+
+window.editarPistola = function(id){
+
+  const lista = getListaPistolas();
+
+  const pistola = lista.find((p,index)=>{
+
+    const pid =
+      p.idDoc ||
+      p.id ||
+      p.docId ||
+      index;
+
+    return String(pid) === String(id);
+
+  });
+
+  if(!pistola){
+    console.error("Pistola não encontrada", id);
+    return;
+  }
+
+  window.pistolaAtual = pistola;
+
+  const map = {
+    num: "#editP_num",
+    nome: "#editP_nome",
+    password: "#editP_password",
+    cn: "#editP_cn",
+    sn: "#editP_sn",
+    mac: "#editP_mac",
+    operador: "#editP_operador",
+    armazem: "#editP_armazem",
+    prontas: "#editP_prontas"
+  };
+
+  Object.entries(map).forEach(([key,selector])=>{
+
+    const el = document.querySelector(selector);
+
+    if(el){
+      el.value = pistola[key] || "";
+    }
+
+  });
+
+  const modal =
+    document.querySelector("#modalEditarPistola");
+
+  if(modal){
+    modal.style.display = "flex";
+  }
+
+};
+
+console.log("PISTOLAS REALTIME FIX OK");
+
+
+
+/* ===== PISTOLAS SAVE + SORT FIX ===== */
+
+window.sortPistolasNaturally = function(lista){
+
+  return [...lista].sort((a,b)=>{
+
+    const aa = String(a.nome || a.num || "");
+    const bb = String(b.nome || b.num || "");
+
+    return aa.localeCompare(
+      bb,
+      "pt",
+      {
+        numeric:true,
+        sensitivity:"base"
+      }
+    );
+
+  });
+
+};
+
+const oldRender = window.renderPistolas;
+
+window.renderPistolas = function(lista){
+
+  lista = Array.isArray(lista)
+    ? sortPistolasNaturally(lista)
+    : sortPistolasNaturally(getListaPistolas());
+
+  return oldRender(lista);
+
+};
+
+window.guardarEdicaoPistola = async function(){
+
+  try{
+
+    const pistola = window.pistolaAtual;
+
+    if(!pistola){
+
+      alert("Nenhuma Pistola foi selecionada");
+      return;
+
+    }
+
+    const id =
+      pistola.idDoc ||
+      pistola.id ||
+      pistola.docId;
+
+    if(!id){
+
+      alert("ID da pistola inválido");
+      return;
+
+    }
+
+    const dados = {
+
+      nome:
+        document.querySelector("#editP_nome")?.value || "",
+
+      num:
+        document.querySelector("#editP_num")?.value || "",
+
+      password:
+        document.querySelector("#editP_password")?.value || "",
+
+      cn:
+        document.querySelector("#editP_cn")?.value || "",
+
+      sn:
+        document.querySelector("#editP_sn")?.value || "",
+
+      mac:
+        document.querySelector("#editP_mac")?.value || "",
+
+      operador:
+        document.querySelector("#editP_operador")?.value || "",
+
+      armazem:
+        document.querySelector("#editP_armazem")?.value || "",
+
+      prontas:
+        document.querySelector("#editP_prontas")?.value || ""
+
+    };
+
+    await window.db
+      .collection("pistolas")
+      .doc(id)
+      .update(dados);
+
+    Object.assign(
+      pistola,
+      dados
+    );
+
+    renderPistolas();
+
+    const modal =
+      document.querySelector("#modalEditarPistola");
+
+    if(modal){
+      modal.style.display = "none";
+    }
+
+    console.log("PISTOLA GUARDADA");
+
+  }catch(err){
+
+    console.error(err);
+    alert("Erro ao guardar pistola");
+
+  }
+
+};
+
+document.addEventListener("click", e => {
+
+  const btn = e.target.closest("button");
+
+  if(!btn) return;
+
+  if(
+    btn.textContent
+      .toLowerCase()
+      .includes("guardar")
+  ){
+
+    const modal =
+      document.querySelector("#modalEditarPistola");
+
+    if(modal &&
+      modal.style.display !== "none"){
+
+      e.preventDefault();
+
+      guardarEdicaoPistola();
+
+    }
+
+  }
+
+});
+
+console.log("PISTOLAS SAVE FIX OK");
+
+
+
+/* ===== PISTOLAS VIEW + DELETE + SEARCH FIX ===== */
+
+window.verMaisPistola = function(id){
+
+  const lista = getListaPistolas();
+
+  const pistola = lista.find((p,index)=>{
+
+    const pid =
+      p.idDoc ||
+      p.id ||
+      p.docId ||
+      index;
+
+    return String(pid) === String(id);
+
+  });
+
+  if(!pistola){
+    alert("Pistola não encontrada");
+    return;
+  }
+
+  alert(
+`Nome: ${pistola.nome || "-"}
+
+Nº: ${pistola.num || "-"}
+
+Password: ${pistola.password || "-"}
+
+CN: ${pistola.cn || "-"}
+
+SN: ${pistola.sn || "-"}
+
+MAC: ${pistola.mac || "-"}
+
+Operador: ${pistola.operador || "-"}
+
+Armazém: ${pistola.armazem || "-"}
+
+Prontas: ${pistola.prontas || "-"}`
+  );
+
+};
+
+window.apagarPistola = async function(id){
+
+  const confirmar = confirm(
+    "Deseja apagar esta pistola?"
+  );
+
+  if(!confirmar) return;
+
+  try{
+
+    await window.db
+      .collection("pistolas")
+      .doc(id)
+      .delete();
+
+    console.log("PISTOLA APAGADA");
+
+  }catch(err){
+
+    console.error(err);
+    alert("Erro ao apagar pistola");
+
+  }
+
+};
+
+const oldRenderPistolas2 = window.renderPistolas;
+
+window.renderPistolas = function(lista){
+
+  lista = Array.isArray(lista)
+    ? lista
+    : getListaPistolas();
+
+  lista = sortPistolasNaturally(lista);
+
+  const container =
+    document.querySelector("#listaPistolas");
+
+  if(!container){
+    return oldRenderPistolas2(lista);
+  }
+
+  const total = lista.length;
+
+  const totalEl =
+    document.querySelector("#countPistolas");
+
+  if(totalEl){
+    totalEl.textContent = total;
+  }
+
+  container.innerHTML = lista.map((p,index)=>{
+
+    const id =
+      p.idDoc ||
+      p.id ||
+      p.docId ||
+      index;
+
+    return `
+
+      <div class="pc-card">
+
+        <div class="pc-name">
+          ${p.nome || "-"}
+        </div>
+
+        <div class="meta-line">
+          Nº:
+          <span class="meta-value">
+            ${p.num || "-"}
+          </span>
+        </div>
+
+        <div class="meta-line">
+          Operador:
+          <span class="meta-value">
+            ${p.operador || "-"}
+          </span>
+        </div>
+
+        <div class="item-actions">
+
+          <button
+            class="secondary-btn"
+            onclick="editarPistola('${id}')">
+            Editar
+          </button>
+
+          <button
+            class="secondary-btn"
+            onclick="verMaisPistola('${id}')">
+            Ver Mais
+          </button>
+
+          <button
+            class="secondary-btn"
+            onclick="apagarPistola('${id}')">
+            Apagar
+          </button>
+
+        </div>
+
+      </div>
+
+    `;
+
+  }).join("");
+
+};
+
+window.filtrarPistolas = function(txt=""){
+
+  const termo =
+    String(txt || "")
+      .toLowerCase()
+      .trim();
+
+  const lista = getListaPistolas();
+
+  const filtradas = lista.filter(p => {
+
+    return [
+      p.nome,
+      p.num,
+      p.password,
+      p.cn,
+      p.sn,
+      p.mac,
+      p.operador,
+      p.armazem,
+      p.prontas
+    ].some(v =>
+
+      String(v || "")
+        .toLowerCase()
+        .includes(termo)
+
+    );
+
+  });
+
+  renderPistolas(filtradas);
+
+};
+
+window.filtrarPistolasComFiltros = function(){
+
+  const input =
+    document.querySelector("#searchPistolas");
+
+  const txt = input
+    ? input.value
+    : "";
+
+  filtrarPistolas(txt);
+
+};
+
+document.addEventListener("input", e => {
+
+  if(
+    e.target &&
+    e.target.id === "searchPistolas"
+  ){
+
+    filtrarPistolas(e.target.value);
+
+  }
+
+});
+
+console.log("PISTOLAS VIEW/DELETE/SEARCH FIX OK");

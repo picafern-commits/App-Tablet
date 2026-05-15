@@ -1,0 +1,1 @@
+// stock-render.js
