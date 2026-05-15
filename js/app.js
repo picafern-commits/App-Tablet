@@ -1072,16 +1072,17 @@ function gerarHTMLBarraToner(percentagem, label = "Toner", cor = "black") {
 function gerarHTMLToners(info) {
   const colorItems = info && Array.isArray(info.colors) ? info.colors : [];
   const residueItem = info && info.residue ? info.residue : null;
+  const monoPercent = info && typeof info.percent === "number" ? info.percent : null;
 
-  if (!colorItems.length && !residueItem) {
+  if (!colorItems.length && !residueItem && monoPercent === null) {
     return gerarHTMLBarraToner(null, "Toner", "black");
   }
 
   const blocks = [];
   colorItems.forEach((c) => blocks.push(gerarHTMLBarraToner(c.percent, c.label, c.key)));
 
-  if (!colorItems.length && info && typeof info.percent === "number") {
-    blocks.push(gerarHTMLBarraToner(info.percent, "Preto", "black"));
+  if (!colorItems.length && monoPercent !== null) {
+    blocks.push(gerarHTMLBarraToner(monoPercent, "Preto", "black"));
   }
 
   if (residueItem) {
@@ -1943,10 +1944,44 @@ function normalizePrinterColorsFromFirebase(printerDoc) {
     ["yellow", "Amarelo", "yellow"]
   ];
 
+  const normalizePercentValue = (value) => {
+    if (typeof value === "number" && Number.isFinite(value)) return Math.max(0, Math.min(100, Math.round(value)));
+    if (typeof value === "string") {
+      const match = value.replace(",", ".").match(/\d{1,3}(?:\.\d+)?/);
+      if (match) {
+        const parsed = Number(match[0]);
+        if (Number.isFinite(parsed)) return Math.max(0, Math.min(100, Math.round(parsed)));
+      }
+    }
+    return null;
+  };
+
+  if (Array.isArray(printerDoc && printerDoc.colors)) {
+    printerDoc.colors.forEach((item) => {
+      if (!item) return;
+      const key = String(item.key || item.color || item.cor || "").toLowerCase();
+      const percent = normalizePercentValue(item.percent ?? item.value ?? item.valor ?? item.nivel);
+      if (percent === null) return;
+      const known = colorMap.find(([field,, mappedKey]) => key === field || key === mappedKey);
+      colors.push({
+        key: known ? known[2] : (key || "black"),
+        label: item.label || item.cor || (known ? known[1] : "Toner"),
+        percent
+      });
+    });
+  }
+
   colorMap.forEach(([field, label, key]) => {
-    const value = toner[field];
-    if (typeof value === "number") {
-      colors.push({ key, label, percent: Math.max(0, Math.min(100, Math.round(value))) });
+    const value =
+      toner[field] ??
+      toner[label] ??
+      printerDoc?.[field] ??
+      printerDoc?.[`${field}Percent`] ??
+      printerDoc?.[`${field}_percent`];
+
+    const percent = normalizePercentValue(value);
+    if (percent !== null && !colors.some(c => c.key === key)) {
+      colors.push({ key, label, percent });
     }
   });
 
@@ -1970,12 +2005,28 @@ function normalizePrinterResidueFromFirebase(printerDoc) {
 function mapFirebasePrinterInfo(printerDoc) {
   const colors = normalizePrinterColorsFromFirebase(printerDoc);
   const residue = normalizePrinterResidueFromFirebase(printerDoc);
-  let percent = null;
+  const normalizePercentValue = (value) => {
+    if (typeof value === "number" && Number.isFinite(value)) return Math.max(0, Math.min(100, Math.round(value)));
+    if (typeof value === "string") {
+      const match = value.replace(",", ".").match(/\d{1,3}(?:\.\d+)?/);
+      if (match) {
+        const parsed = Number(match[0]);
+        if (Number.isFinite(parsed)) return Math.max(0, Math.min(100, Math.round(parsed)));
+      }
+    }
+    return null;
+  };
+  let percent = normalizePercentValue(
+    printerDoc?.percent ??
+    printerDoc?.tonerPercent ??
+    printerDoc?.toner_percent ??
+    printerDoc?.nivelToner ??
+    printerDoc?.nivel ??
+    printerDoc?.percentage
+  );
 
-  if (colors.length === 1 && colors[0].key === "black") {
+  if (percent === null && colors.length === 1 && colors[0].key === "black") {
     percent = colors[0].percent;
-  } else if (!colors.length && printerDoc && typeof printerDoc.percent === "number") {
-    percent = Math.max(0, Math.min(100, Math.round(printerDoc.percent)));
   }
 
   return { colors, residue, percent };
