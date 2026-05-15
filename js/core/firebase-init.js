@@ -3,8 +3,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-import { initializeApp } from "firebase/app";
-
 const firebaseConfig = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
   authDomain: "toner-manager-756c4.firebaseapp.com",
