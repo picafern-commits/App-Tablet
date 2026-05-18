@@ -2826,3 +2826,41 @@ td,
     }
 
 }
+
+
+/* ===== UNIFIED FLEX TOOLBAR USERS CK65 FIX ===== */
+
+.toolbar{
+    display:flex !important;
+    align-items:center !important;
+    gap:14px !important;
+    width:100% !important;
+}
+
+.toolbar .primary-btn,
+.toolbar .add-btn{
+    flex:1 !important;
+}
+
+.toolbar-search{
+    width:340px !important;
+    min-width:340px !important;
+    margin-left:auto !important;
+}
+
+.toolbar-search input{
+    width:100% !important;
+}
+
+@media (max-width:900px){
+
+    .toolbar{
+        flex-direction:column !important;
+    }
+
+    .toolbar-search{
+        width:100% !important;
+        min-width:0 !important;
+    }
+
+}
