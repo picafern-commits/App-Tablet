@@ -159,7 +159,10 @@ td, th, a, div {
   font-size: 15px;
 }
 
-
+.top-actions {
+  display: flex;
+  gap: 10px;
+}
 
 .stats-grid {
   display: grid;
@@ -309,12 +312,7 @@ button:hover,
   text-decoration: none;
 }
 
-.toolbar {
-  display: grid;
-  grid-template-columns: 1fr 190px;
-  gap: 12px;
-  align-items: center;
-}
+
 
 .cards-grid {
   display: grid;
@@ -712,14 +710,7 @@ body.dark .pro-table tbody tr:hover td {
   grid-template-columns: repeat(4, minmax(180px, 1fr));
 }
 
-.portas-toolbar,
-.pistolas-toolbar,
-.users-toolbar {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  gap: 14px;
-  align-items: center;
-}
+
 
 /* versão da app */
 .app-version-mini {
@@ -765,11 +756,7 @@ body.dark .app-version-mini {
   .portas-stats-grid,
   .pistolas-stats-grid,
   .users-stats-grid,
-  .portas-toolbar,
-  .pistolas-toolbar,
-  .users-toolbar {
-    grid-template-columns: 1fr;
-  }
+  
 
   .topbar,
   .section-header {
@@ -2077,9 +2064,7 @@ select option{
   overflow-wrap: anywhere !important;
 }
 
-.toolbar {
-  grid-template-columns: minmax(220px, 1fr) repeat(2, minmax(150px, auto)) !important;
-}
+
 
 .panel > table {
   display: block !important;
@@ -2129,11 +2114,7 @@ select option{
   }
 
   .toolbar,
-  .portas-toolbar,
-  .pistolas-toolbar,
-  .users-toolbar {
-    grid-template-columns: 1fr !important;
-  }
+  
 
   .top-actions,
   .table-actions {
@@ -2769,37 +2750,79 @@ td,
 }
 
 
-
-
-
-/* ===== PORTAS TOOLBAR CLEAN FIX ===== */
-
-.top-actions{
-    display:grid;
-    grid-template-columns:1fr 340px;
-    align-items:center;
-    gap:14px;
-    width:100%;
+/* SEARCH BAR RIGHT FIX */
+.top-actions,
+.action-bar,
+.toolbar-actions,
+.list-actions{
+    display:flex !important;
+    align-items:center !important;
+    gap:12px !important;
+    width:100% !important;
 }
 
 .top-actions .add-btn,
-.top-actions .primary-btn{
-    width:100%;
+.action-bar .add-btn,
+.toolbar-actions .add-btn,
+.list-actions .add-btn{
+    flex:1 !important;
 }
 
-.top-actions .search-container,
-.top-actions .search-box{
-    width:100%;
-    min-width:0;
+.search-container,
+.search-box{
+    width:340px !important;
+    min-width:340px !important;
+    margin-left:auto !important;
 }
 
-.top-actions .search-container input,
-.top-actions .search-box input{
-    width:100%;
+.search-container input,
+.search-box input{
+    width:100% !important;
 }
 
-/* remove old width conflicts */
-.toolbar,
-.portas-toolbar{
-    width:100%;
+
+@media (max-width:900px){
+
+    .toolbar{
+        grid-template-columns:1fr !important;
+    }
+
+}
+
+
+
+/* ===== FLEX TOOLBAR FINAL FIX ===== */
+
+.toolbar{
+    display:flex !important;
+    align-items:center !important;
+    gap:14px !important;
+    width:100% !important;
+}
+
+.toolbar .primary-btn{
+    flex:1 !important;
+}
+
+.toolbar-search{
+    width:340px !important;
+    min-width:340px !important;
+    margin-left:auto !important;
+}
+
+.toolbar-search input{
+    width:100% !important;
+}
+
+@media (max-width:900px){
+
+    .toolbar{
+        flex-direction:column !important;
+    }
+
+    .toolbar-search{
+        width:100% !important;
+        min-width:0 !important;
+    }
+
 }
