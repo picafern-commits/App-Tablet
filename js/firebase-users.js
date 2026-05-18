@@ -1,30 +1,53 @@
 
 (function(){
 
-  if(!window.db){
-    console.error("Firebase DB indisponível");
-    return;
-  }
+  function applyUsers(snapshot){
 
-  window.db.collection("users")
-  .onSnapshot((snapshot)=>{
+    window.usersData = [];
 
-    window.usersData = snapshot.docs.map(doc=>({
-      id: doc.id,
-      ...({ firebaseId: doc.id, ...doc.data() })
-    }));
+    const lista = [];
 
-    console.log(
-      "Users carregados Firebase:",
-      window.usersData.length
-    );
+    snapshot.forEach(function(doc){
+
+      lista.push({
+        firebaseId: doc.id,
+        ...doc.data()
+      });
+
+    });
+
+    window.usersData = lista;
 
     if(typeof renderUsers === "function"){
-      renderUsers(window.usersData);
+      renderUsers(lista);
     }
 
-  },(error)=>{
-    console.error("Erro users Firebase:", error);
-  });
+    console.log("Users Firebase:", lista.length);
+
+  }
+
+  function startUsers(){
+
+    if(!window.db){
+      console.log("DB indisponível");
+      return;
+    }
+
+    window.db
+      .collection("users")
+      .onSnapshot(
+        applyUsers,
+        function(error){
+          console.error(error);
+        }
+      );
+
+  }
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", startUsers);
+  }else{
+    startUsers();
+  }
 
 })();

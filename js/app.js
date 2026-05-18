@@ -5966,3 +5966,47 @@ window.addEventListener(
     window.applyThemeMode
 );
 
+
+
+// ===== PERSISTENT DARK MODE =====
+window.applySavedTheme = function(){
+
+  try{
+
+    const savedTheme = localStorage.getItem("theme") || "light";
+
+    document.documentElement.classList.remove("dark");
+    document.body.classList.remove("dark");
+    document.body.classList.remove("app-dark");
+
+    if(savedTheme === "dark"){
+      document.documentElement.classList.add("dark");
+      document.body.classList.add("dark");
+      document.body.classList.add("app-dark");
+    }
+
+  }catch(e){
+    console.log(e);
+  }
+
+};
+
+window.toggleDarkModePersistent = function(){
+
+  const isDark =
+    document.body.classList.contains("dark");
+
+  localStorage.setItem(
+    "theme",
+    isDark ? "light" : "dark"
+  );
+
+  window.applySavedTheme();
+
+};
+
+document.addEventListener(
+  "DOMContentLoaded",
+  window.applySavedTheme
+);
+
