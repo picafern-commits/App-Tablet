@@ -5914,3 +5914,55 @@ document.addEventListener("DOMContentLoaded", ()=>{
     }
 
 });
+
+
+// ===== REAL DARK MODE FIX =====
+
+window.applyThemeMode = function(){
+
+    try{
+
+        const savedTheme = localStorage.getItem("theme") || "light";
+
+        document.documentElement.classList.remove("dark");
+        document.body.classList.remove("dark");
+        document.body.classList.remove("app-dark");
+
+        if(savedTheme === "dark"){
+            document.documentElement.classList.add("dark");
+            document.body.classList.add("dark");
+            document.body.classList.add("app-dark");
+        }
+
+    }catch(e){
+        console.log(e);
+    }
+
+};
+
+window.toggleThemeMode = function(){
+
+    const darkNow =
+        !document.body.classList.contains("dark");
+
+    try{
+        localStorage.setItem(
+            "theme",
+            darkNow ? "dark" : "light"
+        );
+    }catch(e){}
+
+    window.applyThemeMode();
+
+};
+
+document.addEventListener(
+    "DOMContentLoaded",
+    window.applyThemeMode
+);
+
+window.addEventListener(
+    "storage",
+    window.applyThemeMode
+);
+

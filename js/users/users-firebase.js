@@ -1,5 +1,8 @@
 
-// ===== FIRESTORE USERS ONLY =====
+import {
+  collection,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 window.usersData = [];
 
@@ -10,13 +13,15 @@ window.loadUsersFirebase = function(){
         return;
     }
 
-    const container =
-        document.getElementById("usersContainer") ||
-        document.getElementById("usersGrid") ||
-        document.querySelector(".users-grid") ||
-        document.querySelector(".cards-grid");
+    const usersRef = collection(window.db, "users");
 
-    window.db.collection("users").onSnapshot((snapshot)=>{
+    onSnapshot(usersRef, (snapshot)=>{
+
+        const container =
+            document.getElementById("usersContainer") ||
+            document.getElementById("usersGrid") ||
+            document.querySelector(".users-grid") ||
+            document.querySelector(".cards-grid");
 
         window.usersData = [];
 
@@ -24,11 +29,11 @@ window.loadUsersFirebase = function(){
             container.innerHTML = "";
         }
 
-        snapshot.forEach((doc)=>{
+        snapshot.docs.forEach((d)=>{
 
             const user = {
-                firebaseId: doc.id,
-                ...doc.data()
+                firebaseId: d.id,
+                ...d.data()
             };
 
             window.usersData.push(user);
@@ -40,12 +45,12 @@ window.loadUsersFirebase = function(){
 
                 card.innerHTML = `
                     <div class="pc-name">${user.nome || user.name || "User"}</div>
-                    <div class="meta-line">
-                        ${user.email || ""}
-                    </div>
+                    <div class="meta-line">${user.email || ""}</div>
+                    <div class="meta-line">${user.role || ""}</div>
                 `;
 
                 container.appendChild(card);
+
             }
 
         });
@@ -59,5 +64,5 @@ window.loadUsersFirebase = function(){
 document.addEventListener("DOMContentLoaded", ()=>{
     setTimeout(()=>{
         window.loadUsersFirebase();
-    }, 500);
+    }, 300);
 });
