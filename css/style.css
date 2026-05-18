@@ -159,10 +159,7 @@ td, th, a, div {
   font-size: 15px;
 }
 
-.top-actions {
-  display: flex;
-  gap: 10px;
-}
+
 
 .stats-grid {
   display: grid;
@@ -2772,32 +2769,37 @@ td,
 }
 
 
-/* SEARCH BAR RIGHT FIX */
-.top-actions,
-.action-bar,
-.toolbar-actions,
-.list-actions{
-    display:flex !important;
-    align-items:center !important;
-    gap:12px !important;
-    width:100% !important;
+
+
+
+/* ===== PORTAS TOOLBAR CLEAN FIX ===== */
+
+.top-actions{
+    display:grid;
+    grid-template-columns:1fr 340px;
+    align-items:center;
+    gap:14px;
+    width:100%;
 }
 
 .top-actions .add-btn,
-.action-bar .add-btn,
-.toolbar-actions .add-btn,
-.list-actions .add-btn{
-    flex:1 !important;
+.top-actions .primary-btn{
+    width:100%;
 }
 
-.search-container,
-.search-box{
-    width:340px !important;
-    min-width:340px !important;
-    margin-left:auto !important;
+.top-actions .search-container,
+.top-actions .search-box{
+    width:100%;
+    min-width:0;
 }
 
-.search-container input,
-.search-box input{
-    width:100% !important;
+.top-actions .search-container input,
+.top-actions .search-box input{
+    width:100%;
+}
+
+/* remove old width conflicts */
+.toolbar,
+.portas-toolbar{
+    width:100%;
 }
