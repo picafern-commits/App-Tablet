@@ -37,7 +37,7 @@
         <div class="brand-badge">BR</div>
         <div>
           <h2>App Braga</h2>
-          <p>Centro Operacional</p>
+          
         </div>
       </div>
 
