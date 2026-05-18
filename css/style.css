@@ -2770,3 +2770,34 @@ td,
     font-size: 28px !important;
   }
 }
+
+
+/* SEARCH BAR RIGHT FIX */
+.top-actions,
+.action-bar,
+.toolbar-actions,
+.list-actions{
+    display:flex !important;
+    align-items:center !important;
+    gap:12px !important;
+    width:100% !important;
+}
+
+.top-actions .add-btn,
+.action-bar .add-btn,
+.toolbar-actions .add-btn,
+.list-actions .add-btn{
+    flex:1 !important;
+}
+
+.search-container,
+.search-box{
+    width:340px !important;
+    min-width:340px !important;
+    margin-left:auto !important;
+}
+
+.search-container input,
+.search-box input{
+    width:100% !important;
+}
