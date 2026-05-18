@@ -14,7 +14,7 @@
       window.pistolasData =
         snapshot.docs.map(doc=>({
           id: doc.id,
-          ...doc.data()
+          ...({ firebaseId: doc.id, ...doc.data() })
         }));
 
       console.log(

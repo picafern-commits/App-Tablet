@@ -136,7 +136,7 @@ function iniciarPortas(){
         snapshot.forEach((doc)=>{
             lista.push({
                 firebaseId: doc.id,
-                ...doc.data()
+                ...({ firebaseId: doc.id, ...doc.data() })
             });
         });
 
@@ -211,7 +211,7 @@ window.guardarEdicaoPorta = async function(){
         await window.db
         .collection('portas')
         .doc(String(id))
-        .set(dados, { merge:true });
+        .update(dados);
 
         const modal = document.getElementById('modalEditarPorta');
 
