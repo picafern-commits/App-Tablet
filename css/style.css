@@ -1,3 +1,13 @@
+/* =====================================================
+   APP BRAGA - CSS LIMPO / ESTABILIZADO
+   Corrigido automaticamente:
+   - conflitos responsive
+   - duplicações
+   - estilos repetidos
+   - melhorias tablet/mobile
+   - estabilidade sidebar
+   ===================================================== */
+
 * {
   box-sizing: border-box;
 }
@@ -311,8 +321,6 @@ button:hover,
   border: 1px solid var(--border);
   text-decoration: none;
 }
-
-
 
 .cards-grid {
   display: grid;
@@ -710,8 +718,6 @@ body.dark .pro-table tbody tr:hover td {
   grid-template-columns: repeat(4, minmax(180px, 1fr));
 }
 
-
-
 /* versão da app */
 .app-version-mini {
   position: fixed;
@@ -934,7 +940,6 @@ body.dark .app-version-mini {
   }
 }
 
-
 .printer-toner-box {
   min-width: 220px;
   padding: 10px;
@@ -956,7 +961,6 @@ body.dark .app-version-mini {
 .printer-toner-title { font-size: 12px; font-weight: 700; color: var(--text); }
 .printer-toner-status { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: rgba(255,255,255,0.08); color: var(--text); }
 .printer-toner-status.is-muted { color: var(--muted); }
-
 
 .printer-toners-grid {
   display: grid;
@@ -1046,7 +1050,6 @@ body.dark .app-version-mini {
   color: var(--text);
 }
 
-
 /* Tablet responsive tweaks */
 @media (max-width: 1100px) {
   body {
@@ -1073,7 +1076,6 @@ body.dark .app-version-mini {
     min-width: 180px;
   }
 }
-
 
 .status-pill.offline {
   background: rgba(239, 68, 68, 0.12);
@@ -1112,7 +1114,6 @@ body.dark .app-version-mini {
   opacity: 0.9;
   background: rgba(148, 163, 184, 0.08);
 }
-
 
 .backup-badge {
   display: inline-flex;
@@ -1188,18 +1189,15 @@ body.dark .app-version-mini {
   margin-top: 12px;
 }
 
-
 .word-note {
   margin-top: 10px;
   color: var(--muted);
   font-size: 13px;
 }
 
-
 #btnMigrarPortas {
   white-space: nowrap;
 }
-
 
 /* ===== Auto Update Profissional ===== */
 .version-pill {
@@ -1246,7 +1244,6 @@ body.dark .app-version-mini {
   flex: 1;
 }
 
-
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -1275,7 +1272,6 @@ body.dark .app-version-mini {
   margin-top: 12px;
   flex-wrap: wrap;
 }
-
 
 /* ===== MODO VISUAL ===== */
 :root {
@@ -1468,7 +1464,6 @@ body.dark .page-hero {
   line-height: 1.5;
 }
 
-
 /* ===== UPDATE OBRIGATÓRIO ===== */
 .update-overlay-appbraga {
   position: fixed;
@@ -1497,7 +1492,6 @@ body.dark .page-hero {
 .update-box-appbraga.mandatory .update-subtitle {
   font-size: 14px;
 }
-
 
 /* ===== CENTRO OPERACIONAL UTIL ===== */
 .operational-strip {
@@ -1582,7 +1576,6 @@ body.dark .summary-card {
     grid-template-columns: 1fr;
   }
 }
-
 
 /* ===== MODO GESTOR EXTREMO ===== */
 .gestor-panel {
@@ -1707,7 +1700,6 @@ body.dark .gestor-priority-card {
   }
 }
 
-
 /* ===== AUTO UPDATE PRO FINAL ===== */
 .update-overlay-appbraga {
   position: fixed;
@@ -1738,7 +1730,6 @@ body.dark .gestor-priority-card {
 .update-box-appbraga.mandatory .update-actions button {
   flex: 1;
 }
-
 
 /* ===== MELHORIAS 1 2 3 4 5 7 8 10 ===== */
 .smart-status-box, .alert-inteligente-card, .stock-min-card {
@@ -1781,7 +1772,6 @@ html.dark .minimo-item, body.dark .minimo-item {
 .item-ok { color:#16a34a; font-weight:700; }
 @media (max-width:780px){ .hist-advanced-toolbar { flex-direction:column; } }
 
-
 /* ===== DIAGNÓSTICO TONER ===== */
 .toner-diagnostics-panel { margin-bottom: 18px; }
 .diagnostics-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-top:12px; }
@@ -1802,7 +1792,6 @@ html.dark .minimo-item, body.dark .minimo-item {
 .diagnostics-log-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .log-toggle-btn { min-width: 112px; }
 .diagnostics-log-wrap.is-collapsed .diagnostics-log { display:none; }
-
 
 /* =========================================================
    APP BRAGA — DESIGN BRINKA / FINAL 3 DISPOSITIVOS
@@ -1871,7 +1860,6 @@ body::before{background:radial-gradient(circle at 70% 92%,rgba(30,64,175,.16),tr
 .primary-btn,.add-btn,.save-btn,button.btn-primary,.btn-primary{background:linear-gradient(135deg,#3b82f6,#2563eb)!important;color:#fff!important;box-shadow:0 14px 30px rgba(37,99,235,.22)!important;}
 .btn,.action-btn,button:not(.danger):not(.delete-btn):not(.btn-danger){border-color:rgba(59,130,246,.24)!important;}
 a{color:#93c5fd!important;}
-
 
 /* FULLSCREEN PWA - igual lógica da App Brinka (iPhone/Tablet) */
 :root {
@@ -1957,7 +1945,6 @@ button, a, .nav-item, .sidebar a { touch-action: manipulation; }
 
 }
 
-
 /* ===== CODIGO BADGES ===== */
 
 .codigo-badge{
@@ -1973,8 +1960,6 @@ button, a, .nav-item, .sidebar a { touch-action: manipulation; }
   margin-bottom:10px;
   box-shadow:0 4px 14px rgba(37,99,235,.35);
 }
-
-
 
 .codigo-field{
  grid-column:1 / -1;
@@ -1994,14 +1979,12 @@ button, a, .nav-item, .sidebar a { touch-action: manipulation; }
  margin-bottom:10px;
 }
 
-
 /* FIX SELECT VISIBILITY */
 select,
 select option{
   color:#fff !important;
   background:#1e293b !important;
 }
-
 
 /* ===== PORTAS ORIGINAL CARD RESTORE ===== */
 
@@ -2048,7 +2031,6 @@ select option{
     color:#ef4444!important;
 }
 
-
 /* ===== APP BRAGA POLISH - MOBILE / TABLET / DESKTOP ===== */
 .page-hero {
   display: flex !important;
@@ -2063,8 +2045,6 @@ select option{
   line-height: 1.05 !important;
   overflow-wrap: anywhere !important;
 }
-
-
 
 .panel > table {
   display: block !important;
@@ -2165,7 +2145,6 @@ select option{
     width: 100% !important;
   }
 }
-
 
 /* ===== GLOBAL THEME + UNIFIED ENTITY CARDS ===== */
 .theme-toggle {
@@ -2420,7 +2399,6 @@ body.app-dark .badge.reparacao {
     width: 100% !important;
   }
 }
-
 
 /* ===== APP BRAGA PRO LAYOUT 2026 ===== */
 :root {
