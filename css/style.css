@@ -2915,3 +2915,69 @@ td,
     }
 
 }
+
+
+/* ===== IMPRESSORAS REAL WIDTH FIX ===== */
+
+.panel{
+    overflow:hidden !important;
+}
+
+.printers-toolbar{
+    display:flex !important;
+    justify-content:space-between !important;
+    align-items:center !important;
+    gap:14px !important;
+    width:100% !important;
+    margin-bottom:18px !important;
+}
+
+.toolbar-left{
+    display:flex !important;
+    align-items:center !important;
+    gap:14px !important;
+    flex:1 !important;
+}
+
+.toolbar-right{
+    display:flex !important;
+    align-items:center !important;
+    gap:14px !important;
+}
+
+.toolbar-search{
+    flex:1 !important;
+}
+
+.toolbar-search input{
+    width:100% !important;
+}
+
+.table-scroll{
+    width:100% !important;
+    overflow-x:auto !important;
+}
+
+.pro-table{
+    width:100% !important;
+    min-width:1200px !important;
+}
+
+.toolbar-right select{
+    min-width:190px !important;
+}
+
+@media (max-width:1000px){
+
+    .printers-toolbar,
+    .toolbar-left,
+    .toolbar-right{
+        flex-direction:column !important;
+        width:100% !important;
+    }
+
+    .toolbar-right select{
+        width:100% !important;
+    }
+
+}
