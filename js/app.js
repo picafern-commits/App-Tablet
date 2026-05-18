@@ -36,7 +36,7 @@ const BACKUP_KEYS_APP_BRAGA = {
 function saveBackupAppBraga(key, data) {
 
   try {
-    localStorage.setItem(key, JSON.stringify(data || []));
+    // localStorage disabled);
   } catch (e) {
     console.error("Erro backup local:", e);
   }
@@ -44,7 +44,7 @@ function saveBackupAppBraga(key, data) {
 
 function loadBackupAppBraga(key) {
   try {
-    const raw = localStorage.getItem(key);
+    const raw = null;
     return raw ? JSON.parse(raw) : [];
   } catch (e) {
     console.error("Erro a ler backup local:", e);
@@ -156,7 +156,7 @@ function prepararRefsUsers() {
 function guardarUsersLocal() {
   try {
     const serializavel = window.usersData.map(u => ({ ...u }));
-    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(serializavel));
+    // localStorage disabled);
   } catch (e) {
     console.warn('Nao foi possivel guardar users no localStorage.', e);
   }
@@ -164,7 +164,7 @@ function guardarUsersLocal() {
 
 function carregarUsersLocal() {
   try {
-    const raw = localStorage.getItem(USERS_STORAGE_KEY);
+    const raw = null;
     if (!raw) {
       prepararRefsUsers();
       return;
@@ -204,7 +204,7 @@ function abrirIP(ip) {
 }
 
 function abrirManutencaoDireta(item) {
-  localStorage.setItem("manutencaoPreenchida", JSON.stringify(item));
+  // localStorage disabled);
   window.location.href = "manutencao-impressoras.html";
 }
 
@@ -274,7 +274,7 @@ function preencherLocaisManutencao() {
 }
 
 function preencherFormularioManutencao() {
-  const dados = localStorage.getItem("manutencaoPreenchida");
+  const dados = null;
   if (!dados) return;
 
   try {
@@ -708,7 +708,7 @@ function editar(id) {
   const t = stockGlobal.find(x => x.idDoc === id);
   if (!t) return;
 
-  localStorage.setItem("editarToner", JSON.stringify(t));
+  // localStorage disabled);
   window.location.href = "add-toner.html";
 }
 
@@ -959,7 +959,7 @@ async function apagarManutencao(id) {
 }
 
 function carregarEdicaoToner() {
-  const item = localStorage.getItem("editarToner");
+  const item = null;
   if (!item || !el("equipamento")) return;
 
   try {
@@ -1265,13 +1265,13 @@ function abrirHistoricoImpressora(item) {
 function guardarImpressorasLocal() {
   try {
     impressorasData.forEach((item, i) => { if (!item._ref) item._ref = item.idDoc || `local-impressora-${i}`; });
-    localStorage.setItem(IMPRESSORAS_STORAGE_KEY, JSON.stringify(impressorasData.map(i => ({ ...i }))));
+    // localStorage disabled)));
   } catch (e) { console.warn('Nao foi possivel guardar impressoras no localStorage.', e); }
 }
 
 function carregarImpressorasLocal() {
   try {
-    const raw = localStorage.getItem(IMPRESSORAS_STORAGE_KEY);
+    const raw = null;
     if (!raw) return;
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed) || !parsed.length) return;
@@ -1616,7 +1616,7 @@ function prepararRefsPistolas() {
 function guardarPistolasLocal() {
   try {
     const serializavel = window.pistolasData.map(p => ({ ...p }));
-    localStorage.setItem(PISTOLAS_STORAGE_KEY, JSON.stringify(serializavel));
+    // localStorage disabled);
   } catch (e) {
     console.warn('Nao foi possivel guardar pistolas no localStorage.', e);
   }
@@ -1624,7 +1624,7 @@ function guardarPistolasLocal() {
 
 function carregarPistolasLocal() {
   try {
-    const raw = localStorage.getItem(PISTOLAS_STORAGE_KEY);
+    const raw = null;
     if (!raw) {
       prepararRefsPistolas();
       return;
@@ -1651,7 +1651,7 @@ function prepararRefsPortas() {
 function guardarPortasLocal() {
   try {
     const serializavel = window.portasData.map(p => ({ ...p }));
-    localStorage.setItem(PORTAS_STORAGE_KEY, JSON.stringify(serializavel));
+    // localStorage disabled);
   } catch (e) {
     console.warn('Nao foi possivel guardar portas no localStorage.', e);
   }
@@ -1659,7 +1659,7 @@ function guardarPortasLocal() {
 
 function carregarPortasLocal() {
   try {
-    const raw = localStorage.getItem(PORTAS_STORAGE_KEY);
+    const raw = null;
     if (!raw) {
       prepararRefsPortas();
       return;
@@ -1805,7 +1805,7 @@ function applyAppTheme(mode) {
   document.documentElement.classList.toggle("app-dark", isDark);
   document.body.classList.toggle("dark", isDark);
   document.body.classList.toggle("app-dark", isDark);
-  localStorage.setItem("modo", isDark ? "dark" : "light");
+  // localStorage disabled
 
   document.querySelectorAll(".theme-toggle").forEach((button) => {
     button.textContent = isDark ? "Modo claro" : "Modo escuro";
@@ -1817,7 +1817,7 @@ function applyAppTheme(mode) {
 }
 
 function initGlobalTheme() {
-  const savedMode = localStorage.getItem("modo") === "dark" ? "dark" : "light";
+  const savedMode = null === "dark" ? "dark" : "light";
   applyAppTheme(savedMode);
 
   const sidebar = document.querySelector(".sidebar");
@@ -1846,7 +1846,7 @@ function initGlobalTheme() {
     });
   }
 
-  applyAppTheme(localStorage.getItem("modo") === "dark" ? "dark" : "light");
+  applyAppTheme(null === "dark" ? "dark" : "light");
 }
 
 /* =========================
@@ -3869,7 +3869,7 @@ function tryRenderAppBraga(fn) {
 
 function loadStockMinConfig() {
   try {
-    const saved = JSON.parse(localStorage.getItem("stockMinConfig") || "{}");
+    const saved = JSON.parse(null || "{}");
     return { ...STOCK_MIN_DEFAULTS, ...saved };
   } catch (e) {
     console.error(e);
@@ -3878,7 +3878,7 @@ function loadStockMinConfig() {
 }
 
 function saveStockMinConfig(cfg) {
-  localStorage.setItem("stockMinConfig", JSON.stringify(cfg || {}));
+  // localStorage disabled);
 }
 
 function normalizeLocMin(loc) {
@@ -3946,7 +3946,7 @@ function resetStockMinimoConfig() {
 }
 
 function ensureLoteFieldOnEdit() {
-  const item = localStorage.getItem("editarToner");
+  const item = null;
   if (!item || !el("lote")) return;
   try {
     const toner = JSON.parse(item);
@@ -5865,3 +5865,52 @@ document.addEventListener("input", e => {
 });
 
 console.log("PISTOLAS VIEW/DELETE/SEARCH FIX OK");
+
+
+// VERIFIED PATCH 2026-05-18T16:31:45.220596
+window.__APP_BRAGA_FIRESTORE_ONLY_USERS = true;
+
+(function(){
+    try {
+        const savedTheme = localStorage.getItem("theme");
+
+        if(savedTheme === "dark"){
+            document.body.classList.add("app-dark");
+        }
+    } catch(e) {
+        console.log(e);
+    }
+})();
+
+
+
+// ===== DARK MODE PERSISTENCE FIX =====
+window.toggleThemeMode = function(){
+
+    const isDark = document.body.classList.toggle("app-dark");
+
+    try{
+        localStorage.setItem("theme", isDark ? "dark" : "light");
+    }catch(e){
+        console.log(e);
+    }
+
+};
+
+document.addEventListener("DOMContentLoaded", ()=>{
+
+    try{
+
+        const savedTheme = localStorage.getItem("theme");
+
+        if(savedTheme === "dark"){
+            document.body.classList.add("app-dark");
+        }else{
+            document.body.classList.remove("app-dark");
+        }
+
+    }catch(e){
+        console.log(e);
+    }
+
+});

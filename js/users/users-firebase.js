@@ -1,50 +1,63 @@
 
-import {
-  collection,
-  onSnapshot
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+// ===== FIRESTORE USERS ONLY =====
 
 window.usersData = [];
-window.__usersListenerLoaded = window.__usersListenerLoaded || false;
 
-document.addEventListener("app-ready", ()=>{
+window.loadUsersFirebase = function(){
 
-  if(window.__usersListenerLoaded){
-    console.log("Users listener already loaded");
-    return;
-  }
+    if(!window.db){
+        console.log("Firebase DB indisponível");
+        return;
+    }
 
-  window.__usersListenerLoaded = true;
+    const container =
+        document.getElementById("usersContainer") ||
+        document.getElementById("usersGrid") ||
+        document.querySelector(".users-grid") ||
+        document.querySelector(".cards-grid");
 
-  const usersRef =
-    collection(window.db, "users");
+    window.db.collection("users").onSnapshot((snapshot)=>{
 
-  onSnapshot(usersRef, (snapshot)=>{
+        window.usersData = [];
 
-    const uniqueUsers = [];
-    const usedIds = new Set();
+        if(container){
+            container.innerHTML = "";
+        }
 
-    snapshot.docs.forEach(d => {
+        snapshot.forEach((doc)=>{
 
-      if(usedIds.has(d.id)) return;
+            const user = {
+                firebaseId: doc.id,
+                ...doc.data()
+            };
 
-      usedIds.add(d.id);
+            window.usersData.push(user);
 
-      uniqueUsers.push({
-        idDoc: d.id,
-        ...d.data()
-      });
+            if(container){
+
+                const card = document.createElement("div");
+                card.className = "user-card";
+
+                card.innerHTML = `
+                    <div class="pc-name">${user.nome || user.name || "User"}</div>
+                    <div class="meta-line">
+                        ${user.email || ""}
+                    </div>
+                `;
+
+                container.appendChild(card);
+            }
+
+        });
+
+        console.log("Users Firebase:", window.usersData.length);
 
     });
 
-    window.usersData = uniqueUsers;
+};
 
-    if(window.renderUsers){
-      window.renderUsers(window.usersData);
-    }
-
-  });
-
-  console.log("Users connected");
-
+document.addEventListener("DOMContentLoaded", ()=>{
+    setTimeout(()=>{
+        window.loadUsersFirebase();
+    }, 500);
 });
