@@ -2666,3 +2666,147 @@ td,
     width:100% !important;
   }
 }
+
+
+
+/* =====================================================
+   IMPRESSORAS PAGE FIX 2026
+   Corrige layout tablet/desktop da página Impressoras
+===================================================== */
+
+.printers-toolbar,
+.impressoras-toolbar,
+.toolbar-printers{
+    display:flex !important;
+    align-items:center !important;
+    gap:14px !important;
+    flex-wrap:wrap !important;
+    width:100% !important;
+}
+
+.printers-toolbar input,
+.impressoras-toolbar input,
+.toolbar-printers input{
+    flex:1 1 340px !important;
+    min-width:240px !important;
+}
+
+.printers-toolbar select,
+.impressoras-toolbar select,
+.toolbar-printers select{
+    flex:0 0 190px !important;
+    min-width:190px !important;
+}
+
+.printers-table-wrap,
+.table-scroll{
+    width:100% !important;
+    overflow-x:auto !important;
+    border-radius:16px !important;
+}
+
+.pro-table,
+.printers-table{
+    width:100% !important;
+    min-width:1150px !important;
+    border-collapse:separate !important;
+    border-spacing:0 !important;
+}
+
+.pro-table td,
+.pro-table th{
+    vertical-align:middle !important;
+}
+
+.pro-table td:last-child{
+    min-width:220px !important;
+}
+
+.printer-toner-box{
+    width:100% !important;
+    min-width:160px !important;
+    max-width:190px !important;
+    padding:10px !important;
+    margin-bottom:8px !important;
+}
+
+.printer-toner-head,
+.printer-toner-foot{
+    width:100% !important;
+}
+
+.printer-toner-title{
+    font-size:11px !important;
+}
+
+.printer-toner-value{
+    font-size:11px !important;
+}
+
+.printer-toner-bar-wrap{
+    height:10px !important;
+}
+
+.card-actions,
+.item-actions,
+.table-actions{
+    align-items:stretch !important;
+}
+
+.card-actions button,
+.item-actions button,
+.table-actions button{
+    min-height:38px !important;
+}
+
+@media (max-width:1024px){
+
+    .pro-table,
+    .printers-table{
+        min-width:980px !important;
+    }
+
+    .printer-toner-box{
+        max-width:170px !important;
+    }
+
+    .main{
+        overflow-x:hidden !important;
+    }
+
+}
+
+@media (max-width:780px){
+
+    .printers-toolbar,
+    .impressoras-toolbar,
+    .toolbar-printers{
+        flex-direction:column !important;
+        align-items:stretch !important;
+    }
+
+    .printers-toolbar input,
+    .impressoras-toolbar input,
+    .toolbar-printers input,
+    .printers-toolbar select,
+    .impressoras-toolbar select,
+    .toolbar-printers select{
+        width:100% !important;
+        min-width:100% !important;
+        flex:1 1 auto !important;
+    }
+
+    .printer-toner-box{
+        max-width:none !important;
+        width:100% !important;
+    }
+
+}
+
+/* remove conflitos antigos */
+.printer-toner-box{
+    display:flex !important;
+    flex-direction:column !important;
+    justify-content:center !important;
+}
+
