@@ -2967,3 +2967,17 @@ html,body{
     padding-right:14px !important;
   }
 }
+
+
+/* FIX REMOVE FLOATING MOBILE MENU BUTTON */
+@media (min-width: 768px){
+  .app-menu-toggle,
+  .mobile-menu-btn,
+  .hamburger,
+  .menu-toggle{
+      display:none !important;
+      opacity:0 !important;
+      visibility:hidden !important;
+      pointer-events:none !important;
+  }
+}
