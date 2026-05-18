@@ -104,10 +104,24 @@
       <select id="filterEstadoImpressora" onchange="filtrarImpressoras()"><option value="">Todos os estados</option><option value="OK">OK</option><option value="Pendente">Pendente</option><option value="Em reparação">Em reparação</option><option value="Resolvido">Resolvido</option></select>
     </div>
     
-<table>
-      <thead><tr><th>Modelo</th><th>Série</th><th>Armazém</th><th>Localização</th><th>IP</th><th>Estado</th><th>Ações</th></tr></thead>
+
+<div class="table-scroll printers-table-wrap">
+<table class="pro-table printers-table">
+      <thead>
+        <tr>
+          <th>Modelo</th>
+          <th>Série</th>
+          <th>Armazém</th>
+          <th>Localização</th>
+          <th>IP</th>
+          <th>Estado</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
       <tbody id="impressorasTableBody"></tbody>
-    </table>
+</table>
+</div>
+
   </div>
 
   <div id="modalAdicionarImpressora" class="modal-overlay" style="display:none;">

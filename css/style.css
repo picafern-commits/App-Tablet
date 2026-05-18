@@ -2810,3 +2810,160 @@ td,
     justify-content:center !important;
 }
 
+
+
+
+/* ===== IMPRESSORAS REAL FIX ===== */
+
+.printers-toolbar{
+  display:flex !important;
+  align-items:center !important;
+  gap:14px !important;
+  flex-wrap:wrap !important;
+  margin-bottom:18px !important;
+}
+
+.printers-toolbar .toolbar-left{
+  flex:1 1 480px !important;
+  display:flex !important;
+  align-items:center !important;
+  gap:14px !important;
+  min-width:0 !important;
+}
+
+.printers-toolbar .toolbar-search{
+  flex:1 1 auto !important;
+  min-width:0 !important;
+}
+
+.printers-toolbar input{
+  width:100% !important;
+}
+
+.printers-toolbar select{
+  min-width:220px !important;
+}
+
+.printers-table-wrap{
+  width:100% !important;
+  overflow-x:auto !important;
+  border-radius:18px !important;
+}
+
+.printers-table{
+  width:100% !important;
+  min-width:1200px !important;
+}
+
+.printers-table td{
+  vertical-align:top !important;
+}
+
+.printers-table td:last-child{
+  min-width:240px !important;
+}
+
+.printer-toners-grid{
+  display:grid !important;
+  grid-template-columns:repeat(auto-fit,minmax(170px,1fr)) !important;
+  gap:10px !important;
+}
+
+.printer-toner-box{
+  width:100% !important;
+  max-width:none !important;
+  min-width:0 !important;
+  overflow:hidden !important;
+}
+
+.printer-toner-title{
+  font-size:11px !important;
+}
+
+.printer-toner-value{
+  font-size:11px !important;
+}
+
+@media (max-width:1024px){
+
+  .printers-toolbar{
+    flex-direction:column !important;
+    align-items:stretch !important;
+  }
+
+  .printers-toolbar .toolbar-left{
+    width:100% !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+  }
+
+  .printers-toolbar select{
+    width:100% !important;
+    min-width:100% !important;
+  }
+
+  .printers-table{
+    min-width:980px !important;
+  }
+
+}
+
+
+
+/* ===== REAL FIX IMPRESSORAS OVERFLOW ===== */
+html,body{
+  width:100% !important;
+  max-width:100% !important;
+  overflow-x:hidden !important;
+}
+
+.main{
+  overflow-x:hidden !important;
+}
+
+.page,
+.page-content,
+.panel,
+.table-panel{
+  max-width:100% !important;
+  overflow:hidden !important;
+}
+
+.table-scroll{
+  width:100% !important;
+  max-width:100% !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  -webkit-overflow-scrolling:touch !important;
+}
+
+.pro-table{
+  min-width:0 !important;
+  width:100% !important;
+  table-layout:fixed !important;
+}
+
+.pro-table th,
+.pro-table td{
+  word-break:break-word !important;
+}
+
+@media (max-width:1100px){
+  .sidebar{
+    transform:translateX(-110%) !important;
+  }
+
+  .sidebar.app-open,
+  .sidebar.open,
+  body.sidebar-open .sidebar{
+    transform:translateX(0) !important;
+  }
+
+  .main{
+    margin-left:0 !important;
+    width:100% !important;
+    max-width:100% !important;
+    padding-left:14px !important;
+    padding-right:14px !important;
+  }
+}
