@@ -2749,180 +2749,10 @@ td,
   }
 }
 
-
-/* SEARCH BAR RIGHT FIX */
-.top-actions,
-.action-bar,
-.toolbar-actions,
-.list-actions{
-    display:flex !important;
-    align-items:center !important;
-    gap:12px !important;
-    width:100% !important;
-}
-
-.top-actions .add-btn,
-.action-bar .add-btn,
-.toolbar-actions .add-btn,
-.list-actions .add-btn{
-    flex:1 !important;
-}
-
-.search-container,
-.search-box{
-    width:340px !important;
-    min-width:340px !important;
-    margin-left:auto !important;
-}
-
-.search-container input,
-.search-box input{
-    width:100% !important;
-}
-
-
-@media (max-width:900px){
-
-    
-
-}
-
-
-
-/* ===== FLEX TOOLBAR FINAL FIX ===== */
-
-.toolbar{
-    display:flex !important;
-    align-items:center !important;
-    gap:14px !important;
-    width:100% !important;
-}
-
-.toolbar .primary-btn{
-    flex:1 !important;
-}
-
-.toolbar-search{
-    width:340px !important;
-    min-width:340px !important;
-    margin-left:auto !important;
-}
-
-.toolbar-search input{
-    width:100% !important;
-}
-
-@media (max-width:900px){
-
-    .toolbar{
-        flex-direction:column !important;
-    }
-
-    .toolbar-search{
-        width:100% !important;
-        min-width:0 !important;
-    }
-
-}
-
-
-/* ===== UNIFIED FLEX TOOLBAR USERS CK65 FIX ===== */
-
-.toolbar{
-    display:flex !important;
-    align-items:center !important;
-    gap:14px !important;
-    width:100% !important;
-}
-
-.toolbar .primary-btn,
-.toolbar .add-btn{
-    flex:1 !important;
-}
-
-.toolbar-search{
-    width:340px !important;
-    min-width:340px !important;
-    margin-left:auto !important;
-}
-
-.toolbar-search input{
-    width:100% !important;
-}
-
-@media (max-width:900px){
-
-    .toolbar{
-        flex-direction:column !important;
-    }
-
-    .toolbar-search{
-        width:100% !important;
-        min-width:0 !important;
-    }
-
-}
-
-
-/* ===== IMPRESSORAS TOOLBAR FINAL FIX ===== */
-
-.printers-toolbar{
-    display:flex !important;
-    justify-content:space-between !important;
-    align-items:center !important;
-    gap:14px !important;
-    width:100% !important;
-}
-
-.toolbar-left{
-    display:flex !important;
-    align-items:center !important;
-    gap:14px !important;
-    flex:1 !important;
-}
-
-.toolbar-right{
-    display:flex !important;
-    align-items:center !important;
-    gap:14px !important;
-}
-
-.toolbar-search{
-    flex:1 !important;
-}
-
-.toolbar-search input{
-    width:100% !important;
-}
-
-.toolbar-right select{
-    min-width:190px !important;
-}
-
-@media (max-width:1000px){
-
-    .printers-toolbar,
-    .toolbar-left,
-    .toolbar-right{
-        flex-direction:column !important;
-        width:100% !important;
-    }
-
-    .toolbar-right select{
-        width:100% !important;
-    }
-
-}
-
-
-
-
-
 /* =====================================================
    APP BRAGA ADAPTIVE LAYOUT SYSTEM
-   CLEAN RESPONSIVE ENGINE
 ===================================================== */
-
+ 
 :root{
     --sidebar-width:248px;
     --content-max:1800px;
@@ -2930,8 +2760,17 @@ td,
     --toolbar-input-min:340px;
     --toolbar-select:220px;
 }
-
-.main,
+ 
+/* ===== MAIN LAYOUT FIX ===== */
+ 
+.main{
+    margin-left:var(--sidebar-width) !important;
+    width:calc(100% - var(--sidebar-width)) !important;
+    max-width:none !important;
+    padding:30px !important;
+    box-sizing:border-box !important;
+}
+ 
 .main-content,
 .content,
 .page-content{
@@ -2940,7 +2779,9 @@ td,
     margin:0 auto !important;
     box-sizing:border-box !important;
 }
-
+ 
+/* ===== PANEL FIX ===== */
+ 
 .panel,
 .card,
 .table-scroll{
@@ -2949,16 +2790,18 @@ td,
     min-width:0 !important;
     box-sizing:border-box !important;
 }
-
+ 
 .table-scroll{
     overflow-x:auto !important;
 }
-
+ 
 .pro-table{
     width:100% !important;
     min-width:1100px !important;
 }
-
+ 
+/* ===== TOOLBARS ===== */
+ 
 .toolbar,
 .printers-toolbar,
 .portas-toolbar,
@@ -2971,39 +2814,46 @@ td,
     flex-wrap:wrap !important;
     box-sizing:border-box !important;
 }
-
+ 
 .toolbar-left{
     flex:1 1 420px !important;
     min-width:0 !important;
-
+ 
     display:flex !important;
     align-items:center !important;
     gap:var(--toolbar-gap) !important;
 }
-
+ 
 .toolbar-search{
     flex:1 1 var(--toolbar-input-min) !important;
     min-width:0 !important;
 }
-
+ 
 .toolbar-search input,
 .toolbar input[type="text"]{
     width:100% !important;
     min-width:0 !important;
 }
-
+ 
 .toolbar .primary-btn,
 .toolbar .add-btn{
     flex:0 0 240px !important;
 }
-
+ 
 .toolbar select{
     flex:0 0 var(--toolbar-select) !important;
     width:var(--toolbar-select) !important;
 }
-
+ 
+/* ===== TABLET ===== */
+ 
 @media (max-width:1100px){
-
+ 
+    .main{
+        margin-left:0 !important;
+        width:100% !important;
+    }
+ 
     .toolbar,
     .printers-toolbar,
     .portas-toolbar,
@@ -3013,12 +2863,13 @@ td,
         flex-direction:column !important;
         align-items:stretch !important;
     }
-
+ 
     .toolbar .primary-btn,
     .toolbar .add-btn,
     .toolbar select{
         width:100% !important;
         flex:1 1 auto !important;
     }
-
+ 
 }
+
