@@ -2783,9 +2783,7 @@ td,
 
 @media (max-width:900px){
 
-    .toolbar{
-        grid-template-columns:1fr !important;
-    }
+    
 
 }
 
@@ -2865,11 +2863,8 @@ td,
 
 }
 
-/* ===== IMPRESSORAS REAL WIDTH FIX ===== */
 
-.panel{
-    overflow:hidden !important;
-}
+/* ===== IMPRESSORAS TOOLBAR FINAL FIX ===== */
 
 .printers-toolbar{
     display:flex !important;
@@ -2877,7 +2872,6 @@ td,
     align-items:center !important;
     gap:14px !important;
     width:100% !important;
-    margin-bottom:18px !important;
 }
 
 .toolbar-left{
@@ -2901,16 +2895,6 @@ td,
     width:100% !important;
 }
 
-.table-scroll{
-    width:100% !important;
-    overflow-x:auto !important;
-}
-
-.pro-table{
-    width:100% !important;
-    min-width:1200px !important;
-}
-
 .toolbar-right select{
     min-width:190px !important;
 }
@@ -2926,6 +2910,115 @@ td,
 
     .toolbar-right select{
         width:100% !important;
+    }
+
+}
+
+
+
+
+
+/* =====================================================
+   APP BRAGA ADAPTIVE LAYOUT SYSTEM
+   CLEAN RESPONSIVE ENGINE
+===================================================== */
+
+:root{
+    --sidebar-width:248px;
+    --content-max:1800px;
+    --toolbar-gap:14px;
+    --toolbar-input-min:340px;
+    --toolbar-select:220px;
+}
+
+.main,
+.main-content,
+.content,
+.page-content{
+    width:100% !important;
+    max-width:var(--content-max) !important;
+    margin:0 auto !important;
+    box-sizing:border-box !important;
+}
+
+.panel,
+.card,
+.table-scroll{
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    box-sizing:border-box !important;
+}
+
+.table-scroll{
+    overflow-x:auto !important;
+}
+
+.pro-table{
+    width:100% !important;
+    min-width:1100px !important;
+}
+
+.toolbar,
+.printers-toolbar,
+.portas-toolbar,
+.users-toolbar,
+.pistolas-toolbar{
+    width:100% !important;
+    display:flex !important;
+    align-items:center !important;
+    gap:var(--toolbar-gap) !important;
+    flex-wrap:wrap !important;
+    box-sizing:border-box !important;
+}
+
+.toolbar-left{
+    flex:1 1 420px !important;
+    min-width:0 !important;
+
+    display:flex !important;
+    align-items:center !important;
+    gap:var(--toolbar-gap) !important;
+}
+
+.toolbar-search{
+    flex:1 1 var(--toolbar-input-min) !important;
+    min-width:0 !important;
+}
+
+.toolbar-search input,
+.toolbar input[type="text"]{
+    width:100% !important;
+    min-width:0 !important;
+}
+
+.toolbar .primary-btn,
+.toolbar .add-btn{
+    flex:0 0 240px !important;
+}
+
+.toolbar select{
+    flex:0 0 var(--toolbar-select) !important;
+    width:var(--toolbar-select) !important;
+}
+
+@media (max-width:1100px){
+
+    .toolbar,
+    .printers-toolbar,
+    .portas-toolbar,
+    .users-toolbar,
+    .pistolas-toolbar,
+    .toolbar-left{
+        flex-direction:column !important;
+        align-items:stretch !important;
+    }
+
+    .toolbar .primary-btn,
+    .toolbar .add-btn,
+    .toolbar select{
+        width:100% !important;
+        flex:1 1 auto !important;
     }
 
 }
