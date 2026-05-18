@@ -93,9 +93,13 @@
   </div>
 
   <div class="panel">
-    <div class="toolbar">
-      <button class="primary-btn" type="button" onclick="abrirAdicionarImpressora()">+ Adicionar Impressora</button>
-      <input id="searchImpressoras" type="text" placeholder="Pesquisar..." oninput="filtrarImpressoras()">
+    <div class="toolbar printers-toolbar">
+      <div class="toolbar-left">
+<button class="primary-btn" type="button" onclick="abrirAdicionarImpressora()">+ Adicionar Impressora</button>
+<div class="toolbar-search">
+<input id="searchImpressoras" type="text" placeholder="Pesquisar..." oninput="filtrarImpressoras()">
+</div>
+</div>
       <select id="filterArmazem" onchange="filtrarImpressoras()"><option value="">Todos os armazéns</option><option value="Braga">Braga</option><option value="Vila Real">Vila Real</option></select>
       <select id="filterEstadoImpressora" onchange="filtrarImpressoras()"><option value="">Todos os estados</option><option value="OK">OK</option><option value="Pendente">Pendente</option><option value="Em reparação">Em reparação</option><option value="Resolvido">Resolvido</option></select>
     </div>
