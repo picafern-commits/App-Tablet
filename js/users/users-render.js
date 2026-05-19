@@ -1,1 +1,1 @@
-// Sistema antigo desativado
+// disabled old users system

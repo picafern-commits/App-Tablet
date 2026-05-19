@@ -1,5 +1,5 @@
 
-// ===== USERS SYSTEM (PORTAS STYLE) =====
+// ===== USERS COMPLETE SYSTEM =====
 
 (function(){
 
@@ -8,10 +8,10 @@
     return;
   }
 
-  let usersCache = [];
-
   const usersRef =
     window.db.collection("users");
+
+  let usersCache = [];
 
   usersRef.onSnapshot((snapshot)=>{
 
@@ -28,11 +28,6 @@
 
     renderUsers(usersCache);
 
-    console.log(
-      "Users carregados:",
-      usersCache.length
-    );
-
   });
 
   function renderUsers(lista){
@@ -42,7 +37,6 @@
 
     if(!container) return;
 
-    // LIMPA TUDO ANTES
     container.innerHTML = "";
 
     lista.forEach((user)=>{
@@ -58,9 +52,51 @@
         </div>
 
         <div class="meta-line">
-          Email:
+          Zona:
           <span class="meta-value">
-            ${user.email || "-"}
+            ${user.zona || "-"}
+          </span>
+        </div>
+
+        <div class="meta-line">
+          User PC/EYE:
+          <span class="meta-value">
+            ${user.userPc || "-"}
+          </span>
+        </div>
+
+        <div class="meta-line">
+          Pass Remote:
+          <span class="meta-value">
+            ${user.passRemote || "-"}
+          </span>
+        </div>
+
+        <div class="meta-line">
+          Pass Eye Peak:
+          <span class="meta-value">
+            ${user.passEyePeak || "-"}
+          </span>
+        </div>
+
+        <div class="meta-line">
+          Op. Pistola:
+          <span class="meta-value">
+            ${user.opPistola || "-"}
+          </span>
+        </div>
+
+        <div class="meta-line">
+          Pass Pistola:
+          <span class="meta-value">
+            ${user.passPistola || "-"}
+          </span>
+        </div>
+
+        <div class="meta-line">
+          Nome PC:
+          <span class="meta-value">
+            ${user.nomePc || "-"}
           </span>
         </div>
 
@@ -71,17 +107,52 @@
           </span>
         </div>
 
+        <div class="meta-line">
+          User MO365:
+          <span class="meta-value">
+            ${user.userMO365 || "-"}
+          </span>
+        </div>
+
+        <div class="meta-line">
+          Pw MO365:
+          <span class="meta-value">
+            ${user.pwMO365 || "-"}
+          </span>
+        </div>
+
+        <div class="meta-line">
+          Email Bragalis:
+          <span class="meta-value">
+            ${user.emailBragalis || "-"}
+          </span>
+        </div>
+
+        <div class="meta-line">
+          Pass Bragalis:
+          <span class="meta-value">
+            ${user.passBragalis || "-"}
+          </span>
+        </div>
+
         <div class="card-actions">
           <button class="btn-edit">
             Editar
           </button>
+
+          <button class="btn-primary">
+            Imprimir Dados
+          </button>
+
+          <button class="btn-danger">
+            Apagar
+          </button>
         </div>
       `;
 
-      const btn =
-        card.querySelector(".btn-edit");
-
-      btn.onclick = ()=>{
+      // EDITAR
+      card.querySelector(".btn-edit")
+      .onclick = ()=>{
 
         window.currentEditingUserId =
           user.firebaseId;
@@ -89,19 +160,26 @@
         window.currentEditingUser =
           user;
 
-        // preencher form
-        const nome =
-          document.querySelector("#nomeUser");
+        // modal antigo
+        if(typeof window.openUserModal === "function"){
+          window.openUserModal(user);
+        }
 
-        const email =
-          document.querySelector("#emailUser");
+      };
 
-        const teamviewer =
-          document.querySelector("#teamviewerUser");
+      // APAGAR
+      card.querySelector(".btn-danger")
+      .onclick = async ()=>{
 
-        if(nome) nome.value = user.nome || "";
-        if(email) email.value = user.email || "";
-        if(teamviewer) teamviewer.value = user.teamviewer || "";
+        try{
+
+          await usersRef
+            .doc(user.firebaseId)
+            .delete();
+
+        }catch(e){
+          console.error(e);
+        }
 
       };
 
@@ -110,38 +188,5 @@
     });
 
   }
-
-  // SAVE USER
-  window.saveUserFirebase =
-    async function(data){
-
-    try{
-
-      // UPDATE
-      if(window.currentEditingUserId){
-
-        await usersRef
-          .doc(window.currentEditingUserId)
-          .update(data);
-
-        console.log(
-          "User atualizado"
-        );
-
-        return;
-      }
-
-      // CREATE
-      await usersRef.add(data);
-
-      console.log(
-        "Novo user criado"
-      );
-
-    }catch(e){
-      console.error(e);
-    }
-
-  };
 
 })();
