@@ -54,28 +54,29 @@ usersRef.onSnapshot((snapshot)=>{
   window.usersData = lista;
 
   
-// ===== CONTADORES =====
+
+// ===== CONTADORES FIREBASE =====
 
 const total =
   lista.length;
 
+// USERS COM MO365
 const comMO365 =
   lista.filter(u =>
     u.user_mo365 ||
     u.userMO365
   ).length;
 
+// USERS COM PISTOLA
 const comPistola =
   lista.filter(u =>
     u.op_pistola ||
     u.opPistola
   ).length;
 
-// TOTAL
+// TOTAL USERS
 const totalEl =
-  document.querySelector("#totalUsers") ||
-  document.querySelector("#total-users") ||
-  document.querySelector("[data-total-users]");
+  document.querySelector("#countUsers");
 
 if(totalEl){
   totalEl.textContent = total;
@@ -83,9 +84,7 @@ if(totalEl){
 
 // MO365
 const mo365El =
-  document.querySelector("#usersMO365") ||
-  document.querySelector("#users-mo365") ||
-  document.querySelector("[data-users-mo365]");
+  document.querySelector("#countPistolasBraga");
 
 if(mo365El){
   mo365El.textContent = comMO365;
@@ -93,15 +92,14 @@ if(mo365El){
 
 // PISTOLA
 const pistolaEl =
-  document.querySelector("#usersPistola") ||
-  document.querySelector("#users-pistola") ||
-  document.querySelector("[data-users-pistola]");
+  document.querySelector("#countPistolasReserva");
 
 if(pistolaEl){
   pistolaEl.textContent = comPistola;
 }
 
 renderUsers(lista);
+
 
 
 });
