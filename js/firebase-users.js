@@ -51,6 +51,8 @@ usersRef.onSnapshot((snapshot)=>{
 
   });
 
+  window.usersData = lista;
+
   renderUsers(lista);
 
 });

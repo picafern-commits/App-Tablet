@@ -57,3 +57,13 @@ window.addEventListener(
   window.loadTheme
 );
 
+
+
+// ===== FIREBASE ONLY SEARCH =====
+
+window.getUsersSearchSource = function(){
+  return Array.isArray(window.usersData)
+    ? window.usersData
+    : [];
+};
+
