@@ -53,7 +53,56 @@ usersRef.onSnapshot((snapshot)=>{
 
   window.usersData = lista;
 
-  renderUsers(lista);
+  
+// ===== CONTADORES =====
+
+const total =
+  lista.length;
+
+const comMO365 =
+  lista.filter(u =>
+    u.user_mo365 ||
+    u.userMO365
+  ).length;
+
+const comPistola =
+  lista.filter(u =>
+    u.op_pistola ||
+    u.opPistola
+  ).length;
+
+// TOTAL
+const totalEl =
+  document.querySelector("#totalUsers") ||
+  document.querySelector("#total-users") ||
+  document.querySelector("[data-total-users]");
+
+if(totalEl){
+  totalEl.textContent = total;
+}
+
+// MO365
+const mo365El =
+  document.querySelector("#usersMO365") ||
+  document.querySelector("#users-mo365") ||
+  document.querySelector("[data-users-mo365]");
+
+if(mo365El){
+  mo365El.textContent = comMO365;
+}
+
+// PISTOLA
+const pistolaEl =
+  document.querySelector("#usersPistola") ||
+  document.querySelector("#users-pistola") ||
+  document.querySelector("[data-users-pistola]");
+
+if(pistolaEl){
+  pistolaEl.textContent = comPistola;
+}
+
+renderUsers(lista);
+
 
 });
 
