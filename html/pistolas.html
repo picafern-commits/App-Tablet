@@ -1,6 +1,27 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
+
+<script id="APP_BRAGA_THEME_LOADER">
+(function(){
+
+  try{
+
+    const savedTheme =
+      localStorage.getItem("app-theme") || "dark";
+
+    if(savedTheme === "dark"){
+      document.documentElement.classList.add("dark");
+      document.body.classList.add("dark");
+    }
+
+  }catch(e){
+    console.log(e);
+  }
+
+})();
+</script>
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Pistolas CK65</title>
@@ -45,7 +66,7 @@
   <div class="stats-grid">
     <div class="stat-card"><span>Total</span><strong id="countPistolas">0</strong></div>
     <div class="stat-card"><span>Braga</span><strong id="countPistolasBraga">0</strong></div>
-    <div class="stat-card"><span>Reserva</span><strong id="countPistolasReserva">0</strong></div>
+    <div class="stat-card"><span>Vila Real</span><strong id="countPistolasReserva">0</strong></div>
   </div>
   <div class="panel">
     <div class="toolbar">

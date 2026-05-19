@@ -1,13 +1,3 @@
-/* =====================================================
-   APP BRAGA - CSS LIMPO / ESTABILIZADO
-   Corrigido automaticamente:
-   - conflitos responsive
-   - duplicações
-   - estilos repetidos
-   - melhorias tablet/mobile
-   - estabilidade sidebar
-   ===================================================== */
-
 * {
   box-sizing: border-box;
 }
@@ -320,6 +310,13 @@ button:hover,
   color: var(--text);
   border: 1px solid var(--border);
   text-decoration: none;
+}
+
+.toolbar {
+  display: grid;
+  grid-template-columns: 1fr 190px;
+  gap: 12px;
+  align-items: center;
 }
 
 .cards-grid {
@@ -718,6 +715,15 @@ body.dark .pro-table tbody tr:hover td {
   grid-template-columns: repeat(4, minmax(180px, 1fr));
 }
 
+.portas-toolbar,
+.pistolas-toolbar,
+.users-toolbar {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 14px;
+  align-items: center;
+}
+
 /* versão da app */
 .app-version-mini {
   position: fixed;
@@ -762,7 +768,11 @@ body.dark .app-version-mini {
   .portas-stats-grid,
   .pistolas-stats-grid,
   .users-stats-grid,
-  
+  .portas-toolbar,
+  .pistolas-toolbar,
+  .users-toolbar {
+    grid-template-columns: 1fr;
+  }
 
   .topbar,
   .section-header {
@@ -940,6 +950,7 @@ body.dark .app-version-mini {
   }
 }
 
+
 .printer-toner-box {
   min-width: 220px;
   padding: 10px;
@@ -961,6 +972,7 @@ body.dark .app-version-mini {
 .printer-toner-title { font-size: 12px; font-weight: 700; color: var(--text); }
 .printer-toner-status { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: rgba(255,255,255,0.08); color: var(--text); }
 .printer-toner-status.is-muted { color: var(--muted); }
+
 
 .printer-toners-grid {
   display: grid;
@@ -1050,6 +1062,7 @@ body.dark .app-version-mini {
   color: var(--text);
 }
 
+
 /* Tablet responsive tweaks */
 @media (max-width: 1100px) {
   body {
@@ -1076,6 +1089,7 @@ body.dark .app-version-mini {
     min-width: 180px;
   }
 }
+
 
 .status-pill.offline {
   background: rgba(239, 68, 68, 0.12);
@@ -1114,6 +1128,7 @@ body.dark .app-version-mini {
   opacity: 0.9;
   background: rgba(148, 163, 184, 0.08);
 }
+
 
 .backup-badge {
   display: inline-flex;
@@ -1189,15 +1204,18 @@ body.dark .app-version-mini {
   margin-top: 12px;
 }
 
+
 .word-note {
   margin-top: 10px;
   color: var(--muted);
   font-size: 13px;
 }
 
+
 #btnMigrarPortas {
   white-space: nowrap;
 }
+
 
 /* ===== Auto Update Profissional ===== */
 .version-pill {
@@ -1244,6 +1262,7 @@ body.dark .app-version-mini {
   flex: 1;
 }
 
+
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -1272,6 +1291,7 @@ body.dark .app-version-mini {
   margin-top: 12px;
   flex-wrap: wrap;
 }
+
 
 /* ===== MODO VISUAL ===== */
 :root {
@@ -1464,6 +1484,7 @@ body.dark .page-hero {
   line-height: 1.5;
 }
 
+
 /* ===== UPDATE OBRIGATÓRIO ===== */
 .update-overlay-appbraga {
   position: fixed;
@@ -1492,6 +1513,7 @@ body.dark .page-hero {
 .update-box-appbraga.mandatory .update-subtitle {
   font-size: 14px;
 }
+
 
 /* ===== CENTRO OPERACIONAL UTIL ===== */
 .operational-strip {
@@ -1576,6 +1598,7 @@ body.dark .summary-card {
     grid-template-columns: 1fr;
   }
 }
+
 
 /* ===== MODO GESTOR EXTREMO ===== */
 .gestor-panel {
@@ -1700,6 +1723,7 @@ body.dark .gestor-priority-card {
   }
 }
 
+
 /* ===== AUTO UPDATE PRO FINAL ===== */
 .update-overlay-appbraga {
   position: fixed;
@@ -1730,6 +1754,7 @@ body.dark .gestor-priority-card {
 .update-box-appbraga.mandatory .update-actions button {
   flex: 1;
 }
+
 
 /* ===== MELHORIAS 1 2 3 4 5 7 8 10 ===== */
 .smart-status-box, .alert-inteligente-card, .stock-min-card {
@@ -1772,6 +1797,7 @@ html.dark .minimo-item, body.dark .minimo-item {
 .item-ok { color:#16a34a; font-weight:700; }
 @media (max-width:780px){ .hist-advanced-toolbar { flex-direction:column; } }
 
+
 /* ===== DIAGNÓSTICO TONER ===== */
 .toner-diagnostics-panel { margin-bottom: 18px; }
 .diagnostics-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-top:12px; }
@@ -1792,6 +1818,7 @@ html.dark .minimo-item, body.dark .minimo-item {
 .diagnostics-log-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .log-toggle-btn { min-width: 112px; }
 .diagnostics-log-wrap.is-collapsed .diagnostics-log { display:none; }
+
 
 /* =========================================================
    APP BRAGA — DESIGN BRINKA / FINAL 3 DISPOSITIVOS
@@ -1860,6 +1887,7 @@ body::before{background:radial-gradient(circle at 70% 92%,rgba(30,64,175,.16),tr
 .primary-btn,.add-btn,.save-btn,button.btn-primary,.btn-primary{background:linear-gradient(135deg,#3b82f6,#2563eb)!important;color:#fff!important;box-shadow:0 14px 30px rgba(37,99,235,.22)!important;}
 .btn,.action-btn,button:not(.danger):not(.delete-btn):not(.btn-danger){border-color:rgba(59,130,246,.24)!important;}
 a{color:#93c5fd!important;}
+
 
 /* FULLSCREEN PWA - igual lógica da App Brinka (iPhone/Tablet) */
 :root {
@@ -1945,6 +1973,7 @@ button, a, .nav-item, .sidebar a { touch-action: manipulation; }
 
 }
 
+
 /* ===== CODIGO BADGES ===== */
 
 .codigo-badge{
@@ -1960,6 +1989,8 @@ button, a, .nav-item, .sidebar a { touch-action: manipulation; }
   margin-bottom:10px;
   box-shadow:0 4px 14px rgba(37,99,235,.35);
 }
+
+
 
 .codigo-field{
  grid-column:1 / -1;
@@ -1979,6 +2010,7 @@ button, a, .nav-item, .sidebar a { touch-action: manipulation; }
  margin-bottom:10px;
 }
 
+
 /* FIX SELECT VISIBILITY */
 select,
 select option{
@@ -1986,868 +2018,116 @@ select option{
   background:#1e293b !important;
 }
 
-/* ===== PORTAS ORIGINAL CARD RESTORE ===== */
 
-.porta-card,
-.port-card,
-.card-porta{
-    background: linear-gradient(180deg,#111827,#0f172a) !important;
-    border:1px solid rgba(59,130,246,.18)!important;
-    border-radius:22px!important;
-    box-shadow:0 12px 30px rgba(0,0,0,.35)!important;
-    padding:18px!important;
-}
+/* ===== PREMIUM ACTION BUTTON SYSTEM ===== */
 
+.item-actions button,
+.card-actions button,
+.table-actions button,
 .porta-card button,
-.port-card button,
-.card-porta button,
-.porta-card .btn,
-.port-card .btn{
-    background:rgba(15,23,42,.92)!important;
-    color:#ffffff!important;
-    border:1px solid rgba(59,130,246,.25)!important;
-    border-radius:14px!important;
-    padding:12px 18px!important;
-    font-weight:700!important;
-    box-shadow:0 4px 14px rgba(0,0,0,.25)!important;
+.pc-card button,
+.user-card button,
+.pistola-card-layout button{
+    min-height:44px !important;
+    padding:12px 18px !important;
+    border-radius:18px !important;
+    font-weight:800 !important;
+    border:1px solid rgba(255,255,255,.08) !important;
+    transition:all .18s ease !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.08),
+      0 8px 22px rgba(0,0,0,.22) !important;
 }
 
-.porta-card button:hover,
-.port-card button:hover,
-.card-porta button:hover{
-    background:linear-gradient(135deg,#2563eb,#1d4ed8)!important;
-    color:#fff!important;
+.item-actions button:hover,
+.card-actions button:hover,
+.table-actions button:hover{
+    transform:translateY(-1px) scale(1.01) !important;
 }
 
-.porta-card .badge-livre,
-.porta-card .status-livre{
-    background:rgba(34,197,94,.15)!important;
-    color:#22c55e!important;
+/* EDITAR */
+button.btn-edit,
+button.editar-btn,
+.item-actions button:nth-child(1){
+    background:linear-gradient(135deg,#d9b24c,#b68a1f) !important;
+    color:#fff !important;
+    box-shadow:0 10px 24px rgba(217,178,76,.28) !important;
 }
 
-.porta-card .badge-ocupado,
-.porta-card .status-ocupado{
-    background:rgba(239,68,68,.15)!important;
-    color:#ef4444!important;
+/* VER MAIS */
+.item-actions button:nth-child(2),
+button.ver-btn,
+button.more-btn{
+    background:linear-gradient(135deg,#2563eb,#3b82f6) !important;
+    color:#fff !important;
+    box-shadow:0 10px 24px rgba(37,99,235,.28) !important;
 }
 
-/* ===== APP BRAGA POLISH - MOBILE / TABLET / DESKTOP ===== */
-.page-hero {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 14px !important;
-  min-height: 88px !important;
-  margin-bottom: 18px !important;
+/* APAGAR */
+button.btn-delete,
+button.delete-btn,
+button.apagar-btn,
+.item-actions button:last-child{
+    background:linear-gradient(135deg,#d9465f,#ec4899) !important;
+    color:#fff !important;
+    box-shadow:0 10px 24px rgba(236,72,153,.24) !important;
 }
 
-.page-hero-title {
-  line-height: 1.05 !important;
-  overflow-wrap: anywhere !important;
+/* IMPRIMIR */
+button.print-btn,
+button.imprimir-btn{
+    background:linear-gradient(135deg,#7c3aed,#a855f7) !important;
+    color:#fff !important;
+    box-shadow:0 10px 24px rgba(124,58,237,.28) !important;
 }
 
-.panel > table {
-  display: block !important;
-  width: 100% !important;
-  overflow-x: auto !important;
-  white-space: nowrap !important;
-  border-radius: 18px !important;
-}
-
-.modal-overlay {
-  padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)) !important;
-}
-
-.modal-card {
-  width: min(720px, 100%) !important;
-  max-height: calc(100dvh - 28px) !important;
-  overflow: auto !important;
-}
-
-.card-actions {
-  align-items: stretch !important;
-}
-
-.card-actions > button,
-.card-actions > .primary-btn,
-.card-actions > .secondary-btn {
-  flex: 1 1 160px !important;
-}
-
-.status-pill,
-.version-pill {
-  white-space: nowrap !important;
-}
-
-@media (max-width: 1024px) {
-  .app-menu-toggle {
-    top: calc(14px + env(safe-area-inset-top)) !important;
-    left: max(14px, env(safe-area-inset-left)) !important;
-  }
-
-  .main {
-    padding-top: calc(82px + env(safe-area-inset-top)) !important;
-  }
-
-  .sidebar {
-    padding-top: calc(82px + env(safe-area-inset-top)) !important;
-  }
-
-  .toolbar,
-  
-
-  .top-actions,
-  .table-actions {
-    width: 100% !important;
-  }
-
-  .table-actions > button,
-  .toolbar > button,
-  .toolbar > select,
-  .toolbar > input {
-    width: 100% !important;
-  }
-}
-
-@media (max-width: 680px) {
-  .page-hero {
-    align-items: flex-start !important;
-    flex-direction: column !important;
-    min-height: 0 !important;
-  }
-
-  .page-hero-title {
-    font-size: 28px !important;
-  }
-
-  .status-pill,
-  .version-pill {
-    width: 100% !important;
-    justify-content: center !important;
-  }
-
-  .form-grid,
-  .stats-grid,
-  .cards-grid,
-  .checklist-grid {
-    gap: 12px !important;
-  }
-
-  .card-actions {
-    flex-direction: column !important;
-  }
-
-  .card-actions > button,
-  .card-actions > .primary-btn,
-  .card-actions > .secondary-btn,
-  .small-btn,
-  .action-btn {
-    width: 100% !important;
-  }
-}
-
-/* ===== GLOBAL THEME + UNIFIED ENTITY CARDS ===== */
-.theme-toggle {
-  width: 100%;
-  min-height: 42px;
-  margin: 0 0 18px;
-  border-radius: 10px !important;
-  border: 1px solid rgba(255,255,255,0.12) !important;
-  background: rgba(255,255,255,0.08) !important;
-  color: #ffffff !important;
-  font-weight: 800 !important;
-  box-shadow: none !important;
-}
-
-.theme-toggle:hover {
-  background: rgba(37, 99, 235, 0.82) !important;
-  transform: translateY(-1px);
-}
-
-.cards-grid {
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
-  align-items: stretch !important;
-}
-
-.pc-card,
-.porta-card,
-.pistola-card-layout,
-.user-card,
-.entity-card {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 8px !important;
-  min-height: 100% !important;
-  padding: 18px !important;
-  background: var(--pro-surface) !important;
-  border: 1px solid var(--pro-line) !important;
-  border-radius: 14px !important;
-  box-shadow: var(--pro-shadow) !important;
-  color: var(--pro-text) !important;
-}
-
-.pc-card::before,
-.porta-card::before,
-.pistola-card-layout::before,
-.user-card::before,
-.entity-card::before {
-  display: none !important;
-}
-
-.pc-name {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 10px !important;
-  margin-bottom: 4px !important;
-  font-size: 17px !important;
-  font-weight: 850 !important;
-  color: var(--pro-text) !important;
-}
-
-.meta-line {
-  font-size: 14px !important;
-  line-height: 1.45 !important;
-}
-
-.meta-value {
-  font-weight: 750 !important;
-}
-
-.item-actions,
-.table-actions,
-.card-actions {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 10px !important;
-  margin-top: auto !important;
-}
-
-.item-actions > button,
-.table-actions > button,
-.card-actions > button {
-  min-width: 112px !important;
-}
-
-.badge {
-  border-radius: 999px !important;
-  font-weight: 850 !important;
+/* STATUS */
+.badge,
+.estado-badge,
+.status-badge{
+    border-radius:999px !important;
+    padding:10px 18px !important;
+    font-weight:800 !important;
 }
 
 .badge.ok,
-.badge.livre {
-  color: #047857 !important;
-  background: #d1fae5 !important;
+.badge.livre{
+    background:linear-gradient(135deg,#16a34a,#22c55e) !important;
+    color:#fff !important;
+    box-shadow:0 8px 20px rgba(34,197,94,.25) !important;
 }
 
-.badge.ocupado,
-.badge.pendente {
-  color: #b91c1c !important;
-  background: #fee2e2 !important;
-}
-
-.badge.aviso,
-.badge.reparacao {
-  color: #b45309 !important;
-  background: #fef3c7 !important;
-}
-
-html.app-dark,
-body.app-dark {
-  --pro-bg: #0b1220;
-  --pro-surface: #111827;
-  --pro-surface-soft: #172033;
-  --pro-sidebar: #050816;
-  --pro-sidebar-2: #0f172a;
-  --pro-line: #293548;
-  --pro-text: #f8fafc;
-  --pro-muted: #aab6c8;
-  --pro-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
-  background:
-    radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.20), transparent 34rem),
-    radial-gradient(circle at 88% 12%, rgba(22, 163, 74, 0.10), transparent 28rem),
-    linear-gradient(180deg, #070b14, var(--pro-bg)) !important;
-  color: var(--pro-text) !important;
-}
-
-body.app-dark .page-hero,
-body.app-dark .topbar,
-body.app-dark .premium-topbar,
-body.app-dark .stat-card,
-body.app-dark .panel,
-body.app-dark .stock-card,
-body.app-dark .history-card,
-body.app-dark .dashboard-card,
-body.app-dark .card,
-body.app-dark .box,
-body.app-dark .pc-card,
-body.app-dark .porta-card,
-body.app-dark .pistola-card-layout,
-body.app-dark .user-card,
-body.app-dark .summary-card,
-body.app-dark .modal-card,
-body.app-dark .printer-toner-box {
-  background: var(--pro-surface) !important;
-  border-color: var(--pro-line) !important;
-  color: var(--pro-text) !important;
-  box-shadow: var(--pro-shadow) !important;
-}
-
-body.app-dark .page-hero-title,
-body.app-dark .topbar h1,
-body.app-dark .main h1,
-body.app-dark .pc-name,
-body.app-dark .meta-value,
-body.app-dark .stat-card strong,
-body.app-dark .summary-value,
-body.app-dark .printer-toner-title,
-body.app-dark .printer-toner-value {
-  color: var(--pro-text) !important;
-}
-
-body.app-dark .subtitle,
-body.app-dark .section-subtitle,
-body.app-dark .meta-line,
-body.app-dark .stock-meta,
-body.app-dark .history-meta,
-body.app-dark .pc-meta {
-  color: var(--pro-muted) !important;
-}
-
-body.app-dark input[type="text"],
-body.app-dark input[type="date"],
-body.app-dark input[type="number"],
-body.app-dark input[type="email"],
-body.app-dark input[type="password"],
-body.app-dark select,
-body.app-dark textarea {
-  color: var(--pro-text) !important;
-  background: var(--pro-surface-soft) !important;
-  border-color: var(--pro-line) !important;
-}
-
-body.app-dark select option {
-  color: var(--pro-text) !important;
-  background: var(--pro-surface-soft) !important;
-}
-
-body.app-dark table,
-body.app-dark .pro-table {
-  background: var(--pro-surface) !important;
-}
-
-body.app-dark th,
-body.app-dark .pro-table thead th {
-  color: var(--pro-muted) !important;
-  background: var(--pro-surface-soft) !important;
-}
-
-body.app-dark td,
-body.app-dark .pro-table tbody td {
-  color: var(--pro-text) !important;
-  background: var(--pro-surface) !important;
-}
-
-body.app-dark .secondary-btn,
-body.app-dark .soft-btn,
-body.app-dark .action-btn,
-body.app-dark .btn-secondary,
-body.app-dark .top-link {
-  color: var(--pro-text) !important;
-  background: var(--pro-surface-soft) !important;
-  border-color: var(--pro-line) !important;
-}
-
-body.app-dark .status-pill,
-body.app-dark .version-pill,
-body.app-dark .pill {
-  color: var(--pro-text) !important;
-  background: var(--pro-surface-soft) !important;
-  border-color: var(--pro-line) !important;
-}
-
-body.app-dark .printer-toner-bar-wrap {
-  background: #334155 !important;
-}
-
-body.app-dark .badge.ok,
-body.app-dark .badge.livre {
-  color: #86efac !important;
-  background: rgba(22, 163, 74, 0.18) !important;
-}
-
-body.app-dark .badge.ocupado,
-body.app-dark .badge.pendente {
-  color: #fca5a5 !important;
-  background: rgba(220, 38, 38, 0.18) !important;
-}
-
-body.app-dark .badge.aviso,
-body.app-dark .badge.reparacao {
-  color: #fcd34d !important;
-  background: rgba(217, 119, 6, 0.18) !important;
-}
-
-@media (max-width: 680px) {
-  .cards-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  .item-actions > button,
-  .table-actions > button,
-  .card-actions > button {
-    width: 100% !important;
-  }
-}
-
-/* ===== APP BRAGA PRO LAYOUT 2026 ===== */
-:root {
-  --pro-bg: #eef2f7;
-  --pro-surface: #ffffff;
-  --pro-surface-soft: #f8fafc;
-  --pro-sidebar: #111827;
-  --pro-sidebar-2: #1f2937;
-  --pro-line: #d7dee9;
-  --pro-text: #182230;
-  --pro-muted: #667085;
-  --pro-primary: #2563eb;
-  --pro-primary-2: #1d4ed8;
-  --pro-success: #16a34a;
-  --pro-warning: #d97706;
-  --pro-danger: #dc2626;
-  --pro-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
-}
-
-html,
-body {
-  background:
-    radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.10), transparent 34rem),
-    radial-gradient(circle at 88% 12%, rgba(22, 163, 74, 0.08), transparent 28rem),
-    linear-gradient(180deg, #f8fafc, var(--pro-bg)) !important;
-  color: var(--pro-text) !important;
-}
-
-body::before {
-  display: none !important;
-}
-
-h1, h2, h3, h4, h5, h6,
-p, span, label, td, th, a, div {
-  color: inherit;
-}
-
-.sidebar {
-  width: 248px !important;
-  background: linear-gradient(180deg, var(--pro-sidebar), var(--pro-sidebar-2)) !important;
-  border-right: 1px solid rgba(255,255,255,0.08) !important;
-  box-shadow: 12px 0 30px rgba(15, 23, 42, 0.16) !important;
-}
-
-.brand,
-.premium-brand,
-.brand-block {
-  background: rgba(255,255,255,0.06) !important;
-  border: 1px solid rgba(255,255,255,0.10) !important;
-  box-shadow: none !important;
-}
-
-.brand h2,
-.brand-block h2 {
-  color: #ffffff !important;
-  letter-spacing: 0 !important;
-}
-
-.brand-badge,
-.brand-logo {
-  border-radius: 12px !important;
-  background: linear-gradient(135deg, #2563eb, #16a34a) !important;
-  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.26) !important;
-}
-
-.sidebar a,
-.sidebar .menu-btn {
-  border-radius: 10px !important;
-  min-height: 44px !important;
-  color: rgba(255,255,255,0.78) !important;
-  font-weight: 750 !important;
-  box-shadow: none !important;
-}
-
-.sidebar a:hover,
-.sidebar a.active,
-.sidebar .menu-btn:hover,
-.sidebar .menu-btn.active {
-  color: #ffffff !important;
-  background: rgba(37, 99, 235, 0.95) !important;
-  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.24) !important;
-}
-
-.main {
-  margin-left: 248px !important;
-  width: calc(100% - 248px) !important;
-  background: transparent !important;
-  color: var(--pro-text) !important;
-  padding: 30px !important;
-}
-
-.page-hero,
-.topbar,
-.premium-topbar {
-  background: var(--pro-surface) !important;
-  border: 1px solid var(--pro-line) !important;
-  border-radius: 16px !important;
-  box-shadow: var(--pro-shadow) !important;
-  color: var(--pro-text) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-.page-hero-title,
-.topbar h1,
-.main h1 {
-  color: var(--pro-text) !important;
-  letter-spacing: 0 !important;
-}
-
-.subtitle,
-.section-subtitle,
-.stock-meta,
-.history-meta,
-.pc-meta,
-.meta-line,
-.summary-list {
-  color: var(--pro-muted) !important;
-}
-
-.stat-card,
-.panel,
-.stock-card,
-.history-card,
-.pc-card,
-.dashboard-card,
-.card,
-.box,
-.user-card,
-.summary-card,
-.printer-card,
-.network-card,
-.pistol-card,
-.modal-card,
-.modal-content,
-.printer-history-card,
-.printer-history-item {
-  background: var(--pro-surface) !important;
-  border: 1px solid var(--pro-line) !important;
-  border-radius: 14px !important;
-  box-shadow: var(--pro-shadow) !important;
-  color: var(--pro-text) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-.stock-card::before,
-.history-card::before,
-.pc-card::before,
-.dashboard-card::before {
-  width: 4px !important;
-  background: var(--pro-primary) !important;
-}
-
-.stat-card strong,
-.summary-value,
-.stock-id,
-.history-id,
-.pc-name,
-.meta-value {
-  color: var(--pro-text) !important;
-}
-
-input[type="text"],
-input[type="date"],
-input[type="number"],
-input[type="email"],
-input[type="password"],
-select,
-textarea {
-  color: var(--pro-text) !important;
-  background: #ffffff !important;
-  border: 1px solid var(--pro-line) !important;
-  border-radius: 10px !important;
-  box-shadow: none !important;
-}
-
-select option {
-  color: var(--pro-text) !important;
-  background: #ffffff !important;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-  border-color: rgba(37, 99, 235, 0.70) !important;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12) !important;
-}
-
-.primary-btn,
-.add-btn,
-.save-btn,
-button.btn-primary,
-.btn-primary {
-  color: #ffffff !important;
-  background: linear-gradient(135deg, var(--pro-primary), var(--pro-primary-2)) !important;
-  border: 0 !important;
-  border-radius: 10px !important;
-  box-shadow: 0 10px 18px rgba(37, 99, 235, 0.18) !important;
-}
-
-.secondary-btn,
-.soft-btn,
-.action-btn,
-.btn-secondary,
-.top-link {
-  color: var(--pro-text) !important;
-  background: var(--pro-surface-soft) !important;
-  border: 1px solid var(--pro-line) !important;
-  border-radius: 10px !important;
-  box-shadow: none !important;
-}
-
-.action-btn.ip {
-  color: #1d4ed8 !important;
-  background: #eff6ff !important;
-}
-
-.action-btn.manut {
-  color: #b45309 !important;
-  background: #fffbeb !important;
-}
-
-.danger-btn,
-.delete-row,
-.btn-danger,
-.btn-delete {
-  color: #ffffff !important;
-  background: var(--pro-danger) !important;
-}
-
-.status-pill,
-.version-pill,
-.pill {
-  color: var(--pro-text) !important;
-  background: #ffffff !important;
-  border: 1px solid var(--pro-line) !important;
-  box-shadow: none !important;
-}
-
-.status-pill::before {
-  background: var(--pro-success) !important;
-}
-
-table,
-.pro-table {
-  background: var(--pro-surface) !important;
-  color: var(--pro-text) !important;
-}
-
-th,
-.pro-table thead th {
-  color: var(--pro-muted) !important;
-  background: var(--pro-surface-soft) !important;
-}
-
-td,
-.pro-table tbody td {
-  color: var(--pro-text) !important;
-  background: #ffffff !important;
-}
-
-.printer-toners-grid {
-  gap: 10px !important;
-}
-
-.printer-toner-box {
-  min-width: 190px !important;
-  background: #ffffff !important;
-  border: 1px solid var(--pro-line) !important;
-  border-radius: 12px !important;
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06) !important;
-}
-
-.printer-toner-title,
-.printer-toner-value {
-  color: var(--pro-text) !important;
-}
-
-.printer-toner-bar-wrap {
-  background: #e5e7eb !important;
-  border: 0 !important;
-}
-
-.app-menu-toggle {
-  color: #ffffff !important;
-  background: var(--pro-sidebar) !important;
-  border: 1px solid rgba(255,255,255,0.10) !important;
-  border-radius: 12px !important;
-}
-
-.app-sidebar-overlay {
-  background: rgba(15, 23, 42, 0.45) !important;
-}
-
-@media (max-width: 1024px) {
-  .main {
-    margin-left: 0 !important;
-    width: 100% !important;
-    padding: calc(82px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom)) !important;
-  }
-
-  .sidebar {
-    width: min(330px, 86vw) !important;
-  }
-}
-
-@media (max-width: 680px) {
-  .page-hero,
-  .topbar,
-  .premium-topbar,
-  .panel,
-  .card,
-  .stat-card,
-  .stock-card,
-  .history-card,
-  .pc-card,
-  .dashboard-card {
-    border-radius: 12px !important;
-  }
-
-  .page-hero-title,
-  .topbar h1,
-  .main h1 {
-    font-size: 28px !important;
-  }
-}
-
-/* =====================================================
-   APP BRAGA ADAPTIVE LAYOUT SYSTEM
-===================================================== */
- 
-:root{
-    --sidebar-width:248px;
-    --content-max:1800px;
-    --toolbar-gap:14px;
-    --toolbar-input-min:340px;
-    --toolbar-select:220px;
-}
- 
-/* ===== MAIN LAYOUT FIX ===== */
- 
-.main{
-    margin-left:var(--sidebar-width) !important;
-    width:calc(100% - var(--sidebar-width)) !important;
-    max-width:none !important;
-    padding:30px !important;
-    box-sizing:border-box !important;
-}
- 
-.main-content,
-.content,
-.page-content{
-    width:100% !important;
-    max-width:var(--content-max) !important;
-    margin:0 auto !important;
-    box-sizing:border-box !important;
-}
- 
-/* ===== PANEL FIX ===== */
- 
-.panel,
-.card,
-.table-scroll{
-    width:100% !important;
-    max-width:100% !important;
-    min-width:0 !important;
-    box-sizing:border-box !important;
-}
- 
-.table-scroll{
-    overflow-x:auto !important;
-}
- 
-.pro-table{
-    width:100% !important;
-    min-width:1100px !important;
-}
- 
-/* ===== TOOLBARS ===== */
- 
-.toolbar,
-.printers-toolbar,
-.portas-toolbar,
-.users-toolbar,
-.pistolas-toolbar{
-    width:100% !important;
+/* CARD ACTION SPACING */
+.item-actions,
+.card-actions{
     display:flex !important;
-    align-items:center !important;
-    gap:var(--toolbar-gap) !important;
+    gap:12px !important;
     flex-wrap:wrap !important;
-    box-sizing:border-box !important;
-}
- 
-.toolbar-left{
-    flex:1 1 420px !important;
-    min-width:0 !important;
- 
-    display:flex !important;
-    align-items:center !important;
-    gap:var(--toolbar-gap) !important;
-}
- 
-.toolbar-search{
-    flex:1 1 var(--toolbar-input-min) !important;
-    min-width:0 !important;
-}
- 
-.toolbar-search input,
-.toolbar input[type="text"]{
-    width:100% !important;
-    min-width:0 !important;
-}
- 
-.toolbar .primary-btn,
-.toolbar .add-btn{
-    flex:0 0 240px !important;
-}
- 
-.toolbar select{
-    flex:0 0 var(--toolbar-select) !important;
-    width:var(--toolbar-select) !important;
-}
- 
-/* ===== TABLET ===== */
- 
-@media (max-width:1100px){
- 
-    .main{
-        margin-left:0 !important;
-        width:100% !important;
-    }
- 
-    .toolbar,
-    .printers-toolbar,
-    .portas-toolbar,
-    .users-toolbar,
-    .pistolas-toolbar,
-    .toolbar-left{
-        flex-direction:column !important;
-        align-items:stretch !important;
-    }
- 
-    .toolbar .primary-btn,
-    .toolbar .add-btn,
-    .toolbar select{
-        width:100% !important;
-        flex:1 1 auto !important;
-    }
- 
+    margin-top:18px !important;
 }
 
+
+/* REMOVE OLD LIGHT MODE BUTTON */
+.theme-toggle,
+.light-mode-toggle,
+#themeToggle,
+button[title="Modo claro"]{
+    display:none !important;
+}
+
+/* SIDEBAR CLEAN */
+.premium-brand p{
+    display:none !important;
+}
+
+/* FIX DUPLICATED CARD SPACING */
+.user-card,
+.porta-card,
+.pc-card{
+    overflow:hidden !important;
+}
+
+/* CLEAN ACTION BUTTONS */
+button{
+    outline:none !important;
+}
