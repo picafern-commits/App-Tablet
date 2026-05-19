@@ -248,10 +248,7 @@ window.renderUsers = function(lista){
 
 window.guardarEdicaoUser = async function(){
 
-  if(!window.currentEditingUserId){
-    alert("Nenhum utilizador selecionado");
-    return;
-  }
+  
 
   const data = {
     nome: document.getElementById("editUser_nome")?.value || "",
@@ -269,9 +266,15 @@ window.guardarEdicaoUser = async function(){
     pass_bragalis: document.getElementById("editUser_pass_bragalis")?.value || ""
   };
 
-  await usersRef
-    .doc(window.currentEditingUserId)
-    .update(data);
+  if(window.currentEditingUserId){
+    if(window.currentEditingUserId){
+    await usersRef.doc(window.currentEditingUserId).update(data);
+  }else{
+    await usersRef.add(data);
+  };
+  }else{
+    await usersRef.add(data);
+  };
 
   fecharEditarUser();
 

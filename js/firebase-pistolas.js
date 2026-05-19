@@ -3,6 +3,9 @@
 
     try{
 
+      if(window.currentEditingPistolaId){
+
+
     if(!window.db){
       console.error("Firebase DB indisponível");
       return;
