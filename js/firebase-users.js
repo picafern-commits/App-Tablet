@@ -36,6 +36,21 @@ usersRef.onSnapshot((snapshot)=>{
 
   });
 
+  // ORDENAR ALFABETICAMENTE
+  lista.sort((a, b) => {
+
+    const nomeA =
+      ((a.nome || a.name || "") + "")
+      .toLowerCase();
+
+    const nomeB =
+      ((b.nome || b.name || "") + "")
+      .toLowerCase();
+
+    return nomeA.localeCompare(nomeB);
+
+  });
+
   renderUsers(lista);
 
 });
