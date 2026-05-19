@@ -1,12 +1,8 @@
-
 (function(){
 
-    try{
+  try{
 
-      if(window.currentEditingPistolaId){
-
-
-    if(!window.db){
+if(!window.db){
       console.error("Firebase DB indisponível");
       return;
     }
