@@ -1,27 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-
-<script id="APP_BRAGA_THEME_LOADER">
-(function(){
-
-  try{
-
-    const savedTheme =
-      localStorage.getItem("app-theme") || "dark";
-
-    if(savedTheme === "dark"){
-      document.documentElement.classList.add("dark");
-      document.body.classList.add("dark");
-    }
-
-  }catch(e){
-    console.log(e);
-  }
-
-})();
-</script>
-
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Impressoras</title>
@@ -125,24 +104,10 @@
       <select id="filterEstadoImpressora" onchange="filtrarImpressoras()"><option value="">Todos os estados</option><option value="OK">OK</option><option value="Pendente">Pendente</option><option value="Em reparação">Em reparação</option><option value="Resolvido">Resolvido</option></select>
     </div>
     
-
-<div class="table-scroll printers-table-wrap">
-<table class="pro-table printers-table">
-      <thead>
-        <tr>
-          <th>Modelo</th>
-          <th>Série</th>
-          <th>Armazém</th>
-          <th>Localização</th>
-          <th>IP</th>
-          <th>Estado</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
+<table>
+      <thead><tr><th>Modelo</th><th>Série</th><th>Armazém</th><th>Localização</th><th>IP</th><th>Estado</th><th>Ações</th></tr></thead>
       <tbody id="impressorasTableBody"></tbody>
-</table>
-</div>
-
+    </table>
   </div>
 
   <div id="modalAdicionarImpressora" class="modal-overlay" style="display:none;">

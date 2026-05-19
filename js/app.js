@@ -310,7 +310,7 @@ async function gerarID() {
   const ref = db.collection("config").doc("contador");
   return db.runTransaction(async t => {
     const doc = await t.get(ref);
-    const n = doc.exists ? ({ firebaseId: doc.id, ...doc.data() }).valor + 1 : 1;
+    const n = doc.exists ? doc.data().valor + 1 : 1;
     t.set(ref, { valor: n });
     return "TON-" + String(n).padStart(4, "0");
   });
@@ -369,7 +369,7 @@ db.collection("stock").orderBy("created", "desc").onSnapshot(snap => {
   setText("countStock", snap.size);
 
   snap.forEach(doc => {
-    const t = ({ firebaseId: doc.id, ...doc.data() });
+    const t = doc.data();
     t.idDoc = doc.id;
     stockGlobal.push(t);
   });
@@ -402,7 +402,7 @@ db.collection("historico").orderBy("created", "desc").onSnapshot(snap => {
   setText("countUsados", snap.size);
 
   snap.forEach(doc => {
-    const t = ({ firebaseId: doc.id, ...doc.data() });
+    const t = doc.data();
     t.idDoc = doc.id;
     historicoGlobal.push(t);
   });
@@ -433,7 +433,7 @@ db.collection("pcs").orderBy("created", "desc").onSnapshot(snap => {
   setText("countPCs", snap.size);
 
   snap.forEach(doc => {
-    const d = ({ firebaseId: doc.id, ...doc.data() });
+    const d = doc.data();
     d.idDoc = doc.id;
     pcsGlobal.push(d);
   });
@@ -455,7 +455,7 @@ db.collection("manutencoes").orderBy("created", "desc").onSnapshot(snap => {
   manutencoesGlobal = [];
 
   snap.forEach(doc => {
-    const item = ({ firebaseId: doc.id, ...doc.data() });
+    const item = doc.data();
     item.idDoc = doc.id;
     manutencoesGlobal.push(item);
   });
@@ -2073,7 +2073,7 @@ function bindPrintersFirebaseRealtime() {
 
   db.collection("printers").onSnapshot((snap) => {
     snap.forEach((doc) => {
-      const data = ({ firebaseId: doc.id, ...doc.data() }) || {};
+      const data = doc.data() || {};
       const ip = normalizePrinterIp(data.ip || doc.id);
       if (!ip) return;
 
@@ -2904,7 +2904,7 @@ async function carregarPortasComFallback() {
         return;
       }
 
-      window.portasData = snap.docs.map(doc => ({ idDoc: doc.id, ...({ firebaseId: doc.id, ...doc.data() }) }));
+      window.portasData = snap.docs.map(doc => ({ idDoc: doc.id, ...doc.data() }));
 
       window.portasData.sort((a,b)=>{
 
@@ -4451,7 +4451,7 @@ function bindEtiquetasWordRealtime() {
   db.collection("etiquetasWord").orderBy("created", "desc").onSnapshot((snap) => {
     etiquetasWordGlobal = [];
     snap.forEach((doc) => {
-      const t = ({ firebaseId: doc.id, ...doc.data() }) || {};
+      const t = doc.data() || {};
       t.idDoc = doc.id;
       etiquetasWordGlobal.push(t);
     });
@@ -5865,61 +5865,3 @@ document.addEventListener("input", e => {
 });
 
 console.log("PISTOLAS VIEW/DELETE/SEARCH FIX OK");
-
-
-// ===== APP_BRAGA_THEME_SYSTEM =====
-
-window.loadTheme = function(){
-
-  try{
-
-    const savedTheme =
-      localStorage.getItem("app-theme") || "dark";
-
-    document.documentElement.classList.remove("dark");
-    document.body.classList.remove("dark");
-
-    if(savedTheme === "dark"){
-      document.documentElement.classList.add("dark");
-      document.body.classList.add("dark");
-    }
-
-  }catch(e){
-    console.log(e);
-  }
-
-};
-
-window.saveTheme = function(theme){
-
-  try{
-    localStorage.setItem("app-theme", theme);
-  }catch(e){
-    console.log(e);
-  }
-
-};
-
-window.toggleTheme = function(){
-
-  const isDark =
-    document.body.classList.contains("dark");
-
-  const newTheme =
-    isDark ? "light" : "dark";
-
-  window.saveTheme(newTheme);
-  window.loadTheme();
-
-};
-
-document.addEventListener(
-  "DOMContentLoaded",
-  window.loadTheme
-);
-
-window.addEventListener(
-  "pageshow",
-  window.loadTheme
-);
-
