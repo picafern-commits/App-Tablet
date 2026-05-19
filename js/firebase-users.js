@@ -1,53 +1,88 @@
 
 (function(){
 
-  function applyUsers(snapshot){
+  if(!window.db){
+    console.error("Firebase DB indisponível");
+    return;
+  }
 
-    window.usersData = [];
+  window.db.collection("users")
+  .onSnapshot((snapshot)=>{
 
-    const lista = [];
+    window.usersData = snapshot.docs.map(doc=>({
+      id: doc.id,
+      ...({ firebaseId: doc.id, ...doc.data() })
+    }));
 
-    snapshot.forEach(function(doc){
-
-      lista.push({
-        firebaseId: doc.id,
-        ...doc.data()
-      });
-
-    });
-
-    window.usersData = lista;
+    console.log(
+      "Users carregados Firebase:",
+      window.usersData.length
+    );
 
     if(typeof renderUsers === "function"){
-      renderUsers(lista);
+      renderUsers(window.usersData);
     }
 
-    console.log("Users Firebase:", lista.length);
-
-  }
-
-  function startUsers(){
-
-    if(!window.db){
-      console.log("DB indisponível");
-      return;
-    }
-
-    window.db
-      .collection("users")
-      .onSnapshot(
-        applyUsers,
-        function(error){
-          console.error(error);
-        }
-      );
-
-  }
-
-  if(document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", startUsers);
-  }else{
-    startUsers();
-  }
+  },(error)=>{
+    console.error("Erro users Firebase:", error);
+  });
 
 })();
+
+
+// ===== APP_BRAGA_THEME_SYSTEM =====
+
+window.loadTheme = function(){
+
+  try{
+
+    const savedTheme =
+      localStorage.getItem("app-theme") || "dark";
+
+    document.documentElement.classList.remove("dark");
+    document.body.classList.remove("dark");
+
+    if(savedTheme === "dark"){
+      document.documentElement.classList.add("dark");
+      document.body.classList.add("dark");
+    }
+
+  }catch(e){
+    console.log(e);
+  }
+
+};
+
+window.saveTheme = function(theme){
+
+  try{
+    localStorage.setItem("app-theme", theme);
+  }catch(e){
+    console.log(e);
+  }
+
+};
+
+window.toggleTheme = function(){
+
+  const isDark =
+    document.body.classList.contains("dark");
+
+  const newTheme =
+    isDark ? "light" : "dark";
+
+  window.saveTheme(newTheme);
+  window.loadTheme();
+
+};
+
+document.addEventListener(
+  "DOMContentLoaded",
+  window.loadTheme
+);
+
+window.addEventListener(
+  "pageshow",
+  window.loadTheme
+);
+

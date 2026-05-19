@@ -5,64 +5,104 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 window.usersData = [];
+window.__usersListenerLoaded = window.__usersListenerLoaded || false;
 
-window.loadUsersFirebase = function(){
+document.addEventListener("app-ready", ()=>{
 
-    if(!window.db){
-        console.log("Firebase DB indisponível");
-        return;
-    }
+  if(window.__usersListenerLoaded){
+    console.log("Users listener already loaded");
+    return;
+  }
 
-    const usersRef = collection(window.db, "users");
+  window.__usersListenerLoaded = true;
 
-    onSnapshot(usersRef, (snapshot)=>{
+  const usersRef =
+    collection(window.db, "users");
 
-        const container =
-            document.getElementById("usersContainer") ||
-            document.getElementById("usersGrid") ||
-            document.querySelector(".users-grid") ||
-            document.querySelector(".cards-grid");
+  onSnapshot(usersRef, (snapshot)=>{
 
-        window.usersData = [];
+    const uniqueUsers = [];
+    const usedIds = new Set();
 
-        if(container){
-            container.innerHTML = "";
-        }
+    snapshot.docs.forEach(d => {
 
-        snapshot.docs.forEach((d)=>{
+      if(usedIds.has(d.id)) return;
 
-            const user = {
-                firebaseId: d.id,
-                ...d.data()
-            };
+      usedIds.add(d.id);
 
-            window.usersData.push(user);
-
-            if(container){
-
-                const card = document.createElement("div");
-                card.className = "user-card";
-
-                card.innerHTML = `
-                    <div class="pc-name">${user.nome || user.name || "User"}</div>
-                    <div class="meta-line">${user.email || ""}</div>
-                    <div class="meta-line">${user.role || ""}</div>
-                `;
-
-                container.appendChild(card);
-
-            }
-
-        });
-
-        console.log("Users Firebase:", window.usersData.length);
+      uniqueUsers.push({
+        idDoc: d.id,
+        ...d.data()
+      });
 
     });
 
+    window.usersData = uniqueUsers;
+
+    if(window.renderUsers){
+      window.renderUsers(window.usersData);
+    }
+
+  });
+
+  console.log("Users connected");
+
+});
+
+
+// ===== APP_BRAGA_THEME_SYSTEM =====
+
+window.loadTheme = function(){
+
+  try{
+
+    const savedTheme =
+      localStorage.getItem("app-theme") || "dark";
+
+    document.documentElement.classList.remove("dark");
+    document.body.classList.remove("dark");
+
+    if(savedTheme === "dark"){
+      document.documentElement.classList.add("dark");
+      document.body.classList.add("dark");
+    }
+
+  }catch(e){
+    console.log(e);
+  }
+
 };
 
-document.addEventListener("DOMContentLoaded", ()=>{
-    setTimeout(()=>{
-        window.loadUsersFirebase();
-    }, 300);
-});
+window.saveTheme = function(theme){
+
+  try{
+    localStorage.setItem("app-theme", theme);
+  }catch(e){
+    console.log(e);
+  }
+
+};
+
+window.toggleTheme = function(){
+
+  const isDark =
+    document.body.classList.contains("dark");
+
+  const newTheme =
+    isDark ? "light" : "dark";
+
+  window.saveTheme(newTheme);
+  window.loadTheme();
+
+};
+
+document.addEventListener(
+  "DOMContentLoaded",
+  window.loadTheme
+);
+
+window.addEventListener(
+  "pageshow",
+  window.loadTheme
+);
+
