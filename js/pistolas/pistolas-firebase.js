@@ -35,7 +35,7 @@ document.addEventListener("app-ready", ()=>{
 window.guardarEdicaoPistola =
 async function(){
 
-  if(!window.pistolaEditId) return;
+
 
   const payload = {};
 
@@ -126,3 +126,6 @@ window.addEventListener(
   window.loadTheme
 );
 
+
+
+window.pistolaEditId = null;
