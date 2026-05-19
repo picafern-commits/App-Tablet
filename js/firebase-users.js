@@ -1,130 +1,147 @@
 
+// ===== USERS SYSTEM (PORTAS STYLE) =====
+
 (function(){
 
   if(!window.db){
-    console.error("Firebase DB indisponível");
+    console.error("Firebase indisponível");
     return;
   }
 
-  window.db.collection("users")
-  .onSnapshot((snapshot)=>{
+  let usersCache = [];
 
-    window.usersData = snapshot.docs.map(doc=>({
-      id: doc.id,
-      ...({ firebaseId: doc.id, ...doc.data() })
-    }));
+  const usersRef =
+    window.db.collection("users");
+
+  usersRef.onSnapshot((snapshot)=>{
+
+    usersCache = [];
+
+    snapshot.forEach((doc)=>{
+
+      usersCache.push({
+        firebaseId: doc.id,
+        ...doc.data()
+      });
+
+    });
+
+    renderUsers(usersCache);
 
     console.log(
-      "Users carregados Firebase:",
-      window.usersData.length
+      "Users carregados:",
+      usersCache.length
     );
 
-    if(typeof renderUsers === "function"){
-      renderUsers(window.usersData);
-    }
-
-  },(error)=>{
-    console.error("Erro users Firebase:", error);
   });
 
-})();
+  function renderUsers(lista){
 
+    const container =
+      document.querySelector("#listaUsers");
 
-// ===== APP_BRAGA_THEME_SYSTEM =====
+    if(!container) return;
 
-window.loadTheme = function(){
+    // LIMPA TUDO ANTES
+    container.innerHTML = "";
 
-  try{
+    lista.forEach((user)=>{
 
-    const savedTheme =
-      localStorage.getItem("app-theme") || "dark";
+      const card =
+        document.createElement("div");
 
-    document.documentElement.classList.remove("dark");
-    document.body.classList.remove("dark");
+      card.className = "pc-card";
 
-    if(savedTheme === "dark"){
-      document.documentElement.classList.add("dark");
-      document.body.classList.add("dark");
-    }
+      card.innerHTML = `
+        <div class="pc-name">
+          ${user.nome || "-"}
+        </div>
 
-  }catch(e){
-    console.log(e);
+        <div class="meta-line">
+          Email:
+          <span class="meta-value">
+            ${user.email || "-"}
+          </span>
+        </div>
+
+        <div class="meta-line">
+          TeamViewer:
+          <span class="meta-value">
+            ${user.teamviewer || "-"}
+          </span>
+        </div>
+
+        <div class="card-actions">
+          <button class="btn-edit">
+            Editar
+          </button>
+        </div>
+      `;
+
+      const btn =
+        card.querySelector(".btn-edit");
+
+      btn.onclick = ()=>{
+
+        window.currentEditingUserId =
+          user.firebaseId;
+
+        window.currentEditingUser =
+          user;
+
+        // preencher form
+        const nome =
+          document.querySelector("#nomeUser");
+
+        const email =
+          document.querySelector("#emailUser");
+
+        const teamviewer =
+          document.querySelector("#teamviewerUser");
+
+        if(nome) nome.value = user.nome || "";
+        if(email) email.value = user.email || "";
+        if(teamviewer) teamviewer.value = user.teamviewer || "";
+
+      };
+
+      container.appendChild(card);
+
+    });
+
   }
 
-};
-
-window.saveTheme = function(theme){
-
-  try{
-    localStorage.setItem("app-theme", theme);
-  }catch(e){
-    console.log(e);
-  }
-
-};
-
-window.toggleTheme = function(){
-
-  const isDark =
-    document.body.classList.contains("dark");
-
-  const newTheme =
-    isDark ? "light" : "dark";
-
-  window.saveTheme(newTheme);
-  window.loadTheme();
-
-};
-
-document.addEventListener(
-  "DOMContentLoaded",
-  window.loadTheme
-);
-
-window.addEventListener(
-  "pageshow",
-  window.loadTheme
-);
-
-
-
-// ===== APP_BRAGA_USER_FIX =====
-
-window.currentEditingUserId = null;
-
-window.openEditUserModal = function(user){
-
-    if(!user) return;
-
-    window.currentEditingUserId =
-        user.firebaseId || user.id || null;
-
-};
-
-window.saveExistingUserOnly = async function(data){
+  // SAVE USER
+  window.saveUserFirebase =
+    async function(data){
 
     try{
 
-        if(!window.currentEditingUserId){
-            console.error("Sem firebaseId");
-            return;
-        }
+      // UPDATE
+      if(window.currentEditingUserId){
 
-        if(!window.db){
-            console.error("DB indisponível");
-            return;
-        }
+        await usersRef
+          .doc(window.currentEditingUserId)
+          .update(data);
 
-        await window.db
-            .collection("users")
-            .doc(window.currentEditingUserId)
-            .update(data);
+        console.log(
+          "User atualizado"
+        );
 
-        console.log("User atualizado");
+        return;
+      }
+
+      // CREATE
+      await usersRef.add(data);
+
+      console.log(
+        "Novo user criado"
+      );
 
     }catch(e){
-        console.error(e);
+      console.error(e);
     }
 
-};
+  };
 
+})();
