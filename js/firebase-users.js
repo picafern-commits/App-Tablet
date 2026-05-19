@@ -1,5 +1,5 @@
 
-// ===== USERS COMPLETE SYSTEM WITH ACTIONS =====
+// ===== FINAL USERS SYSTEM =====
 
 (function(){
 
@@ -53,10 +53,6 @@
         <div class="meta-line">Pass Pistola: <span class="meta-value">${user.passPistola || "-"}</span></div>
         <div class="meta-line">Nome PC: <span class="meta-value">${user.nomePc || "-"}</span></div>
         <div class="meta-line">TeamViewer: <span class="meta-value">${user.teamviewer || "-"}</span></div>
-        <div class="meta-line">User MO365: <span class="meta-value">${user.userMO365 || "-"}</span></div>
-        <div class="meta-line">Pw MO365: <span class="meta-value">${user.pwMO365 || "-"}</span></div>
-        <div class="meta-line">Email Bragalis: <span class="meta-value">${user.emailBragalis || "-"}</span></div>
-        <div class="meta-line">Pass Bragalis: <span class="meta-value">${user.passBragalis || "-"}</span></div>
 
         <div class="card-actions">
           <button class="btn-edit">Editar</button>
@@ -65,76 +61,71 @@
         </div>
       `;
 
-      // EDITAR
+      // ===== EDITAR =====
       card.querySelector(".btn-edit").onclick = ()=>{
 
         window.currentEditingUserId = user.firebaseId;
-        window.currentEditingUser = user;
 
         const modal =
-          document.querySelector("#userModal") ||
-          document.querySelector(".user-modal");
+          document.getElementById("modalEditarUser");
 
         if(modal){
           modal.style.display = "flex";
         }
 
-        const map = {
-          nomeUser: user.nome,
-          zonaUser: user.zona,
-          userPcUser: user.userPc,
-          passRemoteUser: user.passRemote,
-          passEyePeakUser: user.passEyePeak,
-          opPistolaUser: user.opPistola,
-          passPistolaUser: user.passPistola,
-          nomePcUser: user.nomePc,
-          teamviewerUser: user.teamviewer,
-          userMO365User: user.userMO365,
-          pwMO365User: user.pwMO365,
-          emailBragalisUser: user.emailBragalis,
-          passBragalisUser: user.passBragalis
+        const setValue = (id, value)=>{
+
+          const el = document.getElementById(id);
+
+          if(el){
+            el.value = value || "";
+          }
+
         };
 
-        Object.keys(map).forEach((id)=>{
-          const el = document.getElementById(id);
-          if(el){
-            el.value = map[id] || "";
-          }
-        });
+        setValue("editUser_nome", user.nome);
+        setValue("editUser_zona", user.zona);
+        setValue("editUser_user_pc_eye", user.userPc);
+        setValue("editUser_pass_remote", user.passRemote);
+        setValue("editUser_pass_eye_peak", user.passEyePeak);
+        setValue("editUser_op_pistola", user.opPistola);
+        setValue("editUser_pass_pistola", user.passPistola);
+        setValue("editUser_nome_pc", user.nomePc);
+        setValue("editUser_teamviewer", user.teamviewer);
+        setValue("editUser_user_mo365", user.userMO365);
+        setValue("editUser_pw_mo365", user.pwMO365);
+        setValue("editUser_email_bragalis", user.emailBragalis);
+        setValue("editUser_pass_bragalis", user.passBragalis);
 
       };
 
-      // IMPRIMIR
+      // ===== IMPRIMIR =====
       card.querySelector(".btn-primary").onclick = ()=>{
 
-        const texto = `
-Nome: ${user.nome || ""}
-Zona: ${user.zona || ""}
-User PC/EYE: ${user.userPc || ""}
-Pass Remote: ${user.passRemote || ""}
-Pass Eye Peak: ${user.passEyePeak || ""}
-Op Pistola: ${user.opPistola || ""}
-Pass Pistola: ${user.passPistola || ""}
-Nome PC: ${user.nomePc || ""}
-TeamViewer: ${user.teamviewer || ""}
-User MO365: ${user.userMO365 || ""}
-Pw MO365: ${user.pwMO365 || ""}
-Email Bragalis: ${user.emailBragalis || ""}
-Pass Bragalis: ${user.passBragalis || ""}
-`;
+        const printable = document.createElement("div");
 
-        const w = window.open("", "_blank");
-        w.document.write("<pre>"+texto+"</pre>");
-        w.print();
+        printable.innerHTML = `
+          <h1>${user.nome || ""}</h1>
+          <p><strong>Zona:</strong> ${user.zona || ""}</p>
+          <p><strong>User PC/EYE:</strong> ${user.userPc || ""}</p>
+          <p><strong>TeamViewer:</strong> ${user.teamviewer || ""}</p>
+        `;
+
+        document.body.appendChild(printable);
+
+        window.print();
+
+        setTimeout(()=>{
+          printable.remove();
+        },500);
 
       };
 
-      // APAGAR
+      // ===== APAGAR =====
       card.querySelector(".btn-danger").onclick = async ()=>{
 
-        const ok = confirm(
-          "Apagar utilizador?"
-        );
+        const ok =
+          confirm("Apagar utilizador?");
 
         if(!ok) return;
 
@@ -155,5 +146,56 @@ Pass Bragalis: ${user.passBragalis || ""}
     });
 
   }
+
+  // ===== GUARDAR EDIÇÃO =====
+  window.guardarEdicaoUser = async function(){
+
+    try{
+
+      if(!window.currentEditingUserId){
+        alert("Nenhum user selecionado");
+        return;
+      }
+
+      const data = {
+        nome: document.getElementById("editUser_nome")?.value || "",
+        zona: document.getElementById("editUser_zona")?.value || "",
+        userPc: document.getElementById("editUser_user_pc_eye")?.value || "",
+        passRemote: document.getElementById("editUser_pass_remote")?.value || "",
+        passEyePeak: document.getElementById("editUser_pass_eye_peak")?.value || "",
+        opPistola: document.getElementById("editUser_op_pistola")?.value || "",
+        passPistola: document.getElementById("editUser_pass_pistola")?.value || "",
+        nomePc: document.getElementById("editUser_nome_pc")?.value || "",
+        teamviewer: document.getElementById("editUser_teamviewer")?.value || "",
+        userMO365: document.getElementById("editUser_user_mo365")?.value || "",
+        pwMO365: document.getElementById("editUser_pw_mo365")?.value || "",
+        emailBragalis: document.getElementById("editUser_email_bragalis")?.value || "",
+        passBragalis: document.getElementById("editUser_pass_bragalis")?.value || ""
+      };
+
+      await usersRef
+        .doc(window.currentEditingUserId)
+        .update(data);
+
+      fecharEditarUser();
+
+    }catch(e){
+      console.error(e);
+      alert("Erro ao guardar");
+    }
+
+  };
+
+  // ===== FECHAR MODAL =====
+  window.fecharEditarUser = function(){
+
+    const modal =
+      document.getElementById("modalEditarUser");
+
+    if(modal){
+      modal.style.display = "none";
+    }
+
+  };
 
 })();
