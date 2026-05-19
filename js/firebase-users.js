@@ -62,22 +62,14 @@ const total = lista.length;
 
 // COM MO365
 const comMO365 = lista.filter(u => {
-  return (
-    (u.user_mo365 && String(u.user_mo365).trim() !== "") ||
-    (u.userMO365 && String(u.userMO365).trim() !== "") ||
-    (u.userM365 && String(u.userM365).trim() !== "") ||
-    (u.mo365 && String(u.mo365).trim() !== "") ||
-    (u.email_bragalis && String(u.email_bragalis).trim() !== "-")
-  );
+  const val = String(u.user_mo365 || "").trim();
+  return val !== "" && val !== "-";
 }).length;
 
 // COM PISTOLA
 const comPistola = lista.filter(u => {
-  return (
-    (u.op_pistola && String(u.op_pistola).trim() !== "") ||
-    (u.opPistola && String(u.opPistola).trim() !== "") ||
-    (u.pass_pistola && String(u.pass_pistola).trim() !== "-")
-  );
+  const val = String(u.op_pistola || "").trim();
+  return val !== "" && val !== "-";
 }).length;
 
 // TOTAL
