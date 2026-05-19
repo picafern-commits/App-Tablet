@@ -106,3 +106,45 @@ window.addEventListener(
   window.loadTheme
 );
 
+
+
+// ===== APP_BRAGA_USER_FIX =====
+
+window.currentEditingUserId = null;
+
+window.openEditUserModal = function(user){
+
+    if(!user) return;
+
+    window.currentEditingUserId =
+        user.firebaseId || user.id || null;
+
+};
+
+window.saveExistingUserOnly = async function(data){
+
+    try{
+
+        if(!window.currentEditingUserId){
+            console.error("Sem firebaseId");
+            return;
+        }
+
+        if(!window.db){
+            console.error("DB indisponível");
+            return;
+        }
+
+        await window.db
+            .collection("users")
+            .doc(window.currentEditingUserId)
+            .update(data);
+
+        console.log("User atualizado");
+
+    }catch(e){
+        console.error(e);
+    }
+
+};
+
