@@ -48,6 +48,7 @@ window.renderUsers = function(lista){
       </div>
     `;
 
+    
     // EDITAR
     card.querySelector(".btn-edit")
     .onclick = ()=>{
@@ -59,15 +60,42 @@ window.renderUsers = function(lista){
         user;
 
       const modal =
-        document.querySelector("#userModal");
+        document.querySelector("#modalEditarUser");
 
       if(modal){
         modal.style.display = "flex";
       }
 
+      const fields = {
+        editUser_nome: user.nome,
+        editUser_zona: user.zona,
+        editUser_user_pc_eye: user.userPc,
+        editUser_pass_remote: user.passRemote,
+        editUser_pass_eye_peak: user.passEyePeak,
+        editUser_op_pistola: user.opPistola,
+        editUser_pass_pistola: user.passPistola,
+        editUser_nome_pc: user.nomePc,
+        editUser_teamviewer: user.teamviewer,
+        editUser_user_mo365: user.userMO365,
+        editUser_pw_mo365: user.pwMO365,
+        editUser_email_bragalis: user.emailBragalis,
+        editUser_pass_bragalis: user.passBragalis
+      };
+
+      Object.keys(fields).forEach((id)=>{
+
+        const el = document.getElementById(id);
+
+        if(el){
+          el.value = fields[id] || "";
+        }
+
+      });
+
     };
 
     // PRINT
+
     card.querySelector(".btn-print")
     .onclick = ()=>{
 
