@@ -1,295 +1,226 @@
-
-(function(){
-
-if(!window.db){
-  console.error("Firebase indisponível");
-  return;
-}
-
-const usersRef = window.db.collection("users");
-
-function getField(user, keys){
-
-  for(const k of keys){
-
-    if(user[k] !== undefined &&
-       user[k] !== null &&
-       user[k] !== ""){
-      return user[k];
-    }
-
-  }
-
-  return "-";
-}
-
-usersRef.onSnapshot((snapshot)=>{
-
-  const lista = [];
-
-  snapshot.forEach((doc)=>{
-
-    lista.push({
-      firebaseId: doc.id,
-      ...doc.data()
-    });
-
-  });
-
-  // ORDENAR ALFABETICAMENTE
-  lista.sort((a, b) => {
-
-    const nomeA =
-      ((a.nome || a.name || "") + "")
-      .toLowerCase();
-
-    const nomeB =
-      ((b.nome || b.name || "") + "")
-      .toLowerCase();
-
-    return nomeA.localeCompare(nomeB);
-
-  });
-
-  window.usersData = lista;
-
-  
-
-
-// ===== CONTADORES FIREBASE =====
-
-const total = lista.length;
-
-// COM MO365
-const comMO365 = lista.filter(u => {
-  const val = String(u.user_mo365 || "").trim();
-  return val !== "" && val !== "-";
-}).length;
-
-// COM PISTOLA
-const comPistola = lista.filter(u => {
-  const val = String(u.op_pistola || "").trim();
-  return val !== "" && val !== "-";
-}).length;
-
-// TOTAL
-const totalEl = document.querySelector("#countUsers");
-if(totalEl){
-  totalEl.textContent = total;
-}
-
-// MO365
-const mo365El = document.querySelector("#countPistolasBraga");
-if(mo365El){
-  mo365El.textContent = comMO365;
-}
-
-// PISTOLA
-const pistolaEl = document.querySelector("#countPistolasReserva");
-if(pistolaEl){
-  pistolaEl.textContent = comPistola;
-}
-
-renderUsers(lista);
-
-
-
-
-});
-
-window.renderUsers = function(lista){
-
-  const container =
-    document.getElementById("listaUsers");
-
-  if(!container) return;
-
-  container.innerHTML = "";
-
-  lista.forEach((user)=>{
-
-    const nome = getField(user, ["nome","name"]);
-    const zona = getField(user, ["zona","zone"]);
-    const userPc = getField(user, ["userPc","user_pc_eye","user_pc"]);
-    const passRemote = getField(user, ["passRemote","pass_remote"]);
-    const passEyePeak = getField(user, ["passEyePeak","pass_eye_peak"]);
-    const opPistola = getField(user, ["opPistola","op_pistola"]);
-    const passPistola = getField(user, ["passPistola","pass_pistola"]);
-    const nomePc = getField(user, ["nomePc","nome_pc"]);
-    const teamviewer = getField(user, ["teamviewer","teamViewer","team_viewer"]);
-    const userMO365 = getField(user, ["userMO365","user_mo365"]);
-    const pwMO365 = getField(user, ["pwMO365","pw_mo365"]);
-    const emailBragalis = getField(user, ["emailBragalis","email_bragalis"]);
-    const passBragalis = getField(user, ["passBragalis","pass_bragalis"]);
-
-    const card = document.createElement("div");
-    card.className = "pc-card";
-
-    card.innerHTML = `
-      <div class="pc-name">${nome}</div>
-
-      <div class="meta-line">Zona: ${zona}</div>
-      <div class="meta-line">User PC/EYE: ${userPc}</div>
-      <div class="meta-line">Pass Remote: ${passRemote}</div>
-      <div class="meta-line">Pass Eye Peak: ${passEyePeak}</div>
-      <div class="meta-line">Op. Pistola: ${opPistola}</div>
-      <div class="meta-line">Pass Pistola: ${passPistola}</div>
-      <div class="meta-line">Nome PC: ${nomePc}</div>
-      <div class="meta-line">TeamViewer: ${teamviewer}</div>
-
-      <div class="card-actions">
-        <button class="btn-edit">Editar</button>
-        <button class="btn-primary">Imprimir Dados</button>
-        <button class="btn-danger">Apagar</button>
-      </div>
-    `;
-
-    // EDITAR
-    card.querySelector(".btn-edit").onclick = ()=>{
-
-      const modal =
-        document.getElementById("modalEditarUser");
-
-      if(modal){
-        modal.style.display = "flex";
-        modal.removeAttribute("hidden");
-        modal.classList.add("active");
-      }
-
-      window.currentEditingUserId =
-        user.firebaseId;
-
-      const setVal = (id,val)=>{
-        const el = document.getElementById(id);
-        if(el) el.value = val || "";
-      };
-
-      setVal("editUser_nome", nome);
-      setVal("editUser_zona", zona);
-      setVal("editUser_user_pc_eye", userPc);
-      setVal("editUser_pass_remote", passRemote);
-      setVal("editUser_pass_eye_peak", passEyePeak);
-      setVal("editUser_op_pistola", opPistola);
-      setVal("editUser_pass_pistola", passPistola);
-      setVal("editUser_nome_pc", nomePc);
-      setVal("editUser_teamviewer", teamviewer);
-      setVal("editUser_user_mo365", userMO365);
-      setVal("editUser_pw_mo365", pwMO365);
-      setVal("editUser_email_bragalis", emailBragalis);
-      setVal("editUser_pass_bragalis", passBragalis);
-
-    };
-
-    // PRINT
-    card.querySelector(".btn-primary").onclick = ()=>{
-
-      const printWindow = window.open("", "_blank");
-
-      printWindow.document.write(`
-        <html>
-        <head>
-          <title>${nome}</title>
-          <style>
-            body{
-              font-family: Arial;
-              padding:20px;
-              color:#000;
-            }
-            h1{
-              margin-bottom:20px;
-            }
-            p{
-              margin:8px 0;
-              font-size:16px;
-            }
-          </style>
-        </head>
-        <body>
-          <h1>${nome}</h1>
-          <p><b>Zona:</b> ${zona}</p>
-          <p><b>User PC/EYE:</b> ${userPc}</p>
-          <p><b>Pass Remote:</b> ${passRemote}</p>
-          <p><b>Pass Eye Peak:</b> ${passEyePeak}</p>
-          <p><b>Op. Pistola:</b> ${opPistola}</p>
-          <p><b>Pass Pistola:</b> ${passPistola}</p>
-          <p><b>Nome PC:</b> ${nomePc}</p>
-          <p><b>TeamViewer:</b> ${teamviewer}</p>
-        </body>
-        </html>
-      `);
-
-      printWindow.document.close();
-
-      setTimeout(()=>{
-        printWindow.focus();
-        printWindow.print();
-      },500);
-
-    };
-
-    // APAGAR
-    card.querySelector(".btn-danger").onclick = async ()=>{
-
-      if(!confirm("Apagar utilizador?")){
-        return;
-      }
-
-      await usersRef
-        .doc(user.firebaseId)
-        .delete();
-
-    };
-
-    container.appendChild(card);
-
-  });
-
-};
-
-window.guardarEdicaoUser = async function(){
-
-  
-
-  const data = {
-    nome: document.getElementById("editUser_nome")?.value || "",
-    zona: document.getElementById("editUser_zona")?.value || "",
-    user_pc_eye: document.getElementById("editUser_user_pc_eye")?.value || "",
-    pass_remote: document.getElementById("editUser_pass_remote")?.value || "",
-    pass_eye_peak: document.getElementById("editUser_pass_eye_peak")?.value || "",
-    op_pistola: document.getElementById("editUser_op_pistola")?.value || "",
-    pass_pistola: document.getElementById("editUser_pass_pistola")?.value || "",
-    nome_pc: document.getElementById("editUser_nome_pc")?.value || "",
-    teamviewer: document.getElementById("editUser_teamviewer")?.value || "",
-    user_mo365: document.getElementById("editUser_user_mo365")?.value || "",
-    pw_mo365: document.getElementById("editUser_pw_mo365")?.value || "",
-    email_bragalis: document.getElementById("editUser_email_bragalis")?.value || "",
-    pass_bragalis: document.getElementById("editUser_pass_bragalis")?.value || ""
-  };
-
-  if(window.currentEditingUserId){
-    if(window.currentEditingUserId){
-    await usersRef.doc(window.currentEditingUserId).update(data);
-  }else{
-    await usersRef.add(data);
-  };
-  }else{
-    await usersRef.add(data);
-  };
-
-  fecharEditarUser();
-
-};
-
-window.fecharEditarUser = function(){
-
-  const modal =
-    document.getElementById("modalEditarUser");
-
-  if(modal){
-    modal.style.display = "none";
-    modal.classList.remove("active");
-  }
-
-};
-
+// FIREBASE USERS
+// App Braga
+(function () {
+ if (!window.db) {
+   console.error("Firebase DB não encontrado");
+   return;
+ }
+ const usersRef = window.db.collection("users");
+ // =========================
+ // LISTENER FIREBASE
+ // =========================
+ usersRef.onSnapshot((snapshot) => {
+   const lista = [];
+   snapshot.forEach((doc) => {
+     lista.push({
+       firebaseId: doc.id,
+       ...doc.data()
+     });
+   });
+   // ORDENAR ALFABETICAMENTE
+   lista.sort((a, b) => {
+     const nomeA =
+       ((a.nome || a.name || "") + "")
+         .toLowerCase();
+     const nomeB =
+       ((b.nome || b.name || "") + "")
+         .toLowerCase();
+     return nomeA.localeCompare(nomeB);
+   });
+   window.usersData = lista;
+   // =========================
+   // CONTADORES
+   // =========================
+   const totalUsers =
+     lista.length;
+   const totalMO365 =
+     lista.filter((u) =>
+       (u.user_mo365 || "").trim() !== "" ||
+       (u.pw_mo365 || "").trim() !== ""
+     ).length;
+   const totalPistola =
+     lista.filter((u) =>
+       (u.op_pistola || "").trim() !== "" ||
+       (u.pass_pistola || "").trim() !== ""
+     ).length;
+   const elTotal =
+     document.getElementById("countUsers");
+   const elMO365 =
+     document.getElementById("countMO365");
+   const elPistola =
+     document.getElementById("countPistola");
+   if (elTotal)
+     elTotal.textContent = totalUsers;
+   if (elMO365)
+     elMO365.textContent = totalMO365;
+   if (elPistola)
+     elPistola.textContent = totalPistola;
+   // RENDER
+   if (typeof renderUsers === "function") {
+     renderUsers(lista);
+   }
+ });
+ // =========================
+ // EDITAR USER
+ // =========================
+ window.editarUser = function (user) {
+   window.currentEditingUserId =
+     user.firebaseId;
+   const setVal = (id, value) => {
+     const el =
+       document.getElementById(id);
+     if (el)
+       el.value = value || "";
+   };
+   setVal("editUser_nome", user.nome);
+   setVal("editUser_zona", user.zona);
+   setVal("editUser_user_pc_eye", user.user_pc_eye);
+   setVal("editUser_pass_remote", user.pass_remote);
+   setVal("editUser_pass_eye_peak", user.pass_eye_peak);
+   setVal("editUser_op_pistola", user.op_pistola);
+   setVal("editUser_pass_pistola", user.pass_pistola);
+   setVal("editUser_nome_pc", user.nome_pc);
+   setVal("editUser_teamviewer", user.teamviewer);
+   setVal("editUser_user_mo365", user.user_mo365);
+   setVal("editUser_pw_mo365", user.pw_mo365);
+   setVal("editUser_email_bragalis", user.email_bragalis);
+   setVal("editUser_pass_bragalis", user.pass_bragalis);
+   const modal =
+     document.getElementById("modalEditarUser");
+   if (modal)
+     modal.style.display = "flex";
+ };
+ // =========================
+ // GUARDAR USER
+ // =========================
+ window.guardarUser = async function () {
+   try {
+     const getVal = (id) => {
+       const el =
+         document.getElementById(id);
+       return el ? el.value.trim() : "";
+     };
+     const data = {
+       nome:
+         getVal("editUser_nome"),
+       zona:
+         getVal("editUser_zona"),
+       user_pc_eye:
+         getVal("editUser_user_pc_eye"),
+       pass_remote:
+         getVal("editUser_pass_remote"),
+       pass_eye_peak:
+         getVal("editUser_pass_eye_peak"),
+       op_pistola:
+         getVal("editUser_op_pistola"),
+       pass_pistola:
+         getVal("editUser_pass_pistola"),
+       nome_pc:
+         getVal("editUser_nome_pc"),
+       teamviewer:
+         getVal("editUser_teamviewer"),
+       user_mo365:
+         getVal("editUser_user_mo365"),
+       pw_mo365:
+         getVal("editUser_pw_mo365"),
+       email_bragalis:
+         getVal("editUser_email_bragalis"),
+       pass_bragalis:
+         getVal("editUser_pass_bragalis")
+     };
+     // EDITAR
+     if (window.currentEditingUserId) {
+       await usersRef
+         .doc(window.currentEditingUserId)
+         .update(data);
+     } else {
+       // NOVO USER
+       await usersRef.add(data);
+     }
+     const modal =
+       document.getElementById("modalEditarUser");
+     if (modal)
+       modal.style.display = "none";
+     window.currentEditingUserId = null;
+     console.log("User guardado");
+   } catch (error) {
+     console.error(
+       "Erro ao guardar user:",
+       error
+     );
+   }
+ };
+ // =========================
+ // APAGAR USER
+ // =========================
+ window.apagarUser = async function (firebaseId) {
+   const confirmar =
+     confirm("Apagar utilizador?");
+   if (!confirmar)
+     return;
+   try {
+     await usersRef
+       .doc(firebaseId)
+       .delete();
+   } catch (error) {
+     console.error(
+       "Erro apagar user:",
+       error
+     );
+   }
+ };
+ // =========================
+ // IMPRIMIR USER
+ // =========================
+ window.imprimirUser = function (user) {
+   const printWindow =
+     window.open();
+   if (!printWindow) {
+     alert(
+       "Erro ao abrir impressão"
+     );
+     return;
+   }
+   printWindow.document.write(`
+<html>
+<head>
+<title>${user.nome}</title>
+<style>
+         body{
+           font-family: Arial;
+           padding:20px;
+           color:#000;
+         }
+         h1{
+           margin-bottom:20px;
+         }
+         p{
+           margin:8px 0;
+           font-size:16px;
+         }
+</style>
+</head>
+<body>
+<h1>${user.nome || "-"}</h1>
+<p><b>Zona:</b> ${user.zona || "-"}</p>
+<p><b>User PC/EYE:</b> ${user.user_pc_eye || "-"}</p>
+<p><b>Pass Remote:</b> ${user.pass_remote || "-"}</p>
+<p><b>Pass Eye Peak:</b> ${user.pass_eye_peak || "-"}</p>
+<p><b>Op. Pistola:</b> ${user.op_pistola || "-"}</p>
+<p><b>Pass Pistola:</b> ${user.pass_pistola || "-"}</p>
+<p><b>Nome PC:</b> ${user.nome_pc || "-"}</p>
+<p><b>TeamViewer:</b> ${user.teamviewer || "-"}</p>
+<p><b>User MO365:</b> ${user.user_mo365 || "-"}</p>
+<p><b>PW MO365:</b> ${user.pw_mo365 || "-"}</p>
+<p><b>Email Bragalis:</b> ${user.email_bragalis || "-"}</p>
+<p><b>Pass Bragalis:</b> ${user.pass_bragalis || "-"}</p>
+</body>
+</html>
+   `);
+   printWindow.document.close();
+   printWindow.focus();
+   setTimeout(() => {
+     printWindow.print();
+   }, 500);
+ };
 })();
