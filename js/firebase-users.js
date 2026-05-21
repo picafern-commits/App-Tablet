@@ -196,118 +196,121 @@
        );
      }
    };
- // =========================
- // IMPRIMIR USER
- // =========================
- window.imprimirUser =
-   function (user) {
-     const html = `
+// =========================
+// IMPRIMIR USER
+// =========================
+window.imprimirUser =
+ function (user) {
+   // VALIDAR
+   if (!user) {
+     console.error(
+       "User inválido"
+     );
+     return;
+   }
+   // =========================
+   // CAMPOS COM DADOS
+   // =========================
+   const campos = [
+     ["Zona", user.zona],
+     ["User PC/EYE", user.user_pc_eye],
+     ["Pass Remote", user.pass_remote],
+     ["Pass Eye Peak", user.pass_eye_peak],
+     ["Op. Pistola", user.op_pistola],
+     ["Pass Pistola", user.pass_pistola],
+     ["Nome PC", user.nome_pc],
+     ["TeamViewer", user.teamviewer],
+     ["User MO365", user.user_mo365],
+     ["PW MO365", user.pw_mo365],
+     ["Email Bragalis", user.email_bragalis],
+     ["Pass Bragalis", user.pass_bragalis]
+   ];
+   // =========================
+   // LINHAS
+   // =========================
+   const linhas = campos
+     .filter(([_, valor]) => {
+       return (
+         valor &&
+         valor.toString().trim() !== ""
+       );
+     })
+     .map(([label, valor]) => `
+<p>
+<b>${label}:</b>
+         ${valor}
+</p>
+     `)
+     .join("");
+   // =========================
+   // HTML
+   // =========================
+   const html = `
 <html>
 <head>
-<title>${user.nome}</title>
+<title>
+ ${user.nome || "User"}
+</title>
 <style>
-           body{
-             font-family: Arial;
-             padding:20px;
-             color:#000;
-             background:#fff;
-           }
-           h1{
-             margin-bottom:20px;
-             color:#000;
-           }
-           p{
-             margin:8px 0;
-             font-size:16px;
-             color:#000;
-           }
-           b{
-             color:#000;
-           }
+body{
+ font-family: Arial;
+ padding:14px;
+ color:#000;
+ background:#fff;
+}
+h1{
+ margin-bottom:14px;
+ color:#000;
+ font-size:18px;
+}
+p{
+ margin:4px 0;
+ font-size:12px;
+ color:#000;
+ line-height:1.2;
+}
+b{
+ color:#000;
+}
 </style>
 </head>
 <body>
 <h1>
-           ${user.nome || "-"}
+ ${user.nome || "-"}
 </h1>
-<p>
-<b>Zona:</b>
-           ${user.zona || "-"}
-</p>
-<p>
-<b>User PC/EYE:</b>
-           ${user.user_pc_eye || "-"}
-</p>
-<p>
-<b>Pass Remote:</b>
-           ${user.pass_remote || "-"}
-</p>
-<p>
-<b>Pass Eye Peak:</b>
-           ${user.pass_eye_peak || "-"}
-</p>
-<p>
-<b>Op. Pistola:</b>
-           ${user.op_pistola || "-"}
-</p>
-<p>
-<b>Pass Pistola:</b>
-           ${user.pass_pistola || "-"}
-</p>
-<p>
-<b>Nome PC:</b>
-           ${user.nome_pc || "-"}
-</p>
-<p>
-<b>TeamViewer:</b>
-           ${user.teamviewer || "-"}
-</p>
-<p>
-<b>User MO365:</b>
-           ${user.user_mo365 || "-"}
-</p>
-<p>
-<b>PW MO365:</b>
-           ${user.pw_mo365 || "-"}
-</p>
-<p>
-<b>Email Bragalis:</b>
-           ${user.email_bragalis || "-"}
-</p>
-<p>
-<b>Pass Bragalis:</b>
-           ${user.pass_bragalis || "-"}
-</p>
+${linhas}
 </body>
 </html>
-     `;
-     const iframe =
-       document.createElement(
-         "iframe"
-       );
-     iframe.style.position =
-       "fixed";
-     iframe.style.right = "0";
-     iframe.style.bottom = "0";
-     iframe.style.width = "0";
-     iframe.style.height = "0";
-     iframe.style.border = "0";
-     document.body.appendChild(
-       iframe
+`;
+   // =========================
+   // IFRAME
+   // =========================
+   const iframe =
+     document.createElement(
+       "iframe"
      );
-     const frameDoc =
-       iframe.contentWindow.document;
-     frameDoc.open();
-     frameDoc.write(html);
-     frameDoc.close();
+   iframe.style.position =
+     "fixed";
+   iframe.style.right = "0";
+   iframe.style.bottom = "0";
+   iframe.style.width = "0";
+   iframe.style.height = "0";
+   iframe.style.border = "0";
+   document.body.appendChild(
+     iframe
+   );
+   const frameDoc =
+     iframe.contentWindow.document;
+   frameDoc.open();
+   frameDoc.write(html);
+   frameDoc.close();
+   setTimeout(() => {
+     iframe.contentWindow.focus();
+     iframe.contentWindow.print();
      setTimeout(() => {
-       iframe.contentWindow.focus();
-       iframe.contentWindow.print();
-       setTimeout(() => {
-         document.body.removeChild(
-           iframe
-         );
-       }, 1000);
-     }, 500);
-   };
-})();
+       document.body.removeChild(
+         iframe
+       );
+     }, 1000);
+   }, 500);
+ };
