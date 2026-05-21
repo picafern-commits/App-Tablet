@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.5.0";
+const APP_VERSION = "Final";
 
 
 
@@ -3100,11 +3100,17 @@ window.addEventListener("load", () => atualizarVersaoUI(APP_VERSION));
 
 /* ===== CRUD EXTRA: Portas, Users, Pistolas ===== */
 function itemPorRef(lista, ref) {
-  if (typeof ref === "string") {
-    return lista.find(i => i.idDoc === ref || i._ref === ref) || null;
-  }
-  const idx = Number(ref);
-  return Number.isNaN(idx) ? null : (lista[idx] || null);
+ if (typeof ref === "string") {
+   return lista.find(i =>
+     i.idDoc === ref ||
+     i._ref === ref ||
+     i.firebaseId === ref
+   ) || null;
+ }
+ const idx = Number(ref);
+ return Number.isNaN(idx)
+   ? null
+   : (lista[idx] || null);
 }
 
 function idxPorRef(lista, ref) {
