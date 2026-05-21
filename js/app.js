@@ -3426,254 +3426,344 @@ function escapeHtmlAppBraga(valor) {
     .replace(/'/g, "&#39;");
 }
 
-function imprimirUser(ref) {
- // =========================
- // BUSCAR USER
- // =========================
- const item =
-   itemPorRef(
-     window.usersData,
-     ref
-   );
- if (!item) {
-   return mostrarMensagem(
-     "User não encontrado.",
-     "erro"
-   );
- }
- // =========================
- // CAMPOS
- // =========================
- const campos = [
-   "nome",
-   "zona",
-   "user_pc_eye",
-   "pass_remote",
-   "pass_eye_peak",
-   "op_pistola",
-   "pass_pistola",
-   "nome_pc",
-   "teamviewer",
-   "user_mo365",
-   "pw_mo365",
-   "email_bragalis",
-   "pass_bragalis"
- ];
- // =========================
- // LINHAS
- // =========================
- const linhas = campos
-   .filter((campo) => {
-     return (
-       normalizarTexto(
-         item[campo]
-       ) !== ""
-     );
-   })
-   .map((campo) => `
-<div class="print-row">
-<div class="print-label">
-         ${escapeHtmlAppBraga(
-           formatUserFieldLabel(campo)
-         )}
-</div>
-<div class="print-value">
-         ${escapeHtmlAppBraga(
-           item[campo] || "-"
-         )}
-</div>
-</div>
-   `)
-   .join("");
- // =========================
- // TÍTULO
- // =========================
- const titulo =
-   escapeHtmlAppBraga(
-     item.nome || "User"
-   );
- // =========================
- // HTML IMPRESSÃO
- // =========================
- const htmlImpressao = `
+function imprimirUser(user) {
+
+  // =========================
+  // VALIDAR
+  // =========================
+
+  if (!user) {
+
+    return mostrarMensagem(
+      "User não encontrado.",
+      "erro"
+    );
+
+  }
+
+  // =========================
+  // CAMPOS
+  // =========================
+
+  const campos = [
+
+    "nome",
+    "zona",
+    "user_pc_eye",
+    "pass_remote",
+    "pass_eye_peak",
+    "op_pistola",
+    "pass_pistola",
+    "nome_pc",
+    "teamviewer",
+    "user_mo365",
+    "pw_mo365",
+    "email_bragalis",
+    "pass_bragalis"
+
+  ];
+
+  // =========================
+  // LINHAS
+  // =========================
+
+  const linhas = campos
+
+    .filter((campo) => {
+
+      return (
+        (user[campo] || "").trim() !== ""
+      );
+
+    })
+
+    .map((campo) => `
+
+      <div class="print-row">
+
+        <div class="print-label">
+
+          ${campo
+            .replaceAll("_", " ")
+            .toUpperCase()}
+
+        </div>
+
+        <div class="print-value">
+
+          ${user[campo] || "-"}
+
+        </div>
+
+      </div>
+
+    `)
+
+    .join("");
+
+  // =========================
+  // TÍTULO
+  // =========================
+
+  const titulo =
+    user.nome || "User";
+
+  // =========================
+  // HTML
+  // =========================
+
+  const htmlImpressao = `
+
 <!DOCTYPE html>
+
 <html lang="pt">
+
 <head>
+
 <meta charset="UTF-8">
+
 <title>
-       Imprimir Dados - ${titulo}
+  Imprimir Dados - ${titulo}
 </title>
+
 <style>
-       @page {
-         size: 100mm 150mm;
-         margin: 4mm;
-       }
-       html,
-       body {
-         width: 100mm;
-         height: 150mm;
-         margin: 0;
-         padding: 0;
-         background: #ffffff;
-         color: #111827;
-         font-family:
-           Arial,
-           Helvetica,
-           sans-serif;
-         -webkit-print-color-adjust: exact;
-         print-color-adjust: exact;
-       }
-       body {
-         box-sizing: border-box;
-       }
-       .label-sheet {
-         width: 100mm;
-         min-height: 150mm;
-         box-sizing: border-box;
-         padding: 6mm;
-         display: flex;
-         flex-direction: column;
-         gap: 3mm;
-       }
-       .title {
-         font-size: 20px;
-         font-weight: 700;
-         margin: 0 0 2mm 0;
-         border-bottom:
-           1px solid #d1d5db;
-         padding-bottom: 2mm;
-         word-break: break-word;
-       }
-       .subtitle {
-         font-size: 11px;
-         color: #4b5563;
-         margin: 0 0 1mm 0;
-       }
-       .content {
-         display: flex;
-         flex-direction: column;
-         gap: 2.2mm;
-         margin-top: 2mm;
-       }
-       .print-row {
-         border:
-           1px solid #e5e7eb;
-         border-radius: 2mm;
-         padding:
-           2.2mm 2.5mm;
-         page-break-inside: avoid;
-       }
-       .print-label {
-         font-size: 10px;
-         font-weight: 700;
-         color: #374151;
-         margin-bottom: 1mm;
-         text-transform: uppercase;
-         letter-spacing: .2px;
-       }
-       .print-value {
-         font-size: 12px;
-         line-height: 1.3;
-         word-break: break-word;
-         white-space: pre-wrap;
-       }
-</style>
-</head>
-<body>
-<div class="label-sheet">
-<div class="subtitle">
-         Etiqueta User - App Braga
-</div>
-<h1 class="title">
-         ${titulo}
-</h1>
-<div class="content">
-         ${linhas || `
-<div class="print-row">
-<div class="print-label">
-               Sem dados
-</div>
-<div class="print-value">
-               Este user não tem campos preenchidos.
-</div>
-</div>
-         `}
-</div>
-</div>
-</body>
-</html>
- `;
- // =========================
- // IFRAME
- // =========================
- const iframe =
-   document.createElement(
-     "iframe"
-   );
- iframe.style.position =
-   "fixed";
- iframe.style.right = "0";
- iframe.style.bottom = "0";
- iframe.style.width = "0";
- iframe.style.height = "0";
- iframe.style.border = "0";
- iframe.setAttribute(
-   "aria-hidden",
-   "true"
- );
- document.body.appendChild(
-   iframe
- );
- const frameWindow =
-   iframe.contentWindow;
- if (!frameWindow) {
-   iframe.remove();
-   mostrarMensagem(
-     "Não foi possível preparar a impressão neste dispositivo.",
-     "erro"
-   );
-   return;
- }
- // =========================
- // LIMPEZA
- // =========================
- const limparIframe = () => {
-   setTimeout(() => {
-     iframe.remove();
-   }, 1500);
- };
- // =========================
- // ONLOAD
- // =========================
- iframe.onload = () => {
-   setTimeout(() => {
-     try {
-       frameWindow.focus();
-       frameWindow.print();
-     } catch (err) {
-       console.error(
-         "Falha ao imprimir user:",
-         err
-       );
-       mostrarMensagem(
-         "Não foi possível iniciar a impressão.",
-         "erro"
-       );
-     } finally {
-       limparIframe();
-     }
-   }, 200);
- };
- // =========================
- // ESCREVER HTML
- // =========================
- frameWindow.document.open();
- frameWindow.document.write(
-   htmlImpressao
- );
- frameWindow.document.close();
+
+@page {
+
+  size: 100mm 150mm;
+  margin: 4mm;
+
 }
 
+html,
+body {
+
+  width: 100mm;
+  height: 150mm;
+
+  margin: 0;
+  padding: 0;
+
+  background: #ffffff;
+  color: #111827;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+}
+
+body {
+
+  box-sizing: border-box;
+
+}
+
+.label-sheet {
+
+  width: 100mm;
+  min-height: 150mm;
+
+  box-sizing: border-box;
+
+  padding: 6mm;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 3mm;
+
+}
+
+.title {
+
+  font-size: 20px;
+  font-weight: 700;
+
+  margin: 0 0 2mm 0;
+
+  border-bottom:
+    1px solid #d1d5db;
+
+  padding-bottom: 2mm;
+
+}
+
+.subtitle {
+
+  font-size: 11px;
+  color: #4b5563;
+
+  margin: 0 0 1mm 0;
+
+}
+
+.content {
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 2.2mm;
+
+  margin-top: 2mm;
+
+}
+
+.print-row {
+
+  border:
+    1px solid #e5e7eb;
+
+  border-radius: 2mm;
+
+  padding:
+    2.2mm 2.5mm;
+
+}
+
+.print-label {
+
+  font-size: 10px;
+  font-weight: 700;
+
+  color: #374151;
+
+  margin-bottom: 1mm;
+
+}
+
+.print-value {
+
+  font-size: 12px;
+
+  line-height: 1.3;
+
+  word-break: break-word;
+
+  white-space: pre-wrap;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="label-sheet">
+
+<div class="subtitle">
+  Etiqueta User - App Braga
+</div>
+
+<h1 class="title">
+  ${titulo}
+</h1>
+
+<div class="content">
+
+  ${linhas || `
+
+    <div class="print-row">
+
+      <div class="print-label">
+        Sem dados
+      </div>
+
+      <div class="print-value">
+        Este user não tem campos preenchidos.
+      </div>
+
+    </div>
+
+  `}
+
+</div>
+
+</div>
+
+</body>
+
+</html>
+
+`;
+
+  // =========================
+  // IFRAME
+  // =========================
+
+  const iframe =
+    document.createElement(
+      "iframe"
+    );
+
+  iframe.style.position =
+    "fixed";
+
+  iframe.style.right = "0";
+
+  iframe.style.bottom = "0";
+
+  iframe.style.width = "0";
+
+  iframe.style.height = "0";
+
+  iframe.style.border = "0";
+
+  document.body.appendChild(
+    iframe
+  );
+
+  const frameWindow =
+    iframe.contentWindow;
+
+  if (!frameWindow) {
+
+    iframe.remove();
+
+    return mostrarMensagem(
+      "Erro ao abrir impressão",
+      "erro"
+    );
+
+  }
+
+  iframe.onload = () => {
+
+    setTimeout(() => {
+
+      try {
+
+        frameWindow.focus();
+
+        frameWindow.print();
+
+      } catch (err) {
+
+        console.error(err);
+
+      }
+
+      setTimeout(() => {
+
+        iframe.remove();
+
+      }, 1500);
+
+    }, 300);
+
+  };
+
+  frameWindow.document.open();
+
+  frameWindow.document.write(
+    htmlImpressao
+  );
+
+  frameWindow.document.close();
+
+}
 
 /* Pistolas */
 let pistolaEditRef = null;
