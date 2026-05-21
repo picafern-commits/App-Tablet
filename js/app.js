@@ -1751,7 +1751,7 @@ window.usersData.sort((a,b)=>{
       <div class="meta-line">Pass Bragalis: <span class="meta-value">${u.pass_bragalis || "-"}</span></div>
       <div class="item-actions">
         <button class="secondary-btn" onclick="editarUser(${ref})">Editar</button>
-        <button class="secondary-btn" onclick="imprimirUser(${ref})">Imprimir Dados</button>
+		<button class="secondary-btn" onclick='imprimirUser(${JSON.stringify(u)})'>
         <button class="secondary-btn" onclick="apagarUser(${ref})">Apagar</button>
       </div>
     </div>
