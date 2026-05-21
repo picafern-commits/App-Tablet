@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "Final";
+const APP_VERSION = "1.5.0";
 
 
 
