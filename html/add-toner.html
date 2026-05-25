@@ -77,7 +77,7 @@
     </div>
 
     <div class="card-actions" style="margin-bottom:14px;">
-      <button type="button" class="primary-btn" onclick="abrirOCR()">ðŸ“· Ler Folha Toner</button>
+      <button type="button" class="primary-btn" onclick="abrirOCR()">Ler Folha Toner</button>
       <input id="ocrInput" type="file" accept="image/*" capture="environment" style="display:none;" onchange="processarOCRInput(event)">
     </div>
 
@@ -88,20 +88,20 @@
   <div id="serial3Box" class="barcode-learn-box" style="display:none;">
     <div class="section-header">
       <div>
-        <h3>Ãšltimos 3 DÃ­gitos da SÃ©rie</h3>
-        <p class="section-subtitle">Introduza os 3 Ãºltimos dÃ­gitos da impressora para selecionar a localizaÃ§Ã£o automaticamente.</p>
+        <h3>Ultimos 3 Di­gitos da Serie</h3>
+        <p class="section-subtitle">Introduza os 3 Ultimos di­gitos da impressora para selecionar a localização automaticamente.</p>
       </div>
     </div>
 
     <div class="form-grid">
       <label>
-        <span>Ãšltimos 3 dÃ­gitos</span>
+        <span>Ultimos 3 di­gitos</span>
         <input id="serial3Input" type="text" maxlength="3" placeholder="Ex: 805">
       </label>
     </div>
 
     <div class="card-actions" style="margin-top:12px;">
-      <button type="button" class="primary-btn" onclick="confirmarSerie3Digitos()">Confirmar SÃ©rie</button>
+      <button type="button" class="primary-btn" onclick="confirmarSerie3Digitos()">Confirmar Serie</button>
       <button type="button" class="secondary-btn" onclick="fecharSerie3Digitos()">Cancelar</button>
     </div>
   </div>
@@ -116,9 +116,9 @@
       </select>
     </label>
 
-    <label><span>LocalizaÃ§Ã£o</span>
+    <label><span>Localização</span>
       <select id="localizacao">
-        <option value="">Selecionar localizaÃ§Ã£o</option>
+        <option value="">Selecionar localização</option>
         <option value="R4B2229805 - Braga - Ilha 01">R4B2229805 - Braga - Ilha 01</option>
         <option value="WD44336210 - Braga - Ilha 02">WD44336210 - Braga - Ilha 02</option>
         <option value="R4B1395508 - Braga - Ilha 03">R4B1395508 - Braga - Ilha 03</option>
@@ -143,7 +143,7 @@
         <option value="Preto">Preto</option><option value="Amarelo">Amarelo</option><option value="Vermelho">Vermelho</option><option value="Azul">Azul</option>
       </select>
     </label>
-    <label><span>Lote</span><input type="text" id="lote" placeholder="Lote automÃ¡tico / opcional"></label>
+    <label><span>Lote</span><input type="text" id="lote" placeholder="Lote automatico / opcional"></label>
     <label><span>Data da folha</span><input type="text" id="dataFolha" readonly placeholder="Data lida da folha"></label>
     <label><span>Data do scan</span><input type="date" id="data"></label>
     <button class="primary-btn" onclick="disponivel()">Adicionar ao stock</button>
