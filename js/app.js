@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.5.0";
+const APP_VERSION = "1.6.0";
 
 
 
@@ -564,6 +564,7 @@ function renderDashboardResumoInteligente() {
 }
 
 function renderDashboardCards(items) {
+  try { updateEnterpriseDashboard(); } catch (e) { console.error(e); }
   const lista = el("listaDashboardStock");
   if (!lista) return;
 
@@ -1803,8 +1804,10 @@ function applyAppTheme(mode) {
   const isDark = mode === "dark";
   document.documentElement.classList.toggle("dark", isDark);
   document.documentElement.classList.toggle("app-dark", isDark);
+  document.documentElement.classList.toggle("app-light", !isDark);
   document.body.classList.toggle("dark", isDark);
   document.body.classList.toggle("app-dark", isDark);
+  document.body.classList.toggle("app-light", !isDark);
   localStorage.setItem("modo", isDark ? "dark" : "light");
 
   document.querySelectorAll(".theme-toggle").forEach((button) => {
@@ -1817,7 +1820,7 @@ function applyAppTheme(mode) {
 }
 
 function initGlobalTheme() {
-  const savedMode = localStorage.getItem("modo") === "dark" ? "dark" : "light";
+  const savedMode = localStorage.getItem("modo") === "light" ? "light" : "dark";
   applyAppTheme(savedMode);
 
   const sidebar = document.querySelector(".sidebar");
@@ -1838,6 +1841,19 @@ function initGlobalTheme() {
     }
   }
 
+  if (sidebar && !sidebar.querySelector(".sidebar-user-card")) {
+    const footer = document.createElement("div");
+    footer.className = "sidebar-user-card";
+    footer.innerHTML = `
+      <div class="sidebar-user-avatar">BR</div>
+      <div>
+        <strong>Administrador</strong>
+        <span>admin@appbraga.pt</span>
+      </div>
+    `;
+    sidebar.appendChild(footer);
+  }
+
   const sw = el("darkSwitch");
   if (sw && !sw.dataset.themeBound) {
     sw.dataset.themeBound = "1";
@@ -1846,7 +1862,31 @@ function initGlobalTheme() {
     });
   }
 
-  applyAppTheme(localStorage.getItem("modo") === "dark" ? "dark" : "light");
+  applyAppTheme(localStorage.getItem("modo") === "light" ? "light" : "dark");
+}
+
+function updateEnterpriseDashboard() {
+  const totalEquipamentosEl = el("dashTotalEquipamentos");
+  if (!totalEquipamentosEl) return;
+
+  const impressorasTotal = Array.isArray(impressorasData) ? impressorasData.length : 0;
+  const pcsTotal = Array.isArray(pcsGlobal) ? pcsGlobal.length : 0;
+  const pistolasTotal = Array.isArray(window.pistolasData) ? window.pistolasData.length : 0;
+  const portasTotal = Array.isArray(window.portasData) ? window.portasData.length : 0;
+  const stockTotal = Array.isArray(stockGlobal) ? stockGlobal.length : 0;
+  const ticketsAbertos = Array.isArray(manutencoesGlobal)
+    ? manutencoesGlobal.filter(item => item.estado === "Pendente" || item.estado === "Em reparação").length
+    : 0;
+  const impressorasOk = Array.isArray(impressorasData)
+    ? impressorasData.filter(item => obterEstadoImpressora(item.ip) === "OK").length
+    : 0;
+  const totalEquipamentos = impressorasTotal + pcsTotal + pistolasTotal + portasTotal;
+
+  setText("dashTotalEquipamentos", totalEquipamentos);
+  setText("dashStockTotal", stockTotal);
+  setText("dashTicketsAbertos", ticketsAbertos);
+  setText("dashImpressorasOk", impressorasOk);
+  setText("dashDonutTotal", totalEquipamentos);
 }
 
 /* =========================
