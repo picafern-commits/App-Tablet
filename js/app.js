@@ -203,12 +203,12 @@ function abrirIP(ip) {
   window.open(`http://${ip}`, "_blank");
 }
 
-function abrirManutençãoDireta(item) {
+function abrirManutencaoDireta(item) {
   localStorage.setItem("manutencaoPreenchida", JSON.stringify(item));
   window.location.href = "manutencao-impressoras.html";
 }
 
-function mapModeloManutenção(modelo) {
+function mapModeloManutencao(modelo) {
   if (modelo === "Kyocera P3155dn") return "P3155DN";
   if (modelo === "TASKalfa 2554ci") return "TASKalfa_255ci";
   if (modelo === "Ecosys PA5500x") return "PA5500x";
@@ -222,7 +222,7 @@ function sincronizarCamposImpressora() {
   if (serie) {
     const item = impressorasData.find(i => i.serie === serie);
     if (item) {
-      if (el("manutencaoModelo")) el("manutencaoModelo").value = mapModeloManutenção(item.modelo);
+      if (el("manutencaoModelo")) el("manutencaoModelo").value = mapModeloManutencao(item.modelo);
       if (el("manutencaoArmazem")) el("manutencaoArmazem").value = item.armazem;
       if (el("manutencaoLocalizacao")) el("manutencaoLocalizacao").value = item.localizacao;
       if (el("manutencaoIP")) el("manutencaoIP").value = item.ip;
@@ -233,7 +233,7 @@ function sincronizarCamposImpressora() {
   if (ip) {
     const item = impressorasData.find(i => i.ip === ip);
     if (item) {
-      if (el("manutencaoModelo")) el("manutencaoModelo").value = mapModeloManutenção(item.modelo);
+      if (el("manutencaoModelo")) el("manutencaoModelo").value = mapModeloManutencao(item.modelo);
       if (el("manutencaoArmazem")) el("manutencaoArmazem").value = item.armazem;
       if (el("manutencaoLocalizacao")) el("manutencaoLocalizacao").value = item.localizacao;
       if (el("manutencaoSerie")) el("manutencaoSerie").value = item.serie;
@@ -241,7 +241,7 @@ function sincronizarCamposImpressora() {
   }
 }
 
-function preencherLocaisManutenção() {
+function preencherLocaisManutencao() {
   const selectLoc = el("manutencaoLocalizacao");
   if (selectLoc) {
     selectLoc.innerHTML = `
@@ -273,14 +273,14 @@ function preencherLocaisManutenção() {
   }
 }
 
-function preencherFormularioManutenção() {
+function preencherFormularioManutencao() {
   const dados = localStorage.getItem("manutencaoPreenchida");
   if (!dados) return;
 
   try {
     const item = JSON.parse(dados);
 
-    if (el("manutencaoModelo")) el("manutencaoModelo").value = mapModeloManutenção(item.modelo);
+    if (el("manutencaoModelo")) el("manutencaoModelo").value = mapModeloManutencao(item.modelo);
     if (el("manutencaoSerie")) el("manutencaoSerie").value = item.serie || "";
     if (el("manutencaoArmazem")) el("manutencaoArmazem").value = item.armazem || "";
     if (el("manutencaoLocalizacao")) el("manutencaoLocalizacao").value = item.localizacao || "";
@@ -293,7 +293,7 @@ function preencherFormularioManutenção() {
   }
 }
 
-function limparFormularioManutenção() {
+function limparFormularioManutencao() {
   if (el("manutencaoTecnico")) el("manutencaoTecnico").value = "";
   if (el("manutencaoEstado")) el("manutencaoEstado").value = "Pendente";
   if (el("manutencaoArmazem")) el("manutencaoArmazem").value = "";
@@ -409,7 +409,7 @@ db.collection("historico").orderBy("created", "desc").onSnapshot(snap => {
 
   saveBackupAppBraga(BACKUP_KEYS_APP_BRAGA.historico, historicoGlobal);
   hideBackupBadge();
-  renderHistóricoCards(historicoGlobal);
+  renderHistoricoCards(historicoGlobal);
   renderAlertasInteligentes();
   renderModoGestorExtremo();
   renderDashboardResumoInteligente();
@@ -420,7 +420,7 @@ db.collection("historico").orderBy("created", "desc").onSnapshot(snap => {
   historicoGlobal = loadBackupAppBraga(BACKUP_KEYS_APP_BRAGA.historico);
   setText("countUsados", historicoGlobal.length);
   showBackupBadge();
-  renderHistóricoCards(historicoGlobal);
+  renderHistoricoCards(historicoGlobal);
   renderAlertasInteligentes();
   renderModoGestorExtremo();
   renderDashboardResumoInteligente();
@@ -462,19 +462,19 @@ db.collection("manutencoes").orderBy("created", "desc").onSnapshot(snap => {
 
   saveBackupAppBraga(BACKUP_KEYS_APP_BRAGA.manutencoes, manutencoesGlobal);
   hideBackupBadge();
-  atualizarContadoresManutenção();
+  atualizarContadoresManutencao();
   renderManutencoes(manutencoesGlobal);
   renderImpressoras();
 }, error => {
   console.error(error);
   manutencoesGlobal = loadBackupAppBraga(BACKUP_KEYS_APP_BRAGA.manutencoes);
   showBackupBadge();
-  atualizarContadoresManutenção();
+  atualizarContadoresManutencao();
   renderManutencoes(manutencoesGlobal);
   renderImpressoras();
 });
 
-function atualizarContadoresManutenção() {
+function atualizarContadoresManutencao() {
   setText("countManutTotal", manutencoesGlobal.length);
   setText("countManutPendentes", manutencoesGlobal.filter(i => i.estado === "Pendente").length);
   setText("countManutReparacao", manutencoesGlobal.filter(i => i.estado === "Em reparação").length);
@@ -508,7 +508,7 @@ function getCriticalityBucketsAppBraga() {
   return { critical, warning, normal };
 }
 
-function getTopLocalizacoesHistórico(limit = 3) {
+function getTopLocalizacoesHistorico(limit = 3) {
   const counts = {};
   historicoGlobal.forEach(item => {
     const key = String(item.localizacao || "Sem Localização");
@@ -534,7 +534,7 @@ function renderDashboardResumoInteligente() {
   if (!host) return;
 
   const buckets = getCriticalityBucketsAppBraga();
-  const topLocs = getTopLocalizacoesHistórico(4);
+  const topLocs = getTopLocalizacoesHistorico(4);
   const ultimos = getUltimosMovimentos(4);
 
   const critLabel = buckets.critical > 0 ? "Ação imediata" : "Sem críticos";
@@ -646,8 +646,8 @@ function renderStockCards(items) {
   `).join("");
 }
 
-function renderHistóricoCards(items) {
-  const lista = el("listaHistórico");
+function renderHistoricoCards(items) {
+  const lista = el("listaHistorico");
   if (!lista) return;
 
   if (!items.length) {
@@ -665,7 +665,7 @@ function renderHistóricoCards(items) {
       <div class="meta-line">Data Scan: <span class="meta-value">${t.data || "Sem Data"}</span></div>
       <div class="meta-line">Data Folha: <span class="meta-value">${t.dataFolha || "Sem Data da Folha"}</span></div>
       <div class="card-actions">
-        <button class="small-btn btn-edit" onclick="abrirEditarHistóricoModal('${t.idDoc}')">Editar</button>
+        <button class="small-btn btn-edit" onclick="abrirEditarHistoricoModal('${t.idDoc}')">Editar</button>
         <button class="small-btn btn-delete" onclick="apagar('${t.idDoc}')">Apagar</button>
       </div>
     </div>
@@ -833,7 +833,7 @@ async function apagarPC(id) {
 /* =========================
    MANUTENÇÃO
 ========================= */
-async function guardarManutenção() {
+async function guardarManutencao() {
   const tecnico = el("manutencaoTecnico")?.value || "";
   const estado = el("manutencaoEstado")?.value || "Pendente";
   const armazem = el("manutencaoArmazem")?.value || "";
@@ -865,7 +865,7 @@ async function guardarManutenção() {
       created: new Date()
     });
 
-    limparFormularioManutenção();
+    limparFormularioManutencao();
     mostrarMensagem("Manutenção guardada com sucesso.");
   } catch (error) {
     console.error(error);
@@ -907,7 +907,7 @@ function renderManutencoes(items) {
 
       <div class="card-actions">
         <button class="small-btn btn-use" onclick="marcarResolvido('${item.idDoc}')">Resolver</button>
-        <button class="small-btn btn-delete" onclick="apagarManutenção('${item.idDoc}')">Apagar</button>
+        <button class="small-btn btn-delete" onclick="apagarManutencao('${item.idDoc}')">Apagar</button>
       </div>
     </div>
   `).join("");
@@ -915,8 +915,8 @@ function renderManutencoes(items) {
 
 function filtrarManutencoes() {
   const texto = normalizarTexto(el("searchManutencoes")?.value || "");
-  const estado = el("filterEstadoManutenção")?.value || "";
-  const armazem = el("filterArmazemManutenção")?.value || "";
+  const estado = el("filterEstadoManutencao")?.value || "";
+  const armazem = el("filterArmazemManutencao")?.value || "";
 
   const filtradas = manutencoesGlobal.filter(item => {
     const passaTexto =
@@ -949,7 +949,7 @@ async function marcarResolvido(id) {
   }
 }
 
-async function apagarManutenção(id) {
+async function apagarManutencao(id) {
   try {
     await db.collection("manutencoes").doc(id).delete();
     mostrarMensagem("Registo de manutenção apagado.");
@@ -1207,7 +1207,7 @@ async function testarTodasAsImpressoras() {
 window.testarTonerImpressora = testarTonerImpressora;
 
 
-function filtrarHistóricoPorImpressora(item) {
+function filtrarHistoricoPorImpressora(item) {
   const serie = String(item.serie || "");
   const loc = String(item.localizacao || "");
   const arm = String(item.armazem || "");
@@ -1222,11 +1222,11 @@ function filtrarHistóricoPorImpressora(item) {
   });
 }
 
-function abrirHistóricoImpressora(item) {
+function abrirHistoricoImpressora(item) {
   const host = el("historicoImpressoraPanel");
   if (!host) return;
 
-  const itens = filtrarHistóricoPorImpressora(item);
+  const itens = filtrarHistoricoPorImpressora(item);
   const ultimo = itens[0] || null;
 
   host.innerHTML = `
@@ -1314,8 +1314,8 @@ function renderImpressoras(lista = impressorasData) {
           <div id="${tonerId}">${gerarHTMLBarraToner(null)}</div>
           <div class="table-actions" style="margin-top:8px;">
             <button class="action-btn ip" onclick="abrirIP('${item.ip}')">Abrir IP</button>
-            <button class="action-btn manut" onclick='abrirManutençãoDireta(${JSON.stringify(item)})'>Manutenção</button>
-            <button class="action-btn" onclick='abrirHistóricoImpressora(${JSON.stringify(item)})'>Histórico</button>
+            <button class="action-btn manut" onclick='abrirManutencaoDireta(${JSON.stringify(item)})'>Manutenção</button>
+            <button class="action-btn" onclick='abrirHistoricoImpressora(${JSON.stringify(item)})'>Histórico</button>
             <button class="action-btn" onclick="window.testarTonerImpressora('${item.ip}', '${tonerId}')">Testar toner</button>
           </div>
         </td>
@@ -1893,7 +1893,7 @@ function initFullScreenScroll() {
 document.addEventListener("DOMContentLoaded", initFullScreenScroll);
 
 const RADIOS_STORAGE_KEY = "appBragaRadios";
-const INFORMACOES_STORAGE_KEY = "appBragaInformações";
+const INFORMACOES_STORAGE_KEY = "appBragaInformacoes";
 let radiosData = [];
 let informacoesData = [];
 let informacaoSelecionada = null;
@@ -2050,7 +2050,7 @@ function filtrarRadios() {
   renderRadios();
 }
 
-function loadInformaçõesData() {
+function loadInformacoesData() {
   try {
     const raw = localStorage.getItem(INFORMACOES_STORAGE_KEY);
     informacoesData = raw ? JSON.parse(raw) : [];
@@ -2060,11 +2060,11 @@ function loadInformaçõesData() {
   }
 }
 
-function saveInformaçõesData() {
+function saveInformacoesData() {
   localStorage.setItem(INFORMACOES_STORAGE_KEY, JSON.stringify(informacoesData));
   try {
     if (window.db) {
-      window.db.collection("appInformações").doc("lista").set({
+      window.db.collection("appInformacoes").doc("lista").set({
         items: informacoesData,
         updated: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
@@ -2074,7 +2074,7 @@ function saveInformaçõesData() {
   }
 }
 
-function renderInformações() {
+function renderInformacoes() {
   const lista = document.getElementById("informacoesLista");
   if (!lista) return;
   lista.innerHTML = informacoesData.length ? informacoesData.map(item => `
@@ -2085,10 +2085,10 @@ function renderInformações() {
   `).join("") : `<div class="info-empty">Ainda sem informações guardadas.</div>`;
 }
 
-function initInformaçõesPage() {
+function initInformacoesPage() {
   if (!document.getElementById("informacoesLista")) return;
-  loadInformaçõesData();
-  renderInformações();
+  loadInformacoesData();
+  renderInformacoes();
 }
 
 function adicionarInformacao() {
@@ -2116,13 +2116,13 @@ function adicionarInformacao() {
   document.getElementById("infoTitulo").value = "";
   document.getElementById("infoObs").value = "";
   informacaoSelecionada = null;
-  saveInformaçõesData();
-  renderInformações();
+  saveInformacoesData();
+  renderInformacoes();
 }
 
 function selecionarInformacao(id) {
   informacaoSelecionada = id;
-  renderInformações();
+  renderInformacoes();
 }
 
 function verInformacaoSelecionada() {
@@ -2142,23 +2142,23 @@ function apagarInformacaoSelecionada() {
   if (!informacaoSelecionada) return mostrarMensagem("Seleciona uma informação primeiro.", "erro");
   informacoesData = informacoesData.filter(info => info.id !== informacaoSelecionada);
   informacaoSelecionada = null;
-  saveInformaçõesData();
-  renderInformações();
+  saveInformacoesData();
+  renderInformacoes();
 }
 
-function guardarInformações() {
+function guardarInformacoes() {
   const titulo = document.getElementById("infoTitulo")?.value || "";
   const obs = document.getElementById("infoObs")?.value || "";
   if (normalizarTexto(titulo) || normalizarTexto(obs)) {
     adicionarInformacao();
     return;
   }
-  saveInformaçõesData();
+  saveInformacoesData();
   mostrarMensagem("Informações guardadas.");
 }
 
 document.addEventListener("DOMContentLoaded", initRadiosPage);
-document.addEventListener("DOMContentLoaded", initInformaçõesPage);
+document.addEventListener("DOMContentLoaded", initInformacoesPage);
 window.adicionarRadio = adicionarRadio;
 window.atualizarRadioCampo = atualizarRadioCampo;
 window.apagarRadio = apagarRadio;
@@ -2169,7 +2169,7 @@ window.selecionarInformacao = selecionarInformacao;
 window.verInformacaoSelecionada = verInformacaoSelecionada;
 window.editarInformacaoSelecionada = editarInformacaoSelecionada;
 window.apagarInformacaoSelecionada = apagarInformacaoSelecionada;
-window.guardarInformações = guardarInformações;
+window.guardarInformacoes = guardarInformacoes;
 
 function updateEnterpriseDashboard() {
   const totalEquipamentosEl = el("dashTotalEquipamentos");
@@ -2199,7 +2199,7 @@ function updateEnterpriseDashboard() {
    INIT
 ========================= */
 window.addEventListener("DOMContentLoaded", () => {
-  if (el("historicoImpressoraPanel") && impressorasData && impressorasData.length) { abrirHistóricoImpressora(impressorasData[0]); }
+  if (el("historicoImpressoraPanel") && impressorasData && impressorasData.length) { abrirHistoricoImpressora(impressorasData[0]); }
   initGlobalTheme();
 
   carregarChecklist();
@@ -2209,8 +2209,8 @@ window.addEventListener("DOMContentLoaded", () => {
   tryRenderAppBraga(renderStockMinimoPainel);
   tryRenderAppBraga(renderAlertasInteligentes);
   tryRenderAppBraga(() => enhanceScannerStatus("Leitura pronta."));
-  preencherLocaisManutenção();
-  preencherFormularioManutenção();
+  preencherLocaisManutencao();
+  preencherFormularioManutencao();
 
   carregarImpressorasLocal();
   renderImpressoras();
@@ -2536,7 +2536,7 @@ renderImpressoras = function(lista = impressorasData) {
           <div id="${tonerId}">${gerarHTMLToners(info)}</div>
           <div class="table-actions" style="margin-top:8px;">
             ${webMode ? "" : `<button class="action-btn ip" onclick="abrirIP('${item.ip}')">Abrir IP</button>`}
-            <button class="action-btn manut" onclick='abrirManutençãoDireta(${JSON.stringify(item)})'>Manutenção</button>
+            <button class="action-btn manut" onclick='abrirManutencaoDireta(${JSON.stringify(item)})'>Manutenção</button>
             ${webMode ? "" : `<button class="action-btn" onclick="window.testarTonerImpressora('${item.ip}', '${tonerId}')">Testar toner</button>`}
           </div>
         </td>
@@ -2546,7 +2546,7 @@ renderImpressoras = function(lista = impressorasData) {
 };
 
 window.addEventListener("DOMContentLoaded", () => {
-  if (el("historicoImpressoraPanel") && impressorasData && impressorasData.length) { abrirHistóricoImpressora(impressorasData[0]); }
+  if (el("historicoImpressoraPanel") && impressorasData && impressorasData.length) { abrirHistoricoImpressora(impressorasData[0]); }
   bindPrintersFirebaseRealtime();
 });
 
@@ -3558,7 +3558,7 @@ function abrirAdicionarUser() {
   userEditRef = "__new__";
   const fields = ["nome","zona","user_pc_eye","pass_remote","pass_eye_peak","op_pistola","pass_pistola","nome_pc","teamviewer","user_mo365","pw_mo365","email_bragalis","pass_bragalis"];
   fields.forEach(f => { const node = el("editUser_" + f); if (node) node.value = ""; });
-  const h3 = document.querySelector('#modalEditarUser h3'); if (h3) h3.textContent = 'Adicionar Utilizador';
+  const h3 = document.querySelector('#modalEditarUser h3'); if (h3) h3.textContent = 'Adicionar User';
   const sub = document.querySelector('#modalEditarUser .section-subtitle'); if (sub) sub.textContent = 'Criar um novo utilizador';
   if (el("modalEditarUser")) el("modalEditarUser").style.display = "flex";
 }
@@ -4269,7 +4269,7 @@ function getTopConsumoEquipamentos(limit = 4) {
 
 function getTopProblemasDoDia(limit = 3) {
   const buckets = getCriticalityBucketsAppBraga();
-  const topLocs = getTopLocalizacoesHistórico(2);
+  const topLocs = getTopLocalizacoesHistorico(2);
   const ultimos = getUltimosMovimentos(1);
   const problems = [];
 
@@ -4314,7 +4314,7 @@ function renderModoGestorExtremo() {
   if (!board && !prioridade && !consumo && !problemas) return;
 
   const buckets = getCriticalityBucketsAppBraga();
-  const topLocs = getTopLocalizacoesHistórico(4);
+  const topLocs = getTopLocalizacoesHistorico(4);
   const topEquip = getTopConsumoEquipamentos(4);
   const topProb = getTopProblemasDoDia(3);
   const maxRows = getPrioridadeMaximaGestor(4);
@@ -4531,7 +4531,7 @@ function exportarExcelStock() {
   exportCsvFile("stock_app_braga.csv", ["idInterno","equipamento","localizacao","cor","lote","data","dataFolha"], stockGlobal);
 }
 
-function exportarExcelHistórico() {
+function exportarExcelHistorico() {
   if (!historicoGlobal.length) return mostrarMensagem("Não há histórico para exportar.", "erro");
   exportCsvFile("historico_app_braga.csv", ["idInterno","equipamento","localizacao","cor","lote","data","dataFolha"], historicoGlobal);
 }
@@ -4542,13 +4542,13 @@ function exportarExcelTudo() {
   exportCsvFile("dados_completos_app_braga.csv", ["origem","idInterno","equipamento","localizacao","cor","lote","data","dataFolha"], rows);
 }
 
-function filtrarHistóricoAvancado() {
-  const texto = normalizarTexto(el("searchHistórico")?.value || "");
-  const dFrom = el("filterHistóricoFrom")?.value || "";
-  const dTo = el("filterHistóricoTo")?.value || "";
-  const fLoc = normalizarTexto(el("filterHistóricoLocal")?.value || "");
-  const fEq = normalizarTexto(el("filterHistóricoEquipamento")?.value || "");
-  const fCor = normalizarTexto(el("filterHistóricoCor")?.value || "");
+function filtrarHistoricoAvancado() {
+  const texto = normalizarTexto(el("searchHistorico")?.value || "");
+  const dFrom = el("filterHistoricoFrom")?.value || "";
+  const dTo = el("filterHistoricoTo")?.value || "";
+  const fLoc = normalizarTexto(el("filterHistoricoLocal")?.value || "");
+  const fEq = normalizarTexto(el("filterHistoricoEquipamento")?.value || "");
+  const fCor = normalizarTexto(el("filterHistoricoCor")?.value || "");
 
   const items = historicoGlobal.filter(t => {
     const data = String(t.data || "");
@@ -4560,7 +4560,7 @@ function filtrarHistóricoAvancado() {
     const okCor = !fCor || normalizarTexto(t.cor).includes(fCor);
     return okText && okFrom && okTo && okLoc && okEq && okCor;
   });
-  renderHistóricoCards(items);
+  renderHistoricoCards(items);
 }
 
 function abrirEditarStockModal(id) {
@@ -4612,37 +4612,37 @@ async function apagarStockItem(id) {
   }
 }
 
-function abrirEditarHistóricoModal(id) {
+function abrirEditarHistoricoModal(id) {
   const item = historicoGlobal.find(x => x.idDoc === id);
   if (!item) return mostrarMensagem("Histórico não encontrado.", "erro");
   historicoEditModalId = id;
-  if (el("editHistóricoEquipamento")) el("editHistóricoEquipamento").value = item.equipamento || "";
-  if (el("editHistóricoCor")) el("editHistóricoCor").value = item.cor || "";
-  if (el("editHistóricoLocalizacao")) el("editHistóricoLocalizacao").value = item.localizacao || "";
-  if (el("editHistóricoLote")) el("editHistóricoLote").value = item.lote || "";
-  if (el("editHistóricoData")) el("editHistóricoData").value = item.data || "";
-  if (el("editHistóricoDataFolha")) el("editHistóricoDataFolha").value = item.dataFolha || "";
-  if (el("modalEditarHistórico")) el("modalEditarHistórico").style.display = "flex";
+  if (el("editHistoricoEquipamento")) el("editHistoricoEquipamento").value = item.equipamento || "";
+  if (el("editHistoricoCor")) el("editHistoricoCor").value = item.cor || "";
+  if (el("editHistoricoLocalizacao")) el("editHistoricoLocalizacao").value = item.localizacao || "";
+  if (el("editHistoricoLote")) el("editHistoricoLote").value = item.lote || "";
+  if (el("editHistoricoData")) el("editHistoricoData").value = item.data || "";
+  if (el("editHistoricoDataFolha")) el("editHistoricoDataFolha").value = item.dataFolha || "";
+  if (el("modalEditarHistorico")) el("modalEditarHistorico").style.display = "flex";
 }
 
-function fecharEdicaoHistóricoModal() {
+function fecharEdicaoHistoricoModal() {
   historicoEditModalId = null;
-  if (el("modalEditarHistórico")) el("modalEditarHistórico").style.display = "none";
+  if (el("modalEditarHistorico")) el("modalEditarHistorico").style.display = "none";
 }
 
-async function guardarEdicaoHistóricoModal() {
+async function guardarEdicaoHistoricoModal() {
   if (!historicoEditModalId) return;
   const payload = {
-    equipamento: el("editHistóricoEquipamento")?.value || "",
-    cor: el("editHistóricoCor")?.value || "",
-    localizacao: el("editHistóricoLocalizacao")?.value || "",
-    lote: el("editHistóricoLote")?.value || "",
-    data: el("editHistóricoData")?.value || "",
-    dataFolha: el("editHistóricoDataFolha")?.value || ""
+    equipamento: el("editHistoricoEquipamento")?.value || "",
+    cor: el("editHistoricoCor")?.value || "",
+    localizacao: el("editHistoricoLocalizacao")?.value || "",
+    lote: el("editHistoricoLote")?.value || "",
+    data: el("editHistoricoData")?.value || "",
+    dataFolha: el("editHistoricoDataFolha")?.value || ""
   };
   try {
     await db.collection("historico").doc(historicoEditModalId).update(payload);
-    fecharEdicaoHistóricoModal();
+    fecharEdicaoHistoricoModal();
     mostrarMensagem("Histórico atualizado.");
   } catch (e) {
     console.error(e);
@@ -4699,18 +4699,18 @@ const filtrarDashDebounced = debounceAppBraga(function() {
 }, 120);
 
 window.exportarExcelStock = exportarExcelStock;
-window.exportarExcelHistórico = exportarExcelHistórico;
+window.exportarExcelHistorico = exportarExcelHistorico;
 window.exportarExcelTudo = exportarExcelTudo;
 window.guardarStockMinimoConfig = guardarStockMinimoConfig;
 window.resetStockMinimoConfig = resetStockMinimoConfig;
-window.filtrarHistóricoAvancado = filtrarHistóricoAvancado;
+window.filtrarHistoricoAvancado = filtrarHistoricoAvancado;
 window.abrirEditarStockModal = abrirEditarStockModal;
 window.fecharEdicaoStockModal = fecharEdicaoStockModal;
 window.guardarEdicaoStockModal = guardarEdicaoStockModal;
 window.apagarStockItem = apagarStockItem;
-window.abrirEditarHistóricoModal = abrirEditarHistóricoModal;
-window.fecharEdicaoHistóricoModal = fecharEdicaoHistóricoModal;
-window.guardarEdicaoHistóricoModal = guardarEdicaoHistóricoModal;
+window.abrirEditarHistoricoModal = abrirEditarHistoricoModal;
+window.fecharEdicaoHistoricoModal = fecharEdicaoHistoricoModal;
+window.guardarEdicaoHistoricoModal = guardarEdicaoHistoricoModal;
 
 
 
@@ -4841,7 +4841,7 @@ function renderEtiquetasWordCards() {
   const hoje = new Date();
   const ymd = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-${String(hoje.getDate()).padStart(2,'0')}`;
   setText("countEtiquetasStock", items.filter(x => String(x.data || x.dataFolha || "").startsWith(ymd) || String(x.dataEtiqueta || "").includes(`${String(hoje.getDate()).padStart(2,'0')}/${String(hoje.getMonth()+1).padStart(2,'0')}/${hoje.getFullYear()}`)).length);
-  setText("countEtiquetasHistórico", new Set(items.map(x => x.serie || x.localCurto || x.localizacao)).size);
+  setText("countEtiquetasHistorico", new Set(items.map(x => x.serie || x.localCurto || x.localizacao)).size);
   if (!items.length) {
     host.innerHTML = `<div class="panel empty-state"><h3>Sem etiquetas</h3><p>Faz scan no iPhone e a etiqueta aparece aqui para download no PC.</p></div>`;
     return;
