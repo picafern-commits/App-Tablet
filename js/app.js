@@ -607,13 +607,44 @@ function renderDashboardCards(items) {
 
     const residueHtml = residue ? gerarHTMLBarraToner(residue.percent, residue.label || "Resíduo", "waste") : "";
 
+    const percentValue =
+      criticalColors[0]?.percent ||
+      info?.percent ||
+      0;
+
     return `
-      <div class="dashboard-card dashboard-critical-card">
-        <div class="stock-id">${item.modelo}</div>
-        <div class="meta-line">Série: <span class="meta-value">${item.serie}</span></div>
-        <div class="meta-line">Local: <span class="meta-value">${item.localizacao} (${item.armazem})</span></div>
-        <div class="meta-line">IP: <span class="meta-value">${item.ip}</span></div>
-        <div class="printer-toners-grid" style="margin-top:10px;">${supplyHtml}${residueHtml}</div>
+      <div class="equipment-card dashboard-critical-card">
+        <img
+          src="../img/kyocera.png"
+          class="equipment-real-image"
+          onerror="this.src='../img/printer.png'"
+        >
+
+        <div class="equipment-top-row">
+          <h3>${item.modelo || "Kyocera"}</h3>
+          <span class="status-badge offline">
+            ${percentValue <= 10 ? "Crítico" : "Atenção"}
+          </span>
+        </div>
+
+        <p class="equipment-model">${item.modelo || "-"}</p>
+
+        <p class="equipment-ip">
+          IP: ${item.ip || "-"}
+        </p>
+
+        <p class="equipment-local">
+          Local: ${item.localizacao || "-"}
+        </p>
+
+        <div class="equipment-percent">
+          Toner: ${percentValue}%
+        </div>
+
+        <div class="printer-toners-grid" style="margin-top:10px;">
+          ${supplyHtml}
+          ${residueHtml}
+        </div>
       </div>
     `;
   }).join("");
