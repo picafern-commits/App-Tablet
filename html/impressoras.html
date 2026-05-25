@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt">
 <head>
 
@@ -49,15 +49,17 @@
 <a href="index.html">Dashboard</a>
 <a href="add-toner.html">Adicionar Toner</a>
 <a href="stock.html">Stock</a>
-<a href="historico.html">Histórico</a>
+<a href="historico.html">HistÃ³rico</a>
 <a href="etiquetas-word.html">Etiquetas Word</a>
 <a href="impressoras.html" class="active">Impressoras</a>
-<a href="manutencao-impressoras.html">Manutenção Impressoras</a>
+<a href="manutencao-impressoras.html">ManutenÃ§Ã£o Impressoras</a>
 <a href="computadores.html">Computadores</a>
 <a href="users.html">Users</a>
 <a href="pistolas.html">Pistolas CK65</a>
 <a href="portas.html">Portas Rede</a>
-<a href="config.html">Configurações</a>
+<a href="radios.html">Rádios</a>
+<a href="informacoes.html">Informações</a>
+<a href="config.html">ConfiguraÃ§Ãµes</a>
 </aside>
 <main class="main">
 
@@ -75,7 +77,7 @@
   <div class="panel toner-diagnostics-panel">
     <div class="section-header">
       <div>
-        <h3>Diagnóstico do Toner</h3>
+        <h3>DiagnÃ³stico do Toner</h3>
       </div>
       <div class="table-actions">
         <button class="action-btn" onclick="window.testarSistemaToner()">Testar Sistema</button>
@@ -90,16 +92,16 @@
         </div>
       </div>
       <div class="summary-card diagnostics-card">
-        <h4>Última leitura</h4>
-        <div class="summary-value small" id="tonerDiagLastRun">—</div>
+        <h4>Ãšltima leitura</h4>
+        <div class="summary-value small" id="tonerDiagLastRun">â€”</div>
       </div>
       <div class="summary-card diagnostics-card">
         <h4>Origem</h4>
-        <div class="summary-value small" id="tonerDiagSource">—</div>
+        <div class="summary-value small" id="tonerDiagSource">â€”</div>
       </div>
       <div class="summary-card diagnostics-card">
         <h4>Resumo</h4>
-        <div class="summary-value small" id="tonerDiagSummary">À espera de teste</div>
+        <div class="summary-value small" id="tonerDiagSummary">Ã€ espera de teste</div>
       </div>
     </div>
     <div class="diagnostics-log-wrap is-collapsed" id="tonerDiagLogWrap">
@@ -121,8 +123,8 @@
 <input id="searchImpressoras" type="text" placeholder="Pesquisar..." oninput="filtrarImpressoras()">
 </div>
 </div>
-      <select id="filterArmazem" onchange="filtrarImpressoras()"><option value="">Todos os armazéns</option><option value="Braga">Braga</option><option value="Vila Real">Vila Real</option></select>
-      <select id="filterEstadoImpressora" onchange="filtrarImpressoras()"><option value="">Todos os estados</option><option value="OK">OK</option><option value="Pendente">Pendente</option><option value="Em reparação">Em reparação</option><option value="Resolvido">Resolvido</option></select>
+      <select id="filterArmazem" onchange="filtrarImpressoras()"><option value="">Todos os armazÃ©ns</option><option value="Braga">Braga</option><option value="Vila Real">Vila Real</option></select>
+      <select id="filterEstadoImpressora" onchange="filtrarImpressoras()"><option value="">Todos os estados</option><option value="OK">OK</option><option value="Pendente">Pendente</option><option value="Em reparaÃ§Ã£o">Em reparaÃ§Ã£o</option><option value="Resolvido">Resolvido</option></select>
     </div>
     
 
@@ -131,12 +133,12 @@
       <thead>
         <tr>
           <th>Modelo</th>
-          <th>Série</th>
-          <th>Armazém</th>
-          <th>Localização</th>
+          <th>SÃ©rie</th>
+          <th>ArmazÃ©m</th>
+          <th>LocalizaÃ§Ã£o</th>
           <th>IP</th>
           <th>Estado</th>
-          <th>Ações</th>
+          <th>AÃ§Ãµes</th>
         </tr>
       </thead>
       <tbody id="impressorasTableBody"></tbody>
@@ -155,9 +157,9 @@
       </div>
       <div class="form-grid">
         <label><span>Modelo</span><input id="addImp_modelo" type="text"></label>
-        <label><span>Série</span><input id="addImp_serie" type="text"></label>
-        <label><span>Armazém</span><input id="addImp_armazem" type="text"></label>
-        <label><span>Localização</span><input id="addImp_localizacao" type="text"></label>
+        <label><span>SÃ©rie</span><input id="addImp_serie" type="text"></label>
+        <label><span>ArmazÃ©m</span><input id="addImp_armazem" type="text"></label>
+        <label><span>LocalizaÃ§Ã£o</span><input id="addImp_localizacao" type="text"></label>
         <label><span>IP</span><input id="addImp_ip" type="text"></label>
       </div>
       <div class="card-actions" style="margin-top:14px;">

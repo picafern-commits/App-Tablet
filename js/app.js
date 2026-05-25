@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.6.2";
+const APP_VERSION = "1.6.3";
 
 
 
@@ -1891,6 +1891,285 @@ function initFullScreenScroll() {
 }
 
 document.addEventListener("DOMContentLoaded", initFullScreenScroll);
+
+const RADIOS_STORAGE_KEY = "appBragaRadios";
+const INFORMACOES_STORAGE_KEY = "appBragaInformacoes";
+let radiosData = [];
+let informacoesData = [];
+let informacaoSelecionada = null;
+
+function nowPt() {
+  return new Date().toLocaleString("pt-PT", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function splitUsersList(value) {
+  return String(value || "")
+    .split(",")
+    .map(item => item.trim())
+    .filter(Boolean);
+}
+
+function safeRefHtml(value) {
+  if (typeof escapeHtmlAppBraga === "function") return escapeHtmlAppBraga(value);
+  return String(value ?? "").replace(/[&<>"]/g, (char) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;"
+  }[char] || char));
+}
+
+function defaultRadiosData() {
+  return [1, 2, 3, 4, 5].map(numero => ({
+    id: `radio-${numero}`,
+    radio: String(numero),
+    users: "",
+    obs: "",
+    updated: nowPt()
+  }));
+}
+
+function loadRadiosData() {
+  try {
+    const raw = localStorage.getItem(RADIOS_STORAGE_KEY);
+    radiosData = raw ? JSON.parse(raw) : defaultRadiosData();
+  } catch (e) {
+    console.warn("Nao foi possivel carregar radios.", e);
+    radiosData = defaultRadiosData();
+  }
+}
+
+function saveRadiosData() {
+  localStorage.setItem(RADIOS_STORAGE_KEY, JSON.stringify(radiosData));
+  try {
+    if (window.db) {
+      window.db.collection("appRadios").doc("lista").set({
+        items: radiosData,
+        updated: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    }
+  } catch (e) {
+    console.warn("Nao foi possivel sincronizar radios.", e);
+  }
+}
+
+function renderRadios() {
+  const editor = document.getElementById("radiosEditorRows");
+  const report = document.getElementById("radiosReportRows");
+  if (!editor || !report) return;
+
+  const search = normalizarTexto(document.getElementById("radioSearch")?.value || "");
+  const lista = radiosData.filter(item => {
+    const text = `${item.radio} ${item.users} ${item.obs}`;
+    return !search || normalizarTexto(text).includes(search);
+  });
+
+  editor.innerHTML = lista.map(item => `
+    <div class="radio-editor-grid radio-editor-row" data-radio-id="${item.id}">
+      <input type="text" value="${safeRefHtml(item.radio)}" aria-label="Radio" onchange="atualizarRadioCampo('${item.id}', 'radio', this.value)">
+      <span class="radio-arrow">→</span>
+      <input type="text" value="${safeRefHtml(item.users)}" placeholder="Selecionar users..." onchange="atualizarRadioCampo('${item.id}', 'users', this.value)">
+      <input type="text" value="${safeRefHtml(item.obs)}" placeholder="Observações (opcional)" onchange="atualizarRadioCampo('${item.id}', 'obs', this.value)">
+      <button class="reference-icon danger" type="button" onclick="apagarRadio('${item.id}')" title="Apagar rádio">🗑</button>
+    </div>
+  `).join("");
+
+  report.innerHTML = lista.map(item => {
+    const users = splitUsersList(item.users);
+    const visible = users.slice(0, 3);
+    const extra = users.length - visible.length;
+    return `
+      <tr>
+        <td>${safeRefHtml(item.radio)}</td>
+        <td>
+          <div class="reference-tags">
+            ${visible.map(user => `<span>${safeRefHtml(user)}</span>`).join("")}
+            ${extra > 0 ? `<span>+${extra}</span>` : ""}
+          </div>
+        </td>
+        <td>${safeRefHtml(item.updated || nowPt())}</td>
+        <td>
+          <div class="reference-row-actions">
+            <button class="reference-icon" type="button" onclick="verRadio('${item.id}')" title="Ver detalhes">✎</button>
+            <button class="reference-icon danger" type="button" onclick="apagarRadio('${item.id}')" title="Apagar rádio">🗑</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function initRadiosPage() {
+  if (!document.getElementById("radiosEditorRows")) return;
+  loadRadiosData();
+  renderRadios();
+}
+
+function adicionarRadio() {
+  const nextNumber = radiosData.length ? Math.max(...radiosData.map(item => Number(item.radio) || 0)) + 1 : 1;
+  radiosData.push({
+    id: `radio-${Date.now()}`,
+    radio: String(nextNumber),
+    users: "",
+    obs: "",
+    updated: nowPt()
+  });
+  saveRadiosData();
+  renderRadios();
+}
+
+function atualizarRadioCampo(id, field, value) {
+  const item = radiosData.find(radio => radio.id === id);
+  if (!item) return;
+  item[field] = value;
+  item.updated = nowPt();
+  saveRadiosData();
+  renderRadios();
+}
+
+function apagarRadio(id) {
+  radiosData = radiosData.filter(item => item.id !== id);
+  if (!radiosData.length) radiosData = defaultRadiosData();
+  saveRadiosData();
+  renderRadios();
+}
+
+function verRadio(id) {
+  const item = radiosData.find(radio => radio.id === id);
+  if (!item) return;
+  alert(`Radio: ${item.radio}\nUsers: ${item.users || "-"}\nObservacoes: ${item.obs || "-"}`);
+}
+
+function filtrarRadios() {
+  renderRadios();
+}
+
+function loadInformacoesData() {
+  try {
+    const raw = localStorage.getItem(INFORMACOES_STORAGE_KEY);
+    informacoesData = raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    console.warn("Nao foi possivel carregar informacoes.", e);
+    informacoesData = [];
+  }
+}
+
+function saveInformacoesData() {
+  localStorage.setItem(INFORMACOES_STORAGE_KEY, JSON.stringify(informacoesData));
+  try {
+    if (window.db) {
+      window.db.collection("appInformacoes").doc("lista").set({
+        items: informacoesData,
+        updated: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    }
+  } catch (e) {
+    console.warn("Nao foi possivel sincronizar informacoes.", e);
+  }
+}
+
+function renderInformacoes() {
+  const lista = document.getElementById("informacoesLista");
+  if (!lista) return;
+  lista.innerHTML = informacoesData.length ? informacoesData.map(item => `
+    <button class="info-list-item ${informacaoSelecionada === item.id ? "active" : ""}" type="button" onclick="selecionarInformacao('${item.id}')">
+      <strong>${safeRefHtml(item.titulo || "Sem título")}</strong>
+      <span>${safeRefHtml(item.obs || "Sem observações")}</span>
+    </button>
+  `).join("") : `<div class="info-empty">Ainda sem informações guardadas.</div>`;
+}
+
+function initInformacoesPage() {
+  if (!document.getElementById("informacoesLista")) return;
+  loadInformacoesData();
+  renderInformacoes();
+}
+
+function adicionarInformacao() {
+  const titulo = document.getElementById("infoTitulo")?.value || "";
+  const obs = document.getElementById("infoObs")?.value || "";
+  if (!normalizarTexto(titulo) && !normalizarTexto(obs)) {
+    mostrarMensagem("Preenche pelo menos um título ou observação.", "erro");
+    return;
+  }
+  if (informacaoSelecionada) {
+    const item = informacoesData.find(info => info.id === informacaoSelecionada);
+    if (item) {
+      item.titulo = titulo;
+      item.obs = obs;
+      item.updated = nowPt();
+    }
+  } else {
+    informacoesData.unshift({
+      id: `info-${Date.now()}`,
+      titulo,
+      obs,
+      updated: nowPt()
+    });
+  }
+  document.getElementById("infoTitulo").value = "";
+  document.getElementById("infoObs").value = "";
+  informacaoSelecionada = null;
+  saveInformacoesData();
+  renderInformacoes();
+}
+
+function selecionarInformacao(id) {
+  informacaoSelecionada = id;
+  renderInformacoes();
+}
+
+function verInformacaoSelecionada() {
+  const item = informacoesData.find(info => info.id === informacaoSelecionada);
+  if (!item) return mostrarMensagem("Seleciona uma informação primeiro.", "erro");
+  alert(`${item.titulo || "Informacao"}\n\n${item.obs || "Sem observacoes"}`);
+}
+
+function editarInformacaoSelecionada() {
+  const item = informacoesData.find(info => info.id === informacaoSelecionada);
+  if (!item) return mostrarMensagem("Seleciona uma informação primeiro.", "erro");
+  document.getElementById("infoTitulo").value = item.titulo || "";
+  document.getElementById("infoObs").value = item.obs || "";
+}
+
+function apagarInformacaoSelecionada() {
+  if (!informacaoSelecionada) return mostrarMensagem("Seleciona uma informação primeiro.", "erro");
+  informacoesData = informacoesData.filter(info => info.id !== informacaoSelecionada);
+  informacaoSelecionada = null;
+  saveInformacoesData();
+  renderInformacoes();
+}
+
+function guardarInformacoes() {
+  const titulo = document.getElementById("infoTitulo")?.value || "";
+  const obs = document.getElementById("infoObs")?.value || "";
+  if (normalizarTexto(titulo) || normalizarTexto(obs)) {
+    adicionarInformacao();
+    return;
+  }
+  saveInformacoesData();
+  mostrarMensagem("Informações guardadas.");
+}
+
+document.addEventListener("DOMContentLoaded", initRadiosPage);
+document.addEventListener("DOMContentLoaded", initInformacoesPage);
+window.adicionarRadio = adicionarRadio;
+window.atualizarRadioCampo = atualizarRadioCampo;
+window.apagarRadio = apagarRadio;
+window.verRadio = verRadio;
+window.filtrarRadios = filtrarRadios;
+window.adicionarInformacao = adicionarInformacao;
+window.selecionarInformacao = selecionarInformacao;
+window.verInformacaoSelecionada = verInformacaoSelecionada;
+window.editarInformacaoSelecionada = editarInformacaoSelecionada;
+window.apagarInformacaoSelecionada = apagarInformacaoSelecionada;
+window.guardarInformacoes = guardarInformacoes;
 
 function updateEnterpriseDashboard() {
   const totalEquipamentosEl = el("dashTotalEquipamentos");
