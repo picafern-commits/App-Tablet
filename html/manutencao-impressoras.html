@@ -24,7 +24,7 @@
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>ManutenÃ§Ã£o Impressoras</title>
+  <title>Manutenção Impressoras</title>
   <meta name="theme-color" content="#0f172a">
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
@@ -45,53 +45,52 @@
       <h2>App Braga</h2>
     </div>
   </div>
-
-<a href="index.html">Dashboard</a>
-<a href="add-toner.html">Adicionar Toner</a>
-<a href="stock.html">Stock</a>
-<a href="historico.html">HistÃ³rico</a>
-<a href="etiquetas-word.html">Etiquetas Word</a>
-<a href="impressoras.html">Impressoras</a>
-<a href="manutencao-impressoras.html" class="active">ManutenÃ§Ã£o Impressoras</a>
-<a href="computadores.html">Computadores</a>
-<a href="users.html">Users</a>
-<a href="pistolas.html">Pistolas CK65</a>
-<a href="portas.html">Portas Rede</a>
-<a href="radios.html">Rádios</a>
-<a href="informacoes.html">Informações</a>
-<a href="config.html">ConfiguraÃ§Ãµes</a>
+	<a href="index.html">Dashboard</a>
+	<a href="add-toner.html">Adicionar Toner</a>
+	<a href="stock.html">Stock</a>
+	<a href="historico.html">Historico</a>
+	<a href="etiquetas-word.html">Etiquetas Word</a>
+	<a href="impressoras.html">Impressoras</a>
+	<a href="manutencao-impressoras.html" class="active">Manutenção Impressoras</a>
+	<a href="computadores.html">Computadores</a>
+	<a href="users.html">Users</a>
+	<a href="pistolas.html">Pistolas CK65</a>
+	<a href="portas.html">Portas Rede</a>
+	<a href="radios.html">Rádios</a>
+	<a href="informacoes.html">Informações</a>
+	<a href="config.html">Configurações</a>
 </aside>
 <main class="main">
 
   <div class="page-hero">
-    <div class="page-hero-title">ManutenÃ§Ã£o Impressoras</div>
+    <div class="page-hero-title">Manutenção Impressoras</div>
 	<span class="status-pill">Sistema Online</span>
   </div>
 
   <div class="stats-grid">
     <div class="stat-card"><span>Total</span><strong id="countManutTotal">0</strong></div>
     <div class="stat-card"><span>Pendentes</span><strong id="countManutPendentes">0</strong></div>
-    <div class="stat-card"><span>Em reparaÃ§Ã£o</span><strong id="countManutReparacao">0</strong></div>
+    <div class="stat-card"><span>Em reparação</span><strong id="countManutReparacao">0</strong></div>
   </div>
   
   <div class="panel form-grid">
-    <label><span>TÃ©cnico</span><input id="manutencaoTecnico" type="text"></label>
-    <label><span>Estado</span><select id="manutencaoEstado"><option>Pendente</option><option>Em reparaÃ§Ã£o</option><option>Resolvido</option></select></label>
-    <label><span>ArmazÃ©m</span><select id="manutencaoArmazem"><option value="">Selecionar armazÃ©m</option><option value="Braga">Braga</option><option value="Vila Real">Vila Real</option></select></label>
-    <label><span>LocalizaÃ§Ã£o</span><select id="manutencaoLocalizacao"></select></label>
+    <label><span>Tecnico</span><input id="manutencaoTecnico" type="text"></label>
+    <label><span>Estado</span><select id="manutencaoEstado"><option>Pendente</option><option>Em reparação</option><option>Resolvido</option></select></label>
+    <label><span>Armazem</span><select id="manutencaoArmazem"><option value="">Selecionar armazem</option><option value="Braga">Braga</option><option value="Vila Real">Vila Real</option></select></label>
+    <label><span>Localização</span><select id="manutencaoLocalizacao"></select></label>
     <label><span>Modelo</span><select id="manutencaoModelo"><option value="">Selecionar modelo</option><option value="P3155DN">P3155DN</option><option value="TASKalfa_255ci">TASKalfa_255ci</option><option value="PA5500x">PA5500x</option></select></label>
-    <label><span>NÂº SÃ©rie</span><select id="manutencaoSerie"></select></label>
+    <label><span>Não Serie</span><select id="manutencaoSerie"></select></label>
     <label><span>IP</span><select id="manutencaoIP"></select></label>
     <label><span>Data Pedido</span><input id="manutencaoPedido" type="date"></label>
-    <label><span>Data ResoluÃ§Ã£o</span><input id="manutencaoResolucao" type="date"></label>
+    <label><span>Data Resolução</span><input id="manutencaoResolucao" type="date"></label>
     <label class="full"><span>Motivo</span><textarea id="manutencaoMotivo" rows="3"></textarea></label>
-    <button class="primary-btn" onclick="guardarManutencao()">Guardar manutenÃ§Ã£o</button>
+    <button class="primary-btn" onclick="guardarManutencao()">Guardar manutenção</button>
   </div>
   <div class="panel">
     <div class="toolbar printers-toolbar">
       <input id="searchManutencoes" type="text" placeholder="Pesquisar..." oninput="filtrarManutencoes()">
-      <select id="filterEstadoManutencao" onchange="filtrarManutencoes()"><option value="">Todos os estados</option><option value="Pendente">Pendente</option><option value="Em reparaÃ§Ã£o">Em reparaÃ§Ã£o</option><option value="Resolvido">Resolvido</option></select>
-      <select id="filterArmazemManutencao" onchange="filtrarManutencoes()"><option value="">Todos os armazÃ©ns</option><option value="Braga">Braga</option><option value="Vila Real">Vila Real</option></select>
+      <select id="filterEstadoManutencao" onchange="filtrarManutencoes()"><option value="">Todos os estados</option><option value="Pendente">Pendente</option><option value="Em reparaÃ§Ã£o">Em reparação</option><option value="Resolvido">Resolvido</option></select>
+      <select id="filterArmazemManutencao" onchange="filtrarManutencoes()"><option value="">Todos os armazens</option><option value="Braga">Braga</option><option value="Vila Real">Vila Real</option></select>
     </div>
     <div id="listaManutencoes" class="cards-list"></div>
   </div>
