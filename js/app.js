@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.6.1";
+const APP_VERSION = "1.6.2";
 
 
 
@@ -1864,6 +1864,33 @@ function initGlobalTheme() {
 
   applyAppTheme(localStorage.getItem("modo") === "light" ? "light" : "dark");
 }
+
+function initFullScreenScroll() {
+  if (window.__appBragaFullScrollBound) return;
+  window.__appBragaFullScrollBound = true;
+
+  const forwardWheelToPage = (event) => {
+    const modalOpen = document.querySelector('.modal-overlay[style*="flex"], .modal-overlay.show');
+    if (modalOpen && modalOpen.contains(event.target)) return;
+
+    const interactive = event.target.closest("input, textarea, select, option");
+    if (interactive) return;
+
+    const fixedZone = event.target.closest(".sidebar, .app-menu-toggle, .app-sidebar-overlay");
+    if (!fixedZone) return;
+
+    event.preventDefault();
+    window.scrollBy({
+      top: event.deltaY,
+      left: event.deltaX,
+      behavior: "auto"
+    });
+  };
+
+  document.addEventListener("wheel", forwardWheelToPage, { passive: false, capture: true });
+}
+
+document.addEventListener("DOMContentLoaded", initFullScreenScroll);
 
 function updateEnterpriseDashboard() {
   const totalEquipamentosEl = el("dashTotalEquipamentos");
