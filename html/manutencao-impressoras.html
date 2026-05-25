@@ -85,13 +85,13 @@
     <label><span>Data Pedido</span><input id="manutencaoPedido" type="date"></label>
     <label><span>Data ResoluÃ§Ã£o</span><input id="manutencaoResolucao" type="date"></label>
     <label class="full"><span>Motivo</span><textarea id="manutencaoMotivo" rows="3"></textarea></label>
-    <button class="primary-btn" onclick="guardarManutencao()">Guardar manutenÃ§Ã£o</button>
+    <button class="primary-btn" onclick="guardarManutenção()">Guardar manutenÃ§Ã£o</button>
   </div>
   <div class="panel">
     <div class="toolbar printers-toolbar">
       <input id="searchManutencoes" type="text" placeholder="Pesquisar..." oninput="filtrarManutencoes()">
-      <select id="filterEstadoManutencao" onchange="filtrarManutencoes()"><option value="">Todos os estados</option><option value="Pendente">Pendente</option><option value="Em reparaÃ§Ã£o">Em reparaÃ§Ã£o</option><option value="Resolvido">Resolvido</option></select>
-      <select id="filterArmazemManutencao" onchange="filtrarManutencoes()"><option value="">Todos os armazÃ©ns</option><option value="Braga">Braga</option><option value="Vila Real">Vila Real</option></select>
+      <select id="filterEstadoManutenção" onchange="filtrarManutencoes()"><option value="">Todos os estados</option><option value="Pendente">Pendente</option><option value="Em reparaÃ§Ã£o">Em reparaÃ§Ã£o</option><option value="Resolvido">Resolvido</option></select>
+      <select id="filterArmazemManutenção" onchange="filtrarManutencoes()"><option value="">Todos os armazÃ©ns</option><option value="Braga">Braga</option><option value="Vila Real">Vila Real</option></select>
     </div>
     <div id="listaManutencoes" class="cards-list"></div>
   </div>
