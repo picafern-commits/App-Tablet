@@ -158,7 +158,7 @@ function guardarUsersLocal() {
     const serializavel = window.usersData.map(u => ({ ...u }));
     localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(serializavel));
   } catch (e) {
-    console.warn('Nao foi possivel guardar users no localStorage.', e);
+    console.warn('Não foi possivel guardar users no localStorage.', e);
   }
 }
 
@@ -177,7 +177,7 @@ function carregarUsersLocal() {
     window.usersData.splice(0, window.usersData.length, ...parsed);
     prepararRefsUsers();
   } catch (e) {
-    console.warn('Nao foi possivel carregar users do localStorage.', e);
+    console.warn('Não foi possivel carregar users do localStorage.', e);
     prepararRefsUsers();
   }
 }
@@ -1267,7 +1267,7 @@ function guardarImpressorasLocal() {
   try {
     impressorasData.forEach((item, i) => { if (!item._ref) item._ref = item.idDoc || `local-impressora-${i}`; });
     localStorage.setItem(IMPRESSORAS_STORAGE_KEY, JSON.stringify(impressorasData.map(i => ({ ...i }))));
-  } catch (e) { console.warn('Nao foi possivel guardar impressoras no localStorage.', e); }
+  } catch (e) { console.warn('Não foi possivel guardar impressoras no localStorage.', e); }
 }
 
 function carregarImpressorasLocal() {
@@ -1278,7 +1278,7 @@ function carregarImpressorasLocal() {
     if (!Array.isArray(parsed) || !parsed.length) return;
     parsed.forEach((item, i) => { if (!item._ref) item._ref = item.idDoc || `local-impressora-${i}`; });
     impressorasData.splice(0, impressorasData.length, ...parsed);
-  } catch (e) { console.warn('Nao foi possivel carregar impressoras do localStorage.', e); }
+  } catch (e) { console.warn('Não foi possivel carregar impressoras do localStorage.', e); }
 }
 
 function renderImpressoras(lista = impressorasData) {
@@ -1619,7 +1619,7 @@ function guardarPistolasLocal() {
     const serializavel = window.pistolasData.map(p => ({ ...p }));
     localStorage.setItem(PISTOLAS_STORAGE_KEY, JSON.stringify(serializavel));
   } catch (e) {
-    console.warn('Nao foi possivel guardar pistolas no localStorage.', e);
+    console.warn('Não foi possivel guardar pistolas no localStorage.', e);
   }
 }
 
@@ -1638,7 +1638,7 @@ function carregarPistolasLocal() {
     window.pistolasData.splice(0, window.pistolasData.length, ...parsed);
     prepararRefsPistolas();
   } catch (e) {
-    console.warn('Nao foi possivel carregar pistolas do localStorage.', e);
+    console.warn('Não foi possivel carregar pistolas do localStorage.', e);
     prepararRefsPistolas();
   }
 }
@@ -1654,7 +1654,7 @@ function guardarPortasLocal() {
     const serializavel = window.portasData.map(p => ({ ...p }));
     localStorage.setItem(PORTAS_STORAGE_KEY, JSON.stringify(serializavel));
   } catch (e) {
-    console.warn('Nao foi possivel guardar portas no localStorage.', e);
+    console.warn('Não foi possivel guardar portas no localStorage.', e);
   }
 }
 
@@ -1673,7 +1673,7 @@ function carregarPortasLocal() {
     window.portasData.splice(0, window.portasData.length, ...parsed);
     prepararRefsPortas();
   } catch (e) {
-    console.warn('Nao foi possivel carregar portas do localStorage.', e);
+    console.warn('Não foi possivel carregar portas do localStorage.', e);
     prepararRefsPortas();
   }
 }
@@ -1940,7 +1940,7 @@ function loadRadiosData() {
     const raw = localStorage.getItem(RADIOS_STORAGE_KEY);
     radiosData = raw ? JSON.parse(raw) : defaultRadiosData();
   } catch (e) {
-    console.warn("Nao foi possivel carregar radios.", e);
+    console.warn("Não foi possivel carregar radios.", e);
     radiosData = defaultRadiosData();
   }
 }
@@ -1955,7 +1955,7 @@ function saveRadiosData() {
       }, { merge: true });
     }
   } catch (e) {
-    console.warn("Nao foi possivel sincronizar radios.", e);
+    console.warn("Não foi possivel sincronizar radios.", e);
   }
 }
 
@@ -2055,7 +2055,7 @@ function loadInformacoesData() {
     const raw = localStorage.getItem(INFORMACOES_STORAGE_KEY);
     informacoesData = raw ? JSON.parse(raw) : [];
   } catch (e) {
-    console.warn("Nao foi possivel carregar informacoes.", e);
+    console.warn("Não foi possivel carregar informacoes.", e);
     informacoesData = [];
   }
 }
@@ -2070,7 +2070,7 @@ function saveInformacoesData() {
       }, { merge: true });
     }
   } catch (e) {
-    console.warn("Nao foi possivel sincronizar informacoes.", e);
+    console.warn("Não foi possivel sincronizar informacoes.", e);
   }
 }
 
@@ -2128,7 +2128,7 @@ function selecionarInformacao(id) {
 function verInformacaoSelecionada() {
   const item = informacoesData.find(info => info.id === informacaoSelecionada);
   if (!item) return mostrarMensagem("Seleciona uma informação primeiro.", "erro");
-  alert(`${item.titulo || "Informacao"}\n\n${item.obs || "Sem observacoes"}`);
+  alert(`${item.titulo || "Informação"}\n\n${item.obs || "Sem observacoes"}`);
 }
 
 function editarInformacaoSelecionada() {
