@@ -1935,8 +1935,8 @@ function initFullScreenScroll() {
 document.addEventListener("DOMContentLoaded", initFullScreenScroll);
 
 const RADIOS_STORAGE_KEY = "appBragaRadios";
-const INFORMACOES_STORAGE_KEY = "appBragaInformacoes";
-let radiosData = [];
+// Firestore realtime ativo - sem localStorage
+
 let informacoesData = [];
 let informacaoSelecionada = null;
 
@@ -2092,38 +2092,53 @@ function filtrarRadios() {
   renderRadios();
 }
 
+
 function loadInformacoesData() {
-  try {
-    const raw = localStorage.getItem(INFORMACOES_STORAGE_KEY);
-    informacoesData = raw ? JSON.parse(raw) : [];
-  } catch (e) {
-    console.warn("Não foi possivel carregar informacoes.", e);
-    informacoesData = [];
+  if (!window.db) {
+    console.warn("Firestore não inicializado.");
+    return;
   }
+
+  window.db.collection("informacoes")
+    .orderBy("createdAt", "desc")
+    .onSnapshot((snapshot) => {
+
+      informacoesData = [];
+
+      snapshot.forEach((doc) => {
+        informacoesData.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+
+      renderInformacoes(
+        document.getElementById("pesquisaInfo")?.value || ""
+      );
+    });
 }
+
+
 
 function saveInformacoesData() {
-  localStorage.setItem(INFORMACOES_STORAGE_KEY, JSON.stringify(informacoesData));
-  try {
-    if (window.db) {
-      window.db.collection("appInformacoes").doc("lista").set({
-        items: informacoesData,
-        updated: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-    }
-  } catch (e) {
-    console.warn("Não foi possivel sincronizar informacoes.", e);
-  }
+  // Firestore realtime ativo
 }
 
-function renderInformacoes() {
+
+function renderInformacoes(filtro = "") {
   const lista = document.getElementById("informacoesLista");
   if (!lista) return;
-  lista.innerHTML = informacoesData.length ? informacoesData.map(item => `
-    <button class="info-list-item ${informacaoSelecionada === item.id ? "active" : ""}" type="button" onclick="selecionarInformacao('${item.id}')">
+  const dados = informacoesData.filter(item => (item.titulo || "").toLowerCase().includes(filtro.toLowerCase()));
+  lista.innerHTML = dados.length ? dados.map(item => `
+    <div class="info-list-item ${informacaoSelecionada === item.id ? "active" : ""}">
       <strong>${safeRefHtml(item.titulo || "Sem título")}</strong>
       <span>${safeRefHtml(item.obs || "Sem observações")}</span>
-    </button>
+      <div class="info-card-actions">
+        <button class="secondary-btn reference-outline" type="button" onclick="verInformacao('${item.id}')">Ver Mais</button>
+        <button class="secondary-btn info-edit-btn" type="button" onclick="editarInformacao('${item.id}')">Editar</button>
+        <button class="secondary-btn info-delete-btn" type="button" onclick="apagarInformacao('${item.id}')">Apagar</button>
+      </div>
+    </div>
   `).join("") : `<div class="info-empty">Ainda sem informações guardadas.</div>`;
 }
 
@@ -2131,36 +2146,61 @@ function initInformacoesPage() {
   if (!document.getElementById("informacoesLista")) return;
   loadInformacoesData();
   renderInformacoes();
+  const pesquisa = document.getElementById("pesquisaInfo");
+  if (pesquisa) {
+    pesquisa.addEventListener("input", e => renderInformacoes(e.target.value || ""));
+  }
 }
 
-function adicionarInformacao() {
+
+async function adicionarInformacao() {
   const titulo = document.getElementById("infoTitulo")?.value || "";
   const obs = document.getElementById("infoObs")?.value || "";
+
   if (!normalizarTexto(titulo) && !normalizarTexto(obs)) {
     mostrarMensagem("Preenche pelo menos um título ou observação.", "erro");
     return;
   }
-  if (informacaoSelecionada) {
-    const item = informacoesData.find(info => info.id === informacaoSelecionada);
-    if (item) {
-      item.titulo = titulo;
-      item.obs = obs;
-      item.updated = nowPt();
-    }
-  } else {
-    informacoesData.unshift({
-      id: `info-${Date.now()}`,
-      titulo,
-      obs,
-      updated: nowPt()
-    });
+
+  if (!window.db) {
+    mostrarMensagem("Firebase indisponível.", "erro");
+    return;
   }
-  document.getElementById("infoTitulo").value = "";
-  document.getElementById("infoObs").value = "";
-  informacaoSelecionada = null;
-  saveInformacoesData();
-  renderInformacoes();
+
+  try {
+
+    if (informacaoSelecionada) {
+
+      await window.db.collection("informacoes")
+        .doc(informacaoSelecionada)
+        .update({
+          titulo,
+          obs,
+          updated: nowPt()
+        });
+
+    } else {
+
+      await window.db.collection("informacoes")
+        .add({
+          titulo,
+          obs,
+          createdAt: Date.now(),
+          updated: nowPt()
+        });
+    }
+
+    document.getElementById("infoTitulo").value = "";
+    document.getElementById("infoObs").value = "";
+
+    informacaoSelecionada = null;
+
+  } catch (e) {
+    console.error(e);
+    mostrarMensagem("Erro ao guardar informação.", "erro");
+  }
 }
+
 
 function selecionarInformacao(id) {
   informacaoSelecionada = id;
@@ -2180,13 +2220,26 @@ function editarInformacaoSelecionada() {
   document.getElementById("infoObs").value = item.obs || "";
 }
 
-function apagarInformacaoSelecionada() {
-  if (!informacaoSelecionada) return mostrarMensagem("Seleciona uma informação primeiro.", "erro");
-  informacoesData = informacoesData.filter(info => info.id !== informacaoSelecionada);
-  informacaoSelecionada = null;
-  saveInformacoesData();
-  renderInformacoes();
+
+async function apagarInformacaoSelecionada() {
+  if (!informacaoSelecionada) {
+    return mostrarMensagem("Seleciona uma informação primeiro.", "erro");
+  }
+
+  try {
+
+    await window.db.collection("informacoes")
+      .doc(informacaoSelecionada)
+      .delete();
+
+    informacaoSelecionada = null;
+
+  } catch (e) {
+    console.error(e);
+    mostrarMensagem("Erro ao apagar informação.", "erro");
+  }
 }
+
 
 function guardarInformacoes() {
   const titulo = document.getElementById("infoTitulo")?.value || "";
@@ -6515,3 +6568,536 @@ window.addEventListener(
   window.loadTheme
 );
 
+
+function verInformacao(id) {
+  const item = informacoesData.find(info => info.id === id);
+  if (!item) return;
+  document.getElementById("modalInfoTitulo").innerText = item.titulo || "Informação";
+  document.getElementById("modalInfoDescricao").innerText = item.obs || "Sem observações";
+  document.getElementById("infoModal").classList.remove("hidden");
+}
+
+function fecharInfoModal() {
+  document.getElementById("infoModal")?.classList.add("hidden");
+}
+
+function editarInformacao(id) {
+  informacaoSelecionada = id;
+  editarInformacaoSelecionada();
+}
+
+function apagarInformacao(id) {
+  informacaoSelecionada = id;
+  apagarInformacaoSelecionada();
+}
+
+window.verInformacao = verInformacao;
+window.fecharInfoModal = fecharInfoModal;
+window.editarInformacao = editarInformacao;
+window.apagarInformacao = apagarInformacao;
+
+
+
+
+
+
+
+
+// ===== ENTERPRISE RADIOS FIREBASE =====
+
+window.radiosRealtime = [];
+
+function abrirModalRadio() {
+
+    const modal = document.getElementById('radioModal');
+
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+    }
+}
+
+function fecharModalRadio() {
+
+    const modal = document.getElementById('radioModal');
+
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+    }
+
+    ['radioNome','radioMac','radioSerial'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+}
+
+async function criarRadioRealtime() {
+
+    const nome =
+      document.getElementById('radioNome')?.value?.trim() || '';
+
+    const mac =
+      document.getElementById('radioMac')?.value?.trim() || '';
+
+    const serial =
+      document.getElementById('radioSerial')?.value?.trim() || '';
+
+    if (!nome) {
+        alert('Preenche o nome do rádio');
+        return;
+    }
+
+    try {
+
+        await 
+
+// ===== FIM ENTERPRISE RADIOS FIREBASE =====
+
+
+// ===== ENTERPRISE RADIOS UI =====
+
+function renderRadiosRealtime(radios) {
+
+    const container =
+      document.getElementById('radiosRealtimeList');
+
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    radios.sort((a,b)=>
+      (a.nome || '').localeCompare(b.nome || '')
+    );
+
+    radios.forEach(radio => {
+
+        const card = document.createElement('div');
+
+        card.style.background = '#111827';
+        card.style.border = '1px solid rgba(255,255,255,.08)';
+        card.style.borderRadius = '16px';
+        card.style.padding = '18px';
+        card.style.display = 'flex';
+        card.style.flexDirection = 'column';
+        card.style.gap = '10px';
+
+        card.innerHTML = `
+            <div style="font-size:18px;font-weight:700;color:white;">
+                ${radio.nome || ''}
+            </div>
+
+            <div style="color:#9ca3af;">
+                MAC: ${radio.mac || ''}
+            </div>
+
+            <div style="color:#9ca3af;">
+                Série: ${radio.serial || ''}
+            </div>
+
+            <div style="display:flex;gap:10px;margin-top:10px;">
+
+                <button class="enterprise-btn primary"
+                    onclick="editarRadio('${radio.id}')">
+                    Editar
+                </button>
+
+                <button class="enterprise-btn delete"
+                    onclick="apagarRadio('${radio.id}')">
+                    Apagar
+                </button>
+
+            </div>
+        `;
+
+        container.appendChild(card);
+    });
+
+    renderRelatorioSemanal(radios);
+}
+
+async function apagarRadio(id) {
+
+    const confirmar = confirm('Apagar rádio?');
+
+    if (!confirmar) return;
+
+    await firebase.firestore()
+      .collection('radios')
+      .doc(id)
+      .delete();
+}
+
+function editarRadio(id) {
+
+    const radio =
+      window.radiosRealtime.find(r => r.id === id);
+
+    if (!radio) return;
+
+    abrirModalRadio();
+
+    document.getElementById('radioNome').value =
+      radio.nome || '';
+
+    document.getElementById('radioMac').value =
+      radio.mac || '';
+
+    document.getElementById('radioSerial').value =
+      radio.serial || '';
+
+    window.radioEditarId = id;
+}
+
+function renderRelatorioSemanal(radios) {
+
+    const container =
+      document.getElementById('relatorioSemanalList');
+
+    if (!container) return;
+
+    const hoje = new Date();
+
+    const semana = `Semana 1 - ${hoje.toLocaleDateString()}`;
+
+    container.innerHTML = `
+        <div style="background:#111827;padding:18px;border-radius:16px;">
+
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+
+                <div style="color:white;font-weight:700;">
+                    ${semana}
+                </div>
+
+                <button class="enterprise-btn primary"
+                    onclick="abrirRelatorioSemanal()">
+                    Ver Detalhes
+                </button>
+
+            </div>
+
+        </div>
+    `;
+}
+
+function abrirRelatorioSemanal() {
+
+    const radios =
+      window.radiosRealtime || [];
+
+    const detalhes = radios.map(r =>
+      `${r.nome} | ${r.user || 'Sem User'}`
+    ).join('\n');
+
+    alert(detalhes || 'Sem rádios');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    const novoBtn =
+      document.getElementById('novoRadioBtn');
+
+    if (novoBtn) {
+        novoBtn.onclick = abrirModalRadio;
+    }
+});
+
+// ===== FIM ENTERPRISE RADIOS UI =====
+
+
+// ===== FIREBASE RADIOS RECONNECT =====
+
+window.radiosRealtime = [];
+
+function startRadiosRealtime() {
+
+    if (!window.firebase || !firebase.firestore) {
+        console.error('Firebase indisponível');
+        return;
+    }
+
+    const db = firebase.firestore();
+
+    db.collection('radios')
+      .orderBy('createdAt', 'desc')
+      .onSnapshot((snapshot) => {
+
+          const radios = [];
+
+          snapshot.forEach((doc) => {
+              radios.push({
+                  id: doc.id,
+                  ...doc.data()
+              });
+          });
+
+          window.radiosRealtime = radios;
+
+          if (typeof renderRadiosRealtime === 'function') {
+              renderRadiosRealtime(radios);
+          }
+
+      }, (error) => {
+          console.error('Erro Firestore radios:', error);
+      });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    setTimeout(() => {
+        startRadiosRealtime();
+    }, 500);
+
+});
+
+// ===== FIM FIREBASE RADIOS RECONNECT =====
+
+
+// ===== RADIOS ENTERPRISE FINAL =====
+
+window.radiosRealtime = [];
+window.radioEditarId = null;
+
+function abrirModalRadio() {
+    const modal = document.getElementById('radioModal');
+    if(modal) modal.style.display = 'flex';
+}
+
+function fecharModalRadio() {
+    const modal = document.getElementById('radioModal');
+    if(modal) modal.style.display = 'none';
+
+    ['radioNome','radioMac','radioSerial']
+    .forEach(id=>{
+        const el = document.getElementById(id);
+        if(el) el.value = '';
+    });
+
+    window.radioEditarId = null;
+}
+
+async function guardarRadioRealtime(){
+
+    const nome =
+      document.getElementById('radioNome').value.trim();
+
+    const mac =
+      document.getElementById('radioMac').value.trim();
+
+    const serial =
+      document.getElementById('radioSerial').value.trim();
+
+    if(!nome) return alert('Preenche o nome do rádio');
+
+    const db = firebase.firestore();
+
+    if(window.radioEditarId){
+
+        await db.collection('radios')
+        .doc(window.radioEditarId)
+        .update({
+            nome,
+            mac,
+            serial
+        });
+
+    }else{
+
+        await db.collection('radios')
+        .add({
+            nome,
+            mac,
+            serial,
+            createdAt: Date.now()
+        });
+    }
+
+    fecharModalRadio();
+}
+
+async function apagarRadio(id){
+
+    const confirmar = confirm('Apagar rádio?');
+
+    if(!confirmar) return;
+
+    await firebase.firestore()
+    .collection('radios')
+    .doc(id)
+    .delete();
+}
+
+function editarRadio(id){
+
+    const radio =
+      window.radiosRealtime.find(r=>r.id===id);
+
+    if(!radio) return;
+
+    window.radioEditarId = id;
+
+    abrirModalRadio();
+
+    document.getElementById('radioNome').value =
+      radio.nome || '';
+
+    document.getElementById('radioMac').value =
+      radio.mac || '';
+
+    document.getElementById('radioSerial').value =
+      radio.serial || '';
+}
+
+function renderRelatorio(radios){
+
+    const div =
+      document.getElementById('relatorioSemanal');
+
+    if(!div) return;
+
+    const hoje = new Date();
+
+    div.innerHTML = `
+        <div style="background:#111827;
+            padding:18px;
+            border-radius:18px;">
+
+            <div style="display:flex;
+                justify-content:space-between;
+                align-items:center;">
+
+                <div>
+                    Semana 1 de
+                    ${hoje.toLocaleDateString()}
+                </div>
+
+                <button class="enterprise-btn primary"
+                    onclick="verRelatorioDetalhes()">
+
+                    Ver Detalhes
+
+                </button>
+
+            </div>
+
+        </div>
+    `;
+}
+
+function verRelatorioDetalhes(){
+
+    const radios = window.radiosRealtime || [];
+
+    const texto = radios.map(r=>`
+Rádio: ${r.nome}
+MAC: ${r.mac}
+Série: ${r.serial}
+User: ${r.user || 'Sem User'}
+    `).join('\n');
+
+    alert(texto || 'Sem rádios');
+}
+
+function renderRadiosRealtime(radios){
+
+    const container =
+      document.getElementById('radiosList');
+
+    if(!container) return;
+
+    container.innerHTML = '';
+
+    radios.sort((a,b)=>
+      (a.nome || '').localeCompare(b.nome || '')
+    );
+
+    radios.forEach(radio=>{
+
+        const card = document.createElement('div');
+
+        card.className = 'radio-card';
+
+        card.innerHTML = `
+            <div style="font-size:20px;
+                font-weight:700;
+                margin-bottom:10px;">
+
+                ${radio.nome || ''}
+
+            </div>
+
+            <div style="margin-bottom:6px;">
+                MAC: ${radio.mac || ''}
+            </div>
+
+            <div>
+                Série: ${radio.serial || ''}
+            </div>
+
+            <div style="display:flex;
+                gap:10px;
+                margin-top:16px;">
+
+                <button class="enterprise-btn edit"
+                    onclick="editarRadio('${radio.id}')">
+
+                    Editar
+
+                </button>
+
+                <button class="enterprise-btn delete"
+                    onclick="apagarRadio('${radio.id}')">
+
+                    Apagar
+
+                </button>
+
+            </div>
+        `;
+
+        container.appendChild(card);
+    });
+
+    renderRelatorio(radios);
+}
+
+function startRadiosRealtime(){
+
+    firebase.firestore()
+    .collection('radios')
+    .orderBy('createdAt','desc')
+    .onSnapshot(snapshot=>{
+
+        const radios = [];
+
+        snapshot.forEach(doc=>{
+            radios.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
+
+        window.radiosRealtime = radios;
+
+        renderRadiosRealtime(radios);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+
+    document.getElementById('novoRadioBtn')
+    ?.addEventListener('click', abrirModalRadio);
+
+    document.getElementById('fecharModalBtn')
+    ?.addEventListener('click', fecharModalRadio);
+
+    document.getElementById('guardarRadioBtn')
+    ?.addEventListener('click', guardarRadioRealtime);
+
+    setTimeout(()=>{
+        startRadiosRealtime();
+    },500);
+
+});
+
+// ===== FIM RADIOS ENTERPRISE FINAL =====
