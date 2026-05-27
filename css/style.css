@@ -4453,3 +4453,162 @@ textarea {
     grid-template-columns: 1fr;
   }
 }
+
+/* ===== FULLSCREEN TABLET / IPHONE FINAL VIEWPORT ===== */
+html {
+  width: 100%;
+  min-height: 100%;
+  height: 100%;
+  background: var(--app-bg) !important;
+  overscroll-behavior: none;
+}
+
+body {
+  width: 100%;
+  min-height: 100vh;
+  min-height: calc(var(--app-vh, 1vh) * 100);
+  margin: 0 !important;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  touch-action: manipulation;
+}
+
+@supports (height: 100dvh) {
+  body,
+  .main,
+  main {
+    min-height: 100dvh !important;
+  }
+}
+
+.main,
+main {
+  padding-top: max(24px, env(safe-area-inset-top)) !important;
+  padding-right: max(24px, env(safe-area-inset-right)) !important;
+  padding-bottom: max(24px, env(safe-area-inset-bottom)) !important;
+}
+
+body.device-tablet .main,
+body.device-tablet main {
+  padding: 18px !important;
+}
+
+body.device-tablet .sidebar {
+  width: 220px !important;
+}
+
+body.device-tablet .main,
+body.device-tablet .main-content,
+body.device-tablet .page-content,
+body.device-tablet .dashboard-container,
+body.device-tablet .content-area {
+  margin-left: 220px !important;
+  width: calc(100vw - 220px) !important;
+}
+
+body.device-tablet .cards-grid,
+body.device-tablet .equipment-grid,
+body.device-tablet .radio-cards-grid,
+body.device-tablet .stats-grid,
+body.device-tablet .enterprise-metrics {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+  gap: 14px !important;
+}
+
+body.device-phone {
+  overflow-y: auto !important;
+}
+
+body.device-phone .sidebar {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 5000 !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: 42vh !important;
+  padding: calc(10px + env(safe-area-inset-top)) 10px 10px !important;
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(120px, 1fr)) !important;
+  gap: 8px !important;
+  border-right: 0 !important;
+  border-bottom: 1px solid var(--app-border) !important;
+}
+
+body.device-phone .brand,
+body.device-phone .premium-brand {
+  grid-column: 1 / -1;
+  margin-bottom: 4px !important;
+  min-height: 54px;
+}
+
+body.device-phone .sidebar a {
+  min-height: 38px !important;
+  margin: 0 !important;
+  padding: 8px 10px !important;
+  font-size: 13px !important;
+}
+
+body.device-phone .main,
+body.device-phone .main-content,
+body.device-phone .page-content,
+body.device-phone .dashboard-container,
+body.device-phone .content-area {
+  margin-left: 0 !important;
+  width: 100% !important;
+  min-height: calc(var(--app-vh, 1vh) * 100) !important;
+  padding: 12px max(12px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)) !important;
+}
+
+body.device-phone .page-hero,
+body.device-phone .dashboard-header,
+body.device-phone .reference-header,
+body.device-phone .toolbar,
+body.device-phone .section-header {
+  align-items: stretch !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+body.device-phone .cards-grid,
+body.device-phone .equipment-grid,
+body.device-phone .radio-cards-grid,
+body.device-phone .stats-grid,
+body.device-phone .enterprise-metrics,
+body.device-phone .form-grid {
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+}
+
+body.device-phone .panel,
+body.device-phone .card,
+body.device-phone .pc-card,
+body.device-phone .dashboard-card,
+body.device-phone .reference-panel,
+body.device-phone .modal-card {
+  border-radius: 12px !important;
+  padding: 14px !important;
+}
+
+body.device-phone input,
+body.device-phone select,
+body.device-phone textarea,
+body.device-phone button {
+  min-height: 44px !important;
+  font-size: 16px !important;
+}
+
+body.device-phone .modal-overlay {
+  align-items: flex-end !important;
+  padding: 0 !important;
+}
+
+body.device-phone .modal-card {
+  width: 100% !important;
+  max-width: 100% !important;
+  max-height: calc(var(--app-vh, 1vh) * 92) !important;
+  overflow: auto !important;
+  border-radius: 18px 18px 0 0 !important;
+}

@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.6.7";
+const APP_VERSION = "1.6.8";
 
 
 
@@ -87,6 +87,20 @@ function setText(id, value) {
 
 function normalizarTexto(valor) {
   return String(valor || "").toLowerCase().trim();
+}
+
+function getFirestoreSortValue(value) {
+  if (!value) return 0;
+  if (typeof value === "number") return value;
+  if (value instanceof Date) return value.getTime();
+  if (typeof value.toMillis === "function") return value.toMillis();
+  if (typeof value.seconds === "number") return value.seconds * 1000;
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function sortFirestoreCreatedDesc(lista = []) {
+  return lista.sort((a, b) => getFirestoreSortValue(b.created || b.createdAt || b.updatedAt) - getFirestoreSortValue(a.created || a.createdAt || a.updatedAt));
 }
 
 function mostrarMensagem(texto, tipo = "sucesso") {
@@ -364,7 +378,7 @@ async function disponivel() {
   }
 }
 
-db.collection("stock").orderBy("created", "desc").onSnapshot(snap => {
+db.collection("stock").onSnapshot(snap => {
   stockGlobal = [];
   setText("countStock", snap.size);
 
@@ -373,6 +387,7 @@ db.collection("stock").orderBy("created", "desc").onSnapshot(snap => {
     t.idDoc = doc.id;
     stockGlobal.push(t);
   });
+  sortFirestoreCreatedDesc(stockGlobal);
 
   saveBackupAppBraga(BACKUP_KEYS_APP_BRAGA.stock, stockGlobal);
   hideBackupBadge();
@@ -397,7 +412,7 @@ db.collection("stock").orderBy("created", "desc").onSnapshot(snap => {
   renderModoGestorExtremo();
 });
 
-db.collection("historico").orderBy("created", "desc").onSnapshot(snap => {
+db.collection("historico").onSnapshot(snap => {
   historicoGlobal = [];
   setText("countUsados", snap.size);
 
@@ -406,6 +421,7 @@ db.collection("historico").orderBy("created", "desc").onSnapshot(snap => {
     t.idDoc = doc.id;
     historicoGlobal.push(t);
   });
+  sortFirestoreCreatedDesc(historicoGlobal);
 
   saveBackupAppBraga(BACKUP_KEYS_APP_BRAGA.historico, historicoGlobal);
   hideBackupBadge();
@@ -428,7 +444,7 @@ db.collection("historico").orderBy("created", "desc").onSnapshot(snap => {
   renderModoGestorExtremo();
 });
 
-db.collection("pcs").orderBy("created", "desc").onSnapshot(snap => {
+db.collection("pcs").onSnapshot(snap => {
   pcsGlobal = [];
   setText("countPCs", snap.size);
 
@@ -437,6 +453,7 @@ db.collection("pcs").orderBy("created", "desc").onSnapshot(snap => {
     d.idDoc = doc.id;
     pcsGlobal.push(d);
   });
+  sortFirestoreCreatedDesc(pcsGlobal);
 
   saveBackupAppBraga(BACKUP_KEYS_APP_BRAGA.pcs, pcsGlobal);
   hideBackupBadge();
@@ -451,7 +468,7 @@ db.collection("pcs").orderBy("created", "desc").onSnapshot(snap => {
   renderModoGestorExtremo();
 });
 
-db.collection("manutencoes").orderBy("created", "desc").onSnapshot(snap => {
+db.collection("manutencoes").onSnapshot(snap => {
   manutencoesGlobal = [];
 
   snap.forEach(doc => {
@@ -459,6 +476,7 @@ db.collection("manutencoes").orderBy("created", "desc").onSnapshot(snap => {
     item.idDoc = doc.id;
     manutencoesGlobal.push(item);
   });
+  sortFirestoreCreatedDesc(manutencoesGlobal);
 
   saveBackupAppBraga(BACKUP_KEYS_APP_BRAGA.manutencoes, manutencoesGlobal);
   hideBackupBadge();
@@ -1938,6 +1956,24 @@ function initFullScreenScroll() {
 
 document.addEventListener("DOMContentLoaded", initFullScreenScroll);
 
+function initDeviceViewportMode() {
+  const apply = () => {
+    const width = window.innerWidth || document.documentElement.clientWidth || 0;
+    const height = window.innerHeight || document.documentElement.clientHeight || 0;
+    document.documentElement.style.setProperty("--app-vh", `${height * 0.01}px`);
+    document.body.classList.toggle("device-phone", width <= 760);
+    document.body.classList.toggle("device-tablet", width > 760 && width <= 1180);
+    document.body.classList.toggle("device-desktop", width > 1180);
+    document.body.classList.toggle("is-ios", /iPad|iPhone|iPod/.test(navigator.userAgent || ""));
+    document.body.classList.toggle("is-android", /Android/.test(navigator.userAgent || ""));
+  };
+  apply();
+  window.addEventListener("resize", apply, { passive: true });
+  window.addEventListener("orientationchange", () => setTimeout(apply, 250), { passive: true });
+}
+
+document.addEventListener("DOMContentLoaded", initDeviceViewportMode);
+
 let radiosData = [];
 let radioEditId = null;
 let unsubscribeRadios = null;
@@ -2078,8 +2114,9 @@ function initRadiosPage() {
   }
 
   if (unsubscribeRadios) unsubscribeRadios();
-  unsubscribeRadios = dbRef.collection("radios").orderBy("nome", "asc").onSnapshot((snapshot) => {
+  unsubscribeRadios = dbRef.collection("radios").onSnapshot((snapshot) => {
     radiosData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    radiosData.sort((a, b) => String(a.nome || a.serial || a.mac || "").localeCompare(String(b.nome || b.serial || b.mac || ""), "pt", { numeric: true, sensitivity: "base" }));
     renderRadios();
   }, (error) => {
     console.error("Erro realtime radios:", error);
@@ -2089,8 +2126,9 @@ function initRadiosPage() {
 
 
   if (unsubscribeRadioUsers) unsubscribeRadioUsers();
-  unsubscribeRadioUsers = dbRef.collection("users").orderBy("nome", "asc").onSnapshot((snapshot) => {
+  unsubscribeRadioUsers = dbRef.collection("users").onSnapshot((snapshot) => {
     radioUsersData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    radioUsersData.sort((a, b) => radioUserLabel(a).localeCompare(radioUserLabel(b), "pt", { numeric: true, sensitivity: "base" }));
     window.usersData = radioUsersData;
     renderRadioWeeklyForm();
   }, (error) => console.error("Erro realtime users para radios:", error));
@@ -5235,13 +5273,14 @@ window.apagarEtiquetaWordPartilhada = apagarEtiquetaWordPartilhada;
 
 function bindEtiquetasWordRealtime() {
   if (!db || !db.collection) return;
-  db.collection("etiquetasWord").orderBy("created", "desc").onSnapshot((snap) => {
+  db.collection("etiquetasWord").onSnapshot((snap) => {
     etiquetasWordGlobal = [];
     snap.forEach((doc) => {
       const t = ({ firebaseId: doc.id, ...doc.data() }) || {};
       t.idDoc = doc.id;
       etiquetasWordGlobal.push(t);
     });
+    sortFirestoreCreatedDesc(etiquetasWordGlobal);
     try { saveBackupAppBraga(BACKUP_KEYS_APP_BRAGA.etiquetas, etiquetasWordGlobal); } catch (e) {}
     renderEtiquetasWordCards();
   }, (error) => {
