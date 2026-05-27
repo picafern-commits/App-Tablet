@@ -7,32 +7,32 @@
   --az-line: var(--app-accent-line, rgba(37,99,235,.18));
   --az-text: #fff8ef;
   --az-muted: #b9aa99;
-  --az-orange: var(--app-accent, #2563eb);
-  --az-orange-2: var(--app-accent-hover, #1d4ed8);
-  --az-orange-soft: var(--app-accent-soft, rgba(37,99,235,.16));
-  --app-accent: var(--az-orange);
-  --app-accent-hover: var(--az-orange-2);
+  --az-var(--app-accent, #2563eb): var(--app-accent, #2563eb);
+  --az-var(--app-accent, #2563eb)-2: var(--app-accent-hover, #1d4ed8);
+  --az-var(--app-accent, #2563eb)-soft: var(--app-accent-soft, rgba(37,99,235,.16));
+  --app-accent: var(--az-var(--app-accent, #2563eb));
+  --app-accent-hover: var(--az-var(--app-accent, #2563eb)-2);
   --app-accent-light: var(--app-accent-hover, #3b82f6);
   --app-accent-rgb: 37 99 235;
-  --app-accent-soft: var(--az-orange-soft);
+  --app-accent-soft: var(--az-var(--app-accent, #2563eb)-soft);
   --app-accent-softer: var(--app-accent-soft, rgba(37,99,235,.08));
   --app-accent-line: var(--az-line);
   --app-accent-glow: rgba(255, 122, 0, .28);
   --az-green: #29b36a;
   --az-danger: #ef4444;
   --az-sidebar: 248px;
-  --primary: var(--az-orange);
-  --primary-hover: var(--az-orange-2);
-  --sidebar-hover: var(--az-orange);
-  --brinka-pink: var(--az-orange) !important;
-  --brinka-purple: var(--az-orange-2) !important;
-  --brinka-orange: var(--az-orange) !important;
-  --brinka-orange2: var(--app-accent-hover, var(--az-orange-2)) !important;
-  --ent-blue: var(--az-orange) !important;
-  --ent-purple: var(--az-orange-2) !important;
-  --ent-orange: var(--az-orange) !important;
-  --app-blue: var(--az-orange) !important;
-  --app-blue-soft: var(--az-orange-soft) !important;
+  --primary: var(--az-var(--app-accent, #2563eb));
+  --primary-hover: var(--az-var(--app-accent, #2563eb)-2);
+  --sidebar-hover: var(--az-var(--app-accent, #2563eb));
+  --brinka-pink: var(--az-var(--app-accent, #2563eb)) !important;
+  --brinka-purple: var(--az-var(--app-accent, #2563eb)-2) !important;
+  --brinka-var(--app-accent, #2563eb): var(--az-var(--app-accent, #2563eb)) !important;
+  --brinka-var(--app-accent, #2563eb)2: var(--app-accent-hover, var(--az-var(--app-accent, #2563eb)-2)) !important;
+  --ent-blue: var(--az-var(--app-accent, #2563eb)) !important;
+  --ent-purple: var(--az-var(--app-accent, #2563eb)-2) !important;
+  --ent-var(--app-accent, #2563eb): var(--az-var(--app-accent, #2563eb)) !important;
+  --app-blue: var(--az-var(--app-accent, #2563eb)) !important;
+  --app-blue-soft: var(--az-var(--app-accent, #2563eb)-soft) !important;
 }
 
 html,
@@ -99,7 +99,7 @@ body::before {
 }
 
 .brand-badge {
-  background: linear-gradient(135deg, var(--az-orange), var(--az-orange-2)) !important;
+  background: linear-gradient(135deg, var(--az-var(--app-accent, #2563eb)), var(--az-var(--app-accent, #2563eb)-2)) !important;
   border: 1px solid rgba(255,255,255,.16);
   box-shadow: 0 14px 30px rgba(255,122,0,.26) !important;
 }
@@ -117,7 +117,7 @@ body::before {
 .sidebar a.active,
 .sidebar .menu-btn:hover,
 .sidebar .menu-btn.active {
-  background: linear-gradient(135deg, var(--az-orange), var(--az-orange-2)) !important;
+  background: linear-gradient(135deg, var(--az-var(--app-accent, #2563eb)), var(--az-var(--app-accent, #2563eb)-2)) !important;
   color: #fff !important;
   box-shadow: 0 14px 28px rgba(255,122,0,.24) !important;
 }
@@ -174,12 +174,12 @@ body::before {
 
 .stat-card,
 .metric-card {
-  border-bottom: 3px solid var(--az-orange) !important;
+  border-bottom: 3px solid var(--az-var(--app-accent, #2563eb)) !important;
 }
 
 .metric-blue,
 .metric-green,
-.metric-orange,
+.metric-var(--app-accent, #2563eb),
 .metric-purple,
 .dashboard-card,
 .stat-card {
@@ -198,24 +198,24 @@ body::before {
 
 .metric-green,
 .stat-card:nth-child(2) {
-  border-bottom-color: var(--az-orange) !important;
+  border-bottom-color: var(--az-var(--app-accent, #2563eb)) !important;
 }
 
-.metric-orange,
+.metric-var(--app-accent, #2563eb),
 .stat-card:nth-child(3) {
-  border-bottom-color: var(--az-orange) !important;
+  border-bottom-color: var(--az-var(--app-accent, #2563eb)) !important;
 }
 
 .metric-purple,
 .stat-card:nth-child(4) {
-  border-bottom-color: var(--az-orange) !important;
+  border-bottom-color: var(--az-var(--app-accent, #2563eb)) !important;
 }
 
 .primary-btn,
 .reference-primary,
 .action-btn,
 button.primary-btn {
-  background: linear-gradient(135deg, var(--az-orange), var(--az-orange-2)) !important;
+  background: linear-gradient(135deg, var(--az-var(--app-accent, #2563eb)), var(--az-var(--app-accent, #2563eb)-2)) !important;
   border: 1px solid rgba(255,255,255,.14) !important;
   color: #fff !important;
   box-shadow: 0 12px 24px rgba(255,122,0,.22) !important;
@@ -239,14 +239,14 @@ button.secondary-btn {
 a,
 .meta-value a,
 .section-subtitle a {
-  color: #ffb45f !important;
+  color: var(--app-accent-hover, #3b82f6) !important;
 }
 
 .toner-fill,
 .progress-fill,
 .bar-fill,
 .level-fill {
-  background: linear-gradient(90deg, var(--az-orange), var(--az-orange-2)) !important;
+  background: linear-gradient(90deg, var(--az-var(--app-accent, #2563eb)), var(--az-var(--app-accent, #2563eb)-2)) !important;
 }
 
 input,
@@ -352,10 +352,10 @@ body.device-phone .sidebar a {
   border: 1px solid rgba(255,255,255,.08) !important;
 }
 
-/* Final orange reset: remove legacy blue leftovers */
+/* Final var(--app-accent, #2563eb) reset: remove legacy blue leftovers */
 .metric-blue,
 .metric-green,
-.metric-orange,
+.metric-var(--app-accent, #2563eb),
 .metric-purple,
 .dashboard-card,
 .dashboard-critical-card,
@@ -379,7 +379,7 @@ body.device-phone .sidebar a {
 
 .metric-blue *,
 .metric-green *,
-.metric-orange *,
+.metric-var(--app-accent, #2563eb) *,
 .metric-purple *,
 .dashboard-card *,
 .pc-card *,
@@ -403,7 +403,7 @@ body.device-phone .sidebar a {
 .panel-title-row a,
 .reference-primary,
 .info-close-btn {
-  background: linear-gradient(135deg, var(--az-orange), var(--az-orange-2)) !important;
+  background: linear-gradient(135deg, var(--az-var(--app-accent, #2563eb)), var(--az-var(--app-accent, #2563eb)-2)) !important;
   border-color: rgba(255, 164, 84, .34) !important;
   color: #fff !important;
   box-shadow: 0 12px 26px rgba(255, 122, 0, .24) !important;
@@ -432,7 +432,7 @@ body.device-phone .sidebar a {
 .pc-name,
 .meta-value,
 .reference-header::before {
-  color: #ffb45f !important;
+  color: var(--app-accent-hover, #3b82f6) !important;
 }
 
 .metric-card,
@@ -442,7 +442,7 @@ body.device-phone .sidebar a {
 .history-card,
 .pc-card,
 .card {
-  border-bottom-color: var(--az-orange) !important;
+  border-bottom-color: var(--az-var(--app-accent, #2563eb)) !important;
 }
 
 .toner-bar-fill,
@@ -453,7 +453,7 @@ body.device-phone .sidebar a {
 .printer-toner-fill,
 .equipment-art,
 .equipment-photo {
-  background: linear-gradient(90deg, var(--az-orange), var(--az-orange-2)) !important;
+  background: linear-gradient(90deg, var(--az-var(--app-accent, #2563eb)), var(--az-var(--app-accent, #2563eb)-2)) !important;
 }
 
 .equipment-art,
@@ -465,14 +465,14 @@ body.device-phone .sidebar a {
 .donut-blue,
 .chart-blue,
 .sparkline-blue {
-  background: var(--az-orange) !important;
-  color: var(--az-orange) !important;
+  background: var(--az-var(--app-accent, #2563eb)) !important;
+  color: var(--az-var(--app-accent, #2563eb)) !important;
 }
 
 a:not(.sidebar a),
 .meta-value a,
 .reference-search span {
-  color: #ffb45f !important;
+  color: var(--app-accent-hover, #3b82f6) !important;
 }
 
 input:focus,
@@ -917,7 +917,7 @@ textarea:focus {
 .toner-progress,
 .radio-card-icon,
 .dot.blue,
-.dot.orange {
+.dot.var(--app-accent, #2563eb) {
   background: linear-gradient(90deg, var(--app-accent), var(--app-accent-light)) !important;
 }
 

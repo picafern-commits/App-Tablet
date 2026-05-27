@@ -41,20 +41,20 @@
       "--app-accent-softer": softer,
       "--app-accent-line": line,
       "--app-accent-glow": glow,
-      "--az-orange": color,
-      "--az-orange-2": hover,
-      "--az-orange-soft": soft,
+      "--az-var(--app-accent, #2563eb)": color,
+      "--az-var(--app-accent, #2563eb)-2": hover,
+      "--az-var(--app-accent, #2563eb)-soft": soft,
       "--az-line": line,
       "--primary": color,
       "--primary-hover": hover,
       "--sidebar-hover": color,
       "--brinka-pink": color,
       "--brinka-purple": hover,
-      "--brinka-orange": color,
-      "--brinka-orange2": light,
+      "--brinka-var(--app-accent, #2563eb)": color,
+      "--brinka-var(--app-accent, #2563eb)2": light,
       "--ent-blue": color,
       "--ent-purple": hover,
-      "--ent-orange": color,
+      "--ent-var(--app-accent, #2563eb)": color,
       "--app-blue": color,
       "--app-blue-soft": soft
     };
@@ -126,7 +126,7 @@
       <div class="color-config-row">
         <input id="appAccentColor" type="color" value="#2563eb" onchange="guardarCorApp(this.value)">
         <div class="color-swatches" aria-label="Cores rápidas">
-          <button type="button" style="--swatch:#ff7a00" onclick="guardarCorApp('#ff7a00')" title="Laranja"></button>
+          <button type="button" style="--swatch:var(--app-accent, #2563eb)" onclick="guardarCorApp('var(--app-accent, #2563eb)')" title="Laranja"></button>
           <button type="button" style="--swatch:#eab308" onclick="guardarCorApp('#eab308')" title="Dourado"></button>
           <button type="button" style="--swatch:#22c55e" onclick="guardarCorApp('#22c55e')" title="Verde"></button>
           <button type="button" style="--swatch:#ef4444" onclick="guardarCorApp('#ef4444')" title="Vermelho"></button>

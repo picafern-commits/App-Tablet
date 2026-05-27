@@ -555,7 +555,7 @@ table a:hover {
 
 .badge.reparacao {
   background: rgba(245, 158, 11, 0.18);
-  color: var(--app-accent, #2563eb);
+  color: var(--app-accent, #2563eb) !important;
 }
 
 .badge.resolvido {
@@ -575,7 +575,7 @@ table a:hover {
 
 .badge.aviso {
   background: rgba(245, 158, 11, 0.20);
-  color: var(--app-accent, #2563eb);
+  color: var(--app-accent, #2563eb) !important;
 }
 
 .badge.reserva {
@@ -1131,7 +1131,7 @@ body.dark .app-version-mini {
   padding: 0 10px;
   border-radius: 999px;
   background: rgba(245, 158, 11, 0.12);
-  color: var(--app-accent, #2563eb);
+  color: var(--app-accent, #2563eb) !important;
   font-size: 12px;
   font-weight: 700;
   margin-left: 8px;
@@ -1819,7 +1819,7 @@ html.dark .minimo-item, body.dark .minimo-item {
    Sidebar nova + Dashboard clean + visual premium
    ========================================================= */
 :root{
-  --brinka-bg:#120018;--brinka-bg2:#25002e;--brinka-panel:rgba(255,255,255,.095);--brinka-panel2:rgba(255,255,255,.16);--brinka-line:rgba(255,255,255,.14);--brinka-text:#fff8ff;--brinka-muted:#d9b6df;--brinka-pink:#c2188c;--brinka-purple:#8b1a9a;--brinka-orange:var(--app-accent, #2563eb);--brinka-orange2:var(--app-accent-hover, #3b82f6);--brinka-green:#31d27c;--brinka-red:#ff5c72;--brinka-shadow:0 24px 80px rgba(0,0,0,.38);--brinka-radius:26px;
+  --brinka-bg:#120018;--brinka-bg2:#25002e;--brinka-panel:rgba(255,255,255,.095);--brinka-panel2:rgba(255,255,255,.16);--brinka-line:rgba(255,255,255,.14);--brinka-text:#fff8ff;--brinka-muted:#d9b6df;--brinka-pink:#c2188c;--brinka-purple:#8b1a9a;--brinka-var(--app-accent, #2563eb):var(--app-accent, #2563eb);--brinka-var(--app-accent, #2563eb)2:var(--app-accent-hover, #3b82f6);--brinka-green:#31d27c;--brinka-red:#ff5c72;--brinka-shadow:0 24px 80px rgba(0,0,0,.38);--brinka-radius:26px;
 }
 html,body{min-height:100%;overflow-x:hidden!important;
 color:var(--brinka-text)!important;
@@ -1846,7 +1846,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;ba
 input[type="text"],input[type="date"],input[type="number"],input[type="email"],input[type="password"],select,textarea{color:#fff!important;background:rgba(255,255,255,.08)!important;border:1px solid var(--brinka-line)!important;border-radius:17px!important;min-height:50px!important;outline:0!important;}
 input:focus,select:focus,textarea:focus{border-color:rgba(255,149,0,.72)!important;box-shadow:0 0 0 4px rgba(255,149,0,.12)!important;}
 button,.btn,.primary-btn,.soft-btn,.danger-btn,.action-btn,.add-btn,.save-btn{border-radius:16px!important;min-height:44px!important;font-weight:950!important;transition:.18s ease!important;}
-.primary-btn,.add-btn,.save-btn,button.btn-primary,.btn-primary{color:#351300!important;background:linear-gradient(135deg,var(--brinka-orange2),var(--brinka-orange))!important;box-shadow:0 14px 30px var(--app-accent-soft, rgba(37,99,235,.22))!important;border:0!important;}
+.primary-btn,.add-btn,.save-btn,button.btn-primary,.btn-primary{color:#351300!important;background:linear-gradient(135deg,var(--brinka-var(--app-accent, #2563eb)2),var(--brinka-var(--app-accent, #2563eb)))!important;box-shadow:0 14px 30px var(--app-accent-soft, rgba(37,99,235,.22))!important;border:0!important;}
 .soft-btn,.action-btn,.btn-secondary{color:#fff!important;background:rgba(255,255,255,.09)!important;border:1px solid var(--brinka-line)!important;}
 .danger-btn,.delete-row,.btn-danger{color:#ffd0d7!important;background:rgba(255,92,114,.15)!important;border:1px solid rgba(255,92,114,.28)!important;}
 table{color:var(--brinka-text)!important;}th{color:var(--brinka-muted)!important;}td{color:var(--brinka-text)!important;}.table-wrap{border-radius:22px!important;border:1px solid var(--brinka-line)!important;background:rgba(255,255,255,.04)!important;}
@@ -1868,8 +1868,8 @@ body.dashboard-clean .panel.is-dashboard-removed{display:none!important;}
   --brinka-muted:#94a3b8!important;
   --brinka-pink:#2563eb!important;
   --brinka-purple:#1d4ed8!important;
-  --brinka-orange:#2563eb!important;
-  --brinka-orange2:#3b82f6!important;
+  --brinka-var(--app-accent, #2563eb):#2563eb!important;
+  --brinka-var(--app-accent, #2563eb)2:#3b82f6!important;
 }
 html,body{
   background:radial-gradient(circle at 12% 8%,rgba(59,130,246,.16),transparent 34rem),radial-gradient(circle at 86% 12%,rgba(37,99,235,.10),transparent 28rem),linear-gradient(135deg,#020617,#0f172a)!important;
@@ -2140,7 +2140,7 @@ button{
   --ent-muted: #8fa2bf;
   --ent-blue: #2f6bff;
   --ent-green: #15b66a;
-  --ent-orange: var(--app-accent, #2563eb);
+  --ent-var(--app-accent, #2563eb): var(--app-accent, #2563eb);
   --ent-purple: #8b5cf6;
   --ent-red: #ef4444;
   --ent-radius: 14px;
@@ -2476,7 +2476,7 @@ button.btn-primary,
 
 .metric-blue { border-color: rgba(47,107,255,.34); }
 .metric-green { border-color: rgba(21,182,106,.34); }
-.metric-orange { border-color: var(--app-accent-soft, rgba(37,99,235,.34)); }
+.metric-var(--app-accent, #2563eb) { border-color: var(--app-accent-soft, rgba(37,99,235,.34)); }
 .metric-purple { border-color: rgba(139,92,246,.34); }
 
 .sparkline {
@@ -2495,7 +2495,7 @@ button.btn-primary,
 }
 
 .metric-green .sparkline { color: rgba(21,182,106,.75); }
-.metric-orange .sparkline { color: var(--app-accent, rgba(37,99,235,.75)); }
+.metric-var(--app-accent, #2563eb) .sparkline { color: var(--app-accent, rgba(37,99,235,.75)); }
 .metric-purple .sparkline { color: rgba(139,92,246,.75); }
 
 .dashboard-grid-main {
@@ -2576,7 +2576,7 @@ button.btn-primary,
   width: 150px;
   height: 150px;
   border-radius: 50%;
-  background: conic-gradient(var(--ent-blue) 0 42%, var(--ent-green) 42% 62%, var(--ent-orange) 62% 82%, var(--ent-purple) 82% 100%);
+  background: conic-gradient(var(--ent-blue) 0 42%, var(--ent-green) 42% 62%, var(--ent-var(--app-accent, #2563eb)) 62% 82%, var(--ent-purple) 82% 100%);
   position: relative;
 }
 
@@ -2623,7 +2623,7 @@ button.btn-primary,
 
 .dot.blue { background: var(--ent-blue); }
 .dot.green { background: var(--ent-green); }
-.dot.orange { background: var(--ent-orange); }
+.dot.var(--app-accent, #2563eb) { background: var(--ent-var(--app-accent, #2563eb)); }
 .dot.purple { background: var(--ent-purple); }
 
 .shortcut-grid {
@@ -4677,23 +4677,23 @@ body.device-phone .modal-card {
 /* ===== APP ACCENT COLOR FIX =====
    Garante que elementos antigos laranja seguem a cor escolhida da APP. */
 :root {
-  --az-orange: var(--app-accent, var(--primary, #2563eb));
-  --az-orange-2: var(--app-accent-hover, var(--primary-hover, #1d4ed8));
-  --az-orange-soft: var(--app-accent-soft, rgba(37, 99, 235, .16));
-  --ent-orange: var(--app-accent, var(--primary, #2563eb));
-  --brinka-orange: var(--app-accent, var(--primary, #2563eb));
-  --brinka-orange2: var(--app-accent-hover, var(--primary-hover, #1d4ed8));
+  --az-var(--app-accent, #2563eb): var(--app-accent, var(--primary, #2563eb));
+  --az-var(--app-accent, #2563eb)-2: var(--app-accent-hover, var(--primary-hover, #1d4ed8));
+  --az-var(--app-accent, #2563eb)-soft: var(--app-accent-soft, rgba(37, 99, 235, .16));
+  --ent-var(--app-accent, #2563eb): var(--app-accent, var(--primary, #2563eb));
+  --brinka-var(--app-accent, #2563eb): var(--app-accent, var(--primary, #2563eb));
+  --brinka-var(--app-accent, #2563eb)2: var(--app-accent-hover, var(--primary-hover, #1d4ed8));
 }
 
-.metric-orange,
-.dot.orange,
+.metric-var(--app-accent, #2563eb),
+.dot.var(--app-accent, #2563eb),
 .item-warning,
 .diag-dot.is-warn {
   color: var(--app-accent, var(--primary, #2563eb)) !important;
   border-color: var(--app-accent-soft, rgba(37,99,235,.25)) !important;
 }
 
-.dot.orange,
+.dot.var(--app-accent, #2563eb),
 .diag-dot.is-warn {
   background: var(--app-accent, var(--primary, #2563eb)) !important;
 }
@@ -4705,3 +4705,53 @@ button.btn-primary,
 .btn-primary {
   background: linear-gradient(135deg, var(--app-accent, var(--primary, #2563eb)), var(--app-accent-hover, var(--primary-hover, #1d4ed8))) !important;
 }
+
+
+/* ===== REMOVE LEGACY ORANGE ===== */
+
+.sidebar i,
+.sidebar svg,
+.page-title,
+h1,
+h2,
+.card-title,
+.metric-orange,
+.dot.orange,
+.item-warning,
+label,
+select,
+option,
+.enterprise-highlight {
+  color: var(--app-accent, #2563eb) !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--app-accent, #2563eb) !important;
+  box-shadow: 0 0 0 3px var(--app-accent-soft, rgba(37,99,235,.25)) !important;
+}
+
+button,
+.btn,
+.primary-btn,
+.add-btn,
+.save-btn,
+.btn-primary {
+  background: linear-gradient(
+    135deg,
+    var(--app-accent, #2563eb),
+    var(--app-accent-hover, #1d4ed8)
+  ) !important;
+}
+
+.sidebar .active,
+.sidebar .selected {
+  background: linear-gradient(
+    135deg,
+    var(--app-accent, #2563eb),
+    var(--app-accent-hover, #1d4ed8)
+  ) !important;
+}
+
+/* ===== END REMOVE LEGACY ORANGE ===== */

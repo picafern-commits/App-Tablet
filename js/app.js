@@ -1941,20 +1941,20 @@ function aplicarCorApp(value = "#2563eb") {
     "--app-accent-softer": softer,
     "--app-accent-line": line,
     "--app-accent-glow": glow,
-    "--az-orange": color,
-    "--az-orange-2": hover,
-    "--az-orange-soft": soft,
+    "--az-var(--app-accent, #2563eb)": color,
+    "--az-var(--app-accent, #2563eb)-2": hover,
+    "--az-var(--app-accent, #2563eb)-soft": soft,
     "--az-line": line,
     "--primary": color,
     "--primary-hover": hover,
     "--sidebar-hover": color,
     "--brinka-pink": color,
     "--brinka-purple": hover,
-    "--brinka-orange": color,
-    "--brinka-orange2": light,
+    "--brinka-var(--app-accent, #2563eb)": color,
+    "--brinka-var(--app-accent, #2563eb)2": light,
     "--ent-blue": color,
     "--ent-purple": hover,
-    "--ent-orange": color,
+    "--ent-var(--app-accent, #2563eb)": color,
     "--app-blue": color,
     "--app-blue-soft": soft
   };
@@ -1965,12 +1965,12 @@ function aplicarCorApp(value = "#2563eb") {
 
 function initResolucaoApp() {
   aplicarResolucaoApp("comfortable");
-  aplicarCorApp(getCachedCorApp() || "#ff7a00");
+  aplicarCorApp(getCachedCorApp() || "var(--app-accent, #2563eb)");
   if (!window.db || !window.db.collection) return;
   window.db.collection("config").doc("layout").onSnapshot((doc) => {
     const data = doc.exists ? doc.data() : {};
     aplicarResolucaoApp(data.resolution || "comfortable");
-    const accentColor = data.accentColor || getCachedCorApp() || "#ff7a00";
+    const accentColor = data.accentColor || getCachedCorApp() || "var(--app-accent, #2563eb)";
     aplicarCorApp(accentColor);
     cacheCorApp(accentColor);
   }, (error) => console.error("Erro ao carregar resolução:", error));
