@@ -554,7 +554,7 @@ table a:hover {
 }
 
 .badge.reparacao {
-  background: rgba(245, 158, 11, 0.18);
+  background: var(--app-accent-soft);
   color: var(--app-accent, #2563eb) !important;
 }
 
@@ -574,7 +574,7 @@ table a:hover {
 }
 
 .badge.aviso {
-  background: rgba(245, 158, 11, 0.20);
+  background: var(--app-accent-soft);
   color: var(--app-accent, #2563eb) !important;
 }
 
@@ -980,7 +980,7 @@ body.dark .app-version-mini {
 
 .printer-toner-status.is-medium {
   color: var(--app-accent, #3b82f6);
-  background: rgba(245, 158, 11, 0.14);
+  background: var(--app-accent-soft);
 }
 
 .printer-toner-status.is-critical {
@@ -1130,7 +1130,7 @@ body.dark .app-version-mini {
   min-height: 28px;
   padding: 0 10px;
   border-radius: 999px;
-  background: rgba(245, 158, 11, 0.12);
+  background: var(--app-accent-soft);
   color: var(--app-accent, #2563eb) !important;
   font-size: 12px;
   font-weight: 700;
@@ -1673,7 +1673,7 @@ body.dark .gestor-priority-card {
 }
 
 .gestor-chip.yellow {
-  background: rgba(245,158,11,0.14);
+  background: var(--app-accent-soft);
   color: var(--app-accent, #3b82f6);
 }
 
@@ -1819,12 +1819,12 @@ html.dark .minimo-item, body.dark .minimo-item {
    Sidebar nova + Dashboard clean + visual premium
    ========================================================= */
 :root{
-  --brinka-bg:#120018;--brinka-bg2:#25002e;--brinka-panel:rgba(255,255,255,.095);--brinka-panel2:rgba(255,255,255,.16);--brinka-line:rgba(255,255,255,.14);--brinka-text:#fff8ff;--brinka-muted:#d9b6df;--brinka-pink:#c2188c;--brinka-purple:#8b1a9a;--brinka-var(--app-accent, #2563eb):var(--app-accent, #2563eb);--brinka-var(--app-accent, #2563eb)2:var(--app-accent-hover, #3b82f6);--brinka-green:#31d27c;--brinka-red:#ff5c72;--brinka-shadow:0 24px 80px rgba(0,0,0,.38);--brinka-radius:26px;
+  --brinka-bg:#120018;--brinka-bg2:#25002e;--brinka-panel:rgba(255,255,255,.095);--brinka-panel2:rgba(255,255,255,.16);--brinka-line:rgba(255,255,255,.14);--brinka-text:#fff8ff;--brinka-muted:#d9b6df;--brinka-pink:#c2188c;--brinka-purple:#8b1a9a;--brinka-orange:var(--app-accent, #2563eb);--brinka-orange2:var(--app-accent-hover, #3b82f6);--brinka-green:#31d27c;--brinka-red:#ff5c72;--brinka-shadow:0 24px 80px rgba(0,0,0,.38);--brinka-radius:26px;
 }
 html,body{min-height:100%;overflow-x:hidden!important;
 color:var(--brinka-text)!important;
 font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif!important;
-background:radial-gradient(circle at 12% 8%,rgba(194,24,140,.32),transparent 34rem),radial-gradient(circle at 86% 12%,rgba(255,149,0,.16),transparent 28rem),linear-gradient(135deg,var(--brinka-bg),var(--brinka-bg2))!important;}
+background:radial-gradient(circle at 12% 8%,rgba(194,24,140,.32),transparent 34rem),radial-gradient(circle at 86% 12%,var(--app-accent-soft),transparent 28rem),linear-gradient(135deg,var(--brinka-bg),var(--brinka-bg2))!important;}
 body{display:block!important;}
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background:radial-gradient(circle at 70% 92%,rgba(125,28,154,.22),transparent 30rem),radial-gradient(circle at 15% 84%,rgba(59,130,246,.10),transparent 28rem);}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -1840,13 +1840,13 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;ba
 .topbar,.premium-topbar{border-radius:28px!important;padding:20px!important;margin-bottom:18px!important;background:linear-gradient(145deg,var(--brinka-panel2),var(--brinka-panel))!important;border:1px solid var(--brinka-line)!important;box-shadow:var(--brinka-shadow)!important;backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important;}
 .topbar h1,.main h1{color:#fff!important;font-size:clamp(28px,3.6vw,42px)!important;letter-spacing:-.055em!important;}
 .subtitle,.section-subtitle,.stock-meta,.history-meta,.pc-meta,.meta-line{color:var(--brinka-muted)!important;}
-.status-pill,.version-pill,.pill{border-radius:999px!important;color:#ffd7a0!important;background:rgba(255,149,0,.15)!important;border:1px solid rgba(255,149,0,.20)!important;font-weight:950!important;}
+.status-pill,.version-pill,.pill{border-radius:999px!important;color:#ffd7a0!important;background:var(--app-accent-soft)!important;border:1px solid var(--app-accent-soft)!important;font-weight:950!important;}
 .stat-card,.panel,.stock-card,.history-card,.pc-card,.dashboard-card,.card,.box,.user-card,.summary-card,.printer-card,.network-card,.pistol-card,.modal-content{background:linear-gradient(145deg,var(--brinka-panel2),var(--brinka-panel))!important;border:1px solid var(--brinka-line)!important;border-radius:var(--brinka-radius)!important;box-shadow:0 18px 55px rgba(0,0,0,.28)!important;color:var(--brinka-text)!important;backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important;}
 .stat-card strong{color:#fff!important}.stat-card span{color:var(--brinka-muted)!important;font-weight:850!important}
 input[type="text"],input[type="date"],input[type="number"],input[type="email"],input[type="password"],select,textarea{color:#fff!important;background:rgba(255,255,255,.08)!important;border:1px solid var(--brinka-line)!important;border-radius:17px!important;min-height:50px!important;outline:0!important;}
-input:focus,select:focus,textarea:focus{border-color:rgba(255,149,0,.72)!important;box-shadow:0 0 0 4px rgba(255,149,0,.12)!important;}
+input:focus,select:focus,textarea:focus{border-color:var(--app-accent-soft)!important;box-shadow:0 0 0 4px var(--app-accent-soft)!important;}
 button,.btn,.primary-btn,.soft-btn,.danger-btn,.action-btn,.add-btn,.save-btn{border-radius:16px!important;min-height:44px!important;font-weight:950!important;transition:.18s ease!important;}
-.primary-btn,.add-btn,.save-btn,button.btn-primary,.btn-primary{color:#351300!important;background:linear-gradient(135deg,var(--brinka-var(--app-accent, #2563eb)2),var(--brinka-var(--app-accent, #2563eb)))!important;box-shadow:0 14px 30px var(--app-accent-soft, rgba(37,99,235,.22))!important;border:0!important;}
+.primary-btn,.add-btn,.save-btn,button.btn-primary,.btn-primary{color:#351300!important;background:linear-gradient(135deg,var(--brinka-orange2),var(--brinka-orange))!important;box-shadow:0 14px 30px var(--app-accent-soft, rgba(37,99,235,.22))!important;border:0!important;}
 .soft-btn,.action-btn,.btn-secondary{color:#fff!important;background:rgba(255,255,255,.09)!important;border:1px solid var(--brinka-line)!important;}
 .danger-btn,.delete-row,.btn-danger{color:#ffd0d7!important;background:rgba(255,92,114,.15)!important;border:1px solid rgba(255,92,114,.28)!important;}
 table{color:var(--brinka-text)!important;}th{color:var(--brinka-muted)!important;}td{color:var(--brinka-text)!important;}.table-wrap{border-radius:22px!important;border:1px solid var(--brinka-line)!important;background:rgba(255,255,255,.04)!important;}
@@ -1868,8 +1868,8 @@ body.dashboard-clean .panel.is-dashboard-removed{display:none!important;}
   --brinka-muted:#94a3b8!important;
   --brinka-pink:#2563eb!important;
   --brinka-purple:#1d4ed8!important;
-  --brinka-var(--app-accent, #2563eb):#2563eb!important;
-  --brinka-var(--app-accent, #2563eb)2:#3b82f6!important;
+  --brinka-orange:#2563eb!important;
+  --brinka-orange2:#3b82f6!important;
 }
 html,body{
   background:radial-gradient(circle at 12% 8%,rgba(59,130,246,.16),transparent 34rem),radial-gradient(circle at 86% 12%,rgba(37,99,235,.10),transparent 28rem),linear-gradient(135deg,#020617,#0f172a)!important;
@@ -2140,7 +2140,7 @@ button{
   --ent-muted: #8fa2bf;
   --ent-blue: #2f6bff;
   --ent-green: #15b66a;
-  --ent-var(--app-accent, #2563eb): var(--app-accent, #2563eb);
+  --ent-orange: var(--app-accent, #2563eb);
   --ent-purple: #8b5cf6;
   --ent-red: #ef4444;
   --ent-radius: 14px;
@@ -2576,7 +2576,7 @@ button.btn-primary,
   width: 150px;
   height: 150px;
   border-radius: 50%;
-  background: conic-gradient(var(--ent-blue) 0 42%, var(--ent-green) 42% 62%, var(--ent-var(--app-accent, #2563eb)) 62% 82%, var(--ent-purple) 82% 100%);
+  background: conic-gradient(var(--ent-blue) 0 42%, var(--ent-green) 42% 62%, var(--ent-orange) 62% 82%, var(--ent-purple) 82% 100%);
   position: relative;
 }
 
@@ -2623,7 +2623,7 @@ button.btn-primary,
 
 .dot.blue { background: var(--ent-blue); }
 .dot.green { background: var(--ent-green); }
-.dot.var(--app-accent, #2563eb) { background: var(--ent-var(--app-accent, #2563eb)); }
+.dot.var(--app-accent, #2563eb) { background: var(--ent-orange); }
 .dot.purple { background: var(--ent-purple); }
 
 .shortcut-grid {
@@ -4677,12 +4677,12 @@ body.device-phone .modal-card {
 /* ===== APP ACCENT COLOR FIX =====
    Garante que elementos antigos laranja seguem a cor escolhida da APP. */
 :root {
-  --az-var(--app-accent, #2563eb): var(--app-accent, var(--primary, #2563eb));
-  --az-var(--app-accent, #2563eb)-2: var(--app-accent-hover, var(--primary-hover, #1d4ed8));
-  --az-var(--app-accent, #2563eb)-soft: var(--app-accent-soft, rgba(37, 99, 235, .16));
-  --ent-var(--app-accent, #2563eb): var(--app-accent, var(--primary, #2563eb));
-  --brinka-var(--app-accent, #2563eb): var(--app-accent, var(--primary, #2563eb));
-  --brinka-var(--app-accent, #2563eb)2: var(--app-accent-hover, var(--primary-hover, #1d4ed8));
+  --az-orange: var(--app-accent, var(--primary, #2563eb));
+  --az-orange-2: var(--app-accent-hover, var(--primary-hover, #1d4ed8));
+  --az-orange-soft: var(--app-accent-soft, rgba(37, 99, 235, .16));
+  --ent-orange: var(--app-accent, var(--primary, #2563eb));
+  --brinka-orange: var(--app-accent, var(--primary, #2563eb));
+  --brinka-orange2: var(--app-accent-hover, var(--primary-hover, #1d4ed8));
 }
 
 .metric-var(--app-accent, #2563eb),
@@ -4755,3 +4755,89 @@ button,
 }
 
 /* ===== END REMOVE LEGACY ORANGE ===== */
+
+
+/* ===== FIX DEFINITIVO: SEM LARANJA FIXO ===== */
+:root,
+html,
+body {
+  --az-orange: var(--app-accent, var(--primary, #2563eb)) !important;
+  --az-orange-2: var(--app-accent-hover, var(--primary-hover, #1d4ed8)) !important;
+  --az-orange-soft: var(--app-accent-soft, rgba(37,99,235,.16)) !important;
+  --az-line: var(--app-accent-line, rgba(37,99,235,.20)) !important;
+
+  --ent-orange: var(--app-accent, var(--primary, #2563eb)) !important;
+  --brinka-orange: var(--app-accent, var(--primary, #2563eb)) !important;
+  --brinka-orange2: var(--app-accent-hover, var(--primary-hover, #1d4ed8)) !important;
+  --warning: var(--app-accent, var(--primary, #2563eb)) !important;
+}
+
+/* textos e ícones antigos que ficavam laranja */
+.sidebar a i,
+.sidebar i,
+.nav-link i,
+.menu-item i,
+[class*="icon"],
+[class*="warning"],
+[class*="orange"],
+.metric-orange,
+.dot.orange,
+.item-warning,
+label,
+.form-label,
+.card h2,
+.card h3,
+.panel h2,
+.panel h3 {
+  color: var(--app-accent, var(--primary, #2563eb)) !important;
+}
+
+/* barras/títulos/cards antigos */
+.page-hero,
+.page-header,
+.hero,
+.header-card,
+.enterprise-header,
+.card-title-bar,
+.form-section-title {
+  background: linear-gradient(135deg, var(--app-accent, #2563eb), var(--app-accent-hover, #1d4ed8)) !important;
+}
+
+/* inputs/selects que tinham glow laranja */
+input,
+textarea,
+select {
+  accent-color: var(--app-accent, #2563eb) !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus,
+.form-control:focus,
+.enterprise-input:focus {
+  border-color: var(--app-accent, #2563eb) !important;
+  box-shadow: 0 0 0 3px var(--app-accent-soft, rgba(37,99,235,.25)) !important;
+}
+
+/* botões principais */
+button.primary,
+.btn-primary,
+.primary-btn,
+.add-btn,
+.save-btn,
+.enterprise-btn.primary,
+button[type="submit"] {
+  background: linear-gradient(135deg, var(--app-accent, #2563eb), var(--app-accent-hover, #1d4ed8)) !important;
+  border-color: var(--app-accent, #2563eb) !important;
+}
+
+/* bordas e glows antigos */
+.metric-orange,
+.dot.orange,
+.diag-dot.is-warn,
+.card.is-warning,
+.card.warning {
+  border-color: var(--app-accent, #2563eb) !important;
+  background-color: var(--app-accent-soft, rgba(37,99,235,.14)) !important;
+}
+/* ===== FIM FIX DEFINITIVO ===== */

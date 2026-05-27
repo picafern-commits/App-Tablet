@@ -7,38 +7,38 @@
   --az-line: var(--app-accent-line, rgba(37,99,235,.18));
   --az-text: #fff8ef;
   --az-muted: #b9aa99;
-  --az-var(--app-accent, #2563eb): var(--app-accent, #2563eb);
-  --az-var(--app-accent, #2563eb)-2: var(--app-accent-hover, #1d4ed8);
-  --az-var(--app-accent, #2563eb)-soft: var(--app-accent-soft, rgba(37,99,235,.16));
-  --app-accent: var(--az-var(--app-accent, #2563eb));
-  --app-accent-hover: var(--az-var(--app-accent, #2563eb)-2);
+  --az-orange: var(--app-accent, #2563eb);
+  --az-orange-2: var(--app-accent-hover, #1d4ed8);
+  --az-orange-soft: var(--app-accent-soft, rgba(37,99,235,.16));
+  --app-accent: var(--az-orange);
+  --app-accent-hover: var(--az-orange-2);
   --app-accent-light: var(--app-accent-hover, #3b82f6);
   --app-accent-rgb: 37 99 235;
-  --app-accent-soft: var(--az-var(--app-accent, #2563eb)-soft);
+  --app-accent-soft: var(--az-orange-soft);
   --app-accent-softer: var(--app-accent-soft, rgba(37,99,235,.08));
   --app-accent-line: var(--az-line);
-  --app-accent-glow: rgba(255, 122, 0, .28);
+  --app-accent-glow: var(--app-accent-soft);
   --az-green: #29b36a;
   --az-danger: #ef4444;
   --az-sidebar: 248px;
-  --primary: var(--az-var(--app-accent, #2563eb));
-  --primary-hover: var(--az-var(--app-accent, #2563eb)-2);
-  --sidebar-hover: var(--az-var(--app-accent, #2563eb));
-  --brinka-pink: var(--az-var(--app-accent, #2563eb)) !important;
-  --brinka-purple: var(--az-var(--app-accent, #2563eb)-2) !important;
-  --brinka-var(--app-accent, #2563eb): var(--az-var(--app-accent, #2563eb)) !important;
-  --brinka-var(--app-accent, #2563eb)2: var(--app-accent-hover, var(--az-var(--app-accent, #2563eb)-2)) !important;
-  --ent-blue: var(--az-var(--app-accent, #2563eb)) !important;
-  --ent-purple: var(--az-var(--app-accent, #2563eb)-2) !important;
-  --ent-var(--app-accent, #2563eb): var(--az-var(--app-accent, #2563eb)) !important;
-  --app-blue: var(--az-var(--app-accent, #2563eb)) !important;
-  --app-blue-soft: var(--az-var(--app-accent, #2563eb)-soft) !important;
+  --primary: var(--az-orange);
+  --primary-hover: var(--az-orange-2);
+  --sidebar-hover: var(--az-orange);
+  --brinka-pink: var(--az-orange) !important;
+  --brinka-purple: var(--az-orange-2) !important;
+  --brinka-orange: var(--az-orange) !important;
+  --brinka-orange2: var(--app-accent-hover, var(--az-orange-2)) !important;
+  --ent-blue: var(--az-orange) !important;
+  --ent-purple: var(--az-orange-2) !important;
+  --ent-orange: var(--az-orange) !important;
+  --app-blue: var(--az-orange) !important;
+  --app-blue-soft: var(--az-orange-soft) !important;
 }
 
 html,
 body {
   background:
-    linear-gradient(135deg, rgba(255, 122, 0, .12), transparent 32%),
+    linear-gradient(135deg, var(--app-accent-soft), transparent 32%),
     linear-gradient(180deg, #101114 0%, #15161a 48%, #0d0e11 100%) !important;
   color: var(--az-text) !important;
 }
@@ -63,7 +63,7 @@ body::before {
 .sidebar {
   width: var(--az-sidebar) !important;
   background: linear-gradient(180deg, #141519 0%, #101114 58%, #0b0c0f 100%) !important;
-  border-right: 1px solid rgba(255,122,0,.18) !important;
+  border-right: 1px solid var(--app-accent-soft) !important;
   box-shadow: 18px 0 44px rgba(0, 0, 0, .34) !important;
 }
 
@@ -74,7 +74,7 @@ body::before {
   border-radius: 12px !important;
   border: 1px solid rgba(255,255,255,.12) !important;
   background:
-    linear-gradient(135deg, rgba(255,122,0,.20), rgba(255,122,0,.07)),
+    linear-gradient(135deg, var(--app-accent-soft), var(--app-accent-soft)),
     rgba(255,255,255,.04) !important;
 }
 
@@ -99,9 +99,9 @@ body::before {
 }
 
 .brand-badge {
-  background: linear-gradient(135deg, var(--az-var(--app-accent, #2563eb)), var(--az-var(--app-accent, #2563eb)-2)) !important;
+  background: linear-gradient(135deg, var(--az-orange), var(--az-orange-2)) !important;
   border: 1px solid rgba(255,255,255,.16);
-  box-shadow: 0 14px 30px rgba(255,122,0,.26) !important;
+  box-shadow: 0 14px 30px var(--app-accent-soft) !important;
 }
 
 .sidebar a,
@@ -117,9 +117,9 @@ body::before {
 .sidebar a.active,
 .sidebar .menu-btn:hover,
 .sidebar .menu-btn.active {
-  background: linear-gradient(135deg, var(--az-var(--app-accent, #2563eb)), var(--az-var(--app-accent, #2563eb)-2)) !important;
+  background: linear-gradient(135deg, var(--az-orange), var(--az-orange-2)) !important;
   color: #fff !important;
-  box-shadow: 0 14px 28px rgba(255,122,0,.24) !important;
+  box-shadow: 0 14px 28px var(--app-accent-soft) !important;
 }
 
 .main,
@@ -139,7 +139,7 @@ body::before {
   border: 1px solid var(--az-line) !important;
   border-radius: 14px !important;
   background:
-    linear-gradient(135deg, rgba(255,122,0,.16), rgba(16,17,20,.88)),
+    linear-gradient(135deg, var(--app-accent-soft), rgba(16,17,20,.88)),
     var(--az-panel) !important;
   box-shadow: 0 22px 54px rgba(0,0,0,.30) !important;
 }
@@ -174,7 +174,7 @@ body::before {
 
 .stat-card,
 .metric-card {
-  border-bottom: 3px solid var(--az-var(--app-accent, #2563eb)) !important;
+  border-bottom: 3px solid var(--az-orange) !important;
 }
 
 .metric-blue,
@@ -193,39 +193,39 @@ body::before {
 .pc-card::before,
 .card::before,
 .panel::before {
-  background: linear-gradient(90deg, transparent, rgba(255,122,0,.34), transparent) !important;
+  background: linear-gradient(90deg, transparent, var(--app-accent-soft), transparent) !important;
 }
 
 .metric-green,
 .stat-card:nth-child(2) {
-  border-bottom-color: var(--az-var(--app-accent, #2563eb)) !important;
+  border-bottom-color: var(--az-orange) !important;
 }
 
 .metric-var(--app-accent, #2563eb),
 .stat-card:nth-child(3) {
-  border-bottom-color: var(--az-var(--app-accent, #2563eb)) !important;
+  border-bottom-color: var(--az-orange) !important;
 }
 
 .metric-purple,
 .stat-card:nth-child(4) {
-  border-bottom-color: var(--az-var(--app-accent, #2563eb)) !important;
+  border-bottom-color: var(--az-orange) !important;
 }
 
 .primary-btn,
 .reference-primary,
 .action-btn,
 button.primary-btn {
-  background: linear-gradient(135deg, var(--az-var(--app-accent, #2563eb)), var(--az-var(--app-accent, #2563eb)-2)) !important;
+  background: linear-gradient(135deg, var(--az-orange), var(--az-orange-2)) !important;
   border: 1px solid rgba(255,255,255,.14) !important;
   color: #fff !important;
-  box-shadow: 0 12px 24px rgba(255,122,0,.22) !important;
+  box-shadow: 0 12px 24px var(--app-accent-soft) !important;
 }
 
 .secondary-btn,
 .reference-outline,
 button.secondary-btn {
   background: rgba(255,255,255,.045) !important;
-  border: 1px solid rgba(255,122,0,.28) !important;
+  border: 1px solid var(--app-accent-soft) !important;
   color: #ffc27a !important;
 }
 
@@ -246,7 +246,7 @@ a,
 .progress-fill,
 .bar-fill,
 .level-fill {
-  background: linear-gradient(90deg, var(--az-var(--app-accent, #2563eb)), var(--az-var(--app-accent, #2563eb)-2)) !important;
+  background: linear-gradient(90deg, var(--az-orange), var(--az-orange-2)) !important;
 }
 
 input,
@@ -263,8 +263,8 @@ textarea,
 input:focus,
 select:focus,
 textarea:focus {
-  outline: 2px solid rgba(255,122,0,.25) !important;
-  border-color: rgba(255,122,0,.50) !important;
+  outline: 2px solid var(--app-accent-soft) !important;
+  border-color: var(--app-accent-soft) !important;
 }
 
 .badge.ok,
@@ -277,7 +277,7 @@ textarea:focus {
 .badge.pendente,
 .badge.aviso,
 .status-pill {
-  background: rgba(255,122,0,.16) !important;
+  background: var(--app-accent-soft) !important;
   color: #ffc27a !important;
 }
 
@@ -386,7 +386,7 @@ body.device-phone .sidebar a {
 .card *,
 .panel *,
 .reference-panel * {
-  border-color: rgba(255, 122, 0, .18);
+  border-color: var(--app-accent-soft);
 }
 
 .brand-badge,
@@ -403,10 +403,10 @@ body.device-phone .sidebar a {
 .panel-title-row a,
 .reference-primary,
 .info-close-btn {
-  background: linear-gradient(135deg, var(--az-var(--app-accent, #2563eb)), var(--az-var(--app-accent, #2563eb)-2)) !important;
+  background: linear-gradient(135deg, var(--az-orange), var(--az-orange-2)) !important;
   border-color: rgba(255, 164, 84, .34) !important;
   color: #fff !important;
-  box-shadow: 0 12px 26px rgba(255, 122, 0, .24) !important;
+  box-shadow: 0 12px 26px var(--app-accent-soft) !important;
 }
 
 .secondary-btn,
@@ -419,7 +419,7 @@ body.device-phone .sidebar a {
 .backup-badge,
 .radio-card-icon,
 .sidebar a::before {
-  border-color: rgba(255, 122, 0, .24) !important;
+  border-color: var(--app-accent-soft) !important;
 }
 
 .radio-card-icon,
@@ -442,7 +442,7 @@ body.device-phone .sidebar a {
 .history-card,
 .pc-card,
 .card {
-  border-bottom-color: var(--az-var(--app-accent, #2563eb)) !important;
+  border-bottom-color: var(--az-orange) !important;
 }
 
 .toner-bar-fill,
@@ -453,20 +453,20 @@ body.device-phone .sidebar a {
 .printer-toner-fill,
 .equipment-art,
 .equipment-photo {
-  background: linear-gradient(90deg, var(--az-var(--app-accent, #2563eb)), var(--az-var(--app-accent, #2563eb)-2)) !important;
+  background: linear-gradient(90deg, var(--az-orange), var(--az-orange-2)) !important;
 }
 
 .equipment-art,
 .equipment-photo {
-  background: linear-gradient(145deg, rgba(255, 122, 0, .18), rgba(28, 29, 34, .96)) !important;
+  background: linear-gradient(145deg, var(--app-accent-soft), rgba(28, 29, 34, .96)) !important;
 }
 
 .dot.blue,
 .donut-blue,
 .chart-blue,
 .sparkline-blue {
-  background: var(--az-var(--app-accent, #2563eb)) !important;
-  color: var(--az-var(--app-accent, #2563eb)) !important;
+  background: var(--az-orange) !important;
+  color: var(--az-orange) !important;
 }
 
 a:not(.sidebar a),
@@ -479,8 +479,8 @@ input:focus,
 select:focus,
 textarea:focus,
 .reference-search:focus-within {
-  border-color: rgba(255, 122, 0, .58) !important;
-  box-shadow: 0 0 0 3px rgba(255, 122, 0, .14) !important;
+  border-color: var(--app-accent-soft) !important;
+  box-shadow: 0 0 0 3px var(--app-accent-soft) !important;
 }
 
 /* Final professional spacing system */
