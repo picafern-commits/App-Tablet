@@ -4340,6 +4340,21 @@ textarea {
   grid-template-columns: minmax(160px, 1fr) auto;
 }
 
+.radio-record-row > div {
+  display: grid;
+  gap: 4px;
+}
+
+.radio-record-row small {
+  color: var(--app-muted);
+  font-size: 13px;
+}
+
+.radio-record-row .reference-outline {
+  margin-top: 0 !important;
+  white-space: nowrap;
+}
+
 .radio-week-row span {
   display: block;
   margin-top: 4px;

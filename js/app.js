@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.7.9";
+const APP_VERSION = "1.8.0";
 
 
 
@@ -2122,7 +2122,20 @@ function radioCssEscape(value) {
 }
 
 function getRadioWeeklyRecord(weekKey = getRadioWeekInfo().key) {
-  return radioWeeklyRecords.find(item => item.weekKey === weekKey) || null;
+  return getSortedRadioWeeklyRecords().find(item => item.weekKey === weekKey) || null;
+}
+
+function getSortedRadioWeeklyRecords() {
+  return [...radioWeeklyRecords].sort((a, b) => {
+    const ad = Number(a.createdAt || a.updatedAt || a.startAt || 0);
+    const bd = Number(b.createdAt || b.updatedAt || b.startAt || 0);
+    if (ad !== bd) return bd - ad;
+    return String(b.weekKey || "").localeCompare(String(a.weekKey || ""), "pt", { numeric: true });
+  });
+}
+
+function getRadioWeeklyRecordId(record) {
+  return record?.recordId || record?.id || record?.weekKey || "REG";
 }
 
 function getRadiosFiltrados() {
@@ -2143,11 +2156,12 @@ function renderRadios() {
 
   const lista = getRadiosFiltrados();
   const weekInfo = getRadioWeekInfo();
-  const record = getRadioWeeklyRecord(weekInfo.key);
-  const assignments = Array.isArray(record?.assignments) ? record.assignments : [];
+  const records = getSortedRadioWeeklyRecords();
 
   if (totalNode) totalNode.textContent = String(radiosData.length);
-  if (semanaNode) semanaNode.textContent = weekInfo.label;
+  if (semanaNode) semanaNode.textContent = records.length
+    ? `${records.length} registo${records.length === 1 ? "" : "s"} semanal${records.length === 1 ? "" : "is"} guardado${records.length === 1 ? "" : "s"}`
+    : weekInfo.label;
 
   listaNode.innerHTML = lista.length ? lista.map((item) => `
     <article class="radio-card">
@@ -2165,24 +2179,28 @@ function renderRadios() {
   `).join("") : `<div class="reference-empty">Sem rádios registados na Firestore.</div>`;
 
   if (resumoNode) {
-    resumoNode.innerHTML = assignments.length ? assignments.map((item) => `
-      <div class="weekly-radio-row compact">
-        <strong>${safeRefHtml(item.radioNome || "Rádio")}</strong>
-        <span>${safeRefHtml(item.userNome || "Sem user selecionado")}</span>
+    resumoNode.innerHTML = records.length ? records.map((record) => {
+      const assignments = Array.isArray(record.assignments) ? record.assignments : [];
+      const usedCount = assignments.filter(item => item.userId || item.userNome).length;
+      const recordId = getRadioWeeklyRecordId(record);
+      return `
+      <div class="weekly-radio-row compact radio-record-row">
+        <div>
+          <strong>${safeRefHtml(recordId)}</strong>
+          <span>${safeRefHtml(record.label || "Semana sem intervalo")}</span>
+          <small>${usedCount}/${assignments.length} rádios com user associado</small>
+        </div>
+        <button class="secondary-btn reference-outline" type="button" onclick="abrirRelatorioRadios('${safeRefHtml(record.id)}')">Ver mais</button>
       </div>
-    `).join("") : `<div class="reference-empty">Ainda não existe registo para esta semana.</div>`;
+    `;
+    }).join("") : `<div class="reference-empty">Ainda não existem registos semanais.</div>`;
   }
 
   if (detalheNode) {
-    detalheNode.innerHTML = assignments.length ? assignments.map((item) => `
-      <div class="weekly-radio-row">
-        <strong>${safeRefHtml(item.radioNome || "Rádio")}</strong>
-        <span>User associado: ${safeRefHtml(item.userNome || "Sem user")}</span>
-        <small>Semana: ${safeRefHtml(record?.label || weekInfo.label)}</small>
-      </div>
-    `).join("") : `<div class="reference-empty">Sem rádios usados nesta semana.</div>`;
+    detalheNode.innerHTML = `<div class="reference-empty">Escolhe um registo e clica em Ver mais.</div>`;
   }
 }
+
 function initRadiosPage() {
   if (!document.getElementById("listaRadios")) return;
   const dbRef = window.db;
@@ -2289,7 +2307,36 @@ function filtrarRadios() {
   renderRadios();
 }
 
-function abrirRelatorioRadios() {
+function renderRadioWeeklyRecordDetails(recordId) {
+  const detalheNode = document.getElementById("radioDetalhesLista");
+  if (!detalheNode) return;
+  const record = radioWeeklyRecords.find(item => item.id === recordId || item.recordId === recordId);
+  if (!record) {
+    detalheNode.innerHTML = `<div class="reference-empty">Registo não encontrado.</div>`;
+    return;
+  }
+
+  const assignments = Array.isArray(record.assignments) ? record.assignments : [];
+  detalheNode.innerHTML = `
+    <div class="weekly-radio-row compact radio-record-row">
+      <div>
+        <strong>${safeRefHtml(getRadioWeeklyRecordId(record))}</strong>
+        <span>${safeRefHtml(record.label || "Semana sem intervalo")}</span>
+        <small>Registo criado em ${safeRefHtml(record.createdLabel || record.updatedLabel || "-")}</small>
+      </div>
+    </div>
+    ${assignments.length ? assignments.map((item) => `
+      <div class="weekly-radio-row">
+        <strong>${safeRefHtml(item.radioNome || "Rádio")}</strong>
+        <span>User associado: ${safeRefHtml(item.userNome || "Sem user selecionado")}</span>
+        <small>MAC ${safeRefHtml(item.radioMac || "-")} | Serial ${safeRefHtml(item.radioSerial || "-")}</small>
+      </div>
+    `).join("") : `<div class="reference-empty">Este registo não tem rádios associados.</div>`}
+  `;
+}
+
+function abrirRelatorioRadios(recordId = null) {
+  if (recordId) renderRadioWeeklyRecordDetails(recordId);
   const modal = document.getElementById("radioWeeklyModal");
   if (modal) modal.style.display = "flex";
 }
@@ -2377,7 +2424,10 @@ async function guardarRegistoSemanalRadios() {
   });
 
   try {
-    await window.db.collection("radioWeeklyRecords").doc(weekInfo.key).set({
+    const docRef = window.db.collection("radioWeeklyRecords").doc();
+    const recordId = `REG-${weekInfo.key}-${docRef.id.slice(-5).toUpperCase()}`;
+    await docRef.set({
+      recordId,
       weekKey: weekInfo.key,
       week: weekInfo.week,
       year: weekInfo.year,
@@ -2385,8 +2435,10 @@ async function guardarRegistoSemanalRadios() {
       startAt: weekInfo.start.getTime(),
       endAt: weekInfo.end.getTime(),
       assignments,
+      createdAt: Date.now(),
+      createdLabel: nowPt(),
       updatedAt: Date.now()
-    }, { merge: true });
+    });
     mostrarMensagem("Registo semanal guardado.");
     fecharRegistoSemanalRadios();
   } catch (error) {
