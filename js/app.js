@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.7.5";
+const APP_VERSION = "1.7.6";
 
 
 
@@ -3662,7 +3662,7 @@ async function verificarAtualizacao() {
     atualizarVersaoUI((data && data.version) ? data.version : APP_VERSION);
 
     if (data && data.version && data.version !== APP_VERSION) {
-      mostrarAvisoUpdateObrigatorio(data.version);
+      mostrarAvisoAtualizacaoDisponivel(data.version);
     }
   } catch (e) {
     console.error("Erro a verificar updates", e);
@@ -3679,37 +3679,36 @@ function atualizarVersaoUI(versionValue = APP_VERSION) {
   });
 }
 
-function mostrarAvisoUpdateObrigatorio(novaVersao) {
-  let overlay = document.getElementById("updateOverlayAppBraga");
+function mostrarAvisoAtualizacaoDisponivel(novaVersao) {
   let box = document.getElementById("updateBoxAppBraga");
-
-  if (!overlay) {
-    overlay = document.createElement("div");
-    overlay.id = "updateOverlayAppBraga";
-    overlay.className = "update-overlay-appbraga";
-    document.body.appendChild(overlay);
-  }
 
   if (!box) {
     box = document.createElement("div");
     box.id = "updateBoxAppBraga";
-    box.className = "update-box-appbraga mandatory";
+    box.className = "update-box-appbraga";
     document.body.appendChild(box);
   }
 
   box.innerHTML = `
-    <div class="update-title">🚀 Atualização obrigatória</div>
+    <div class="update-title">Atualização disponível</div>
     <div class="update-subtitle">
-      Esta app está desatualizada e precisa de ser atualizada para continuar.<br><br>
+      Existe uma versão nova, mas podes continuar a usar a app.<br><br>
       Atual: v${APP_VERSION} Premium<br>
       Nova: v${novaVersao} Premium
     </div>
     <div class="update-actions">
+      <button class="ghost-btn" onclick="fecharAvisoAtualizacao()">Continuar</button>
       <button class="primary-btn" onclick="atualizarAppObrigatorio()">Atualizar agora</button>
     </div>
   `;
+}
 
-  document.body.style.overflow = "hidden";
+function fecharAvisoAtualizacao() {
+  const overlay = document.getElementById("updateOverlayAppBraga");
+  const box = document.getElementById("updateBoxAppBraga");
+  if (overlay) overlay.remove();
+  if (box) box.remove();
+  document.body.style.overflow = "";
 }
 
 function atualizarAppObrigatorio() {
@@ -3772,6 +3771,7 @@ function atualizarAppObrigatorio() {
 
 window.addEventListener("load", verificarAtualizacao);
 window.addEventListener("load", () => atualizarVersaoUI(APP_VERSION));
+window.fecharAvisoAtualizacao = fecharAvisoAtualizacao;
 
 
 
