@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.8.5";
+const APP_VERSION = "1.8.6";
 
 
 
@@ -1953,17 +1953,53 @@ function cacheCorApp(value) {
 }
 
 function getCookieAppBraga(name) {
-  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`));
-  return match ? decodeURIComponent(match[1]) : "";
+  try {
+    const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`));
+    return match ? decodeURIComponent(match[1]) : "";
+  } catch (error) {
+    return "";
+  }
 }
 
 function setCookieAppBraga(name, value, maxAgeSeconds = null) {
+  try {
   const age = Number.isFinite(maxAgeSeconds) ? `; Max-Age=${Math.max(0, Math.floor(maxAgeSeconds))}` : "";
   document.cookie = `${name}=${encodeURIComponent(String(value || ""))}${age}; Path=/; SameSite=Lax`;
+  } catch (error) {
+    console.warn("Cookie indisponível", error);
+  }
 }
 
 function deleteCookieAppBraga(name) {
-  document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax`;
+  try {
+    document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax`;
+  } catch (error) {
+    console.warn("Cookie indisponível", error);
+  }
+}
+
+function getSessionAppBraga(name) {
+  try {
+    return window.sessionStorage?.getItem(name) || "";
+  } catch (error) {
+    return "";
+  }
+}
+
+function setSessionAppBraga(name, value) {
+  try {
+    window.sessionStorage?.setItem(name, String(value || ""));
+  } catch (error) {
+    console.warn("Sessão temporária indisponível", error);
+  }
+}
+
+function deleteSessionAppBraga(name) {
+  try {
+    window.sessionStorage?.removeItem(name);
+  } catch (error) {
+    console.warn("Sessão temporária indisponível", error);
+  }
 }
 
 function aplicarCorApp(value = APP_DEFAULT_ACCENT) {
@@ -2095,7 +2131,7 @@ function criarAppLockOverlay() {
 
 function mostrarBloqueioApp() {
   if (!appSecurityState.pinHash) return;
-  deleteCookieAppBraga("appPinUnlockedUntil");
+  limparSessaoPinApp();
   const overlay = criarAppLockOverlay();
   appSecurityState.overlay = overlay;
   appSecurityState.unlocked = false;
@@ -2114,11 +2150,22 @@ function renovarSessaoPinApp() {
   if (!appSecurityState.pinHash || !appSecurityState.unlocked || !appSecurityState.lockTimeoutMinutes) return;
   const until = Date.now() + (appSecurityState.lockTimeoutMinutes * 60000);
   setCookieAppBraga("appPinUnlockedUntil", String(until), appSecurityState.lockTimeoutMinutes * 60);
+  setSessionAppBraga("appPinUnlockedUntil", String(until));
+  setSessionAppBraga("appPinHash", appSecurityState.pinHash);
 }
 
 function sessaoPinAindaValida() {
-  const until = Number(getCookieAppBraga("appPinUnlockedUntil") || 0);
-  return until && until > Date.now();
+  const savedHash = getSessionAppBraga("appPinHash");
+  const cookieUntil = Number(getCookieAppBraga("appPinUnlockedUntil") || 0);
+  const sessionUntil = Number(getSessionAppBraga("appPinUnlockedUntil") || 0);
+  const until = Math.max(cookieUntil, sessionUntil);
+  return Boolean(until && until > Date.now() && (!savedHash || savedHash === appSecurityState.pinHash));
+}
+
+function limparSessaoPinApp() {
+  deleteCookieAppBraga("appPinUnlockedUntil");
+  deleteSessionAppBraga("appPinUnlockedUntil");
+  deleteSessionAppBraga("appPinHash");
 }
 
 function reiniciarTemporizadorBloqueioApp() {
@@ -2136,17 +2183,19 @@ function aplicarSegurancaApp(pinHash, lockTimeoutMinutes) {
   setLockTimeoutInput(appSecurityState.lockTimeoutMinutes);
   if (!appSecurityState.pinHash) {
     appSecurityState.unlocked = true;
-    deleteCookieAppBraga("appPinUnlockedUntil");
+    limparSessaoPinApp();
     esconderBloqueioApp();
     return;
   }
   if (!appSecurityState.lockTimeoutMinutes) {
     appSecurityState.unlocked = true;
-    deleteCookieAppBraga("appPinUnlockedUntil");
+    limparSessaoPinApp();
     esconderBloqueioApp();
     return;
   }
-  if (previousHash !== appSecurityState.pinHash) appSecurityState.unlocked = sessaoPinAindaValida();
+  if (previousHash !== appSecurityState.pinHash || !appSecurityState.unlocked) {
+    appSecurityState.unlocked = sessaoPinAindaValida();
+  }
   if (!appSecurityState.unlocked) mostrarBloqueioApp();
   reiniciarTemporizadorBloqueioApp();
 }
@@ -2226,7 +2275,7 @@ async function removerPinApp() {
       lockTimeoutMinutes: 0,
       updatedAt: Date.now()
     }, { merge: true });
-    deleteCookieAppBraga("appPinUnlockedUntil");
+    limparSessaoPinApp();
     aplicarSegurancaApp("", 0);
     mostrarMensagem("PIN removido.");
   } catch (error) {
