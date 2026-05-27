@@ -4083,6 +4083,13 @@ body{
 .info-list-item strong{font-size:16px;color:#fff;}
 .info-list-item span{color:#cbd5e1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;}
 .info-card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;}
+.info-card-actions .secondary-btn,
+.info-card-actions .reference-outline{
+  min-width:0 !important;
+  min-height:38px !important;
+  margin-top:0 !important;
+  padding:8px 12px !important;
+}
 .info-search{background:#0f172a;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 14px;color:#fff;min-width:260px;}
 .info-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:9999;}
 .info-modal.hidden{display:none;}

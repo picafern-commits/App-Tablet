@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.7.6";
+const APP_VERSION = "1.7.7";
 
 
 
@@ -2037,9 +2037,9 @@ let radioUsersData = [];
 let radioWeeklyRecords = [];
 let unsubscribeRadioUsers = null;
 let unsubscribeRadioWeekly = null;
-const INFORMACOES_STORAGE_KEY = "appBragaInformacoes";
 let informacoesData = [];
 let informacaoSelecionada = null;
+let unsubscribeInformacoes = null;
 
 function nowPt() {
   return new Date().toLocaleString("pt-PT", {
@@ -2372,113 +2372,169 @@ async function guardarRegistoSemanalRadios() {
   }
 }
 
-function loadInformacoesData() {
-  try {
-    const raw = localStorage.getItem(INFORMACOES_STORAGE_KEY);
-    informacoesData = raw ? JSON.parse(raw) : [];
-  } catch (e) {
-    console.warn("Nao foi possivel carregar informacoes.", e);
-    informacoesData = [];
-  }
-}
-
-function saveInformacoesData() {
-  localStorage.setItem(INFORMACOES_STORAGE_KEY, JSON.stringify(informacoesData));
-  try {
-    if (window.db) {
-      window.db.collection("appInformacoes").doc("lista").set({
-        items: informacoesData,
-        updated: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-    }
-  } catch (e) {
-    console.warn("Nao foi possivel sincronizar informacoes.", e);
-  }
+function getInformacoesFiltradas() {
+  const pesquisa = normalizarTexto(document.getElementById("pesquisaInfo")?.value || "");
+  if (!pesquisa) return informacoesData;
+  return informacoesData.filter((item) => {
+    const texto = `${item.titulo || ""} ${item.obs || ""}`;
+    return normalizarTexto(texto).includes(pesquisa);
+  });
 }
 
 function renderInformacoes() {
   const lista = document.getElementById("informacoesLista");
   if (!lista) return;
-  lista.innerHTML = informacoesData.length ? informacoesData.map(item => `
-    <button class="info-list-item ${informacaoSelecionada === item.id ? "active" : ""}" type="button" onclick="selecionarInformacao('${item.id}')">
+  const listaFiltrada = getInformacoesFiltradas();
+  lista.innerHTML = listaFiltrada.length ? listaFiltrada.map(item => `
+    <article class="info-list-item ${informacaoSelecionada === item.id ? "active" : ""}">
       <strong>${safeRefHtml(item.titulo || "Sem título")}</strong>
       <span>${safeRefHtml(item.obs || "Sem observações")}</span>
-    </button>
-  `).join("") : `<div class="info-empty">Ainda sem informações guardadas.</div>`;
+      <div class="meta-line">${safeRefHtml(item.updatedLabel || item.createdLabel || "")}</div>
+      <div class="info-card-actions">
+        <button class="secondary-btn reference-outline" type="button" onclick="verInformacao('${item.id}')">Ver mais</button>
+        <button class="secondary-btn" type="button" onclick="editarInformacao('${item.id}')">Editar</button>
+        <button class="secondary-btn danger" type="button" onclick="apagarInformacao('${item.id}')">Apagar</button>
+      </div>
+    </article>
+  `).join("") : `<div class="info-empty">Ainda sem informações guardadas na Firebase.</div>`;
 }
 
 function initInformacoesPage() {
   if (!document.getElementById("informacoesLista")) return;
-  loadInformacoesData();
-  renderInformacoes();
+  const pesquisa = document.getElementById("pesquisaInfo");
+  if (pesquisa) pesquisa.addEventListener("input", renderInformacoes);
+
+  if (!window.db || typeof window.db.collection !== "function") {
+    const lista = document.getElementById("informacoesLista");
+    if (lista) lista.innerHTML = `<div class="info-empty">Firebase indisponível. Confirma a ligação da app.</div>`;
+    return;
+  }
+
+  if (unsubscribeInformacoes) unsubscribeInformacoes();
+  unsubscribeInformacoes = window.db.collection("informacoes").onSnapshot((snapshot) => {
+    informacoesData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    informacoesData.sort((a, b) => {
+      const ad = Number(a.updatedAt || a.createdAt || 0);
+      const bd = Number(b.updatedAt || b.createdAt || 0);
+      if (ad !== bd) return bd - ad;
+      return String(a.titulo || "").localeCompare(String(b.titulo || ""), "pt", { numeric: true, sensitivity: "base" });
+    });
+    renderInformacoes();
+  }, (error) => {
+    console.error("Erro realtime informacoes:", error);
+    const lista = document.getElementById("informacoesLista");
+    if (lista) lista.innerHTML = `<div class="info-empty">Erro ao carregar informações da Firebase.</div>`;
+  });
 }
 
-function adicionarInformacao() {
+async function adicionarInformacao() {
   const titulo = document.getElementById("infoTitulo")?.value || "";
   const obs = document.getElementById("infoObs")?.value || "";
   if (!normalizarTexto(titulo) && !normalizarTexto(obs)) {
     mostrarMensagem("Preenche pelo menos um título ou observação.", "erro");
     return;
   }
-  if (informacaoSelecionada) {
-    const item = informacoesData.find(info => info.id === informacaoSelecionada);
-    if (item) {
-      item.titulo = titulo;
-      item.obs = obs;
-      item.updated = nowPt();
-    }
-  } else {
-    informacoesData.unshift({
-      id: `info-${Date.now()}`,
-      titulo,
-      obs,
-      updated: nowPt()
-    });
+
+  if (!window.db || typeof window.db.collection !== "function") {
+    mostrarMensagem("Firebase indisponível.", "erro");
+    return;
   }
-  document.getElementById("infoTitulo").value = "";
-  document.getElementById("infoObs").value = "";
-  informacaoSelecionada = null;
-  saveInformacoesData();
-  renderInformacoes();
+
+  const payload = {
+    titulo,
+    obs,
+    updatedAt: Date.now(),
+    updatedLabel: nowPt()
+  };
+
+  try {
+    if (informacaoSelecionada) {
+      await window.db.collection("informacoes").doc(informacaoSelecionada).set(payload, { merge: true });
+      mostrarMensagem("Informação atualizada.");
+    } else {
+      await window.db.collection("informacoes").add({
+        ...payload,
+        createdAt: Date.now(),
+        createdLabel: nowPt()
+      });
+      mostrarMensagem("Informação criada.");
+    }
+    document.getElementById("infoTitulo").value = "";
+    document.getElementById("infoObs").value = "";
+    informacaoSelecionada = null;
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar informação.", "erro");
+  }
 }
 
 function selecionarInformacao(id) {
+  editarInformacao(id);
+}
+
+function verInformacao(id) {
+  const item = informacoesData.find(info => info.id === id);
+  if (!item) return mostrarMensagem("Informação não encontrada.", "erro");
+  const modal = document.getElementById("infoModal");
+  const titulo = document.getElementById("modalInfoTitulo");
+  const descricao = document.getElementById("modalInfoDescricao");
+  if (titulo) titulo.textContent = item.titulo || "Informação";
+  if (descricao) descricao.textContent = item.obs || "Sem observações";
+  if (modal) modal.classList.remove("hidden");
+}
+
+function fecharInfoModal() {
+  const modal = document.getElementById("infoModal");
+  if (modal) modal.classList.add("hidden");
+}
+
+function editarInformacao(id) {
+  const item = informacoesData.find(info => info.id === id);
+  if (!item) return mostrarMensagem("Informação não encontrada.", "erro");
   informacaoSelecionada = id;
+  document.getElementById("infoTitulo").value = item.titulo || "";
+  document.getElementById("infoObs").value = item.obs || "";
   renderInformacoes();
 }
 
+async function apagarInformacao(id) {
+  const item = informacoesData.find(info => info.id === id);
+  if (!item) return mostrarMensagem("Informação não encontrada.", "erro");
+  if (!window.confirm(`Apagar "${item.titulo || "esta informação"}"?`)) return;
+  try {
+    await window.db.collection("informacoes").doc(id).delete();
+    if (informacaoSelecionada === id) {
+      informacaoSelecionada = null;
+      const titulo = document.getElementById("infoTitulo");
+      const obs = document.getElementById("infoObs");
+      if (titulo) titulo.value = "";
+      if (obs) obs.value = "";
+    }
+    mostrarMensagem("Informação apagada.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao apagar informação.", "erro");
+  }
+}
+
 function verInformacaoSelecionada() {
-  const item = informacoesData.find(info => info.id === informacaoSelecionada);
-  if (!item) return mostrarMensagem("Seleciona uma informação primeiro.", "erro");
-  alert(`${item.titulo || "Informacao"}\n\n${item.obs || "Sem observacoes"}`);
+  if (!informacaoSelecionada) return mostrarMensagem("Seleciona uma informação primeiro.", "erro");
+  verInformacao(informacaoSelecionada);
 }
 
 function editarInformacaoSelecionada() {
-  const item = informacoesData.find(info => info.id === informacaoSelecionada);
-  if (!item) return mostrarMensagem("Seleciona uma informação primeiro.", "erro");
-  document.getElementById("infoTitulo").value = item.titulo || "";
-  document.getElementById("infoObs").value = item.obs || "";
+  if (!informacaoSelecionada) return mostrarMensagem("Seleciona uma informação primeiro.", "erro");
+  editarInformacao(informacaoSelecionada);
 }
 
 function apagarInformacaoSelecionada() {
   if (!informacaoSelecionada) return mostrarMensagem("Seleciona uma informação primeiro.", "erro");
-  informacoesData = informacoesData.filter(info => info.id !== informacaoSelecionada);
-  informacaoSelecionada = null;
-  saveInformacoesData();
-  renderInformacoes();
+  apagarInformacao(informacaoSelecionada);
 }
 
 function guardarInformacoes() {
-  const titulo = document.getElementById("infoTitulo")?.value || "";
-  const obs = document.getElementById("infoObs")?.value || "";
-  if (normalizarTexto(titulo) || normalizarTexto(obs)) {
-    adicionarInformacao();
-    return;
-  }
-  saveInformacoesData();
-  mostrarMensagem("Informações guardadas.");
+  adicionarInformacao();
 }
-
 document.addEventListener("DOMContentLoaded", initRadiosPage);
 document.addEventListener("DOMContentLoaded", initInformacoesPage);
 document.addEventListener("DOMContentLoaded", initResolucaoApp);
@@ -2498,6 +2554,10 @@ window.guardarResolucaoApp = guardarResolucaoApp;
 window.guardarCorApp = guardarCorApp;
 window.adicionarInformacao = adicionarInformacao;
 window.selecionarInformacao = selecionarInformacao;
+window.verInformacao = verInformacao;
+window.editarInformacao = editarInformacao;
+window.apagarInformacao = apagarInformacao;
+window.fecharInfoModal = fecharInfoModal;
 window.verInformacaoSelecionada = verInformacaoSelecionada;
 window.editarInformacaoSelecionada = editarInformacaoSelecionada;
 window.apagarInformacaoSelecionada = apagarInformacaoSelecionada;
