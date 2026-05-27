@@ -4,18 +4,18 @@
   --az-bg-2: #17181c;
   --az-panel: rgba(24, 25, 30, .94);
   --az-panel-2: rgba(31, 32, 38, .9);
-  --az-line: rgba(255, 138, 0, .18);
+  --az-line: var(--app-accent-line, rgba(37,99,235,.18));
   --az-text: #fff8ef;
   --az-muted: #b9aa99;
-  --az-orange: #ff7a00;
-  --az-orange-2: #f05a00;
-  --az-orange-soft: rgba(255, 122, 0, .16);
+  --az-orange: var(--app-accent, #2563eb);
+  --az-orange-2: var(--app-accent-hover, #1d4ed8);
+  --az-orange-soft: var(--app-accent-soft, rgba(37,99,235,.16));
   --app-accent: var(--az-orange);
   --app-accent-hover: var(--az-orange-2);
-  --app-accent-light: #ff9d3d;
-  --app-accent-rgb: 255 122 0;
+  --app-accent-light: var(--app-accent-hover, #3b82f6);
+  --app-accent-rgb: 37 99 235;
   --app-accent-soft: var(--az-orange-soft);
-  --app-accent-softer: rgba(255, 122, 0, .08);
+  --app-accent-softer: var(--app-accent-soft, rgba(37,99,235,.08));
   --app-accent-line: var(--az-line);
   --app-accent-glow: rgba(255, 122, 0, .28);
   --az-green: #29b36a;
@@ -27,7 +27,7 @@
   --brinka-pink: var(--az-orange) !important;
   --brinka-purple: var(--az-orange-2) !important;
   --brinka-orange: var(--az-orange) !important;
-  --brinka-orange2: #ff9d3d !important;
+  --brinka-orange2: var(--app-accent-hover, var(--az-orange-2)) !important;
   --ent-blue: var(--az-orange) !important;
   --ent-purple: var(--az-orange-2) !important;
   --ent-orange: var(--az-orange) !important;
@@ -84,7 +84,7 @@ body::before {
   position: absolute;
   left: 70px;
   bottom: 12px;
-  color: #ffb45f;
+  color: var(--app-accent-light, var(--app-accent-hover, #3b82f6));
   font-size: 11px;
   font-weight: 800;
   letter-spacing: .04em;
@@ -246,7 +246,7 @@ a,
 .progress-fill,
 .bar-fill,
 .level-fill {
-  background: linear-gradient(90deg, var(--az-orange), #ffb45f) !important;
+  background: linear-gradient(90deg, var(--az-orange), var(--az-orange-2)) !important;
 }
 
 input,
@@ -453,7 +453,7 @@ body.device-phone .sidebar a {
 .printer-toner-fill,
 .equipment-art,
 .equipment-photo {
-  background: linear-gradient(90deg, var(--az-orange), #ffb45f) !important;
+  background: linear-gradient(90deg, var(--az-orange), var(--az-orange-2)) !important;
 }
 
 .equipment-art,

@@ -1895,7 +1895,7 @@ function aplicarResolucaoApp(mode = "comfortable") {
 
 function normalizarCorApp(value) {
   const color = String(value || "").trim();
-  return /^#[0-9a-fA-F]{6}$/.test(color) ? color.toLowerCase() : "#ff7a00";
+  return /^#[0-9a-fA-F]{6}$/.test(color) ? color.toLowerCase() : "#2563eb";
 }
 
 function hexToRgbAppBraga(hex) {
@@ -1923,7 +1923,7 @@ function cacheCorApp(value) {
   document.cookie = `appAccentColor=${encodeURIComponent(color)}; Max-Age=31536000; Path=/; SameSite=Lax`;
 }
 
-function aplicarCorApp(value = "#ff7a00") {
+function aplicarCorApp(value = "#2563eb") {
   const color = normalizarCorApp(value);
   const hover = ajustarCorAppBraga(color, -28);
   const light = ajustarCorAppBraga(color, 34);
