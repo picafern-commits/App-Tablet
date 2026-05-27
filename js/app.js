@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.9.1";
+const APP_VERSION = "1.9.2";
 
 
 
@@ -2210,16 +2210,14 @@ function esconderBloqueioApp() {
 function renovarSessaoPinApp() {
   if (!hasSecurityEnabledApp() || !appSecurityState.unlocked || !appSecurityState.lockTimeoutMinutes) return;
   const until = Date.now() + (appSecurityState.lockTimeoutMinutes * 60000);
-  setCookieAppBraga("appPinUnlockedUntil", String(until), appSecurityState.lockTimeoutMinutes * 60);
   setSessionAppBraga("appPinUnlockedUntil", String(until));
   setSessionAppBraga("appPinHash", getSecurityTokenApp());
 }
 
 function sessaoPinAindaValida() {
   const savedHash = getSessionAppBraga("appPinHash");
-  const cookieUntil = Number(getCookieAppBraga("appPinUnlockedUntil") || 0);
   const sessionUntil = Number(getSessionAppBraga("appPinUnlockedUntil") || 0);
-  const until = Math.max(cookieUntil, sessionUntil);
+  const until = sessionUntil;
   const token = getSecurityTokenApp();
   return Boolean(until && until > Date.now() && (!savedHash || savedHash === token));
 }
