@@ -138,6 +138,14 @@
       <span>PIN da APP</span>
       <input id="appPinCode" type="password" inputmode="numeric" maxlength="12" placeholder="Novo PIN">
     </label>
+    <label class="config-auth-field">
+      <span>Método de entrada</span>
+      <select id="appAuthMethod" onchange="guardarMetodoEntradaApp(this.value)">
+        <option value="pin">PIN</option>
+        <option value="biometric">Face ID / impressão digital</option>
+        <option value="both">PIN + biometria</option>
+      </select>
+    </label>
     <label class="config-timeout-field">
       <span>Bloquear por inatividade</span>
       <select id="appLockTimeout" onchange="guardarTempoBloqueioApp(this.value)">
@@ -152,6 +160,8 @@
     </label>
     <div class="config-security-actions">
       <button class="primary-btn" type="button" onclick="guardarPinApp()">Guardar PIN</button>
+      <button class="primary-btn" type="button" onclick="ativarBiometriaApp()">Ativar Face ID / fingerprint</button>
+      <button class="secondary-btn" type="button" onclick="removerBiometriaApp()">Remover biometria</button>
       <button class="secondary-btn" type="button" onclick="removerPinApp()">Remover PIN</button>
       <button class="secondary-btn" type="button" onclick="bloquearAppAgora()">Bloquear agora</button>
     </div>

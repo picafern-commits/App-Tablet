@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.8.8";
+const APP_VERSION = "1.8.9";
 
 
 
@@ -1917,6 +1917,9 @@ const APP_DEFAULT_ACCENT = "#ef4444";
 const appSecurityState = {
   pinHash: "",
   pinLength: 0,
+  authMethod: "pin",
+  biometricEnabled: false,
+  biometricCredentialId: "",
   lockTimeoutMinutes: 0,
   unlocked: false,
   timer: null,
@@ -2054,7 +2057,7 @@ function initResolucaoApp() {
     const accentColor = data.accentColor || getCachedCorApp() || APP_DEFAULT_ACCENT;
     aplicarCorApp(accentColor);
     cacheCorApp(accentColor);
-    aplicarSegurancaApp(data.pinHash || "", data.lockTimeoutMinutes || 0, data.pinLength || 0);
+    aplicarSegurancaApp(data.pinHash || "", data.lockTimeoutMinutes || 0, data.pinLength || 0, data.authMethod || "pin", data.biometricEnabled || false, data.biometricCredentialId || "");
   }, (error) => console.error("Erro ao carregar resolução:", error));
 }
 
@@ -2108,22 +2111,69 @@ function setLockTimeoutInput(value) {
   if (select) select.value = String(Math.max(0, Number(value) || 0));
 }
 
+function setAuthMethodInput(value) {
+  const select = document.getElementById("appAuthMethod");
+  if (select) select.value = ["pin", "biometric", "both"].includes(value) ? value : "pin";
+}
+
+function getSecurityTokenApp() {
+  return appSecurityState.pinHash || appSecurityState.biometricCredentialId || "";
+}
+
+function hasSecurityEnabledApp() {
+  const method = appSecurityState.authMethod || "pin";
+  const pinOk = Boolean(appSecurityState.pinHash && method !== "biometric");
+  const bioOk = Boolean(appSecurityState.biometricEnabled && appSecurityState.biometricCredentialId && method !== "pin");
+  return pinOk || bioOk;
+}
+
+function webAuthnDisponivelApp() {
+  return Boolean(window.PublicKeyCredential && navigator.credentials?.create && navigator.credentials?.get && window.crypto?.getRandomValues);
+}
+
+function randomBytesApp(length = 32) {
+  const bytes = new Uint8Array(length);
+  window.crypto.getRandomValues(bytes);
+  return bytes;
+}
+
+function base64UrlFromBufferApp(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function bufferFromBase64UrlApp(value) {
+  const padded = String(value || "").replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(String(value || "").length / 4) * 4, "=");
+  const binary = atob(padded);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  return bytes.buffer;
+}
+
+function renderAppLockOverlayContent(overlay) {
+  const canUsePin = Boolean(appSecurityState.pinHash && appSecurityState.authMethod !== "biometric");
+  const canUseBio = Boolean(appSecurityState.biometricEnabled && appSecurityState.biometricCredentialId && appSecurityState.authMethod !== "pin");
+  overlay.innerHTML = `
+    <div class="app-lock-card">
+      <div class="brand-badge">BR</div>
+      <h2>APP bloqueada</h2>
+      <p>${canUseBio ? "Usa Face ID, impressão digital ou o PIN disponível." : "Introduz o PIN para continuar."}</p>
+      ${canUseBio ? `<button class="primary-btn biometric-unlock-btn" type="button" onclick="desbloquearAppComBiometria()">Face ID / impressão digital</button>` : ""}
+      ${canUsePin ? `<input id="appPinUnlock" type="password" inputmode="numeric" maxlength="12" placeholder="PIN" autocomplete="off">
+      <button class="secondary-btn" type="button" onclick="desbloquearAppComPin()">Desbloquear com PIN</button>` : ""}
+      <small id="appPinError"></small>
+    </div>
+  `;
+}
+
 function criarAppLockOverlay() {
   let overlay = document.getElementById("appLockOverlay");
   if (overlay) return overlay;
   overlay = document.createElement("div");
   overlay.id = "appLockOverlay";
   overlay.className = "app-lock-overlay";
-  overlay.innerHTML = `
-    <div class="app-lock-card">
-      <div class="brand-badge">BR</div>
-      <h2>APP bloqueada</h2>
-      <p>Introduz o PIN para continuar.</p>
-      <input id="appPinUnlock" type="password" inputmode="numeric" maxlength="12" placeholder="PIN" autocomplete="off">
-      <button class="primary-btn" type="button" onclick="desbloquearAppComPin()">Desbloquear</button>
-      <small id="appPinError"></small>
-    </div>
-  `;
   document.body.appendChild(overlay);
   overlay.addEventListener("keydown", (event) => {
     if (event.key === "Enter") desbloquearAppComPin();
@@ -2137,13 +2187,17 @@ function criarAppLockOverlay() {
 }
 
 function mostrarBloqueioApp() {
-  if (!appSecurityState.pinHash) return;
+  if (!hasSecurityEnabledApp()) return;
   limparSessaoPinApp();
   const overlay = criarAppLockOverlay();
+  renderAppLockOverlayContent(overlay);
   appSecurityState.overlay = overlay;
   appSecurityState.unlocked = false;
   overlay.classList.add("show");
-  setTimeout(() => document.getElementById("appPinUnlock")?.focus(), 80);
+  setTimeout(() => {
+    document.getElementById("appPinUnlock")?.focus();
+    if (appSecurityState.authMethod === "biometric") desbloquearAppComBiometria();
+  }, 120);
 }
 
 function esconderBloqueioApp() {
@@ -2154,11 +2208,11 @@ function esconderBloqueioApp() {
 }
 
 function renovarSessaoPinApp() {
-  if (!appSecurityState.pinHash || !appSecurityState.unlocked || !appSecurityState.lockTimeoutMinutes) return;
+  if (!hasSecurityEnabledApp() || !appSecurityState.unlocked || !appSecurityState.lockTimeoutMinutes) return;
   const until = Date.now() + (appSecurityState.lockTimeoutMinutes * 60000);
   setCookieAppBraga("appPinUnlockedUntil", String(until), appSecurityState.lockTimeoutMinutes * 60);
   setSessionAppBraga("appPinUnlockedUntil", String(until));
-  setSessionAppBraga("appPinHash", appSecurityState.pinHash);
+  setSessionAppBraga("appPinHash", getSecurityTokenApp());
 }
 
 function sessaoPinAindaValida() {
@@ -2166,7 +2220,8 @@ function sessaoPinAindaValida() {
   const cookieUntil = Number(getCookieAppBraga("appPinUnlockedUntil") || 0);
   const sessionUntil = Number(getSessionAppBraga("appPinUnlockedUntil") || 0);
   const until = Math.max(cookieUntil, sessionUntil);
-  return Boolean(until && until > Date.now() && (!savedHash || savedHash === appSecurityState.pinHash));
+  const token = getSecurityTokenApp();
+  return Boolean(until && until > Date.now() && (!savedHash || savedHash === token));
 }
 
 function limparSessaoPinApp() {
@@ -2183,13 +2238,17 @@ function reiniciarTemporizadorBloqueioApp() {
   appSecurityState.timer = setTimeout(() => mostrarBloqueioApp(), appSecurityState.lockTimeoutMinutes * 60000);
 }
 
-function aplicarSegurancaApp(pinHash, lockTimeoutMinutes, pinLength = 0) {
-  const previousHash = appSecurityState.pinHash;
+function aplicarSegurancaApp(pinHash, lockTimeoutMinutes, pinLength = 0, authMethod = "pin", biometricEnabled = false, biometricCredentialId = "") {
+  const previousToken = getSecurityTokenApp();
   appSecurityState.pinHash = String(pinHash || "");
   appSecurityState.pinLength = Math.max(0, Number(pinLength) || 0);
+  appSecurityState.authMethod = ["pin", "biometric", "both"].includes(authMethod) ? authMethod : "pin";
+  appSecurityState.biometricEnabled = Boolean(biometricEnabled);
+  appSecurityState.biometricCredentialId = String(biometricCredentialId || "");
   appSecurityState.lockTimeoutMinutes = Math.max(0, Number(lockTimeoutMinutes) || 0);
   setLockTimeoutInput(appSecurityState.lockTimeoutMinutes);
-  if (!appSecurityState.pinHash) {
+  setAuthMethodInput(appSecurityState.authMethod);
+  if (!hasSecurityEnabledApp()) {
     appSecurityState.unlocked = true;
     limparSessaoPinApp();
     esconderBloqueioApp();
@@ -2201,7 +2260,7 @@ function aplicarSegurancaApp(pinHash, lockTimeoutMinutes, pinLength = 0) {
     esconderBloqueioApp();
     return;
   }
-  if (previousHash !== appSecurityState.pinHash || !appSecurityState.unlocked) {
+  if (previousToken !== getSecurityTokenApp() || !appSecurityState.unlocked) {
     appSecurityState.unlocked = sessaoPinAindaValida();
   }
   if (!appSecurityState.unlocked) mostrarBloqueioApp();
@@ -2250,6 +2309,107 @@ async function tentarDesbloquearPinAutomatico() {
   esconderBloqueioApp();
 }
 
+async function ativarBiometriaApp() {
+  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponível.", "erro");
+  if (!webAuthnDisponivelApp()) return mostrarMensagem("Este dispositivo não suporta Face ID / fingerprint nesta app.", "erro");
+  try {
+    const userId = randomBytesApp(16);
+    const credential = await navigator.credentials.create({
+      publicKey: {
+        challenge: randomBytesApp(32),
+        rp: { name: "App Braga" },
+        user: {
+          id: userId,
+          name: "admin@appbraga.pt",
+          displayName: "Administrador"
+        },
+        pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
+        authenticatorSelection: {
+          authenticatorAttachment: "platform",
+          userVerification: "required",
+          residentKey: "preferred"
+        },
+        timeout: 60000,
+        attestation: "none"
+      }
+    });
+    if (!credential?.rawId) return mostrarMensagem("Não foi possível ativar biometria.", "erro");
+    const biometricCredentialId = base64UrlFromBufferApp(credential.rawId);
+    await window.db.collection("config").doc("layout").set({
+      biometricEnabled: true,
+      biometricCredentialId,
+      biometricLabel: "Face ID / impressão digital",
+      authMethod: document.getElementById("appAuthMethod")?.value || "both",
+      updatedAt: Date.now()
+    }, { merge: true });
+    mostrarMensagem("Face ID / fingerprint ativado neste dispositivo.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Ativação biométrica cancelada ou indisponível.", "erro");
+  }
+}
+
+async function desbloquearAppComBiometria() {
+  if (!webAuthnDisponivelApp()) return mostrarMensagem("Biometria indisponível neste dispositivo.", "erro");
+  if (!appSecurityState.biometricCredentialId) return mostrarMensagem("Ativa primeiro a biometria nas Configurações.", "erro");
+  try {
+    await navigator.credentials.get({
+      publicKey: {
+        challenge: randomBytesApp(32),
+        allowCredentials: [{
+          type: "public-key",
+          id: bufferFromBase64UrlApp(appSecurityState.biometricCredentialId)
+        }],
+        userVerification: "required",
+        timeout: 60000
+      }
+    });
+    esconderBloqueioApp();
+  } catch (error) {
+    console.error(error);
+    const message = document.getElementById("appPinError");
+    if (message) message.textContent = "Face ID / fingerprint cancelado.";
+  }
+}
+
+async function guardarMetodoEntradaApp(value) {
+  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponível.", "erro");
+  const authMethod = ["pin", "biometric", "both"].includes(value) ? value : "pin";
+  if (authMethod === "biometric" && !appSecurityState.biometricCredentialId) {
+    setAuthMethodInput(appSecurityState.authMethod);
+    return mostrarMensagem("Ativa primeiro Face ID / fingerprint neste dispositivo.", "erro");
+  }
+  try {
+    await window.db.collection("config").doc("layout").set({
+      authMethod,
+      updatedAt: Date.now()
+    }, { merge: true });
+    appSecurityState.authMethod = authMethod;
+    mostrarMensagem("Método de entrada atualizado.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar método de entrada.", "erro");
+  }
+}
+
+async function removerBiometriaApp() {
+  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponível.", "erro");
+  if (!window.confirm("Remover Face ID / fingerprint desta APP?")) return;
+  try {
+    await window.db.collection("config").doc("layout").set({
+      biometricEnabled: false,
+      biometricCredentialId: "",
+      authMethod: appSecurityState.pinHash ? "pin" : "pin",
+      updatedAt: Date.now()
+    }, { merge: true });
+    limparSessaoPinApp();
+    mostrarMensagem("Biometria removida.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao remover biometria.", "erro");
+  }
+}
+
 async function guardarPinApp() {
   if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponível.", "erro");
   const input = document.getElementById("appPinCode");
@@ -2281,7 +2441,7 @@ async function guardarTempoBloqueioApp(value) {
       lockTimeoutMinutes,
       updatedAt: Date.now()
     }, { merge: true });
-    aplicarSegurancaApp(appSecurityState.pinHash, lockTimeoutMinutes, appSecurityState.pinLength);
+    aplicarSegurancaApp(appSecurityState.pinHash, lockTimeoutMinutes, appSecurityState.pinLength, appSecurityState.authMethod, appSecurityState.biometricEnabled, appSecurityState.biometricCredentialId);
     mostrarMensagem("Tempo de bloqueio atualizado.");
   } catch (error) {
     console.error(error);
@@ -2297,6 +2457,7 @@ async function removerPinApp() {
       pinHash: "",
       pinLength: 0,
       lockTimeoutMinutes: 0,
+      authMethod: appSecurityState.biometricCredentialId ? "biometric" : "pin",
       updatedAt: Date.now()
     }, { merge: true });
     limparSessaoPinApp();
@@ -2326,7 +2487,7 @@ async function verificarSistemasApp() {
   if (!document.getElementById("systemHealthGrid")) return;
   setHealthStatus("healthNetwork", navigator.onLine ? "Online" : "Offline", navigator.onLine ? "ok" : "bad");
   setHealthStatus("healthDevice", document.body.classList.contains("device-phone") ? "iPhone/Telemóvel" : (document.body.classList.contains("device-tablet") ? "Tablet" : "PC"), "ok");
-  setHealthStatus("healthPin", appSecurityState.pinHash ? "Ativo" : "Desligado", appSecurityState.pinHash ? "ok" : "warn");
+  setHealthStatus("healthPin", appSecurityState.biometricEnabled ? "Biometria ativa" : (appSecurityState.pinHash ? "PIN ativo" : "Desligado"), hasSecurityEnabledApp() ? "ok" : "warn");
   setHealthStatus("healthFirebase", window.firebase ? "Carregado" : "Indisponível", window.firebase ? "ok" : "bad");
   setHealthStatus("healthAuth", window.firebase?.auth ? "Carregado" : "Indisponível", window.firebase?.auth ? "ok" : "warn");
 
@@ -3036,9 +3197,13 @@ window.guardarResolucaoApp = guardarResolucaoApp;
 window.guardarCorApp = guardarCorApp;
 window.guardarPinApp = guardarPinApp;
 window.guardarTempoBloqueioApp = guardarTempoBloqueioApp;
+window.guardarMetodoEntradaApp = guardarMetodoEntradaApp;
 window.removerPinApp = removerPinApp;
+window.ativarBiometriaApp = ativarBiometriaApp;
+window.removerBiometriaApp = removerBiometriaApp;
 window.bloquearAppAgora = bloquearAppAgora;
 window.desbloquearAppComPin = desbloquearAppComPin;
+window.desbloquearAppComBiometria = desbloquearAppComBiometria;
 window.verificarSistemasApp = verificarSistemasApp;
 window.adicionarInformacao = adicionarInformacao;
 window.selecionarInformacao = selecionarInformacao;
