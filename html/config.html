@@ -158,6 +158,25 @@
   </div>
 
 
+<div class="panel system-health-panel">
+  <div class="section-header">
+    <div>
+      <h3>Estado dos sistemas</h3>
+      <p class="section-subtitle">Verificação rápida da app, Firebase, Firestore, rede, PIN e dispositivo.</p>
+    </div>
+    <button class="primary-btn" type="button" onclick="verificarSistemasApp()">Verificar agora</button>
+  </div>
+  <div id="systemHealthGrid" class="system-health-grid">
+    <div class="health-card"><span>Firebase</span><strong id="healthFirebase">A verificar</strong></div>
+    <div class="health-card"><span>Firestore</span><strong id="healthFirestore">A verificar</strong></div>
+    <div class="health-card"><span>Auth</span><strong id="healthAuth">A verificar</strong></div>
+    <div class="health-card"><span>Rede</span><strong id="healthNetwork">A verificar</strong></div>
+    <div class="health-card"><span>PIN</span><strong id="healthPin">A verificar</strong></div>
+    <div class="health-card"><span>Dispositivo</span><strong id="healthDevice">A verificar</strong></div>
+  </div>
+</div>
+
+
 <div class="panel">
   <div class="section-header">
     <div>

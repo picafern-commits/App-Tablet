@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.8.7";
+const APP_VERSION = "1.8.8";
 
 
 
@@ -1920,7 +1920,8 @@ const appSecurityState = {
   lockTimeoutMinutes: 0,
   unlocked: false,
   timer: null,
-  overlay: null
+  overlay: null,
+  autoUnlockTimer: null
 };
 
 function normalizarCorApp(value) {
@@ -2129,7 +2130,8 @@ function criarAppLockOverlay() {
   });
   overlay.addEventListener("input", (event) => {
     if (event.target?.id !== "appPinUnlock") return;
-    tentarDesbloquearPinAutomatico();
+    if (appSecurityState.autoUnlockTimer) clearTimeout(appSecurityState.autoUnlockTimer);
+    appSecurityState.autoUnlockTimer = setTimeout(() => tentarDesbloquearPinAutomatico(), 120);
   });
   return overlay;
 }
@@ -2238,9 +2240,14 @@ async function desbloquearAppComPin() {
 async function tentarDesbloquearPinAutomatico() {
   const input = document.getElementById("appPinUnlock");
   const pin = input?.value || "";
-  if (!appSecurityState.pinHash || !appSecurityState.pinLength) return;
-  if (pin.length !== appSecurityState.pinLength) return;
-  await desbloquearAppComPin();
+  if (!appSecurityState.pinHash || pin.length < 1) return;
+  if (appSecurityState.pinLength && pin.length < appSecurityState.pinLength) return;
+  const hash = await hashAppPin(pin);
+  if (hash !== appSecurityState.pinHash) return;
+  const error = document.getElementById("appPinError");
+  if (error) error.textContent = "";
+  if (input) input.value = "";
+  esconderBloqueioApp();
 }
 
 async function guardarPinApp() {
@@ -2307,6 +2314,38 @@ function bloquearAppAgora() {
 }
 
 document.addEventListener("DOMContentLoaded", initAppSecurityActivity);
+
+function setHealthStatus(id, label, state = "ok") {
+  const node = document.getElementById(id);
+  if (!node) return;
+  node.textContent = label;
+  node.className = `health-status ${state}`;
+}
+
+async function verificarSistemasApp() {
+  if (!document.getElementById("systemHealthGrid")) return;
+  setHealthStatus("healthNetwork", navigator.onLine ? "Online" : "Offline", navigator.onLine ? "ok" : "bad");
+  setHealthStatus("healthDevice", document.body.classList.contains("device-phone") ? "iPhone/Telemóvel" : (document.body.classList.contains("device-tablet") ? "Tablet" : "PC"), "ok");
+  setHealthStatus("healthPin", appSecurityState.pinHash ? "Ativo" : "Desligado", appSecurityState.pinHash ? "ok" : "warn");
+  setHealthStatus("healthFirebase", window.firebase ? "Carregado" : "Indisponível", window.firebase ? "ok" : "bad");
+  setHealthStatus("healthAuth", window.firebase?.auth ? "Carregado" : "Indisponível", window.firebase?.auth ? "ok" : "warn");
+
+  if (!window.db || typeof window.db.collection !== "function") {
+    setHealthStatus("healthFirestore", "Indisponível", "bad");
+    return;
+  }
+
+  setHealthStatus("healthFirestore", "A testar", "warn");
+  try {
+    await window.db.collection("config").doc("layout").get();
+    setHealthStatus("healthFirestore", "Realtime OK", "ok");
+  } catch (error) {
+    console.error("Erro no diagnóstico Firestore:", error);
+    setHealthStatus("healthFirestore", "Erro", "bad");
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => setTimeout(verificarSistemasApp, 900));
 
 function initFullScreenScroll() {
   if (window.__appBragaFullScrollBound) return;
@@ -2447,6 +2486,19 @@ function getRadiosFiltrados() {
   });
 }
 
+function radioDeviceImageHtml(serial = "") {
+  const ref = safeRefHtml(String(serial || "").slice(-4) || "BR");
+  return `
+    <div class="radio-device-visual" aria-label="Rádio">
+      <div class="radio-device-antenna"></div>
+      <div class="radio-device-screen">${ref}</div>
+      <div class="radio-device-pad">
+        <span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+  `;
+}
+
 function renderRadios() {
   const listaNode = document.getElementById("listaRadios");
   const totalNode = document.getElementById("radiosTotal");
@@ -2466,7 +2518,7 @@ function renderRadios() {
 
   listaNode.innerHTML = lista.length ? lista.map((item) => `
     <article class="radio-card">
-      <div class="radio-card-icon">RF</div>
+      <div class="radio-card-icon">${radioDeviceImageHtml(item.serial)}</div>
       <div class="radio-card-main">
         <h3>${safeRefHtml(item.nome || "Sem nome")}</h3>
         <p>MAC: ${safeRefHtml(item.mac || "-")}</p>
@@ -2987,6 +3039,7 @@ window.guardarTempoBloqueioApp = guardarTempoBloqueioApp;
 window.removerPinApp = removerPinApp;
 window.bloquearAppAgora = bloquearAppAgora;
 window.desbloquearAppComPin = desbloquearAppComPin;
+window.verificarSistemasApp = verificarSistemasApp;
 window.adicionarInformacao = adicionarInformacao;
 window.selecionarInformacao = selecionarInformacao;
 window.verInformacao = verInformacao;
