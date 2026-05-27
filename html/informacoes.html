@@ -7,7 +7,7 @@
     const savedTheme = localStorage.getItem("app-theme") || "dark";
     if(savedTheme === "dark"){
       document.documentElement.classList.add("dark");
-      document.body.classList.add("dark");
+      document.addEventListener("DOMContentLoaded", () => document.body?.classList.add("dark"));
     }
   }catch(e){ console.log(e); }
 })();

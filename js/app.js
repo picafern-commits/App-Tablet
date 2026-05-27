@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.6.5";
+const APP_VERSION = "1.6.6";
 
 
 
@@ -1865,6 +1865,40 @@ function initGlobalTheme() {
   applyAppTheme(localStorage.getItem("modo") === "light" ? "light" : "dark");
 }
 
+function aplicarResolucaoApp(mode = "comfortable") {
+  const value = ["compact", "comfortable", "wide"].includes(mode) ? mode : "comfortable";
+  document.body.classList.remove("resolution-compact", "resolution-comfortable", "resolution-wide");
+  document.documentElement.classList.remove("resolution-compact", "resolution-comfortable", "resolution-wide");
+  document.body.classList.add(`resolution-${value}`);
+  document.documentElement.classList.add(`resolution-${value}`);
+  const select = document.getElementById("appResolution");
+  if (select) select.value = value;
+}
+
+function initResolucaoApp() {
+  aplicarResolucaoApp("comfortable");
+  if (!window.db || !window.db.collection) return;
+  window.db.collection("config").doc("layout").onSnapshot((doc) => {
+    const data = doc.exists ? doc.data() : {};
+    aplicarResolucaoApp(data.resolution || "comfortable");
+  }, (error) => console.error("Erro ao carregar resolução:", error));
+}
+
+async function guardarResolucaoApp(value) {
+  aplicarResolucaoApp(value);
+  if (!window.db || !window.db.collection) return;
+  try {
+    await window.db.collection("config").doc("layout").set({
+      resolution: value,
+      updatedAt: Date.now()
+    }, { merge: true });
+    mostrarMensagem("Resolução atualizada.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar resolução.", "erro");
+  }
+}
+
 function initFullScreenScroll() {
   if (window.__appBragaFullScrollBound) return;
   window.__appBragaFullScrollBound = true;
@@ -1895,6 +1929,10 @@ document.addEventListener("DOMContentLoaded", initFullScreenScroll);
 let radiosData = [];
 let radioEditId = null;
 let unsubscribeRadios = null;
+let radioUsersData = [];
+let radioWeeklyRecords = [];
+let unsubscribeRadioUsers = null;
+let unsubscribeRadioWeekly = null;
 const INFORMACOES_STORAGE_KEY = "appBragaInformacoes";
 let informacoesData = [];
 let informacaoSelecionada = null;
@@ -1934,11 +1972,30 @@ function getRadioWeekInfo(date = new Date()) {
   endDate.setHours(23, 59, 59, 999);
   const fmt = new Intl.DateTimeFormat("pt-PT", { day: "2-digit", month: "2-digit", year: "numeric" });
   return {
+    year: start.getFullYear(),
     week,
     start,
     end: endDate,
+    key: `${start.getFullYear()}-W${String(week).padStart(2, "0")}`,
     label: `Semana ${week} de ${fmt.format(start)} a ${fmt.format(endDate)}`
   };
+}
+
+function radioUserLabel(user) {
+  return user?.nome || user?.user_pc_eye || user?.email_bragalis || user?.user_mo365 || "User sem nome";
+}
+
+function radioUserId(user) {
+  return user?.id || user?.firebaseId || user?.idDoc || user?._ref || radioUserLabel(user);
+}
+
+function radioCssEscape(value) {
+  const text = String(value || "");
+  return window.CSS && typeof window.CSS.escape === "function" ? window.CSS.escape(text) : text.replace(/"/g, '\\"');
+}
+
+function getRadioWeeklyRecord(weekKey = getRadioWeekInfo().key) {
+  return radioWeeklyRecords.find(item => item.weekKey === weekKey) || null;
 }
 
 function getRadiosFiltrados() {
@@ -1954,11 +2011,16 @@ function renderRadios() {
   const totalNode = document.getElementById("radiosTotal");
   const semanaNode = document.getElementById("radioSemanaLabel");
   const detalheNode = document.getElementById("radioDetalhesLista");
+  const resumoNode = document.getElementById("radioWeeklySummary");
   if (!listaNode) return;
 
   const lista = getRadiosFiltrados();
+  const weekInfo = getRadioWeekInfo();
+  const record = getRadioWeeklyRecord(weekInfo.key);
+  const assignments = Array.isArray(record?.assignments) ? record.assignments : [];
+
   if (totalNode) totalNode.textContent = String(radiosData.length);
-  if (semanaNode) semanaNode.textContent = getRadioWeekInfo().label;
+  if (semanaNode) semanaNode.textContent = weekInfo.label;
 
   listaNode.innerHTML = lista.length ? lista.map((item) => `
     <article class="radio-card">
@@ -1975,17 +2037,25 @@ function renderRadios() {
     </article>
   `).join("") : `<div class="reference-empty">Sem rádios registados na Firestore.</div>`;
 
+  if (resumoNode) {
+    resumoNode.innerHTML = assignments.length ? assignments.map((item) => `
+      <div class="weekly-radio-row compact">
+        <strong>${safeRefHtml(item.radioNome || "Rádio")}</strong>
+        <span>${safeRefHtml(item.userNome || "Sem user selecionado")}</span>
+      </div>
+    `).join("") : `<div class="reference-empty">Ainda não existe registo para esta semana.</div>`;
+  }
+
   if (detalheNode) {
-    detalheNode.innerHTML = radiosData.length ? radiosData.map((item) => `
+    detalheNode.innerHTML = assignments.length ? assignments.map((item) => `
       <div class="weekly-radio-row">
-        <strong>${safeRefHtml(item.nome || "Sem nome")}</strong>
-        <span>MAC ${safeRefHtml(item.mac || "-")} - Serial ${safeRefHtml(item.serial || "-")}</span>
-        <small>Users associados: ${safeRefHtml(item.users || item.user || "Sem users associados")}</small>
+        <strong>${safeRefHtml(item.radioNome || "Rádio")}</strong>
+        <span>User associado: ${safeRefHtml(item.userNome || "Sem user")}</span>
+        <small>Semana: ${safeRefHtml(record?.label || weekInfo.label)}</small>
       </div>
     `).join("") : `<div class="reference-empty">Sem rádios usados nesta semana.</div>`;
   }
 }
-
 function initRadiosPage() {
   if (!document.getElementById("listaRadios")) return;
   const dbRef = window.db;
@@ -2004,6 +2074,21 @@ function initRadiosPage() {
     const listaNode = document.getElementById("listaRadios");
     if (listaNode) listaNode.innerHTML = `<div class="reference-empty">Erro ao carregar rádios da Firestore.</div>`;
   });
+
+
+  if (unsubscribeRadioUsers) unsubscribeRadioUsers();
+  unsubscribeRadioUsers = dbRef.collection("users").orderBy("nome", "asc").onSnapshot((snapshot) => {
+    radioUsersData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    window.usersData = radioUsersData;
+    renderRadioWeeklyForm();
+  }, (error) => console.error("Erro realtime users para radios:", error));
+
+  if (unsubscribeRadioWeekly) unsubscribeRadioWeekly();
+  unsubscribeRadioWeekly = dbRef.collection("radioWeeklyRecords").onSnapshot((snapshot) => {
+    radioWeeklyRecords = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    renderRadios();
+    renderRadioWeeklyForm();
+  }, (error) => console.error("Erro realtime radioWeeklyRecords:", error));
 }
 
 function adicionarRadio() {
@@ -2083,6 +2168,102 @@ function abrirRelatorioRadios() {
 function fecharRelatorioRadios() {
   const modal = document.getElementById("radioWeeklyModal");
   if (modal) modal.style.display = "none";
+}
+
+function setRadioWeeklyDateDefault() {
+  const input = document.getElementById("radioWeeklyDate");
+  if (!input || input.value) return;
+  input.valueAsDate = new Date();
+}
+
+function getRadioWeeklySelectedInfo() {
+  const input = document.getElementById("radioWeeklyDate");
+  const date = input?.value ? new Date(`${input.value}T12:00:00`) : new Date();
+  return getRadioWeekInfo(date);
+}
+
+function renderRadioWeeklyForm() {
+  const rows = document.getElementById("radioWeeklyRows");
+  if (!rows) return;
+  const label = document.getElementById("radioWeeklyRecordLabel");
+  const weekInfo = getRadioWeeklySelectedInfo();
+  const record = getRadioWeeklyRecord(weekInfo.key);
+  const saved = Array.isArray(record?.assignments) ? record.assignments : [];
+  if (label) label.textContent = weekInfo.label;
+
+  const users = (radioUsersData.length ? radioUsersData : window.usersData || [])
+    .slice()
+    .sort((a, b) => radioUserLabel(a).localeCompare(radioUserLabel(b), "pt", { sensitivity: "base" }));
+
+  rows.innerHTML = radiosData.length ? radiosData.map((radio) => {
+    const current = saved.find(item => item.radioId === radio.id);
+    const options = [
+      `<option value="">Sem user</option>`,
+      ...users.map(user => {
+        const userId = radioUserId(user);
+        const selected = current?.userId === userId ? " selected" : "";
+        return `<option value="${safeRefHtml(userId)}"${selected}>${safeRefHtml(radioUserLabel(user))}</option>`;
+      })
+    ].join("");
+    return `
+      <div class="radio-week-row" data-radio-id="${safeRefHtml(radio.id)}">
+        <div>
+          <strong>${safeRefHtml(radio.nome || "Sem nome")}</strong>
+          <span>MAC ${safeRefHtml(radio.mac || "-")} | Serial ${safeRefHtml(radio.serial || "-")}</span>
+        </div>
+        <select data-radio-user="${safeRefHtml(radio.id)}">${options}</select>
+      </div>
+    `;
+  }).join("") : `<div class="reference-empty">Cria rádios primeiro para conseguires fazer o registo semanal.</div>`;
+}
+
+function abrirRegistoSemanalRadios() {
+  setRadioWeeklyDateDefault();
+  renderRadioWeeklyForm();
+  const modal = document.getElementById("radioWeeklyRecordModal");
+  if (modal) modal.style.display = "flex";
+}
+
+function fecharRegistoSemanalRadios() {
+  const modal = document.getElementById("radioWeeklyRecordModal");
+  if (modal) modal.style.display = "none";
+}
+
+async function guardarRegistoSemanalRadios() {
+  if (!window.db) return mostrarMensagem("Firebase indisponível.", "erro");
+  const weekInfo = getRadioWeeklySelectedInfo();
+  const users = radioUsersData.length ? radioUsersData : window.usersData || [];
+  const assignments = radiosData.map((radio) => {
+    const select = document.querySelector(`[data-radio-user="${radioCssEscape(radio.id)}"]`);
+    const userId = select?.value || "";
+    const user = users.find(item => radioUserId(item) === userId);
+    return {
+      radioId: radio.id,
+      radioNome: radio.nome || "",
+      radioMac: radio.mac || "",
+      radioSerial: radio.serial || "",
+      userId,
+      userNome: user ? radioUserLabel(user) : ""
+    };
+  });
+
+  try {
+    await window.db.collection("radioWeeklyRecords").doc(weekInfo.key).set({
+      weekKey: weekInfo.key,
+      week: weekInfo.week,
+      year: weekInfo.year,
+      label: weekInfo.label,
+      startAt: weekInfo.start.getTime(),
+      endAt: weekInfo.end.getTime(),
+      assignments,
+      updatedAt: Date.now()
+    }, { merge: true });
+    mostrarMensagem("Registo semanal guardado.");
+    fecharRegistoSemanalRadios();
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar registo semanal.", "erro");
+  }
 }
 
 function loadInformacoesData() {
@@ -2194,6 +2375,7 @@ function guardarInformacoes() {
 
 document.addEventListener("DOMContentLoaded", initRadiosPage);
 document.addEventListener("DOMContentLoaded", initInformacoesPage);
+document.addEventListener("DOMContentLoaded", initResolucaoApp);
 window.adicionarRadio = adicionarRadio;
 window.editarRadio = editarRadio;
 window.guardarRadio = guardarRadio;
@@ -2202,6 +2384,11 @@ window.apagarRadio = apagarRadio;
 window.filtrarRadios = filtrarRadios;
 window.abrirRelatorioRadios = abrirRelatorioRadios;
 window.fecharRelatorioRadios = fecharRelatorioRadios;
+window.abrirRegistoSemanalRadios = abrirRegistoSemanalRadios;
+window.fecharRegistoSemanalRadios = fecharRegistoSemanalRadios;
+window.renderRadioWeeklyForm = renderRadioWeeklyForm;
+window.guardarRegistoSemanalRadios = guardarRegistoSemanalRadios;
+window.guardarResolucaoApp = guardarResolucaoApp;
 window.adicionarInformacao = adicionarInformacao;
 window.selecionarInformacao = selecionarInformacao;
 window.verInformacaoSelecionada = verInformacaoSelecionada;
@@ -6510,3 +6697,156 @@ window.addEventListener(
   "pageshow",
   window.loadTheme
 );
+
+/* ===== APP BRAGA FINAL PISTOLAS CRUD FIX ===== */
+function getPistolaId(pistola, index = 0) {
+  return pistola?.idDoc || pistola?.firebaseId || pistola?.id || pistola?.docId || pistola?._ref || `local-pistola-${index}`;
+}
+
+function pistolaPayloadFromForm() {
+  return {
+    num: document.querySelector("#editP_num")?.value.trim() || "",
+    nome: document.querySelector("#editP_nome")?.value.trim() || "",
+    password: document.querySelector("#editP_password")?.value.trim() || "",
+    cn: document.querySelector("#editP_cn")?.value.trim() || "",
+    sn: document.querySelector("#editP_sn")?.value.trim() || "",
+    mac: document.querySelector("#editP_mac")?.value.trim() || "",
+    operador: document.querySelector("#editP_operador")?.value.trim() || "",
+    armazem: document.querySelector("#editP_armazem")?.value.trim() || "",
+    prontas: document.querySelector("#editP_prontas")?.value.trim() || "",
+    updatedAt: Date.now()
+  };
+}
+
+function fillPistolaForm(pistola = {}) {
+  const map = {
+    editP_num: pistola.num,
+    editP_nome: pistola.nome,
+    editP_password: pistola.password,
+    editP_cn: pistola.cn,
+    editP_sn: pistola.sn,
+    editP_mac: pistola.mac,
+    editP_operador: pistola.operador,
+    editP_armazem: pistola.armazem,
+    editP_prontas: pistola.prontas
+  };
+  Object.entries(map).forEach(([id, value]) => {
+    const field = document.getElementById(id);
+    if (field) field.value = value || "";
+  });
+}
+
+function openPistolaModal(title) {
+  const titleEl = document.querySelector("#modalEditarPistola h3");
+  if (titleEl) titleEl.textContent = title;
+  const modal = document.querySelector("#modalEditarPistola");
+  if (modal) modal.style.display = "flex";
+}
+
+window.abrirAdicionarPistola = function() {
+  window.pistolaAtual = null;
+  window.pistolaEditRef = "__new__";
+  fillPistolaForm({});
+  openPistolaModal("Adicionar Pistola CK65");
+};
+
+window.editarPistola = function(id) {
+  const lista = getListaPistolas();
+  const pistola = lista.find((item, index) => String(getPistolaId(item, index)) === String(id));
+  if (!pistola) {
+    mostrarMensagem("Pistola não encontrada.", "erro");
+    return;
+  }
+  window.pistolaAtual = pistola;
+  window.pistolaEditRef = getPistolaId(pistola);
+  fillPistolaForm(pistola);
+  openPistolaModal("Editar Pistola CK65");
+};
+
+window.guardarEdicaoPistola = async function() {
+  const dados = pistolaPayloadFromForm();
+  if (!dados.nome && !dados.num) {
+    mostrarMensagem("Preenche pelo menos o número ou o nome da pistola.", "erro");
+    return;
+  }
+
+  try {
+    if (window.pistolaEditRef === "__new__") {
+      const payload = { ...dados, createdAt: Date.now() };
+      if (window.db?.collection) {
+        const docRef = await window.db.collection("pistolas").add(payload);
+        window.pistolasData.unshift({ idDoc: docRef.id, firebaseId: docRef.id, ...payload });
+      } else {
+        window.pistolasData.unshift({ id: Date.now().toString(), ...payload });
+      }
+      mostrarMensagem("Pistola criada.");
+    } else {
+      const id = window.pistolaEditRef;
+      if (window.db?.collection && id && !String(id).startsWith("local-pistola-")) {
+        await window.db.collection("pistolas").doc(String(id)).set(dados, { merge: true });
+      }
+      const index = window.pistolasData.findIndex((item, itemIndex) => String(getPistolaId(item, itemIndex)) === String(id));
+      if (index >= 0) window.pistolasData[index] = { ...window.pistolasData[index], ...dados };
+      mostrarMensagem("Pistola atualizada.");
+    }
+    const modal = document.querySelector("#modalEditarPistola");
+    if (modal) modal.style.display = "none";
+    window.pistolaAtual = null;
+    window.pistolaEditRef = null;
+    window.renderPistolas();
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar pistola.", "erro");
+  }
+};
+
+window.apagarPistola = async function(id) {
+  if (!confirm("Deseja apagar esta pistola?")) return;
+  try {
+    if (window.db?.collection && id && !String(id).startsWith("local-pistola-")) {
+      await window.db.collection("pistolas").doc(String(id)).delete();
+    }
+    window.pistolasData = getListaPistolas().filter((item, index) => String(getPistolaId(item, index)) !== String(id));
+    window.renderPistolas();
+    mostrarMensagem("Pistola apagada.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao apagar pistola.", "erro");
+  }
+};
+
+window.renderPistolas = function(lista) {
+  const container = document.querySelector("#listaPistolas");
+  if (!container) return;
+  let items = (Array.isArray(lista) ? lista : getListaPistolas()).slice();
+  if (typeof sortPistolasNaturally === "function") items = sortPistolasNaturally(items);
+
+  const totalEl = document.querySelector("#countPistolas");
+  if (totalEl) totalEl.textContent = String(items.length);
+
+  container.innerHTML = items.length ? items.map((pistola, index) => {
+    const id = getPistolaId(pistola, index);
+    return `
+      <article class="enterprise-item-card pistol-card">
+        <div class="item-topline">
+          <div>
+            <h3>${safeRefHtml(pistola.nome || "Pistola CK65")}</h3>
+            <p>Nº ${safeRefHtml(pistola.num || "-")}</p>
+          </div>
+          <span class="status-pill ok">Ativa</span>
+        </div>
+        <div class="item-meta-grid">
+          <span><strong>Operador</strong>${safeRefHtml(pistola.operador || "-")}</span>
+          <span><strong>Armazém</strong>${safeRefHtml(pistola.armazem || "-")}</span>
+          <span><strong>CN</strong>${safeRefHtml(pistola.cn || "-")}</span>
+          <span><strong>SN</strong>${safeRefHtml(pistola.sn || "-")}</span>
+        </div>
+        <div class="item-actions">
+          <button class="secondary-btn" type="button" onclick="editarPistola('${safeRefHtml(id)}')">Editar</button>
+          <button class="secondary-btn" type="button" onclick="verMaisPistola('${safeRefHtml(id)}')">Ver Mais</button>
+          <button class="secondary-btn danger" type="button" onclick="apagarPistola('${safeRefHtml(id)}')">Apagar</button>
+        </div>
+      </article>
+    `;
+  }).join("") : `<div class="reference-empty">Sem pistolas registadas.</div>`;
+};

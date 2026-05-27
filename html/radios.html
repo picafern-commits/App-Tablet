@@ -7,7 +7,7 @@
     const savedTheme = localStorage.getItem("app-theme") || "dark";
     if(savedTheme === "dark"){
       document.documentElement.classList.add("dark");
-      document.body.classList.add("dark");
+      document.addEventListener("DOMContentLoaded", () => document.body?.classList.add("dark"));
     }
   }catch(e){ console.log(e); }
 })();
@@ -78,11 +78,15 @@
   <section class="reference-panel weekly-panel">
     <div class="section-header">
       <div>
-        <h3>Relatório semanal</h3>
+        <h3>Registo semanal</h3>
         <p id="radioSemanaLabel" class="section-subtitle">Semana</p>
       </div>
-      <button class="secondary-btn reference-outline" type="button" onclick="abrirRelatorioRadios()">Ver Detalhes</button>
+      <div class="weekly-actions">
+        <button class="primary-btn" type="button" onclick="abrirRegistoSemanalRadios()">+ Adicionar registo</button>
+        <button class="secondary-btn reference-outline" type="button" onclick="abrirRelatorioRadios()">Ver detalhes</button>
+      </div>
     </div>
+    <div id="radioWeeklySummary" class="weekly-radio-list"></div>
   </section>
 </main>
 
@@ -110,12 +114,32 @@
   <div class="modal-card radio-modal-card">
     <div class="section-header">
       <div>
-        <h3>Detalhes do relatório semanal</h3>
+        <h3>Detalhes do registo semanal</h3>
         <p class="section-subtitle">Rádios usados e users associados.</p>
       </div>
       <button class="secondary-btn" type="button" onclick="fecharRelatorioRadios()">Fechar</button>
     </div>
     <div id="radioDetalhesLista" class="weekly-radio-list"></div>
+  </div>
+</div>
+
+<div id="radioWeeklyRecordModal" class="modal-overlay" style="display:none;">
+  <div class="modal-card radio-weekly-modal-card">
+    <div class="section-header">
+      <div>
+        <h3>Novo registo semanal</h3>
+        <p id="radioWeeklyRecordLabel" class="section-subtitle">Escolhe quem usou cada rádio nesta semana.</p>
+      </div>
+      <button class="secondary-btn" type="button" onclick="fecharRegistoSemanalRadios()">Fechar</button>
+    </div>
+    <div class="form-grid radio-week-form">
+      <label><span>Data da semana</span><input id="radioWeeklyDate" type="date" onchange="renderRadioWeeklyForm()"></label>
+    </div>
+    <div id="radioWeeklyRows" class="radio-weekly-rows"></div>
+    <div class="card-actions" style="margin-top:18px;">
+      <button class="primary-btn" type="button" onclick="guardarRegistoSemanalRadios()">Guardar registo semanal</button>
+      <button class="secondary-btn" type="button" onclick="fecharRegistoSemanalRadios()">Cancelar</button>
+    </div>
   </div>
 </div>
 

@@ -12,7 +12,7 @@
 
     if(savedTheme === "dark"){
       document.documentElement.classList.add("dark");
-      document.body.classList.add("dark");
+      document.addEventListener("DOMContentLoaded", () => document.body?.classList.add("dark"));
     }
 
   }catch(e){
@@ -69,7 +69,17 @@
 	<span class="status-pill">Sistema Online</span>
   </div>
 
-  <div class="panel"><label class="switch-row"><input type="checkbox" id="darkSwitch"> <span>Modo escuro</span></label></div>
+  <div class="panel config-quick-panel">
+    <label class="switch-row"><input type="checkbox" id="darkSwitch"> <span>Modo escuro</span></label>
+    <label class="config-resolution-field">
+      <span>Resolução / densidade</span>
+      <select id="appResolution" onchange="guardarResolucaoApp(this.value)">
+        <option value="comfortable">Normal</option>
+        <option value="compact">Compacta</option>
+        <option value="wide">Larga</option>
+      </select>
+    </label>
+  </div>
 
 
 <div class="panel">
