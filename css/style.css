@@ -4905,3 +4905,199 @@ button[type="submit"] *,
   text-shadow: none !important;
 }
 /* ===== END BUTTON TEXT COLOR CONFIG ===== */
+
+
+/* ===== IPHONE FULLSCREEN + SIDEBAR TEXT FIX ===== */
+
+/* ocupa o ecrã todo no iPhone / PWA / Safari */
+html,
+body {
+  width: 100%;
+  min-width: 100%;
+  min-height: 100dvh;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  background: var(--bg, #0f172a);
+}
+
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.app,
+.app-shell,
+.layout,
+.main-layout,
+.dashboard-layout,
+.page-wrapper,
+.content,
+.main-content,
+.page-content {
+  min-height: 100dvh;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* iPhone */
+@media (max-width: 768px) {
+
+  body {
+    overflow-x: hidden !important;
+  }
+
+  .app,
+  .app-shell,
+  .layout,
+  .main-layout,
+  .dashboard-layout {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    min-height: 100dvh !important;
+  }
+
+  .main-content,
+  .content,
+  .page-content,
+  main {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    box-sizing: border-box !important;
+  }
+
+  .page-header,
+  .enterprise-header,
+  .hero,
+  .card,
+  .enterprise-card,
+  .dashboard-card,
+  .metric-card {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* sidebar aberta com texto */
+  .sidebar,
+  aside.sidebar,
+  .enterprise-sidebar,
+  #sidebar {
+    width: 215px !important;
+    min-width: 215px !important;
+    max-width: 215px !important;
+    overflow-x: hidden !important;
+  }
+
+  .sidebar a,
+  .sidebar button,
+  .sidebar .nav-link,
+  .sidebar .menu-item,
+  .enterprise-sidebar a,
+  .enterprise-sidebar button,
+  .enterprise-sidebar .nav-link,
+  .enterprise-sidebar .menu-item,
+  #sidebar a,
+  #sidebar button {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    width: 100% !important;
+    min-height: 44px !important;
+    padding: 10px 12px !important;
+    box-sizing: border-box !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+  }
+
+  .sidebar span,
+  .sidebar .label,
+  .sidebar .nav-text,
+  .sidebar .menu-text,
+  .enterprise-sidebar span,
+  .enterprise-sidebar .label,
+  .enterprise-sidebar .nav-text,
+  .enterprise-sidebar .menu-text,
+  #sidebar span {
+    display: inline !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    width: auto !important;
+    max-width: 150px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: normal !important;
+    font-size: 13px !important;
+    line-height: 1.15 !important;
+  }
+
+  .sidebar i,
+  .sidebar svg,
+  .enterprise-sidebar i,
+  .enterprise-sidebar svg,
+  #sidebar i,
+  #sidebar svg {
+    flex: 0 0 22px !important;
+    width: 22px !important;
+    min-width: 22px !important;
+    text-align: center !important;
+  }
+
+  /* quando a sidebar tiver classe collapsed, no iPhone não esconder texto */
+  .sidebar.collapsed,
+  .sidebar.is-collapsed,
+  .enterprise-sidebar.collapsed,
+  #sidebar.collapsed {
+    width: 215px !important;
+    min-width: 215px !important;
+  }
+
+  .sidebar.collapsed span,
+  .sidebar.is-collapsed span,
+  .enterprise-sidebar.collapsed span,
+  #sidebar.collapsed span {
+    display: inline !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+}
+
+/* iPhone muito estreito */
+@media (max-width: 430px) {
+  .sidebar,
+  aside.sidebar,
+  .enterprise-sidebar,
+  #sidebar {
+    width: 188px !important;
+    min-width: 188px !important;
+    max-width: 188px !important;
+  }
+
+  .sidebar span,
+  .sidebar .label,
+  .sidebar .nav-text,
+  .sidebar .menu-text,
+  .enterprise-sidebar span,
+  .enterprise-sidebar .label,
+  .enterprise-sidebar .nav-text,
+  .enterprise-sidebar .menu-text,
+  #sidebar span {
+    max-width: 125px !important;
+    font-size: 12px !important;
+  }
+
+  .main-content,
+  .content,
+  .page-content,
+  main {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+}
+
+/* ===== END IPHONE FULLSCREEN + SIDEBAR TEXT FIX ===== */
