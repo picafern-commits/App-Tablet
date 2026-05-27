@@ -1338,3 +1338,173 @@ textarea:focus {
     flex: 1 1 100%;
   }
 }
+
+/* Spacing pass */
+.main,
+.main-content,
+.page-content,
+.dashboard-container,
+.content-area {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 18px !important;
+}
+
+.page-hero,
+.reference-header {
+  min-height: auto !important;
+  padding: 24px 26px !important;
+  margin-bottom: 2px !important;
+  align-items: center !important;
+}
+
+.page-hero-title,
+.reference-header h1 {
+  line-height: 1.08 !important;
+  letter-spacing: 0 !important;
+}
+
+.cards-grid,
+.equipment-grid,
+.radio-cards-grid,
+.stats-grid,
+.enterprise-metrics,
+.dashboard-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
+  gap: 16px !important;
+  align-items: stretch !important;
+}
+
+.panel,
+.reference-panel {
+  padding: 22px !important;
+}
+
+.card,
+.metric-card,
+.stat-card,
+.summary-card,
+.radio-card,
+.info-list-item,
+.pc-card,
+.stock-card,
+.porta-card,
+.pistola-card,
+.manutencao-card {
+  padding: 18px !important;
+  min-height: 0 !important;
+}
+
+.section-header {
+  gap: 14px !important;
+  margin-bottom: 16px !important;
+  align-items: center !important;
+}
+
+.card-actions,
+.reference-actions,
+.weekly-actions,
+.radio-card-actions,
+.info-card-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  align-items: center !important;
+}
+
+.primary-btn,
+.secondary-btn,
+.ghost-btn,
+.reference-outline,
+.reference-icon,
+.action-btn,
+button.btn-primary,
+.btn-primary {
+  min-height: 42px !important;
+  padding: 10px 16px !important;
+  border-radius: 10px !important;
+  line-height: 1.15 !important;
+  white-space: nowrap !important;
+}
+
+.ghost-btn {
+  background: rgba(255, 255, 255, .045) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(255, 255, 255, .16) !important;
+}
+
+.update-box-appbraga {
+  position: fixed !important;
+  right: 22px !important;
+  bottom: 22px !important;
+  z-index: 9000 !important;
+  width: min(390px, calc(100vw - 32px)) !important;
+  padding: 18px !important;
+  border-radius: 14px !important;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02)),
+    #1b1b1b !important;
+  border: 1px solid var(--app-border) !important;
+  border-bottom: 3px solid var(--app-accent) !important;
+  box-shadow: 0 22px 58px rgba(0, 0, 0, .36) !important;
+}
+
+.update-title {
+  color: #fff !important;
+  font-size: 17px !important;
+  font-weight: 800 !important;
+}
+
+.update-subtitle {
+  color: var(--app-muted) !important;
+  line-height: 1.45 !important;
+  margin: 8px 0 14px !important;
+}
+
+.update-actions {
+  display: flex !important;
+  gap: 10px !important;
+  justify-content: flex-end !important;
+}
+
+@media (max-width: 760px) {
+  .main,
+  .main-content,
+  .page-content,
+  .dashboard-container,
+  .content-area {
+    gap: 14px !important;
+    padding: 14px !important;
+  }
+
+  .page-hero,
+  .reference-header,
+  .panel,
+  .reference-panel {
+    padding: 16px !important;
+  }
+
+  .cards-grid,
+  .equipment-grid,
+  .radio-cards-grid,
+  .stats-grid,
+  .enterprise-metrics,
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .reference-actions,
+  .card-actions,
+  .update-actions {
+    align-items: stretch !important;
+    justify-content: stretch !important;
+  }
+
+  .reference-actions > *,
+  .card-actions > *,
+  .update-actions > * {
+    flex: 1 1 auto !important;
+  }
+}

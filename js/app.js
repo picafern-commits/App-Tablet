@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.8.3";
+const APP_VERSION = "1.8.5";
 
 
 
@@ -1952,6 +1952,20 @@ function cacheCorApp(value) {
   document.cookie = `appAccentColor=${encodeURIComponent(color)}; Max-Age=31536000; Path=/; SameSite=Lax`;
 }
 
+function getCookieAppBraga(name) {
+  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`));
+  return match ? decodeURIComponent(match[1]) : "";
+}
+
+function setCookieAppBraga(name, value, maxAgeSeconds = null) {
+  const age = Number.isFinite(maxAgeSeconds) ? `; Max-Age=${Math.max(0, Math.floor(maxAgeSeconds))}` : "";
+  document.cookie = `${name}=${encodeURIComponent(String(value || ""))}${age}; Path=/; SameSite=Lax`;
+}
+
+function deleteCookieAppBraga(name) {
+  document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax`;
+}
+
 function aplicarCorApp(value = APP_DEFAULT_ACCENT) {
   const color = normalizarCorApp(value);
   const hover = ajustarCorAppBraga(color, -28);
@@ -2081,6 +2095,7 @@ function criarAppLockOverlay() {
 
 function mostrarBloqueioApp() {
   if (!appSecurityState.pinHash) return;
+  deleteCookieAppBraga("appPinUnlockedUntil");
   const overlay = criarAppLockOverlay();
   appSecurityState.overlay = overlay;
   appSecurityState.unlocked = false;
@@ -2091,13 +2106,26 @@ function mostrarBloqueioApp() {
 function esconderBloqueioApp() {
   appSecurityState.overlay?.classList.remove("show");
   appSecurityState.unlocked = true;
+  renovarSessaoPinApp();
   reiniciarTemporizadorBloqueioApp();
+}
+
+function renovarSessaoPinApp() {
+  if (!appSecurityState.pinHash || !appSecurityState.unlocked || !appSecurityState.lockTimeoutMinutes) return;
+  const until = Date.now() + (appSecurityState.lockTimeoutMinutes * 60000);
+  setCookieAppBraga("appPinUnlockedUntil", String(until), appSecurityState.lockTimeoutMinutes * 60);
+}
+
+function sessaoPinAindaValida() {
+  const until = Number(getCookieAppBraga("appPinUnlockedUntil") || 0);
+  return until && until > Date.now();
 }
 
 function reiniciarTemporizadorBloqueioApp() {
   if (appSecurityState.timer) clearTimeout(appSecurityState.timer);
   appSecurityState.timer = null;
   if (!appSecurityState.pinHash || !appSecurityState.unlocked || !appSecurityState.lockTimeoutMinutes) return;
+  renovarSessaoPinApp();
   appSecurityState.timer = setTimeout(() => mostrarBloqueioApp(), appSecurityState.lockTimeoutMinutes * 60000);
 }
 
@@ -2108,10 +2136,17 @@ function aplicarSegurancaApp(pinHash, lockTimeoutMinutes) {
   setLockTimeoutInput(appSecurityState.lockTimeoutMinutes);
   if (!appSecurityState.pinHash) {
     appSecurityState.unlocked = true;
+    deleteCookieAppBraga("appPinUnlockedUntil");
     esconderBloqueioApp();
     return;
   }
-  if (previousHash !== appSecurityState.pinHash) appSecurityState.unlocked = false;
+  if (!appSecurityState.lockTimeoutMinutes) {
+    appSecurityState.unlocked = true;
+    deleteCookieAppBraga("appPinUnlockedUntil");
+    esconderBloqueioApp();
+    return;
+  }
+  if (previousHash !== appSecurityState.pinHash) appSecurityState.unlocked = sessaoPinAindaValida();
   if (!appSecurityState.unlocked) mostrarBloqueioApp();
   reiniciarTemporizadorBloqueioApp();
 }
@@ -2191,6 +2226,7 @@ async function removerPinApp() {
       lockTimeoutMinutes: 0,
       updatedAt: Date.now()
     }, { merge: true });
+    deleteCookieAppBraga("appPinUnlockedUntil");
     aplicarSegurancaApp("", 0);
     mostrarMensagem("PIN removido.");
   } catch (error) {
@@ -4041,6 +4077,10 @@ async function registarServiceWorkerAppBraga() {
 
 async function verificarAtualizacao() {
   try {
+    atualizarVersaoUI(APP_VERSION);
+    const isGithubPages = location.hostname === "picafern-commits.github.io";
+    if (!isGithubPages) return;
+
     await registarServiceWorkerAppBraga();
 
     const res = await fetch(APP_VERSION_URL, {
@@ -4052,7 +4092,6 @@ async function verificarAtualizacao() {
     });
 
     const data = await res.json();
-    atualizarVersaoUI((data && data.version) ? data.version : APP_VERSION);
 
     if (data && data.version && data.version !== APP_VERSION) {
       mostrarAvisoAtualizacaoDisponivel(data.version);
@@ -4073,6 +4112,7 @@ function atualizarVersaoUI(versionValue = APP_VERSION) {
 }
 
 function mostrarAvisoAtualizacaoDisponivel(novaVersao) {
+  if (getCookieAppBraga("appUpdateDismissedVersion") === String(novaVersao)) return;
   let box = document.getElementById("updateBoxAppBraga");
 
   if (!box) {
@@ -4081,11 +4121,12 @@ function mostrarAvisoAtualizacaoDisponivel(novaVersao) {
     box.className = "update-box-appbraga";
     document.body.appendChild(box);
   }
+  box.dataset.version = novaVersao;
 
   box.innerHTML = `
     <div class="update-title">Atualização disponível</div>
     <div class="update-subtitle">
-      Existe uma versão nova, mas podes continuar a usar a app.<br><br>
+      Existe uma versão nova. Podes atualizar agora ou continuar a trabalhar.<br><br>
       Atual: v${APP_VERSION} Premium<br>
       Nova: v${novaVersao} Premium
     </div>
@@ -4099,6 +4140,7 @@ function mostrarAvisoAtualizacaoDisponivel(novaVersao) {
 function fecharAvisoAtualizacao() {
   const overlay = document.getElementById("updateOverlayAppBraga");
   const box = document.getElementById("updateBoxAppBraga");
+  if (box?.dataset.version) setCookieAppBraga("appUpdateDismissedVersion", box.dataset.version, 86400);
   if (overlay) overlay.remove();
   if (box) box.remove();
   document.body.style.overflow = "";
@@ -4108,12 +4150,14 @@ function atualizarAppObrigatorio() {
   const box = document.getElementById("updateBoxAppBraga");
   if (box) {
     box.innerHTML = `
-      <div class="update-title">⏳ A atualizar...</div>
-      <div class="update-subtitle">A abrir a versão mais recente da app.</div>
+      <div class="update-title">A atualizar...</div>
+      <div class="update-subtitle">A recarregar a versão mais recente da app.</div>
     `;
   }
 
-  const target = APP_REMOTE_BASE + "index.html?update=" + Date.now();
+  const targetUrl = new URL(window.location.href);
+  targetUrl.searchParams.set("update", String(Date.now()));
+  const target = targetUrl.toString();
   const currentBefore = window.location.href;
 
   setTimeout(async () => {
