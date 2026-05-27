@@ -7832,3 +7832,36 @@ document.addEventListener("change", function(e) {
   window.addEventListener("resize", fixSidebarText);
 })();
 /* ===== END IPHONE SIDEBAR TEXT PATCH ===== */
+
+
+/* ===== ANDROID TABLET SCALE JS ===== */
+function aplicarEscalaTabletAndroidAppBraga() {
+  const isAndroidTablet = document.body.classList.contains("is-android-tablet");
+  if (!isAndroidTablet) return;
+
+  const width = window.innerWidth || document.documentElement.clientWidth || 0;
+  const height = window.innerHeight || document.documentElement.clientHeight || 0;
+  const minSide = Math.min(width, height);
+
+  let scale = 1.10;
+
+  if (minSide >= 800) scale = 1.16;
+  if (minSide >= 900) scale = 1.22;
+
+  document.documentElement.style.setProperty("--android-tablet-scale", String(scale));
+  document.body.classList.add("android-tablet-scale-ready");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(aplicarEscalaTabletAndroidAppBraga, 100);
+  setTimeout(aplicarEscalaTabletAndroidAppBraga, 600);
+});
+
+window.addEventListener("resize", () => {
+  setTimeout(aplicarEscalaTabletAndroidAppBraga, 100);
+}, { passive: true });
+
+window.addEventListener("orientationchange", () => {
+  setTimeout(aplicarEscalaTabletAndroidAppBraga, 300);
+}, { passive: true });
+/* ===== END ANDROID TABLET SCALE JS ===== */
