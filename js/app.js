@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.8.6";
+const APP_VERSION = "1.8.7";
 
 
 
@@ -1916,6 +1916,7 @@ function aplicarResolucaoApp(mode = "comfortable") {
 const APP_DEFAULT_ACCENT = "#ef4444";
 const appSecurityState = {
   pinHash: "",
+  pinLength: 0,
   lockTimeoutMinutes: 0,
   unlocked: false,
   timer: null,
@@ -2052,7 +2053,7 @@ function initResolucaoApp() {
     const accentColor = data.accentColor || getCachedCorApp() || APP_DEFAULT_ACCENT;
     aplicarCorApp(accentColor);
     cacheCorApp(accentColor);
-    aplicarSegurancaApp(data.pinHash || "", data.lockTimeoutMinutes || 0);
+    aplicarSegurancaApp(data.pinHash || "", data.lockTimeoutMinutes || 0, data.pinLength || 0);
   }, (error) => console.error("Erro ao carregar resolução:", error));
 }
 
@@ -2117,7 +2118,7 @@ function criarAppLockOverlay() {
       <div class="brand-badge">BR</div>
       <h2>APP bloqueada</h2>
       <p>Introduz o PIN para continuar.</p>
-      <input id="appPinUnlock" type="password" inputmode="numeric" maxlength="12" placeholder="PIN">
+      <input id="appPinUnlock" type="password" inputmode="numeric" maxlength="12" placeholder="PIN" autocomplete="off">
       <button class="primary-btn" type="button" onclick="desbloquearAppComPin()">Desbloquear</button>
       <small id="appPinError"></small>
     </div>
@@ -2125,6 +2126,10 @@ function criarAppLockOverlay() {
   document.body.appendChild(overlay);
   overlay.addEventListener("keydown", (event) => {
     if (event.key === "Enter") desbloquearAppComPin();
+  });
+  overlay.addEventListener("input", (event) => {
+    if (event.target?.id !== "appPinUnlock") return;
+    tentarDesbloquearPinAutomatico();
   });
   return overlay;
 }
@@ -2176,9 +2181,10 @@ function reiniciarTemporizadorBloqueioApp() {
   appSecurityState.timer = setTimeout(() => mostrarBloqueioApp(), appSecurityState.lockTimeoutMinutes * 60000);
 }
 
-function aplicarSegurancaApp(pinHash, lockTimeoutMinutes) {
+function aplicarSegurancaApp(pinHash, lockTimeoutMinutes, pinLength = 0) {
   const previousHash = appSecurityState.pinHash;
   appSecurityState.pinHash = String(pinHash || "");
+  appSecurityState.pinLength = Math.max(0, Number(pinLength) || 0);
   appSecurityState.lockTimeoutMinutes = Math.max(0, Number(lockTimeoutMinutes) || 0);
   setLockTimeoutInput(appSecurityState.lockTimeoutMinutes);
   if (!appSecurityState.pinHash) {
@@ -2229,16 +2235,26 @@ async function desbloquearAppComPin() {
   esconderBloqueioApp();
 }
 
+async function tentarDesbloquearPinAutomatico() {
+  const input = document.getElementById("appPinUnlock");
+  const pin = input?.value || "";
+  if (!appSecurityState.pinHash || !appSecurityState.pinLength) return;
+  if (pin.length !== appSecurityState.pinLength) return;
+  await desbloquearAppComPin();
+}
+
 async function guardarPinApp() {
   if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponível.", "erro");
   const input = document.getElementById("appPinCode");
   const pin = input?.value.trim() || "";
   if (!pin) return mostrarMensagem("Escreve um PIN novo antes de guardar.", "erro");
   const pinHash = await hashAppPin(pin);
+  const pinLength = pin.length;
   const lockTimeoutMinutes = Math.max(0, Number(document.getElementById("appLockTimeout")?.value || appSecurityState.lockTimeoutMinutes) || 0);
   try {
     await window.db.collection("config").doc("layout").set({
       pinHash,
+      pinLength,
       lockTimeoutMinutes,
       updatedAt: Date.now()
     }, { merge: true });
@@ -2258,7 +2274,7 @@ async function guardarTempoBloqueioApp(value) {
       lockTimeoutMinutes,
       updatedAt: Date.now()
     }, { merge: true });
-    aplicarSegurancaApp(appSecurityState.pinHash, lockTimeoutMinutes);
+    aplicarSegurancaApp(appSecurityState.pinHash, lockTimeoutMinutes, appSecurityState.pinLength);
     mostrarMensagem("Tempo de bloqueio atualizado.");
   } catch (error) {
     console.error(error);
@@ -2272,6 +2288,7 @@ async function removerPinApp() {
   try {
     await window.db.collection("config").doc("layout").set({
       pinHash: "",
+      pinLength: 0,
       lockTimeoutMinutes: 0,
       updatedAt: Date.now()
     }, { merge: true });
