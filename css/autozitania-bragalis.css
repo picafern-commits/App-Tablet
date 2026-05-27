@@ -474,3 +474,268 @@ textarea:focus,
   border-color: rgba(255, 122, 0, .58) !important;
   box-shadow: 0 0 0 3px rgba(255, 122, 0, .14) !important;
 }
+
+/* Final professional spacing system */
+.main,
+.main-content,
+.page-content,
+.dashboard-container,
+.content-area {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 22px !important;
+  padding: 28px !important;
+}
+
+.page-hero,
+.dashboard-header,
+.reference-header,
+.topbar,
+.premium-topbar {
+  min-height: 96px !important;
+  padding: 22px 24px !important;
+  margin: 0 !important;
+  align-items: center !important;
+}
+
+.page-hero-title,
+.dashboard-header h1,
+.reference-header h1,
+.main h1 {
+  margin: 0 !important;
+  font-size: clamp(28px, 3vw, 40px) !important;
+  line-height: 1.08 !important;
+  font-weight: 850 !important;
+}
+
+.dashboard-header p,
+.reference-header p,
+.section-subtitle,
+.subtitle {
+  margin: 6px 0 0 !important;
+  line-height: 1.45 !important;
+  color: var(--az-muted) !important;
+}
+
+.panel,
+.reference-panel,
+.dashboard-panel,
+.table-panel {
+  padding: 22px !important;
+  margin: 0 !important;
+}
+
+.panel + .panel,
+.reference-panel + .reference-panel,
+.dashboard-panel + .dashboard-panel {
+  margin-top: 0 !important;
+}
+
+.cards-grid,
+.equipment-grid,
+.impressoras-grid,
+.dashboard-grid,
+.radio-cards-grid,
+.stats-grid,
+.enterprise-metrics,
+.form-grid,
+.info-list {
+  display: grid !important;
+  gap: 18px !important;
+  align-items: stretch !important;
+}
+
+.cards-grid,
+.equipment-grid,
+.radio-cards-grid,
+.info-list {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+}
+
+.stats-grid,
+.enterprise-metrics {
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)) !important;
+}
+
+.form-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+}
+
+.card,
+.pc-card,
+.stock-card,
+.history-card,
+.dashboard-card,
+.stat-card,
+.metric-card,
+.equipment-card,
+.radio-card,
+.info-list-item,
+.user-card {
+  min-height: 142px !important;
+  padding: 18px !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+.metric-card,
+.stat-card {
+  min-height: 118px !important;
+  justify-content: space-between !important;
+}
+
+.dashboard-card,
+.equipment-card {
+  min-height: 230px !important;
+}
+
+.pc-name,
+.stock-id,
+.card h3,
+.panel h3,
+.equipment-card h3,
+.radio-card-main h3 {
+  margin: 0 !important;
+  font-size: 17px !important;
+  line-height: 1.25 !important;
+  font-weight: 800 !important;
+}
+
+.meta-line,
+.card p,
+.equipment-card p,
+.equipment-card small,
+.radio-card-main p,
+.info-list-item span {
+  margin: 0 !important;
+  line-height: 1.45 !important;
+  font-size: 13px !important;
+  color: var(--az-muted) !important;
+}
+
+.section-header,
+.toolbar,
+.printers-toolbar,
+.card-actions,
+.item-actions,
+.reference-actions,
+.panel-title-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+  flex-wrap: wrap !important;
+  margin: 0 0 18px !important;
+}
+
+.card-actions,
+.item-actions {
+  justify-content: flex-start !important;
+  margin-top: auto !important;
+  margin-bottom: 0 !important;
+}
+
+.primary-btn,
+.secondary-btn,
+.action-btn,
+.btn,
+.btn-primary,
+.add-btn,
+.save-btn,
+button {
+  min-height: 42px !important;
+  padding: 0 16px !important;
+  border-radius: 10px !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+input,
+select,
+textarea,
+.toolbar input,
+.toolbar select,
+.reference-search input,
+.info-search {
+  min-height: 44px !important;
+  padding: 0 14px !important;
+  font-size: 14px !important;
+}
+
+textarea {
+  padding-top: 12px !important;
+  line-height: 1.5 !important;
+}
+
+.table-wrap,
+.printers-table-wrap {
+  border-radius: 12px !important;
+  overflow: auto !important;
+}
+
+table {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  width: 100% !important;
+}
+
+th,
+td {
+  padding: 14px 16px !important;
+  vertical-align: middle !important;
+}
+
+.modal-card {
+  padding: 24px !important;
+}
+
+.modal-card .section-header {
+  margin-bottom: 18px !important;
+}
+
+body.device-tablet .main,
+body.device-tablet .main-content,
+body.device-tablet .page-content,
+body.device-tablet .dashboard-container,
+body.device-tablet .content-area {
+  gap: 18px !important;
+  padding: 20px !important;
+}
+
+body.device-phone .main,
+body.device-phone .main-content,
+body.device-phone .page-content,
+body.device-phone .dashboard-container,
+body.device-phone .content-area {
+  gap: 14px !important;
+  padding-top: 12px !important;
+}
+
+body.device-phone .page-hero,
+body.device-phone .dashboard-header,
+body.device-phone .reference-header {
+  min-height: auto !important;
+  padding: 16px !important;
+}
+
+body.device-phone .panel,
+body.device-phone .reference-panel,
+body.device-phone .dashboard-panel,
+body.device-phone .card,
+body.device-phone .pc-card,
+body.device-phone .dashboard-card,
+body.device-phone .stat-card,
+body.device-phone .metric-card {
+  padding: 14px !important;
+}
+
+body.device-phone .cards-grid,
+body.device-phone .equipment-grid,
+body.device-phone .radio-cards-grid,
+body.device-phone .stats-grid,
+body.device-phone .enterprise-metrics,
+body.device-phone .form-grid {
+  gap: 12px !important;
+}
