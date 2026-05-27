@@ -7153,3 +7153,32 @@ document.addEventListener("change", function(e) {
   }
 });
 /* ===== END BUTTON TEXT AFTER COLOR CHANGE PATCH ===== */
+
+
+/* ===== IPHONE SIDEBAR TEXT PATCH ===== */
+(function(){
+  function fixSidebarText(){
+    document.body.classList.toggle("is-iphone-layout", window.innerWidth <= 768);
+
+    var sidebar = document.querySelector(".sidebar");
+    if (!sidebar) return;
+
+    sidebar.querySelectorAll("a").forEach(function(a){
+      var hasElement = Array.from(a.childNodes).some(function(n){ return n.nodeType === 1 && n.tagName !== "BR"; });
+      var text = (a.textContent || "").trim();
+
+      if (!a.querySelector(".sidebar-link-text") && text) {
+        a.innerHTML = '<span class="sidebar-link-text">' + text + '</span>';
+      }
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", fixSidebarText);
+  } else {
+    fixSidebarText();
+  }
+
+  window.addEventListener("resize", fixSidebarText);
+})();
+/* ===== END IPHONE SIDEBAR TEXT PATCH ===== */
