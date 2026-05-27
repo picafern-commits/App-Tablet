@@ -4687,3 +4687,165 @@ body.is-android-tablet .health-card strong#healthDevice {
   color: #86efac !important;
 }
 /* ===== END ANDROID TABLET DETECTION FIX ===== */
+
+
+/* ===== ANDROID TABLET SCALE FIX ===== */
+/* Tablet Android estava a ser tratado quase como PC e ficava tudo pequeno.
+   Estas regras aumentam a escala só em Android Tablet. */
+
+body.is-android-tablet.device-tablet {
+  font-size: 18px !important;
+}
+
+body.is-android-tablet.device-tablet .sidebar {
+  width: 280px !important;
+  min-width: 280px !important;
+  max-width: 280px !important;
+  padding: 22px 16px !important;
+}
+
+body.is-android-tablet.device-tablet .main,
+body.is-android-tablet.device-tablet main,
+body.is-android-tablet.device-tablet .main-content,
+body.is-android-tablet.device-tablet .page-content,
+body.is-android-tablet.device-tablet .dashboard-container,
+body.is-android-tablet.device-tablet .content-area {
+  margin-left: 280px !important;
+  width: calc(100vw - 280px) !important;
+  max-width: calc(100vw - 280px) !important;
+  padding: 28px !important;
+  box-sizing: border-box !important;
+}
+
+body.is-android-tablet.device-tablet .brand,
+body.is-android-tablet.device-tablet .premium-brand {
+  min-height: 86px !important;
+  padding: 16px !important;
+}
+
+body.is-android-tablet.device-tablet .brand h2,
+body.is-android-tablet.device-tablet .premium-brand h2 {
+  font-size: 24px !important;
+}
+
+body.is-android-tablet.device-tablet .brand-badge,
+body.is-android-tablet.device-tablet .brand-logo {
+  width: 56px !important;
+  height: 56px !important;
+  min-width: 56px !important;
+  font-size: 17px !important;
+}
+
+body.is-android-tablet.device-tablet .sidebar a,
+body.is-android-tablet.device-tablet .sidebar .menu-btn {
+  min-height: 54px !important;
+  padding: 15px 16px !important;
+  font-size: 16px !important;
+  border-radius: 16px !important;
+  margin-bottom: 10px !important;
+}
+
+body.is-android-tablet.device-tablet .page-hero,
+body.is-android-tablet.device-tablet .dashboard-header,
+body.is-android-tablet.device-tablet .reference-header {
+  padding: 28px !important;
+  border-radius: 24px !important;
+}
+
+body.is-android-tablet.device-tablet .main h1,
+body.is-android-tablet.device-tablet h1,
+body.is-android-tablet.device-tablet .page-hero-title {
+  font-size: clamp(36px, 4vw, 54px) !important;
+  line-height: 1.05 !important;
+}
+
+body.is-android-tablet.device-tablet h2 {
+  font-size: 30px !important;
+}
+
+body.is-android-tablet.device-tablet h3,
+body.is-android-tablet.device-tablet .section-header h3 {
+  font-size: 23px !important;
+}
+
+body.is-android-tablet.device-tablet .panel,
+body.is-android-tablet.device-tablet .card,
+body.is-android-tablet.device-tablet .dashboard-card,
+body.is-android-tablet.device-tablet .stat-card,
+body.is-android-tablet.device-tablet .metric-card,
+body.is-android-tablet.device-tablet .stock-card,
+body.is-android-tablet.device-tablet .history-card,
+body.is-android-tablet.device-tablet .printer-card,
+body.is-android-tablet.device-tablet .user-card,
+body.is-android-tablet.device-tablet .summary-card,
+body.is-android-tablet.device-tablet .box {
+  padding: 24px !important;
+  border-radius: 24px !important;
+}
+
+body.is-android-tablet.device-tablet .stats-grid,
+body.is-android-tablet.device-tablet .dashboard-grid,
+body.is-android-tablet.device-tablet .cards-grid,
+body.is-android-tablet.device-tablet .form-grid {
+  gap: 22px !important;
+}
+
+body.is-android-tablet.device-tablet .stat-card strong,
+body.is-android-tablet.device-tablet .metric-card strong,
+body.is-android-tablet.device-tablet .dashboard-card strong {
+  font-size: 42px !important;
+}
+
+body.is-android-tablet.device-tablet .stat-card span,
+body.is-android-tablet.device-tablet .metric-card span,
+body.is-android-tablet.device-tablet .dashboard-card span,
+body.is-android-tablet.device-tablet .meta-line,
+body.is-android-tablet.device-tablet .section-subtitle,
+body.is-android-tablet.device-tablet .subtitle {
+  font-size: 17px !important;
+}
+
+body.is-android-tablet.device-tablet input,
+body.is-android-tablet.device-tablet select,
+body.is-android-tablet.device-tablet textarea,
+body.is-android-tablet.device-tablet button,
+body.is-android-tablet.device-tablet .btn,
+body.is-android-tablet.device-tablet .primary-btn,
+body.is-android-tablet.device-tablet .add-btn,
+body.is-android-tablet.device-tablet .save-btn,
+body.is-android-tablet.device-tablet .enterprise-btn {
+  min-height: 54px !important;
+  font-size: 16px !important;
+  border-radius: 16px !important;
+}
+
+body.is-android-tablet.device-tablet table,
+body.is-android-tablet.device-tablet td,
+body.is-android-tablet.device-tablet th {
+  font-size: 16px !important;
+}
+
+/* Tablet em paisagem largo: mantém enterprise mas maior */
+body.is-android-tablet.tablet-landscape .dashboard-grid,
+body.is-android-tablet.tablet-landscape .stats-grid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+}
+
+/* Tablet em retrato: mais espaço para conteúdo */
+body.is-android-tablet.tablet-portrait .sidebar {
+  width: 240px !important;
+  min-width: 240px !important;
+  max-width: 240px !important;
+}
+
+body.is-android-tablet.tablet-portrait .main,
+body.is-android-tablet.tablet-portrait main,
+body.is-android-tablet.tablet-portrait .main-content,
+body.is-android-tablet.tablet-portrait .page-content,
+body.is-android-tablet.tablet-portrait .dashboard-container {
+  margin-left: 240px !important;
+  width: calc(100vw - 240px) !important;
+  max-width: calc(100vw - 240px) !important;
+}
+
+/* ===== END ANDROID TABLET SCALE FIX ===== */
