@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.7.8";
+const APP_VERSION = "1.7.9";
 
 
 
@@ -1913,6 +1913,16 @@ function ajustarCorAppBraga(hex, amount = -28) {
   return `#${next.map((value) => value.toString(16).padStart(2, "0")).join("")}`;
 }
 
+function getCachedCorApp() {
+  const match = document.cookie.match(/(?:^|;\s*)appAccentColor=([^;]+)/);
+  return match ? normalizarCorApp(decodeURIComponent(match[1])) : "";
+}
+
+function cacheCorApp(value) {
+  const color = normalizarCorApp(value);
+  document.cookie = `appAccentColor=${encodeURIComponent(color)}; Max-Age=31536000; Path=/; SameSite=Lax`;
+}
+
 function aplicarCorApp(value = "#ff7a00") {
   const color = normalizarCorApp(value);
   const hover = ajustarCorAppBraga(color, -28);
@@ -1955,12 +1965,14 @@ function aplicarCorApp(value = "#ff7a00") {
 
 function initResolucaoApp() {
   aplicarResolucaoApp("comfortable");
-  aplicarCorApp("#ff7a00");
+  aplicarCorApp(getCachedCorApp() || "#ff7a00");
   if (!window.db || !window.db.collection) return;
   window.db.collection("config").doc("layout").onSnapshot((doc) => {
     const data = doc.exists ? doc.data() : {};
     aplicarResolucaoApp(data.resolution || "comfortable");
-    aplicarCorApp(data.accentColor || "#ff7a00");
+    const accentColor = data.accentColor || getCachedCorApp() || "#ff7a00";
+    aplicarCorApp(accentColor);
+    cacheCorApp(accentColor);
   }, (error) => console.error("Erro ao carregar resolução:", error));
 }
 
@@ -1982,6 +1994,7 @@ async function guardarResolucaoApp(value) {
 async function guardarCorApp(value) {
   const accentColor = normalizarCorApp(value);
   aplicarCorApp(accentColor);
+  cacheCorApp(accentColor);
   if (!window.db || !window.db.collection) return;
   try {
     await window.db.collection("config").doc("layout").set({
