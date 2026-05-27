@@ -1,26 +1,25 @@
 /* App Braga brand layer: Autozitania / Bragalis */
 :root {
-  --az-bg: #07111f;
-  --az-bg-2: #0b1728;
-  --az-panel: rgba(12, 24, 40, .92);
-  --az-panel-2: rgba(18, 32, 50, .88);
-  --az-line: rgba(210, 220, 232, .14);
-  --az-text: #f7fafc;
-  --az-muted: #9aa8b9;
-  --az-red: #d71920;
-  --az-red-soft: rgba(215, 25, 32, .16);
-  --az-yellow: #f6b221;
-  --az-blue: #123e6d;
-  --az-blue-2: #0c2b4e;
-  --az-green: #19a35b;
+  --az-bg: #101114;
+  --az-bg-2: #17181c;
+  --az-panel: rgba(24, 25, 30, .94);
+  --az-panel-2: rgba(31, 32, 38, .9);
+  --az-line: rgba(255, 138, 0, .18);
+  --az-text: #fff8ef;
+  --az-muted: #b9aa99;
+  --az-orange: #ff7a00;
+  --az-orange-2: #f05a00;
+  --az-orange-soft: rgba(255, 122, 0, .16);
+  --az-green: #29b36a;
+  --az-danger: #ef4444;
   --az-sidebar: 248px;
 }
 
 html,
 body {
   background:
-    linear-gradient(135deg, rgba(215, 25, 32, .09), transparent 28%),
-    linear-gradient(180deg, #06101c 0%, #091522 48%, #07111f 100%) !important;
+    linear-gradient(135deg, rgba(255, 122, 0, .12), transparent 32%),
+    linear-gradient(180deg, #101114 0%, #15161a 48%, #0d0e11 100%) !important;
   color: var(--az-text) !important;
 }
 
@@ -43,8 +42,8 @@ body::before {
 
 .sidebar {
   width: var(--az-sidebar) !important;
-  background: linear-gradient(180deg, #08111f 0%, #0a1726 52%, #060b13 100%) !important;
-  border-right: 1px solid rgba(255,255,255,.10) !important;
+  background: linear-gradient(180deg, #141519 0%, #101114 58%, #0b0c0f 100%) !important;
+  border-right: 1px solid rgba(255,122,0,.18) !important;
   box-shadow: 18px 0 44px rgba(0, 0, 0, .34) !important;
 }
 
@@ -55,7 +54,7 @@ body::before {
   border-radius: 12px !important;
   border: 1px solid rgba(255,255,255,.12) !important;
   background:
-    linear-gradient(135deg, rgba(215,25,32,.18), rgba(246,178,33,.08)),
+    linear-gradient(135deg, rgba(255,122,0,.20), rgba(255,122,0,.07)),
     rgba(255,255,255,.04) !important;
 }
 
@@ -65,7 +64,7 @@ body::before {
   position: absolute;
   left: 70px;
   bottom: 12px;
-  color: var(--az-yellow);
+  color: #ffb45f;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: .04em;
@@ -80,9 +79,9 @@ body::before {
 }
 
 .brand-badge {
-  background: linear-gradient(135deg, var(--az-red), #8f1017) !important;
+  background: linear-gradient(135deg, var(--az-orange), var(--az-orange-2)) !important;
   border: 1px solid rgba(255,255,255,.16);
-  box-shadow: 0 14px 30px rgba(215,25,32,.28) !important;
+  box-shadow: 0 14px 30px rgba(255,122,0,.26) !important;
 }
 
 .sidebar a,
@@ -98,9 +97,9 @@ body::before {
 .sidebar a.active,
 .sidebar .menu-btn:hover,
 .sidebar .menu-btn.active {
-  background: linear-gradient(135deg, var(--az-red), #a9141a) !important;
+  background: linear-gradient(135deg, var(--az-orange), var(--az-orange-2)) !important;
   color: #fff !important;
-  box-shadow: 0 14px 28px rgba(215,25,32,.24) !important;
+  box-shadow: 0 14px 28px rgba(255,122,0,.24) !important;
 }
 
 .main,
@@ -120,7 +119,7 @@ body::before {
   border: 1px solid var(--az-line) !important;
   border-radius: 14px !important;
   background:
-    linear-gradient(135deg, rgba(18,62,109,.72), rgba(7,17,31,.86)),
+    linear-gradient(135deg, rgba(255,122,0,.16), rgba(16,17,20,.88)),
     var(--az-panel) !important;
   box-shadow: 0 22px 54px rgba(0,0,0,.30) !important;
 }
@@ -155,47 +154,79 @@ body::before {
 
 .stat-card,
 .metric-card {
-  border-bottom: 3px solid var(--az-red) !important;
+  border-bottom: 3px solid var(--az-orange) !important;
+}
+
+.metric-blue,
+.metric-green,
+.metric-orange,
+.metric-purple,
+.dashboard-card,
+.stat-card {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.018)),
+    var(--az-panel) !important;
+}
+
+.metric-card::before,
+.dashboard-card::before,
+.pc-card::before,
+.card::before,
+.panel::before {
+  background: linear-gradient(90deg, transparent, rgba(255,122,0,.34), transparent) !important;
 }
 
 .metric-green,
 .stat-card:nth-child(2) {
-  border-bottom-color: var(--az-green) !important;
+  border-bottom-color: var(--az-orange) !important;
 }
 
 .metric-orange,
 .stat-card:nth-child(3) {
-  border-bottom-color: var(--az-yellow) !important;
+  border-bottom-color: var(--az-orange) !important;
 }
 
 .metric-purple,
 .stat-card:nth-child(4) {
-  border-bottom-color: #5b7cfa !important;
+  border-bottom-color: var(--az-orange) !important;
 }
 
 .primary-btn,
 .reference-primary,
 .action-btn,
 button.primary-btn {
-  background: linear-gradient(135deg, var(--az-red), #a80f16) !important;
+  background: linear-gradient(135deg, var(--az-orange), var(--az-orange-2)) !important;
   border: 1px solid rgba(255,255,255,.14) !important;
   color: #fff !important;
-  box-shadow: 0 12px 24px rgba(215,25,32,.22) !important;
+  box-shadow: 0 12px 24px rgba(255,122,0,.22) !important;
 }
 
 .secondary-btn,
 .reference-outline,
 button.secondary-btn {
   background: rgba(255,255,255,.045) !important;
-  border: 1px solid rgba(246,178,33,.28) !important;
-  color: #f5d48b !important;
+  border: 1px solid rgba(255,122,0,.28) !important;
+  color: #ffc27a !important;
 }
 
 .delete-btn,
 .danger,
 .secondary-btn.danger {
-  border-color: rgba(215,25,32,.48) !important;
-  color: #ffb5b9 !important;
+  border-color: rgba(239,68,68,.42) !important;
+  color: #ffb4b4 !important;
+}
+
+a,
+.meta-value a,
+.section-subtitle a {
+  color: #ffb45f !important;
+}
+
+.toner-fill,
+.progress-fill,
+.bar-fill,
+.level-fill {
+  background: linear-gradient(90deg, var(--az-orange), #ffb45f) !important;
 }
 
 input,
@@ -212,8 +243,8 @@ textarea,
 input:focus,
 select:focus,
 textarea:focus {
-  outline: 2px solid rgba(246,178,33,.28) !important;
-  border-color: rgba(246,178,33,.52) !important;
+  outline: 2px solid rgba(255,122,0,.25) !important;
+  border-color: rgba(255,122,0,.50) !important;
 }
 
 .badge.ok,
@@ -226,14 +257,14 @@ textarea:focus {
 .badge.pendente,
 .badge.aviso,
 .status-pill {
-  background: rgba(246,178,33,.16) !important;
-  color: #facc15 !important;
+  background: rgba(255,122,0,.16) !important;
+  color: #ffc27a !important;
 }
 
 .badge.reparacao,
 .badge.ocupado,
 .badge.critico {
-  background: rgba(215,25,32,.16) !important;
+  background: rgba(239,68,68,.16) !important;
   color: #ffb4b8 !important;
 }
 
@@ -252,7 +283,7 @@ table {
 
 th {
   background: rgba(255,255,255,.045) !important;
-  color: #f5d48b !important;
+  color: #ffc27a !important;
 }
 
 td {
@@ -280,7 +311,7 @@ body.device-tablet .content-area {
 
 body.device-phone .sidebar {
   width: 92px !important;
-  background: linear-gradient(180deg, #08111f, #050a12) !important;
+  background: linear-gradient(180deg, #141519, #0b0c0f) !important;
 }
 
 body.device-phone .brand::after,
