@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.9.0";
+const APP_VERSION = "1.9.1";
 
 
 
@@ -2539,12 +2539,17 @@ function initDeviceViewportMode() {
   const apply = () => {
     const width = window.innerWidth || document.documentElement.clientWidth || 0;
     const height = window.innerHeight || document.documentElement.clientHeight || 0;
+    const ua = navigator.userAgent || "";
+    const isAndroid = /Android/.test(ua);
+    const isIos = /iPad|iPhone|iPod/.test(ua);
+    const isLikelyTablet = (isAndroid || /iPad/.test(ua)) && Math.min(width, height) >= 700 && Math.max(width, height) <= 1500;
     document.documentElement.style.setProperty("--app-vh", `${height * 0.01}px`);
     document.body.classList.toggle("device-phone", width <= 760);
-    document.body.classList.toggle("device-tablet", width > 760 && width <= 1180);
-    document.body.classList.toggle("device-desktop", width > 1180);
-    document.body.classList.toggle("is-ios", /iPad|iPhone|iPod/.test(navigator.userAgent || ""));
-    document.body.classList.toggle("is-android", /Android/.test(navigator.userAgent || ""));
+    document.body.classList.toggle("device-tablet", width > 760 && (width <= 1400 || isLikelyTablet));
+    document.body.classList.toggle("device-desktop", width > 1400 && !isLikelyTablet);
+    document.body.classList.toggle("tablet-portrait", width > 760 && width < 980 && height >= width);
+    document.body.classList.toggle("is-ios", isIos);
+    document.body.classList.toggle("is-android", isAndroid);
   };
   apply();
   window.addEventListener("resize", apply, { passive: true });
