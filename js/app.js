@@ -2484,7 +2484,7 @@ function setHealthStatus(id, label, state = "ok") {
 async function verificarSistemasApp() {
   if (!document.getElementById("systemHealthGrid")) return;
   setHealthStatus("healthNetwork", navigator.onLine ? "Online" : "Offline", navigator.onLine ? "ok" : "bad");
-  setHealthStatus("healthDevice", document.body.classList.contains("device-phone") ? "iPhone/Telemóvel" : (document.body.classList.contains("device-tablet") ? "Tablet" : "PC"), "ok");
+  setHealthStatus("healthDevice", window.appBragaDeviceType || (document.body.classList.contains("device-phone") ? "Telemóvel" : (document.body.classList.contains("device-tablet") ? "Tablet" : "PC")), "ok");
   setHealthStatus("healthPin", appSecurityState.biometricEnabled ? "Biometria ativa" : (appSecurityState.pinHash ? "PIN ativo" : "Desligado"), hasSecurityEnabledApp() ? "ok" : "warn");
   setHealthStatus("healthFirebase", window.firebase ? "Carregado" : "Indisponível", window.firebase ? "ok" : "bad");
   setHealthStatus("healthAuth", window.firebase?.auth ? "Carregado" : "Indisponível", window.firebase?.auth ? "ok" : "warn");
@@ -2538,17 +2538,60 @@ function initDeviceViewportMode() {
     const width = window.innerWidth || document.documentElement.clientWidth || 0;
     const height = window.innerHeight || document.documentElement.clientHeight || 0;
     const ua = navigator.userAgent || "";
-    const isAndroid = /Android/.test(ua);
-    const isIos = /iPad|iPhone|iPod/.test(ua);
-    const isLikelyTablet = (isAndroid || /iPad/.test(ua)) && Math.min(width, height) >= 700 && Math.max(width, height) <= 1500;
+
+    const isAndroid = /Android/i.test(ua);
+    const isIosPhone = /iPhone|iPod/i.test(ua);
+    const isIpad = /iPad/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    const hasTouch = ("ontouchstart" in window) || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+
+    const minSide = Math.min(width, height);
+    const maxSide = Math.max(width, height);
+
+    /*
+      Android tablets em Chrome/Samsung/desktop mode podem ter largura > 1400px.
+      Antes a APP marcava isso como PC.
+      Agora:
+      - Android + touch + ecrã grande = tablet
+      - iPad = tablet
+      - telemóveis continuam phone
+      - só é PC quando NÃO é Android/iPad touch tablet
+    */
+    const isPhone =
+      isIosPhone ||
+      (isAndroid && minSide < 700) ||
+      width <= 760;
+
+    const isAndroidTablet =
+      isAndroid && hasTouch && minSide >= 700;
+
+    const isTablet =
+      isIpad ||
+      isAndroidTablet ||
+      (!isPhone && hasTouch && minSide >= 700 && maxSide <= 1800) ||
+      (width > 760 && width <= 1400);
+
+    const isDesktop =
+      !isPhone && !isTablet;
+
     document.documentElement.style.setProperty("--app-vh", `${height * 0.01}px`);
-    document.body.classList.toggle("device-phone", width <= 760);
-    document.body.classList.toggle("device-tablet", width > 760 && (width <= 1400 || isLikelyTablet));
-    document.body.classList.toggle("device-desktop", width > 1400 && !isLikelyTablet);
-    document.body.classList.toggle("tablet-portrait", width > 760 && width < 980 && height >= width);
-    document.body.classList.toggle("is-ios", isIos);
+
+    document.body.classList.toggle("device-phone", isPhone);
+    document.body.classList.toggle("device-tablet", isTablet);
+    document.body.classList.toggle("device-desktop", isDesktop);
+
+    document.body.classList.toggle("tablet-portrait", isTablet && height >= width);
+    document.body.classList.toggle("tablet-landscape", isTablet && width > height);
+
+    document.body.classList.toggle("is-ios", isIosPhone || isIpad);
     document.body.classList.toggle("is-android", isAndroid);
+    document.body.classList.toggle("is-android-tablet", isAndroidTablet);
+    document.body.classList.toggle("is-ipad", isIpad);
+
+    window.appBragaDeviceType = isPhone
+      ? (isAndroid ? "Android Telemóvel" : "iPhone/Telemóvel")
+      : (isAndroidTablet ? "Tablet Android" : (isIpad ? "iPad" : (isTablet ? "Tablet" : "PC")));
   };
+
   apply();
   window.addEventListener("resize", apply, { passive: true });
   window.addEventListener("orientationchange", () => setTimeout(apply, 250), { passive: true });
