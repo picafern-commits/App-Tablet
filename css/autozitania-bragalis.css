@@ -1450,6 +1450,108 @@ textarea:focus {
   font-size: 16px !important;
 }
 
+/* Config page organization */
+.config-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.config-section {
+  display: grid;
+  gap: 18px;
+}
+
+.config-section-appearance,
+.config-section-security {
+  min-height: 100%;
+}
+
+.system-health-panel,
+.config-section-backups {
+  grid-column: 1 / -1;
+}
+
+.config-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.config-form-grid label,
+.config-field-inline {
+  min-height: 84px;
+  padding: 14px;
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .035);
+}
+
+.config-form-grid label span,
+.config-field-inline span {
+  color: var(--app-muted);
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.config-field-inline {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+}
+
+.config-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.config-actions-row > * {
+  flex: 1 1 180px;
+}
+
+.config-backup-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.config-backup-card {
+  display: grid;
+  gap: 16px;
+  align-content: space-between;
+  padding: 18px;
+  border: 1px solid var(--app-border);
+  border-bottom: 3px solid var(--app-accent);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .04);
+}
+
+.config-backup-card h4 {
+  margin: 0 0 6px;
+  color: #fff;
+}
+
+.config-backup-card p {
+  margin: 0;
+  color: var(--app-muted);
+  line-height: 1.4;
+}
+
+body.device-tablet .config-layout {
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 980px) {
+  .config-layout,
+  .config-form-grid,
+  .config-backup-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .app-lock-overlay {
   position: fixed;
   inset: 0;

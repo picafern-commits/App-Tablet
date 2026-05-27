@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.8.9";
+const APP_VERSION = "1.9.0";
 
 
 
