@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.7.7";
+const APP_VERSION = "1.7.8";
 
 
 
@@ -1919,8 +1919,18 @@ function aplicarCorApp(value = "#ff7a00") {
   const light = ajustarCorAppBraga(color, 34);
   const rgb = hexToRgbAppBraga(color);
   const soft = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, .16)`;
+  const softer = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, .08)`;
+  const glow = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, .28)`;
   const line = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, .22)`;
   const vars = {
+    "--app-accent": color,
+    "--app-accent-hover": hover,
+    "--app-accent-light": light,
+    "--app-accent-rgb": `${rgb.r} ${rgb.g} ${rgb.b}`,
+    "--app-accent-soft": soft,
+    "--app-accent-softer": softer,
+    "--app-accent-line": line,
+    "--app-accent-glow": glow,
     "--az-orange": color,
     "--az-orange-2": hover,
     "--az-orange-soft": soft,
