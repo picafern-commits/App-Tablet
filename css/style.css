@@ -4841,3 +4841,67 @@ button[type="submit"] {
   background-color: var(--app-accent-soft, rgba(37,99,235,.14)) !important;
 }
 /* ===== FIM FIX DEFINITIVO ===== */
+
+
+/* ===== BUTTON TEXT COLOR CONFIG ===== */
+:root {
+  --app-button-text: #ffffff;
+  --app-button-icon: #ffffff;
+}
+
+:root[data-button-text-mode="dark"] {
+  --app-button-text: #111827;
+  --app-button-icon: #111827;
+}
+
+:root[data-button-text-mode="light"] {
+  --app-button-text: #ffffff;
+  --app-button-icon: #ffffff;
+}
+
+button,
+.btn,
+.primary-btn,
+.add-btn,
+.save-btn,
+.btn-primary,
+.enterprise-btn.primary,
+button.primary,
+button[type="submit"],
+.sidebar .active,
+.sidebar .selected,
+.sidebar a.active,
+.menu-item.active,
+.nav-link.active {
+  color: var(--app-button-text, #ffffff) !important;
+}
+
+button *,
+.btn *,
+.primary-btn *,
+.add-btn *,
+.save-btn *,
+.btn-primary *,
+.enterprise-btn.primary *,
+button.primary *,
+button[type="submit"] *,
+.sidebar .active *,
+.sidebar .selected *,
+.sidebar a.active *,
+.menu-item.active *,
+.nav-link.active * {
+  color: var(--app-button-icon, var(--app-button-text, #ffffff)) !important;
+}
+
+:root[data-button-text-mode="dark"] button,
+:root[data-button-text-mode="dark"] .btn,
+:root[data-button-text-mode="dark"] .primary-btn,
+:root[data-button-text-mode="dark"] .add-btn,
+:root[data-button-text-mode="dark"] .save-btn,
+:root[data-button-text-mode="dark"] .btn-primary,
+:root[data-button-text-mode="dark"] .enterprise-btn.primary,
+:root[data-button-text-mode="dark"] button.primary,
+:root[data-button-text-mode="dark"] button[type="submit"] {
+  text-shadow: none !important;
+}
+/* ===== END BUTTON TEXT COLOR CONFIG ===== */

@@ -7091,3 +7091,65 @@ window.renderPistolas = function(lista) {
     `;
   }).join("") : `<div class="reference-empty">Sem pistolas registadas.</div>`;
 };
+
+
+/* ===== BUTTON TEXT CONTRAST SETTINGS ===== */
+function getButtonTextMode() {
+  return localStorage.getItem("appButtonTextMode") || "auto";
+}
+
+function guardarModoTextoBotoes(mode) {
+  const allowed = ["auto", "dark", "light"];
+  const finalMode = allowed.includes(mode) ? mode : "auto";
+  localStorage.setItem("appButtonTextMode", finalMode);
+  aplicarModoTextoBotoes();
+}
+
+function aplicarModoTextoBotoes() {
+  const mode = getButtonTextMode();
+  const root = document.documentElement;
+
+  root.setAttribute("data-button-text-mode", mode);
+
+  if (mode === "dark") {
+    root.style.setProperty("--app-button-text", "#111827");
+    root.style.setProperty("--app-button-icon", "#111827");
+  } else if (mode === "light") {
+    root.style.setProperty("--app-button-text", "#ffffff");
+    root.style.setProperty("--app-button-icon", "#ffffff");
+  } else {
+    const accent = getComputedStyle(root).getPropertyValue("--app-accent").trim() || "#2563eb";
+    const clean = accent.replace("#", "");
+    let r = 37, g = 99, b = 235;
+
+    if (/^[0-9a-fA-F]{6}$/.test(clean)) {
+      r = parseInt(clean.slice(0, 2), 16);
+      g = parseInt(clean.slice(2, 4), 16);
+      b = parseInt(clean.slice(4, 6), 16);
+    }
+
+    const brightness = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    const text = brightness > 170 ? "#111827" : "#ffffff";
+
+    root.style.setProperty("--app-button-text", text);
+    root.style.setProperty("--app-button-icon", text);
+  }
+
+  const select = document.getElementById("appButtonTextMode");
+  if (select) select.value = mode;
+}
+
+document.addEventListener("DOMContentLoaded", aplicarModoTextoBotoes);
+setTimeout(() => { if (typeof aplicarModoTextoBotoes === "function") aplicarModoTextoBotoes(); }, 300);
+/* ===== END BUTTON TEXT CONTRAST SETTINGS ===== */
+
+
+/* ===== BUTTON TEXT AFTER COLOR CHANGE PATCH ===== */
+document.addEventListener("change", function(e) {
+  if (e.target && e.target.id === "appAccentColor") {
+    setTimeout(() => {
+      if (typeof aplicarModoTextoBotoes === "function") aplicarModoTextoBotoes();
+    }, 100);
+  }
+});
+/* ===== END BUTTON TEXT AFTER COLOR CHANGE PATCH ===== */

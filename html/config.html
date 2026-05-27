@@ -188,6 +188,21 @@
   </div>
 </div>
 
+
+<div class="config-card enterprise-config-card">
+  <h3>Texto dos Botões</h3>
+  <p>Usa isto quando escolheres uma cor muito clara, como branco, para o texto dos botões ficar legível.</p>
+
+  <div class="config-color-field">
+    <span>Cor do texto dos botões</span>
+    <select id="appButtonTextMode" class="enterprise-input" onchange="guardarModoTextoBotoes(this.value)">
+      <option value="auto">Automático</option>
+      <option value="dark">Texto escuro</option>
+      <option value="light">Texto claro</option>
+    </select>
+  </div>
+</div>
+
 </main>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
