@@ -4672,3 +4672,18 @@ body.device-phone .modal-card {
   overflow: auto !important;
   border-radius: 18px 18px 0 0 !important;
 }
+
+
+/* ===== ANDROID TABLET DETECTION FIX ===== */
+body.is-android-tablet.device-tablet .main,
+body.is-android-tablet.device-tablet main,
+body.is-android-tablet.device-tablet .main-content,
+body.is-android-tablet.device-tablet .page-content,
+body.is-android-tablet.device-tablet .dashboard-container {
+  /* Mantém layout tablet mesmo quando o Chrome reporta largura grande */
+}
+
+body.is-android-tablet .health-card strong#healthDevice {
+  color: #86efac !important;
+}
+/* ===== END ANDROID TABLET DETECTION FIX ===== */
