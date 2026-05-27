@@ -1913,9 +1913,18 @@ function aplicarResolucaoApp(mode = "comfortable") {
   if (select) select.value = value;
 }
 
+const APP_DEFAULT_ACCENT = "#ef4444";
+const appSecurityState = {
+  pinHash: "",
+  lockTimeoutMinutes: 0,
+  unlocked: false,
+  timer: null,
+  overlay: null
+};
+
 function normalizarCorApp(value) {
   const color = String(value || "").trim();
-  return /^#[0-9a-fA-F]{6}$/.test(color) ? color.toLowerCase() : "#2563eb";
+  return /^#[0-9a-fA-F]{6}$/.test(color) ? color.toLowerCase() : APP_DEFAULT_ACCENT;
 }
 
 function hexToRgbAppBraga(hex) {
@@ -1943,7 +1952,7 @@ function cacheCorApp(value) {
   document.cookie = `appAccentColor=${encodeURIComponent(color)}; Max-Age=31536000; Path=/; SameSite=Lax`;
 }
 
-function aplicarCorApp(value = "#2563eb") {
+function aplicarCorApp(value = APP_DEFAULT_ACCENT) {
   const color = normalizarCorApp(value);
   const hover = ajustarCorAppBraga(color, -28);
   const light = ajustarCorAppBraga(color, 34);
@@ -1985,14 +1994,15 @@ function aplicarCorApp(value = "#2563eb") {
 
 function initResolucaoApp() {
   aplicarResolucaoApp("comfortable");
-  aplicarCorApp(getCachedCorApp() || "var(--app-accent, #2563eb)");
+  aplicarCorApp(getCachedCorApp() || APP_DEFAULT_ACCENT);
   if (!window.db || !window.db.collection) return;
   window.db.collection("config").doc("layout").onSnapshot((doc) => {
     const data = doc.exists ? doc.data() : {};
     aplicarResolucaoApp(data.resolution || "comfortable");
-    const accentColor = data.accentColor || getCachedCorApp() || "var(--app-accent, #2563eb)";
+    const accentColor = data.accentColor || getCachedCorApp() || APP_DEFAULT_ACCENT;
     aplicarCorApp(accentColor);
     cacheCorApp(accentColor);
+    aplicarSegurancaApp(data.pinHash || "", data.lockTimeoutMinutes || 0);
   }, (error) => console.error("Erro ao carregar resolução:", error));
 }
 
@@ -2027,6 +2037,174 @@ async function guardarCorApp(value) {
     mostrarMensagem("Erro ao guardar cor da APP.", "erro");
   }
 }
+
+async function hashAppPin(pin) {
+  const text = String(pin || "");
+  if (!text) return "";
+  if (window.crypto?.subtle) {
+    const bytes = new TextEncoder().encode(text);
+    const hash = await window.crypto.subtle.digest("SHA-256", bytes);
+    return Array.from(new Uint8Array(hash)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+  }
+  let hash = 0;
+  for (let i = 0; i < text.length; i += 1) hash = ((hash << 5) - hash) + text.charCodeAt(i);
+  return `fallback-${Math.abs(hash)}`;
+}
+
+function setLockTimeoutInput(value) {
+  const select = document.getElementById("appLockTimeout");
+  if (select) select.value = String(Math.max(0, Number(value) || 0));
+}
+
+function criarAppLockOverlay() {
+  let overlay = document.getElementById("appLockOverlay");
+  if (overlay) return overlay;
+  overlay = document.createElement("div");
+  overlay.id = "appLockOverlay";
+  overlay.className = "app-lock-overlay";
+  overlay.innerHTML = `
+    <div class="app-lock-card">
+      <div class="brand-badge">BR</div>
+      <h2>APP bloqueada</h2>
+      <p>Introduz o PIN para continuar.</p>
+      <input id="appPinUnlock" type="password" inputmode="numeric" maxlength="12" placeholder="PIN">
+      <button class="primary-btn" type="button" onclick="desbloquearAppComPin()">Desbloquear</button>
+      <small id="appPinError"></small>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") desbloquearAppComPin();
+  });
+  return overlay;
+}
+
+function mostrarBloqueioApp() {
+  if (!appSecurityState.pinHash) return;
+  const overlay = criarAppLockOverlay();
+  appSecurityState.overlay = overlay;
+  appSecurityState.unlocked = false;
+  overlay.classList.add("show");
+  setTimeout(() => document.getElementById("appPinUnlock")?.focus(), 80);
+}
+
+function esconderBloqueioApp() {
+  appSecurityState.overlay?.classList.remove("show");
+  appSecurityState.unlocked = true;
+  reiniciarTemporizadorBloqueioApp();
+}
+
+function reiniciarTemporizadorBloqueioApp() {
+  if (appSecurityState.timer) clearTimeout(appSecurityState.timer);
+  appSecurityState.timer = null;
+  if (!appSecurityState.pinHash || !appSecurityState.unlocked || !appSecurityState.lockTimeoutMinutes) return;
+  appSecurityState.timer = setTimeout(() => mostrarBloqueioApp(), appSecurityState.lockTimeoutMinutes * 60000);
+}
+
+function aplicarSegurancaApp(pinHash, lockTimeoutMinutes) {
+  const previousHash = appSecurityState.pinHash;
+  appSecurityState.pinHash = String(pinHash || "");
+  appSecurityState.lockTimeoutMinutes = Math.max(0, Number(lockTimeoutMinutes) || 0);
+  setLockTimeoutInput(appSecurityState.lockTimeoutMinutes);
+  if (!appSecurityState.pinHash) {
+    appSecurityState.unlocked = true;
+    esconderBloqueioApp();
+    return;
+  }
+  if (previousHash !== appSecurityState.pinHash) appSecurityState.unlocked = false;
+  if (!appSecurityState.unlocked) mostrarBloqueioApp();
+  reiniciarTemporizadorBloqueioApp();
+}
+
+function initAppSecurityActivity() {
+  if (window.__appSecurityActivityBound) return;
+  window.__appSecurityActivityBound = true;
+  ["click", "keydown", "touchstart", "mousemove", "scroll"].forEach((eventName) => {
+    document.addEventListener(eventName, () => {
+      if (!appSecurityState.overlay?.classList.contains("show")) reiniciarTemporizadorBloqueioApp();
+    }, { passive: true });
+  });
+}
+
+async function desbloquearAppComPin() {
+  const input = document.getElementById("appPinUnlock");
+  const error = document.getElementById("appPinError");
+  const pin = input?.value || "";
+  if (!pin) {
+    if (error) error.textContent = "Escreve o PIN.";
+    return;
+  }
+  const hash = await hashAppPin(pin);
+  if (hash !== appSecurityState.pinHash) {
+    if (error) error.textContent = "PIN incorreto.";
+    if (input) input.value = "";
+    return;
+  }
+  if (error) error.textContent = "";
+  if (input) input.value = "";
+  esconderBloqueioApp();
+}
+
+async function guardarPinApp() {
+  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponível.", "erro");
+  const input = document.getElementById("appPinCode");
+  const pin = input?.value.trim() || "";
+  if (!pin) return mostrarMensagem("Escreve um PIN novo antes de guardar.", "erro");
+  const pinHash = await hashAppPin(pin);
+  const lockTimeoutMinutes = Math.max(0, Number(document.getElementById("appLockTimeout")?.value || appSecurityState.lockTimeoutMinutes) || 0);
+  try {
+    await window.db.collection("config").doc("layout").set({
+      pinHash,
+      lockTimeoutMinutes,
+      updatedAt: Date.now()
+    }, { merge: true });
+    if (input) input.value = "";
+    mostrarMensagem("PIN da APP atualizado.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar PIN.", "erro");
+  }
+}
+
+async function guardarTempoBloqueioApp(value) {
+  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponível.", "erro");
+  const lockTimeoutMinutes = Math.max(0, Number(value) || 0);
+  try {
+    await window.db.collection("config").doc("layout").set({
+      lockTimeoutMinutes,
+      updatedAt: Date.now()
+    }, { merge: true });
+    aplicarSegurancaApp(appSecurityState.pinHash, lockTimeoutMinutes);
+    mostrarMensagem("Tempo de bloqueio atualizado.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar tempo de bloqueio.", "erro");
+  }
+}
+
+async function removerPinApp() {
+  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponível.", "erro");
+  if (!window.confirm("Remover o PIN de bloqueio da APP?")) return;
+  try {
+    await window.db.collection("config").doc("layout").set({
+      pinHash: "",
+      lockTimeoutMinutes: 0,
+      updatedAt: Date.now()
+    }, { merge: true });
+    aplicarSegurancaApp("", 0);
+    mostrarMensagem("PIN removido.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao remover PIN.", "erro");
+  }
+}
+
+function bloquearAppAgora() {
+  if (!appSecurityState.pinHash) return mostrarMensagem("Define um PIN primeiro.", "erro");
+  mostrarBloqueioApp();
+}
+
+document.addEventListener("DOMContentLoaded", initAppSecurityActivity);
 
 function initFullScreenScroll() {
   if (window.__appBragaFullScrollBound) return;
@@ -2078,6 +2256,7 @@ let radioEditId = null;
 let unsubscribeRadios = null;
 let radioUsersData = [];
 let radioWeeklyRecords = [];
+let radioWeeklyEditId = null;
 let unsubscribeRadioUsers = null;
 let unsubscribeRadioWeekly = null;
 let informacoesData = [];
@@ -2210,7 +2389,11 @@ function renderRadios() {
           <span>${safeRefHtml(record.label || "Semana sem intervalo")}</span>
           <small>${usedCount}/${assignments.length} rádios com user associado</small>
         </div>
-        <button class="secondary-btn reference-outline" type="button" onclick="abrirRelatorioRadios('${safeRefHtml(record.id)}')">Ver mais</button>
+        <div class="weekly-record-actions">
+          <button class="secondary-btn reference-outline" type="button" onclick="abrirRelatorioRadios('${safeRefHtml(record.id)}')">Ver mais</button>
+          <button class="secondary-btn" type="button" onclick="abrirEditarRegistoSemanalRadios('${safeRefHtml(record.id)}')">Editar</button>
+          <button class="secondary-btn danger" type="button" onclick="apagarRegistoSemanalRadios('${safeRefHtml(record.id)}')">Apagar</button>
+        </div>
       </div>
     `;
     }).join("") : `<div class="reference-empty">Ainda não existem registos semanais.</div>`;
@@ -2372,6 +2555,14 @@ function setRadioWeeklyDateDefault() {
   input.valueAsDate = new Date();
 }
 
+function setRadioWeeklyDateFromTimestamp(timestamp) {
+  const input = document.getElementById("radioWeeklyDate");
+  if (!input || !timestamp) return;
+  const date = new Date(Number(timestamp));
+  if (Number.isNaN(date.getTime())) return;
+  input.value = date.toISOString().slice(0, 10);
+}
+
 function getRadioWeeklySelectedInfo() {
   const input = document.getElementById("radioWeeklyDate");
   const date = input?.value ? new Date(`${input.value}T12:00:00`) : new Date();
@@ -2382,10 +2573,11 @@ function renderRadioWeeklyForm() {
   const rows = document.getElementById("radioWeeklyRows");
   if (!rows) return;
   const label = document.getElementById("radioWeeklyRecordLabel");
-  const weekInfo = getRadioWeeklySelectedInfo();
-  const record = getRadioWeeklyRecord(weekInfo.key);
+  const editRecord = radioWeeklyEditId ? radioWeeklyRecords.find(item => item.id === radioWeeklyEditId || item.recordId === radioWeeklyEditId) : null;
+  const weekInfo = editRecord ? getRadioWeekInfo(new Date(Number(editRecord.startAt || Date.now()))) : getRadioWeeklySelectedInfo();
+  const record = editRecord || getRadioWeeklyRecord(weekInfo.key);
   const saved = Array.isArray(record?.assignments) ? record.assignments : [];
-  if (label) label.textContent = weekInfo.label;
+  if (label) label.textContent = editRecord ? `${getRadioWeeklyRecordId(editRecord)} · ${weekInfo.label}` : weekInfo.label;
 
   const users = (radioUsersData.length ? radioUsersData : window.usersData || [])
     .slice()
@@ -2414,13 +2606,31 @@ function renderRadioWeeklyForm() {
 }
 
 function abrirRegistoSemanalRadios() {
+  radioWeeklyEditId = null;
+  const title = document.getElementById("radioWeeklyModalTitle");
+  if (title) title.textContent = "Novo registo semanal";
+  const input = document.getElementById("radioWeeklyDate");
+  if (input) input.valueAsDate = new Date();
   setRadioWeeklyDateDefault();
   renderRadioWeeklyForm();
   const modal = document.getElementById("radioWeeklyRecordModal");
   if (modal) modal.style.display = "flex";
 }
 
+function abrirEditarRegistoSemanalRadios(recordId) {
+  const record = radioWeeklyRecords.find(item => item.id === recordId || item.recordId === recordId);
+  if (!record) return mostrarMensagem("Registo semanal não encontrado.", "erro");
+  radioWeeklyEditId = record.id;
+  const title = document.getElementById("radioWeeklyModalTitle");
+  if (title) title.textContent = `Editar ${getRadioWeeklyRecordId(record)}`;
+  setRadioWeeklyDateFromTimestamp(record.startAt);
+  renderRadioWeeklyForm();
+  const modal = document.getElementById("radioWeeklyRecordModal");
+  if (modal) modal.style.display = "flex";
+}
+
 function fecharRegistoSemanalRadios() {
+  radioWeeklyEditId = null;
   const modal = document.getElementById("radioWeeklyRecordModal");
   if (modal) modal.style.display = "none";
 }
@@ -2444,9 +2654,12 @@ async function guardarRegistoSemanalRadios() {
   });
 
   try {
-    const docRef = window.db.collection("radioWeeklyRecords").doc();
-    const recordId = `REG-${weekInfo.key}-${docRef.id.slice(-5).toUpperCase()}`;
-    await docRef.set({
+    const docRef = radioWeeklyEditId
+      ? window.db.collection("radioWeeklyRecords").doc(radioWeeklyEditId)
+      : window.db.collection("radioWeeklyRecords").doc();
+    const existing = radioWeeklyEditId ? radioWeeklyRecords.find(item => item.id === radioWeeklyEditId) : null;
+    const recordId = existing?.recordId || `REG-${weekInfo.key}-${docRef.id.slice(-5).toUpperCase()}`;
+    const payload = {
       recordId,
       weekKey: weekInfo.key,
       week: weekInfo.week,
@@ -2455,15 +2668,33 @@ async function guardarRegistoSemanalRadios() {
       startAt: weekInfo.start.getTime(),
       endAt: weekInfo.end.getTime(),
       assignments,
-      createdAt: Date.now(),
-      createdLabel: nowPt(),
       updatedAt: Date.now()
-    });
-    mostrarMensagem("Registo semanal guardado.");
+    };
+    if (!existing) {
+      payload.createdAt = Date.now();
+      payload.createdLabel = nowPt();
+    }
+    await docRef.set(payload, { merge: true });
+    mostrarMensagem(existing ? "Registo semanal atualizado." : "Registo semanal guardado.");
     fecharRegistoSemanalRadios();
   } catch (error) {
     console.error(error);
     mostrarMensagem("Erro ao guardar registo semanal.", "erro");
+  }
+}
+
+async function apagarRegistoSemanalRadios(recordId) {
+  if (!window.db) return mostrarMensagem("Firebase indisponível.", "erro");
+  const record = radioWeeklyRecords.find(item => item.id === recordId || item.recordId === recordId);
+  if (!record) return mostrarMensagem("Registo semanal não encontrado.", "erro");
+  if (!window.confirm(`Apagar ${getRadioWeeklyRecordId(record)}?`)) return;
+  try {
+    await window.db.collection("radioWeeklyRecords").doc(record.id).delete();
+    mostrarMensagem("Registo semanal apagado.");
+    renderRadios();
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao apagar registo semanal.", "erro");
   }
 }
 
@@ -2642,11 +2873,18 @@ window.filtrarRadios = filtrarRadios;
 window.abrirRelatorioRadios = abrirRelatorioRadios;
 window.fecharRelatorioRadios = fecharRelatorioRadios;
 window.abrirRegistoSemanalRadios = abrirRegistoSemanalRadios;
+window.abrirEditarRegistoSemanalRadios = abrirEditarRegistoSemanalRadios;
 window.fecharRegistoSemanalRadios = fecharRegistoSemanalRadios;
 window.renderRadioWeeklyForm = renderRadioWeeklyForm;
 window.guardarRegistoSemanalRadios = guardarRegistoSemanalRadios;
+window.apagarRegistoSemanalRadios = apagarRegistoSemanalRadios;
 window.guardarResolucaoApp = guardarResolucaoApp;
 window.guardarCorApp = guardarCorApp;
+window.guardarPinApp = guardarPinApp;
+window.guardarTempoBloqueioApp = guardarTempoBloqueioApp;
+window.removerPinApp = removerPinApp;
+window.bloquearAppAgora = bloquearAppAgora;
+window.desbloquearAppComPin = desbloquearAppComPin;
 window.adicionarInformacao = adicionarInformacao;
 window.selecionarInformacao = selecionarInformacao;
 window.verInformacao = verInformacao;
@@ -7156,7 +7394,7 @@ function aplicarModoTextoBotoes() {
     root.style.setProperty("--app-button-text", "#ffffff");
     root.style.setProperty("--app-button-icon", "#ffffff");
   } else {
-    const accent = getComputedStyle(root).getPropertyValue("--app-accent").trim() || "#2563eb";
+    const accent = getComputedStyle(root).getPropertyValue("--app-accent").trim() || APP_DEFAULT_ACCENT;
     const clean = accent.replace("#", "");
     let r = 37, g = 99, b = 235;
 

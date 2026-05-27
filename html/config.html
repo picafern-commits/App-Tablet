@@ -124,16 +124,37 @@
     <label class="config-color-field">
       <span>Cor principal da APP</span>
       <div class="color-config-row">
-        <input id="appAccentColor" type="color" value="#2563eb" onchange="guardarCorApp(this.value)">
+        <input id="appAccentColor" type="color" value="#ef4444" onchange="guardarCorApp(this.value)">
         <div class="color-swatches" aria-label="Cores rápidas">
-          <button type="button" style="--swatch:var(--app-accent, #2563eb)" onclick="guardarCorApp('var(--app-accent, #2563eb)')" title="Laranja"></button>
+          <button type="button" style="--swatch:#ef4444" onclick="guardarCorApp('#ef4444')" title="Vermelho"></button>
+          <button type="button" style="--swatch:#f97316" onclick="guardarCorApp('#f97316')" title="Laranja"></button>
           <button type="button" style="--swatch:#eab308" onclick="guardarCorApp('#eab308')" title="Dourado"></button>
           <button type="button" style="--swatch:#22c55e" onclick="guardarCorApp('#22c55e')" title="Verde"></button>
-          <button type="button" style="--swatch:#ef4444" onclick="guardarCorApp('#ef4444')" title="Vermelho"></button>
           <button type="button" style="--swatch:#a855f7" onclick="guardarCorApp('#a855f7')" title="Roxo"></button>
         </div>
       </div>
     </label>
+    <label class="config-pin-field">
+      <span>PIN da APP</span>
+      <input id="appPinCode" type="password" inputmode="numeric" maxlength="12" placeholder="Novo PIN">
+    </label>
+    <label class="config-timeout-field">
+      <span>Bloquear por inatividade</span>
+      <select id="appLockTimeout" onchange="guardarTempoBloqueioApp(this.value)">
+        <option value="0">Desligado</option>
+        <option value="1">1 minuto</option>
+        <option value="5">5 minutos</option>
+        <option value="10">10 minutos</option>
+        <option value="15">15 minutos</option>
+        <option value="30">30 minutos</option>
+        <option value="60">60 minutos</option>
+      </select>
+    </label>
+    <div class="config-security-actions">
+      <button class="primary-btn" type="button" onclick="guardarPinApp()">Guardar PIN</button>
+      <button class="secondary-btn" type="button" onclick="removerPinApp()">Remover PIN</button>
+      <button class="secondary-btn" type="button" onclick="bloquearAppAgora()">Bloquear agora</button>
+    </div>
   </div>
 
 
