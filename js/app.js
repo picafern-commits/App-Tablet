@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.7.3";
+const APP_VERSION = "1.7.4";
 
 
 
@@ -1905,12 +1905,64 @@ function aplicarResolucaoApp(mode = "comfortable") {
   if (select) select.value = value;
 }
 
+function normalizarCorApp(value) {
+  const color = String(value || "").trim();
+  return /^#[0-9a-fA-F]{6}$/.test(color) ? color.toLowerCase() : "#ff7a00";
+}
+
+function hexToRgbAppBraga(hex) {
+  const clean = normalizarCorApp(hex).slice(1);
+  return {
+    r: parseInt(clean.slice(0, 2), 16),
+    g: parseInt(clean.slice(2, 4), 16),
+    b: parseInt(clean.slice(4, 6), 16)
+  };
+}
+
+function ajustarCorAppBraga(hex, amount = -28) {
+  const rgb = hexToRgbAppBraga(hex);
+  const next = [rgb.r, rgb.g, rgb.b].map((value) => Math.max(0, Math.min(255, value + amount)));
+  return `#${next.map((value) => value.toString(16).padStart(2, "0")).join("")}`;
+}
+
+function aplicarCorApp(value = "#ff7a00") {
+  const color = normalizarCorApp(value);
+  const hover = ajustarCorAppBraga(color, -28);
+  const light = ajustarCorAppBraga(color, 34);
+  const rgb = hexToRgbAppBraga(color);
+  const soft = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, .16)`;
+  const line = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, .22)`;
+  const vars = {
+    "--az-orange": color,
+    "--az-orange-2": hover,
+    "--az-orange-soft": soft,
+    "--az-line": line,
+    "--primary": color,
+    "--primary-hover": hover,
+    "--sidebar-hover": color,
+    "--brinka-pink": color,
+    "--brinka-purple": hover,
+    "--brinka-orange": color,
+    "--brinka-orange2": light,
+    "--ent-blue": color,
+    "--ent-purple": hover,
+    "--ent-orange": color,
+    "--app-blue": color,
+    "--app-blue-soft": soft
+  };
+  Object.entries(vars).forEach(([key, val]) => document.documentElement.style.setProperty(key, val));
+  const picker = document.getElementById("appAccentColor");
+  if (picker) picker.value = color;
+}
+
 function initResolucaoApp() {
   aplicarResolucaoApp("comfortable");
+  aplicarCorApp("#ff7a00");
   if (!window.db || !window.db.collection) return;
   window.db.collection("config").doc("layout").onSnapshot((doc) => {
     const data = doc.exists ? doc.data() : {};
     aplicarResolucaoApp(data.resolution || "comfortable");
+    aplicarCorApp(data.accentColor || "#ff7a00");
   }, (error) => console.error("Erro ao carregar resolução:", error));
 }
 
@@ -1926,6 +1978,22 @@ async function guardarResolucaoApp(value) {
   } catch (error) {
     console.error(error);
     mostrarMensagem("Erro ao guardar resolução.", "erro");
+  }
+}
+
+async function guardarCorApp(value) {
+  const accentColor = normalizarCorApp(value);
+  aplicarCorApp(accentColor);
+  if (!window.db || !window.db.collection) return;
+  try {
+    await window.db.collection("config").doc("layout").set({
+      accentColor,
+      updatedAt: Date.now()
+    }, { merge: true });
+    mostrarMensagem("Cor da APP atualizada.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar cor da APP.", "erro");
   }
 }
 
@@ -2439,6 +2507,7 @@ window.fecharRegistoSemanalRadios = fecharRegistoSemanalRadios;
 window.renderRadioWeeklyForm = renderRadioWeeklyForm;
 window.guardarRegistoSemanalRadios = guardarRegistoSemanalRadios;
 window.guardarResolucaoApp = guardarResolucaoApp;
+window.guardarCorApp = guardarCorApp;
 window.adicionarInformacao = adicionarInformacao;
 window.selecionarInformacao = selecionarInformacao;
 window.verInformacaoSelecionada = verInformacaoSelecionada;

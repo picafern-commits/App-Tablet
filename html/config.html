@@ -80,6 +80,19 @@
         <option value="wide">Larga</option>
       </select>
     </label>
+    <label class="config-color-field">
+      <span>Cor principal da APP</span>
+      <div class="color-config-row">
+        <input id="appAccentColor" type="color" value="#ff7a00" onchange="guardarCorApp(this.value)">
+        <div class="color-swatches" aria-label="Cores rápidas">
+          <button type="button" style="--swatch:#ff7a00" onclick="guardarCorApp('#ff7a00')" title="Laranja"></button>
+          <button type="button" style="--swatch:#eab308" onclick="guardarCorApp('#eab308')" title="Dourado"></button>
+          <button type="button" style="--swatch:#22c55e" onclick="guardarCorApp('#22c55e')" title="Verde"></button>
+          <button type="button" style="--swatch:#ef4444" onclick="guardarCorApp('#ef4444')" title="Vermelho"></button>
+          <button type="button" style="--swatch:#a855f7" onclick="guardarCorApp('#a855f7')" title="Roxo"></button>
+        </div>
+      </div>
+    </label>
   </div>
 
 
