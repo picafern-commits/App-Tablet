@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.7.4";
+const APP_VERSION = "1.7.5";
 
 
 
@@ -518,8 +518,7 @@ function getCriticalityBucketsAppBraga() {
     }
 
     const minValue = Math.min(...allPercents);
-    if (minValue < 10) critical++;
-    else if (minValue <= 25) warning++;
+    if (isTonerEmpty(minValue)) critical++;
     else normal++;
   });
 
@@ -563,12 +562,12 @@ function renderDashboardResumoInteligente() {
       <div class="summary-card">
         <h4>Criticidade Real</h4>
         <div class="summary-value">${buckets.critical}</div>
-        <div class="meta-line">${critLabel} · toner abaixo de 10%</div>
+        <div class="meta-line">${critLabel} · toner a 0%</div>
       </div>
       <div class="summary-card">
         <h4>Atenção</h4>
         <div class="summary-value">${buckets.warning}</div>
-        <div class="meta-line">${warnLabel} · entre 10% e 25%</div>
+        <div class="meta-line">${warnLabel} · sem avisos intermédios de toner</div>
       </div>
       <div class="summary-card">
         <h4>Top Localizações</h4>
@@ -601,9 +600,9 @@ function renderDashboardCards(items) {
     const colors = Array.isArray(info?.colors) ? info.colors : [];
     const residue = info?.residue || null;
 
-    const criticalColors = colors.filter(c => typeof c.percent === "number" && c.percent <= 25);
+    const criticalColors = colors.filter(c => isTonerEmpty(c.percent));
     const monoPercent = typeof info?.percent === "number" ? info.percent : null;
-    const monoCritical = colors.length === 0 && monoPercent !== null && monoPercent <= 25;
+    const monoCritical = colors.length === 0 && isTonerEmpty(monoPercent);
 
     const isCritical = criticalColors.length > 0 || monoCritical;
     return { item, info, criticalColors, monoCritical, residue, isCritical };
@@ -622,7 +621,7 @@ function renderDashboardCards(items) {
   });
 
   if (!criticas.length) {
-    lista.innerHTML = `<div class="panel empty-state"><h3>Sem impressoras críticas</h3><p>As impressoras com toner a 25% ou menos vão aparecer aqui automaticamente.</p></div>`;
+    lista.innerHTML = `<div class="panel empty-state"><h3>Sem toners vazios</h3><p>Só aparecem aqui impressoras com toner a 0%.</p></div>`;
     return;
   }
 
@@ -1026,37 +1025,30 @@ function extrairPercentagemTonerDoHTML(html) {
 
 const tonerAlertState = {};
 const tonerInfoState = {};
+const TONER_EMPTY_THRESHOLD = 0;
+
+function isTonerEmpty(percentagem) {
+  return typeof percentagem === "number" && percentagem <= TONER_EMPTY_THRESHOLD;
+}
 
 function corBarraToner(percentagem, cor = "black") {
   if (percentagem === null || percentagem === undefined) return "#94a3b8";
-  if (cor === "cyan") return percentagem <= 20 ? "#0ea5e9" : percentagem <= 50 ? "#38bdf8" : "#06b6d4";
-  if (cor === "magenta") return percentagem <= 20 ? "#db2777" : percentagem <= 50 ? "#ec4899" : "#d946ef";
-  if (cor === "yellow") return percentagem <= 20 ? "#ca8a04" : percentagem <= 50 ? "#eab308" : "#facc15";
-  if (cor === "waste") return percentagem >= 80 ? "#dc2626" : percentagem >= 60 ? "#d97706" : "#16a34a";
-  return percentagem <= 20 ? "#dc2626" : percentagem <= 50 ? "#d97706" : "#16a34a";
+  if (cor === "waste") return percentagem >= 100 ? "#dc2626" : "#16a34a";
+  if (isTonerEmpty(percentagem)) return "#dc2626";
+  return "#16a34a";
 }
 
 function estadoBarraToner(percentagem, cor = "black") {
   if (percentagem === null || percentagem === undefined) return "Sem leitura";
-  if (cor === "waste") {
-    if (percentagem >= 80) return "Crítico";
-    if (percentagem >= 60) return "Médio";
-    return "Bom";
-  }
-  if (percentagem <= 20) return "Crítico";
-  if (percentagem <= 50) return "Médio";
+  if (cor === "waste") return percentagem >= 100 ? "Cheio" : "OK";
+  if (isTonerEmpty(percentagem)) return "Vazio";
   return "Bom";
 }
 
 function classeEstadoToner(percentagem, cor = "black") {
   if (percentagem === null || percentagem === undefined) return "is-muted";
-  if (cor === "waste") {
-    if (percentagem >= 80) return "is-critical";
-    if (percentagem >= 60) return "is-medium";
-    return "is-good";
-  }
-  if (percentagem <= 20) return "is-critical";
-  if (percentagem <= 50) return "is-medium";
+  if (cor === "waste") return percentagem >= 100 ? "is-critical" : "is-good";
+  if (isTonerEmpty(percentagem)) return "is-critical";
   return "is-good";
 }
 
@@ -1131,14 +1123,10 @@ function maybeNotifyCriticalSupply(ip, info) {
   const issues = [];
 
   (info.colors || []).forEach((item) => {
-    if (typeof item.percent === "number" && item.percent <= 20) {
+    if (isTonerEmpty(item.percent)) {
       issues.push(`${item.label}: ${item.percent}%`);
     }
   });
-
-  if (info.residue && typeof info.residue.percent === "number" && info.residue.percent >= 80) {
-    issues.push(`${info.residue.label || "Resíduo"}: ${info.residue.percent}%`);
-  }
 
   const key = issues.join(" | ");
   if (!key) {
@@ -1148,15 +1136,15 @@ function maybeNotifyCriticalSupply(ip, info) {
   if (tonerAlertState[ip] === key) return;
   tonerAlertState[ip] = key;
 
-  const message = `Estado crítico em ${printerLabel} — ${key}`;
+  const message = `Toner vazio em ${printerLabel} — ${key}`;
   mostrarMensagem(message, "erro");
 
   if ("Notification" in window) {
     if (Notification.permission === "granted") {
-      new Notification("Alerta de consumíveis", { body: message });
+      new Notification("Toner vazio", { body: message });
     } else if (Notification.permission !== "denied") {
       Notification.requestPermission().then((perm) => {
-        if (perm === "granted") new Notification("Alerta de consumíveis", { body: message });
+        if (perm === "granted") new Notification("Toner vazio", { body: message });
       }).catch(() => {});
     }
   }
@@ -3648,25 +3636,19 @@ window.addEventListener("DOMContentLoaded", () => {
 const APP_REMOTE_BASE = "https://picafern-commits.github.io/App-Tablet/";
 const APP_VERSION_URL = APP_REMOTE_BASE + "version.json?t=" + Date.now();
 
-async function limparServiceWorkersAntigosAppBraga() {
+async function registarServiceWorkerAppBraga() {
   try {
     if (!("serviceWorker" in navigator)) return;
-    const regs = await navigator.serviceWorker.getRegistrations();
-    for (const reg of regs) {
-      await reg.unregister();
-    }
-    if ("caches" in window) {
-      const keys = await caches.keys();
-      await Promise.all(keys.map(k => caches.delete(k)));
-    }
+    const swUrl = location.pathname.includes("/html/") ? "../sw.js" : "sw.js";
+    await navigator.serviceWorker.register(swUrl);
   } catch (e) {
-    console.error("Erro a limpar service workers/cache", e);
+    console.error("Erro a registar service worker", e);
   }
 }
 
 async function verificarAtualizacao() {
   try {
-    await limparServiceWorkersAntigosAppBraga();
+    await registarServiceWorkerAppBraga();
 
     const res = await fetch(APP_VERSION_URL, {
       cache: "no-store",
@@ -3744,7 +3726,12 @@ function atualizarAppObrigatorio() {
 
   setTimeout(async () => {
     try {
-      await limparServiceWorkersAntigosAppBraga();
+      if ("serviceWorker" in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        regs.forEach((reg) => {
+          if (reg.waiting) reg.waiting.postMessage({ type: "SKIP_WAITING" });
+        });
+      }
     } catch (e) {
       console.error(e);
     }
@@ -4639,7 +4626,7 @@ function getPrioridadeMaximaGestor(limit = 4) {
   impressorasData.forEach(item => {
     const info = tonerInfoState[item.ip] || null;
     const colors = Array.isArray(info?.colors) ? info.colors : [];
-    const crit = colors.filter(c => typeof c.percent === "number" && c.percent <= 10);
+    const crit = colors.filter(c => isTonerEmpty(c.percent));
     if (crit.length) {
       rows.push({
         label: `${item.modelo} · ${item.localizacao}`,
@@ -4698,7 +4685,7 @@ function renderModoGestorExtremo() {
   if (prioridade) {
     prioridade.innerHTML = maxRows.length
       ? maxRows.map(item => `<div class="gestor-priority-card"><h4>${item.label}</h4><div class="meta-line">${item.detail}</div></div>`).join("")
-      : `<div class="gestor-priority-card"><h4>Sem prioridade máxima</h4><div class="meta-line">Não existem impressoras abaixo de 10% neste momento.</div></div>`;
+      : `<div class="gestor-priority-card"><h4>Sem prioridade máxima</h4><div class="meta-line">Não existem impressoras com toner a 0% neste momento.</div></div>`;
   }
 
   if (consumo) {
@@ -5008,7 +4995,7 @@ function buildAlertasInteligentes() {
     impressorasData.forEach(item => {
       const info = tonerInfoState[item.ip] || null;
       const colors = Array.isArray(info?.colors) ? info.colors : [];
-      const crit = colors.filter(c => typeof c.percent === "number" && c.percent <= 20);
+      const crit = colors.filter(c => isTonerEmpty(c.percent));
       if (crit.length) rows.push({ tipo: "printer", titulo: `${item.modelo} · ${item.localizacao}`, detalhe: crit.map(c => `${c.label}: ${c.percent}%`).join(" | ") });
     });
   }

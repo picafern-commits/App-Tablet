@@ -1,10 +1,39 @@
-const { app, BrowserWindow, shell, ipcMain } = require("electron");
+const { app, BrowserWindow, shell, ipcMain, Tray, Menu } = require("electron");
 const path = require("path");
 const http = require("http");
 const https = require("https");
 const snmp = require("net-snmp");
 
 let win;
+let tray;
+app.isQuitting = false;
+
+function mostrarJanelaPrincipal() {
+  if (!win) {
+    createWindow();
+    return;
+  }
+  win.show();
+  win.focus();
+}
+
+function createTray() {
+  if (tray) return;
+
+  tray = new Tray(path.join(__dirname, "..", "icon.ico"));
+  tray.setToolTip("App Braga");
+  tray.setContextMenu(Menu.buildFromTemplate([
+    { label: "Abrir App Braga", click: mostrarJanelaPrincipal },
+    {
+      label: "Sair",
+      click: () => {
+        app.isQuitting = true;
+        app.quit();
+      }
+    }
+  ]));
+  tray.on("double-click", mostrarJanelaPrincipal);
+}
 
 function createWindow() {
   win = new BrowserWindow({
@@ -28,6 +57,13 @@ function createWindow() {
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: "deny" };
+  });
+
+  win.on("close", (event) => {
+    if (!app.isQuitting) {
+      event.preventDefault();
+      win.hide();
+    }
   });
 }
 
@@ -178,11 +214,16 @@ ipcMain.handle("printer:get-toner-snmp", async (_event, ip) => {
 
 app.whenReady().then(() => {
   createWindow();
+  createTray();
   app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    mostrarJanelaPrincipal();
   });
 });
 
+app.on("before-quit", () => {
+  app.isQuitting = true;
+});
+
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") app.quit();
+  if (process.platform === "darwin") return;
 });
