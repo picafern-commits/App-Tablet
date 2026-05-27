@@ -1,15 +1,4 @@
 
-function obterImagemDashboard(modelo = "") {
-  const nome = String(modelo).toLowerCase();
-
-  if (nome.includes("p3155")) return "../img/kyocerap3155dn.png";
-  if (nome.includes("pa5500")) return "../img/pa5500x.png";
-  if (nome.includes("2554")) return "../img/taskalfa2554ci.png";
-
-  return "../img/kyocera.png";
-}
-
-
 window.usersData = window.usersData || [];
 window.pistolasData = window.pistolasData || [];
 window.portasData = window.portasData || [];
@@ -33,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.6.3";
+const APP_VERSION = "1.6.4";
 
 
 
@@ -169,7 +158,7 @@ function guardarUsersLocal() {
     const serializavel = window.usersData.map(u => ({ ...u }));
     localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(serializavel));
   } catch (e) {
-    console.warn('Não foi possivel guardar users no localStorage.', e);
+    console.warn('Nao foi possivel guardar users no localStorage.', e);
   }
 }
 
@@ -188,7 +177,7 @@ function carregarUsersLocal() {
     window.usersData.splice(0, window.usersData.length, ...parsed);
     prepararRefsUsers();
   } catch (e) {
-    console.warn('Não foi possivel carregar users do localStorage.', e);
+    console.warn('Nao foi possivel carregar users do localStorage.', e);
     prepararRefsUsers();
   }
 }
@@ -618,44 +607,13 @@ function renderDashboardCards(items) {
 
     const residueHtml = residue ? gerarHTMLBarraToner(residue.percent, residue.label || "Resíduo", "waste") : "";
 
-    const percentValue =
-      criticalColors[0]?.percent ||
-      info?.percent ||
-      0;
-
     return `
-      <div class="equipment-card dashboard-critical-card">
-        <img
-          src="${obterImagemDashboard(item.modelo)}"
-          class="equipment-real-image"
-          onerror="this.src='../img/printer.png'"
-        >
-
-        <div class="equipment-top-row">
-          <h3>${item.modelo || "Kyocera"}</h3>
-          <span class="status-badge offline">
-            ${percentValue <= 10 ? "Crítico" : "Atenção"}
-          </span>
-        </div>
-
-        <p class="equipment-model">${item.modelo || "-"}</p>
-
-        <p class="equipment-ip">
-          IP: ${item.ip || "-"}
-        </p>
-
-        <p class="equipment-local">
-          Local: ${item.localizacao || "-"}
-        </p>
-
-        <div class="equipment-percent">
-          Toner: ${percentValue}%
-        </div>
-
-        <div class="printer-toners-grid" style="margin-top:10px;">
-          ${supplyHtml}
-          ${residueHtml}
-        </div>
+      <div class="dashboard-card dashboard-critical-card">
+        <div class="stock-id">${item.modelo}</div>
+        <div class="meta-line">Série: <span class="meta-value">${item.serie}</span></div>
+        <div class="meta-line">Local: <span class="meta-value">${item.localizacao} (${item.armazem})</span></div>
+        <div class="meta-line">IP: <span class="meta-value">${item.ip}</span></div>
+        <div class="printer-toners-grid" style="margin-top:10px;">${supplyHtml}${residueHtml}</div>
       </div>
     `;
   }).join("");
@@ -1309,7 +1267,7 @@ function guardarImpressorasLocal() {
   try {
     impressorasData.forEach((item, i) => { if (!item._ref) item._ref = item.idDoc || `local-impressora-${i}`; });
     localStorage.setItem(IMPRESSORAS_STORAGE_KEY, JSON.stringify(impressorasData.map(i => ({ ...i }))));
-  } catch (e) { console.warn('Não foi possivel guardar impressoras no localStorage.', e); }
+  } catch (e) { console.warn('Nao foi possivel guardar impressoras no localStorage.', e); }
 }
 
 function carregarImpressorasLocal() {
@@ -1320,7 +1278,7 @@ function carregarImpressorasLocal() {
     if (!Array.isArray(parsed) || !parsed.length) return;
     parsed.forEach((item, i) => { if (!item._ref) item._ref = item.idDoc || `local-impressora-${i}`; });
     impressorasData.splice(0, impressorasData.length, ...parsed);
-  } catch (e) { console.warn('Não foi possivel carregar impressoras do localStorage.', e); }
+  } catch (e) { console.warn('Nao foi possivel carregar impressoras do localStorage.', e); }
 }
 
 function renderImpressoras(lista = impressorasData) {
@@ -1661,7 +1619,7 @@ function guardarPistolasLocal() {
     const serializavel = window.pistolasData.map(p => ({ ...p }));
     localStorage.setItem(PISTOLAS_STORAGE_KEY, JSON.stringify(serializavel));
   } catch (e) {
-    console.warn('Não foi possivel guardar pistolas no localStorage.', e);
+    console.warn('Nao foi possivel guardar pistolas no localStorage.', e);
   }
 }
 
@@ -1680,7 +1638,7 @@ function carregarPistolasLocal() {
     window.pistolasData.splice(0, window.pistolasData.length, ...parsed);
     prepararRefsPistolas();
   } catch (e) {
-    console.warn('Não foi possivel carregar pistolas do localStorage.', e);
+    console.warn('Nao foi possivel carregar pistolas do localStorage.', e);
     prepararRefsPistolas();
   }
 }
@@ -1696,7 +1654,7 @@ function guardarPortasLocal() {
     const serializavel = window.portasData.map(p => ({ ...p }));
     localStorage.setItem(PORTAS_STORAGE_KEY, JSON.stringify(serializavel));
   } catch (e) {
-    console.warn('Não foi possivel guardar portas no localStorage.', e);
+    console.warn('Nao foi possivel guardar portas no localStorage.', e);
   }
 }
 
@@ -1715,7 +1673,7 @@ function carregarPortasLocal() {
     window.portasData.splice(0, window.portasData.length, ...parsed);
     prepararRefsPortas();
   } catch (e) {
-    console.warn('Não foi possivel carregar portas do localStorage.', e);
+    console.warn('Nao foi possivel carregar portas do localStorage.', e);
     prepararRefsPortas();
   }
 }
@@ -1934,9 +1892,10 @@ function initFullScreenScroll() {
 
 document.addEventListener("DOMContentLoaded", initFullScreenScroll);
 
-const RADIOS_STORAGE_KEY = "appBragaRadios";
-// Firestore realtime ativo - sem localStorage
 let radiosData = [];
+let radioEditId = null;
+let unsubscribeRadios = null;
+const INFORMACOES_STORAGE_KEY = "appBragaInformacoes";
 let informacoesData = [];
 let informacaoSelecionada = null;
 
@@ -1950,13 +1909,6 @@ function nowPt() {
   });
 }
 
-function splitUsersList(value) {
-  return String(value || "")
-    .split(",")
-    .map(item => item.trim())
-    .filter(Boolean);
-}
-
 function safeRefHtml(value) {
   if (typeof escapeHtmlAppBraga === "function") return escapeHtmlAppBraga(value);
   return String(value ?? "").replace(/[&<>"]/g, (char) => ({
@@ -1967,178 +1919,204 @@ function safeRefHtml(value) {
   }[char] || char));
 }
 
-function defaultRadiosData() {
-  return [1, 2, 3, 4, 5].map(numero => ({
-    id: `radio-${numero}`,
-    radio: String(numero),
-    users: "",
-    obs: "",
-    updated: nowPt()
-  }));
+function getRadioWeekInfo(date = new Date()) {
+  const target = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const day = target.getUTCDay() || 7;
+  target.setUTCDate(target.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(target.getUTCFullYear(), 0, 1));
+  const week = Math.ceil((((target - yearStart) / 86400000) + 1) / 7);
+  const start = new Date(date);
+  const currentDay = start.getDay() || 7;
+  start.setDate(start.getDate() - currentDay + 1);
+  start.setHours(0, 0, 0, 0);
+  const endDate = new Date(start);
+  endDate.setDate(start.getDate() + 6);
+  endDate.setHours(23, 59, 59, 999);
+  const fmt = new Intl.DateTimeFormat("pt-PT", { day: "2-digit", month: "2-digit", year: "numeric" });
+  return {
+    week,
+    start,
+    end: endDate,
+    label: `Semana ${week} de ${fmt.format(start)} a ${fmt.format(endDate)}`
+  };
 }
 
-function loadRadiosData() {
-  try {
-    const raw = localStorage.getItem(RADIOS_STORAGE_KEY);
-    radiosData = raw ? JSON.parse(raw) : defaultRadiosData();
-  } catch (e) {
-    console.warn("Não foi possivel carregar radios.", e);
-    radiosData = defaultRadiosData();
-  }
-}
-
-function saveRadiosData() {
-  localStorage.setItem(RADIOS_STORAGE_KEY, JSON.stringify(radiosData));
-  try {
-    if (window.db) {
-      window.db.collection("appRadios").doc("lista").set({
-        items: radiosData,
-        updated: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-    }
-  } catch (e) {
-    console.warn("Não foi possivel sincronizar radios.", e);
-  }
+function getRadiosFiltrados() {
+  const search = normalizarTexto(document.getElementById("radioSearch")?.value || "");
+  return radiosData.filter((item) => {
+    const text = `${item.nome || ""} ${item.mac || ""} ${item.serial || ""}`;
+    return !search || normalizarTexto(text).includes(search);
+  });
 }
 
 function renderRadios() {
-  const editor = document.getElementById("radiosEditorRows");
-  const report = document.getElementById("radiosReportRows");
-  if (!editor || !report) return;
+  const listaNode = document.getElementById("listaRadios");
+  const totalNode = document.getElementById("radiosTotal");
+  const semanaNode = document.getElementById("radioSemanaLabel");
+  const detalheNode = document.getElementById("radioDetalhesLista");
+  if (!listaNode) return;
 
-  const search = normalizarTexto(document.getElementById("radioSearch")?.value || "");
-  const lista = radiosData.filter(item => {
-    const text = `${item.radio} ${item.users} ${item.obs}`;
-    return !search || normalizarTexto(text).includes(search);
-  });
+  const lista = getRadiosFiltrados();
+  if (totalNode) totalNode.textContent = String(radiosData.length);
+  if (semanaNode) semanaNode.textContent = getRadioWeekInfo().label;
 
-  editor.innerHTML = lista.map(item => `
-    <div class="radio-editor-grid radio-editor-row" data-radio-id="${item.id}">
-      <input type="text" value="${safeRefHtml(item.radio)}" aria-label="Radio" onchange="atualizarRadioCampo('${item.id}', 'radio', this.value)">
-      <span class="radio-arrow">→</span>
-      <input type="text" value="${safeRefHtml(item.users)}" placeholder="Selecionar users..." onchange="atualizarRadioCampo('${item.id}', 'users', this.value)">
-      <input type="text" value="${safeRefHtml(item.obs)}" placeholder="Observações (opcional)" onchange="atualizarRadioCampo('${item.id}', 'obs', this.value)">
-      <button class="reference-icon danger" type="button" onclick="apagarRadio('${item.id}')" title="Apagar rádio">🗑</button>
-    </div>
-  `).join("");
+  listaNode.innerHTML = lista.length ? lista.map((item) => `
+    <article class="radio-card">
+      <div class="radio-card-icon">RF</div>
+      <div class="radio-card-main">
+        <h3>${safeRefHtml(item.nome || "Sem nome")}</h3>
+        <p>MAC: ${safeRefHtml(item.mac || "-")}</p>
+        <p>Serial: ${safeRefHtml(item.serial || "-")}</p>
+      </div>
+      <div class="radio-card-actions">
+        <button class="reference-icon" type="button" onclick="editarRadio('${item.id}')" title="Editar r?dio">E</button>
+        <button class="reference-icon danger" type="button" onclick="apagarRadio('${item.id}')" title="Apagar r?dio">X</button>
+      </div>
+    </article>
+  `).join("") : `<div class="reference-empty">Sem r?dios registados na Firestore.</div>`;
 
-  report.innerHTML = lista.map(item => {
-    const users = splitUsersList(item.users);
-    const visible = users.slice(0, 3);
-    const extra = users.length - visible.length;
-    return `
-      <tr>
-        <td>${safeRefHtml(item.radio)}</td>
-        <td>
-          <div class="reference-tags">
-            ${visible.map(user => `<span>${safeRefHtml(user)}</span>`).join("")}
-            ${extra > 0 ? `<span>+${extra}</span>` : ""}
-          </div>
-        </td>
-        <td>${safeRefHtml(item.updated || nowPt())}</td>
-        <td>
-          <div class="reference-row-actions">
-            <button class="reference-icon" type="button" onclick="verRadio('${item.id}')" title="Ver detalhes">✎</button>
-            <button class="reference-icon danger" type="button" onclick="apagarRadio('${item.id}')" title="Apagar rádio">🗑</button>
-          </div>
-        </td>
-      </tr>
-    `;
-  }).join("");
+  if (detalheNode) {
+    detalheNode.innerHTML = radiosData.length ? radiosData.map((item) => `
+      <div class="weekly-radio-row">
+        <strong>${safeRefHtml(item.nome || "Sem nome")}</strong>
+        <span>MAC ${safeRefHtml(item.mac || "-")} - Serial ${safeRefHtml(item.serial || "-")}</span>
+        <small>Users associados: ${safeRefHtml(item.users || item.user || "Sem users associados")}</small>
+      </div>
+    `).join("") : `<div class="reference-empty">Sem r?dios usados nesta semana.</div>`;
+  }
 }
 
 function initRadiosPage() {
-  if (!document.getElementById("radiosEditorRows")) return;
-  loadRadiosData();
-  renderRadios();
+  if (!document.getElementById("listaRadios")) return;
+  const dbRef = window.db;
+  if (!dbRef || typeof dbRef.collection !== "function") {
+    const listaNode = document.getElementById("listaRadios");
+    if (listaNode) listaNode.innerHTML = `<div class="reference-empty">Firebase indispon?vel. Confirma a liga??o da app.</div>`;
+    return;
+  }
+
+  if (unsubscribeRadios) unsubscribeRadios();
+  unsubscribeRadios = dbRef.collection("radios").orderBy("nome", "asc").onSnapshot((snapshot) => {
+    radiosData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    renderRadios();
+  }, (error) => {
+    console.error("Erro realtime radios:", error);
+    const listaNode = document.getElementById("listaRadios");
+    if (listaNode) listaNode.innerHTML = `<div class="reference-empty">Erro ao carregar r?dios da Firestore.</div>`;
+  });
 }
 
 function adicionarRadio() {
-  const nextNumber = radiosData.length ? Math.max(...radiosData.map(item => Number(item.radio) || 0)) + 1 : 1;
-  radiosData.push({
-    id: `radio-${Date.now()}`,
-    radio: String(nextNumber),
-    users: "",
-    obs: "",
-    updated: nowPt()
-  });
-  saveRadiosData();
-  renderRadios();
+  abrirModalRadio();
 }
 
-function atualizarRadioCampo(id, field, value) {
-  const item = radiosData.find(radio => radio.id === id);
-  if (!item) return;
-  item[field] = value;
-  item.updated = nowPt();
-  saveRadiosData();
-  renderRadios();
+function abrirModalRadio(id = null) {
+  radioEditId = id;
+  const item = id ? radiosData.find((radio) => radio.id === id) : null;
+  const title = document.getElementById("radioModalTitle");
+  const nome = document.getElementById("radioNome");
+  const mac = document.getElementById("radioMac");
+  const serial = document.getElementById("radioSerial");
+  if (title) title.textContent = id ? "Editar R?dio" : "Novo R?dio";
+  if (nome) nome.value = item?.nome || "";
+  if (mac) mac.value = item?.mac || "";
+  if (serial) serial.value = item?.serial || "";
+  const modal = document.getElementById("radioModal");
+  if (modal) modal.style.display = "flex";
 }
 
-function apagarRadio(id) {
-  radiosData = radiosData.filter(item => item.id !== id);
-  if (!radiosData.length) radiosData = defaultRadiosData();
-  saveRadiosData();
-  renderRadios();
+function fecharModalRadio() {
+  radioEditId = null;
+  const modal = document.getElementById("radioModal");
+  if (modal) modal.style.display = "none";
 }
 
-function verRadio(id) {
-  const item = radiosData.find(radio => radio.id === id);
-  if (!item) return;
-  alert(`Radio: ${item.radio}\nUsers: ${item.users || "-"}\nObservacoes: ${item.obs || "-"}`);
+async function guardarRadio() {
+  const nome = document.getElementById("radioNome")?.value.trim() || "";
+  const mac = document.getElementById("radioMac")?.value.trim() || "";
+  const serial = document.getElementById("radioSerial")?.value.trim() || "";
+  if (!nome) {
+    mostrarMensagem("Preenche o nome do r?dio.", "erro");
+    return;
+  }
+
+  const payload = { nome, mac, serial, updatedAt: Date.now() };
+
+  try {
+    if (radioEditId) {
+      await window.db.collection("radios").doc(radioEditId).update(payload);
+      mostrarMensagem("R?dio atualizado.");
+    } else {
+      await window.db.collection("radios").add({ ...payload, createdAt: Date.now() });
+      mostrarMensagem("R?dio criado.");
+    }
+    fecharModalRadio();
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar r?dio.", "erro");
+  }
+}
+
+function editarRadio(id) {
+  abrirModalRadio(id);
+}
+
+async function apagarRadio(id) {
+  try {
+    await window.db.collection("radios").doc(id).delete();
+    mostrarMensagem("R?dio apagado.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao apagar r?dio.", "erro");
+  }
 }
 
 function filtrarRadios() {
   renderRadios();
 }
 
+function abrirRelatorioRadios() {
+  const modal = document.getElementById("radioWeeklyModal");
+  if (modal) modal.style.display = "flex";
+}
+
+function fecharRelatorioRadios() {
+  const modal = document.getElementById("radioWeeklyModal");
+  if (modal) modal.style.display = "none";
+}
 
 function loadInformacoesData() {
-  if (!window.db) {
-    console.warn("Firestore não inicializado.");
-    return;
+  try {
+    const raw = localStorage.getItem(INFORMACOES_STORAGE_KEY);
+    informacoesData = raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    console.warn("Nao foi possivel carregar informacoes.", e);
+    informacoesData = [];
   }
-
-  window.db.collection("informacoes")
-    .orderBy("createdAt", "desc")
-    .onSnapshot((snapshot) => {
-
-      informacoesData = [];
-
-      snapshot.forEach((doc) => {
-        informacoesData.push({
-          id: doc.id,
-          ...doc.data()
-        });
-      });
-
-      renderInformacoes(
-        document.getElementById("pesquisaInfo")?.value || ""
-      );
-    });
 }
-
-
 
 function saveInformacoesData() {
-  // Firestore realtime ativo
+  localStorage.setItem(INFORMACOES_STORAGE_KEY, JSON.stringify(informacoesData));
+  try {
+    if (window.db) {
+      window.db.collection("appInformacoes").doc("lista").set({
+        items: informacoesData,
+        updated: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    }
+  } catch (e) {
+    console.warn("Nao foi possivel sincronizar informacoes.", e);
+  }
 }
 
-
-function renderInformacoes(filtro = "") {
+function renderInformacoes() {
   const lista = document.getElementById("informacoesLista");
   if (!lista) return;
-  const dados = informacoesData.filter(item => (item.titulo || "").toLowerCase().includes(filtro.toLowerCase()));
-  lista.innerHTML = dados.length ? dados.map(item => `
-    <div class="info-list-item ${informacaoSelecionada === item.id ? "active" : ""}">
+  lista.innerHTML = informacoesData.length ? informacoesData.map(item => `
+    <button class="info-list-item ${informacaoSelecionada === item.id ? "active" : ""}" type="button" onclick="selecionarInformacao('${item.id}')">
       <strong>${safeRefHtml(item.titulo || "Sem título")}</strong>
       <span>${safeRefHtml(item.obs || "Sem observações")}</span>
-      <div class="info-card-actions">
-        <button class="secondary-btn reference-outline" type="button" onclick="verInformacao('${item.id}')">Ver Mais</button>
-        <button class="secondary-btn info-edit-btn" type="button" onclick="editarInformacao('${item.id}')">Editar</button>
-        <button class="secondary-btn info-delete-btn" type="button" onclick="apagarInformacao('${item.id}')">Apagar</button>
-      </div>
-    </div>
+    </button>
   `).join("") : `<div class="info-empty">Ainda sem informações guardadas.</div>`;
 }
 
@@ -2146,61 +2124,36 @@ function initInformacoesPage() {
   if (!document.getElementById("informacoesLista")) return;
   loadInformacoesData();
   renderInformacoes();
-  const pesquisa = document.getElementById("pesquisaInfo");
-  if (pesquisa) {
-    pesquisa.addEventListener("input", e => renderInformacoes(e.target.value || ""));
-  }
 }
 
-
-async function adicionarInformacao() {
+function adicionarInformacao() {
   const titulo = document.getElementById("infoTitulo")?.value || "";
   const obs = document.getElementById("infoObs")?.value || "";
-
   if (!normalizarTexto(titulo) && !normalizarTexto(obs)) {
     mostrarMensagem("Preenche pelo menos um título ou observação.", "erro");
     return;
   }
-
-  if (!window.db) {
-    mostrarMensagem("Firebase indisponível.", "erro");
-    return;
-  }
-
-  try {
-
-    if (informacaoSelecionada) {
-
-      await window.db.collection("informacoes")
-        .doc(informacaoSelecionada)
-        .update({
-          titulo,
-          obs,
-          updated: nowPt()
-        });
-
-    } else {
-
-      await window.db.collection("informacoes")
-        .add({
-          titulo,
-          obs,
-          createdAt: Date.now(),
-          updated: nowPt()
-        });
+  if (informacaoSelecionada) {
+    const item = informacoesData.find(info => info.id === informacaoSelecionada);
+    if (item) {
+      item.titulo = titulo;
+      item.obs = obs;
+      item.updated = nowPt();
     }
-
-    document.getElementById("infoTitulo").value = "";
-    document.getElementById("infoObs").value = "";
-
-    informacaoSelecionada = null;
-
-  } catch (e) {
-    console.error(e);
-    mostrarMensagem("Erro ao guardar informação.", "erro");
+  } else {
+    informacoesData.unshift({
+      id: `info-${Date.now()}`,
+      titulo,
+      obs,
+      updated: nowPt()
+    });
   }
+  document.getElementById("infoTitulo").value = "";
+  document.getElementById("infoObs").value = "";
+  informacaoSelecionada = null;
+  saveInformacoesData();
+  renderInformacoes();
 }
-
 
 function selecionarInformacao(id) {
   informacaoSelecionada = id;
@@ -2210,7 +2163,7 @@ function selecionarInformacao(id) {
 function verInformacaoSelecionada() {
   const item = informacoesData.find(info => info.id === informacaoSelecionada);
   if (!item) return mostrarMensagem("Seleciona uma informação primeiro.", "erro");
-  alert(`${item.titulo || "Informação"}\n\n${item.obs || "Sem observacoes"}`);
+  alert(`${item.titulo || "Informacao"}\n\n${item.obs || "Sem observacoes"}`);
 }
 
 function editarInformacaoSelecionada() {
@@ -2220,26 +2173,13 @@ function editarInformacaoSelecionada() {
   document.getElementById("infoObs").value = item.obs || "";
 }
 
-
-async function apagarInformacaoSelecionada() {
-  if (!informacaoSelecionada) {
-    return mostrarMensagem("Seleciona uma informação primeiro.", "erro");
-  }
-
-  try {
-
-    await window.db.collection("informacoes")
-      .doc(informacaoSelecionada)
-      .delete();
-
-    informacaoSelecionada = null;
-
-  } catch (e) {
-    console.error(e);
-    mostrarMensagem("Erro ao apagar informação.", "erro");
-  }
+function apagarInformacaoSelecionada() {
+  if (!informacaoSelecionada) return mostrarMensagem("Seleciona uma informação primeiro.", "erro");
+  informacoesData = informacoesData.filter(info => info.id !== informacaoSelecionada);
+  informacaoSelecionada = null;
+  saveInformacoesData();
+  renderInformacoes();
 }
-
 
 function guardarInformacoes() {
   const titulo = document.getElementById("infoTitulo")?.value || "";
@@ -2255,10 +2195,13 @@ function guardarInformacoes() {
 document.addEventListener("DOMContentLoaded", initRadiosPage);
 document.addEventListener("DOMContentLoaded", initInformacoesPage);
 window.adicionarRadio = adicionarRadio;
-window.atualizarRadioCampo = atualizarRadioCampo;
+window.editarRadio = editarRadio;
+window.guardarRadio = guardarRadio;
+window.fecharModalRadio = fecharModalRadio;
 window.apagarRadio = apagarRadio;
-window.verRadio = verRadio;
 window.filtrarRadios = filtrarRadios;
+window.abrirRelatorioRadios = abrirRelatorioRadios;
+window.fecharRelatorioRadios = fecharRelatorioRadios;
 window.adicionarInformacao = adicionarInformacao;
 window.selecionarInformacao = selecionarInformacao;
 window.verInformacaoSelecionada = verInformacaoSelecionada;
@@ -3474,7 +3417,7 @@ function mostrarAvisoUpdateObrigatorio(novaVersao) {
       Nova: v${novaVersao} Premium
     </div>
     <div class="update-actions">
-      <button class="primary-btn" onclick="atualizarAppObrigatorio()">Descarregar atualização</button>
+      <button class="primary-btn" onclick="atualizarAppObrigatorio()">Atualizar agora</button>
     </div>
   `;
 
@@ -6567,31 +6510,3 @@ window.addEventListener(
   "pageshow",
   window.loadTheme
 );
-
-
-function verInformacao(id) {
-  const item = informacoesData.find(info => info.id === id);
-  if (!item) return;
-  document.getElementById("modalInfoTitulo").innerText = item.titulo || "Informação";
-  document.getElementById("modalInfoDescricao").innerText = item.obs || "Sem observações";
-  document.getElementById("infoModal").classList.remove("hidden");
-}
-
-function fecharInfoModal() {
-  document.getElementById("infoModal")?.classList.add("hidden");
-}
-
-function editarInformacao(id) {
-  informacaoSelecionada = id;
-  editarInformacaoSelecionada();
-}
-
-function apagarInformacao(id) {
-  informacaoSelecionada = id;
-  apagarInformacaoSelecionada();
-}
-
-window.verInformacao = verInformacao;
-window.fecharInfoModal = fecharInfoModal;
-window.editarInformacao = editarInformacao;
-window.apagarInformacao = apagarInformacao;

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt">
 <head>
 <script id="APP_BRAGA_THEME_LOADER">
@@ -14,7 +14,7 @@
 </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Radios</title>
+  <title>Rádios</title>
   <meta name="theme-color" content="#0f172a">
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
@@ -26,8 +26,6 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="format-detection" content="telephone=no">
   <meta name="msapplication-tap-highlight" content="no">
-
-<link rel="stylesheet" href="../css/sidebar-enterprise.css">
 </head>
 <body>
 <aside class="sidebar">
@@ -35,65 +33,91 @@
     <div class="brand-badge">BR</div>
     <div><h2>App Braga</h2></div>
   </div>
-	<a href="index.html">Dashboard</a>
-	<a href="add-toner.html">Adicionar Toner</a>
-	<a href="stock.html">Stock</a>
-	<a href="historico.html">Histórico</a>
-	<a href="etiquetas-word.html">Etiquetas Word</a>
-	<a href="impressoras.html">Impressoras</a>
-	<a href="manutencao-impressoras.html">Manutenção Impressoras</a>
-	<a href="computadores.html">Computadores</a>
-	<a href="users.html">Users</a>
-	<a href="pistolas.html">Pistolas CK65</a>
-	<a href="portas.html">Portas Rede</a>
-	<a href="radios.html" class="active">Rádios</a>
-	<a href="informacoes.html">Informações</a>
-	<a href="config.html">Configurações</a>
+  <a href="index.html">Dashboard</a>
+  <a href="add-toner.html">Adicionar Toner</a>
+  <a href="stock.html">Stock</a>
+  <a href="historico.html">Histórico</a>
+  <a href="etiquetas-word.html">Etiquetas Word</a>
+  <a href="impressoras.html">Impressoras</a>
+  <a href="manutencao-impressoras.html">Manutenção Impressoras</a>
+  <a href="computadores.html">Computadores</a>
+  <a href="users.html">Users</a>
+  <a href="pistolas.html">Pistolas CK65</a>
+  <a href="portas.html">Portas Rede</a>
+  <a href="radios.html" class="active">Rádios</a>
+  <a href="informacoes.html">Informações</a>
+  <a href="config.html">Configurações</a>
 </aside>
 
-<main class="main app-reference-page">
-  <div class="reference-header" data-breadcrumb="Home > RÃ¡dios">
+<main class="main app-reference-page radios-page">
+  <div class="reference-header" data-breadcrumb="Home > Rádios">
     <div>
-      <h1>Radios</h1>
+      <h1>Rádios</h1>
+      <p>Gerencie rádios diretamente na Firestore em tempo real.</p>
     </div>
     <div class="reference-actions">
       <div class="reference-search">
-        <input id="radioSearch" type="text" placeholder="Pesquisar por radio..." oninput="filtrarRadios()">
+        <input id="radioSearch" type="text" placeholder="Pesquisar por rádio..." oninput="filtrarRadios()">
+        <span>⌕</span>
       </div>
-      <button class="primary-btn reference-primary" type="button" onclick="adicionarRadio()">Novo Radio</button>
+      <button class="primary-btn reference-primary" type="button" onclick="adicionarRadio()">+ Novo Rádio</button>
     </div>
   </div>
 
-  <section class="reference-panel radios-panel">
-    <div class="reference-panel-title">Radios</div>
-    <div class="radio-editor-grid radio-editor-head">
-      <span>Radio</span>
-      <span></span>
-      <span>USERS (LISTA users)</span>
-      <span>Observações</span>
-      <span>Ações</span>
+  <section class="reference-panel">
+    <div class="section-header">
+      <div>
+        <h3>Rádios Firestore</h3>
+        <p class="section-subtitle">Coleção: radios · ordenado por nome · realtime onSnapshot()</p>
+      </div>
+      <span class="status-pill"><strong id="radiosTotal">0</strong> rádios</span>
     </div>
-    <div id="radiosEditorRows" class="radio-editor-rows"></div>
-    <button class="secondary-btn reference-outline" type="button" onclick="adicionarRadio()">Adicionar Radio</button>
+    <div id="listaRadios" class="radio-cards-grid"></div>
   </section>
 
-  <section class="reference-panel">
-    <div class="reference-panel-title">Relatorio Semanal</div>
-    <div class="reference-table-wrap">
-      <table class="reference-table">
-        <thead>
-          <tr>
-            <th>Radio</th>
-            <th>Users (Lista)</th>
-            <th>Última Atualização</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody id="radiosReportRows"></tbody>
-      </table>
+  <section class="reference-panel weekly-panel">
+    <div class="section-header">
+      <div>
+        <h3>Relatório semanal</h3>
+        <p id="radioSemanaLabel" class="section-subtitle">Semana</p>
+      </div>
+      <button class="secondary-btn reference-outline" type="button" onclick="abrirRelatorioRadios()">Ver Detalhes</button>
     </div>
   </section>
 </main>
+
+<div id="radioModal" class="modal-overlay" style="display:none;">
+  <div class="modal-card radio-modal-card">
+    <div class="section-header">
+      <div>
+        <h3 id="radioModalTitle">Novo Rádio</h3>
+        <p class="section-subtitle">Dados guardados na coleção Firestore radios.</p>
+      </div>
+    </div>
+    <div class="form-grid">
+      <label><span>Nome</span><input id="radioNome" type="text" placeholder="Ex: Rádio 01"></label>
+      <label><span>MAC</span><input id="radioMac" type="text" placeholder="Ex: AA:BB:CC:DD:EE:FF"></label>
+      <label><span>Serial</span><input id="radioSerial" type="text" placeholder="Serial do rádio"></label>
+    </div>
+    <div class="card-actions" style="margin-top:18px;">
+      <button class="primary-btn" type="button" onclick="guardarRadio()">Guardar</button>
+      <button class="secondary-btn" type="button" onclick="fecharModalRadio()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="radioWeeklyModal" class="modal-overlay" style="display:none;">
+  <div class="modal-card radio-modal-card">
+    <div class="section-header">
+      <div>
+        <h3>Detalhes do relatório semanal</h3>
+        <p class="section-subtitle">Rádios usados e users associados.</p>
+      </div>
+      <button class="secondary-btn" type="button" onclick="fecharRelatorioRadios()">Fechar</button>
+    </div>
+    <div id="radioDetalhesLista" class="weekly-radio-list"></div>
+  </div>
+</div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
