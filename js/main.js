@@ -15,7 +15,7 @@ function createWindow() {
     fullscreen: true,
     autoHideMenuBar: true,
     icon: path.join(__dirname, "..", "icon.ico"),
-    backgroundColor: "#0f172a",
+    backgroundColor: "#101114",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,

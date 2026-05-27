@@ -13,6 +13,18 @@
   --az-green: #29b36a;
   --az-danger: #ef4444;
   --az-sidebar: 248px;
+  --primary: var(--az-orange);
+  --primary-hover: var(--az-orange-2);
+  --sidebar-hover: var(--az-orange);
+  --brinka-pink: var(--az-orange) !important;
+  --brinka-purple: var(--az-orange-2) !important;
+  --brinka-orange: var(--az-orange) !important;
+  --brinka-orange2: #ff9d3d !important;
+  --ent-blue: var(--az-orange) !important;
+  --ent-purple: var(--az-orange-2) !important;
+  --ent-orange: var(--az-orange) !important;
+  --app-blue: var(--az-orange) !important;
+  --app-blue-soft: var(--az-orange-soft) !important;
 }
 
 html,
@@ -330,4 +342,135 @@ body.device-phone .content-area {
 
 body.device-phone .sidebar a {
   border: 1px solid rgba(255,255,255,.08) !important;
+}
+
+/* Final orange reset: remove legacy blue leftovers */
+.metric-blue,
+.metric-green,
+.metric-orange,
+.metric-purple,
+.dashboard-card,
+.dashboard-critical-card,
+.summary-card,
+.shortcut-grid a,
+.equipment-card,
+.printer-card,
+.network-card,
+.pistol-card,
+.radio-card,
+.info-list-item,
+.user-card,
+.box,
+.widget {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.018)),
+    var(--az-panel) !important;
+  border-color: var(--az-line) !important;
+  color: var(--az-text) !important;
+}
+
+.metric-blue *,
+.metric-green *,
+.metric-orange *,
+.metric-purple *,
+.dashboard-card *,
+.pc-card *,
+.card *,
+.panel *,
+.reference-panel * {
+  border-color: rgba(255, 122, 0, .18);
+}
+
+.brand-badge,
+.brand-logo,
+.sidebar a.active,
+.sidebar a:hover,
+.primary-btn,
+.add-btn,
+.save-btn,
+.btn,
+.btn-primary,
+.action-btn,
+.dashboard-actions a,
+.panel-title-row a,
+.reference-primary,
+.info-close-btn {
+  background: linear-gradient(135deg, var(--az-orange), var(--az-orange-2)) !important;
+  border-color: rgba(255, 164, 84, .34) !important;
+  color: #fff !important;
+  box-shadow: 0 12px 26px rgba(255, 122, 0, .24) !important;
+}
+
+.secondary-btn,
+.reference-outline,
+.dashboard-date,
+.status-pill,
+.badge,
+.tag,
+.chip,
+.backup-badge,
+.radio-card-icon,
+.sidebar a::before {
+  border-color: rgba(255, 122, 0, .24) !important;
+}
+
+.radio-card-icon,
+.sidebar a::before,
+.metric-card span,
+.stat-card span,
+.section-header h3,
+.panel-title-row h2,
+.stock-id,
+.pc-name,
+.meta-value,
+.reference-header::before {
+  color: #ffb45f !important;
+}
+
+.metric-card,
+.stat-card,
+.dashboard-card,
+.stock-card,
+.history-card,
+.pc-card,
+.card {
+  border-bottom-color: var(--az-orange) !important;
+}
+
+.toner-bar-fill,
+.toner-fill,
+.bar-fill,
+.progress-fill,
+.level-fill,
+.printer-toner-fill,
+.equipment-art,
+.equipment-photo {
+  background: linear-gradient(90deg, var(--az-orange), #ffb45f) !important;
+}
+
+.equipment-art,
+.equipment-photo {
+  background: linear-gradient(145deg, rgba(255, 122, 0, .18), rgba(28, 29, 34, .96)) !important;
+}
+
+.dot.blue,
+.donut-blue,
+.chart-blue,
+.sparkline-blue {
+  background: var(--az-orange) !important;
+  color: var(--az-orange) !important;
+}
+
+a:not(.sidebar a),
+.meta-value a,
+.reference-search span {
+  color: #ffb45f !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+.reference-search:focus-within {
+  border-color: rgba(255, 122, 0, .58) !important;
+  box-shadow: 0 0 0 3px rgba(255, 122, 0, .14) !important;
 }
