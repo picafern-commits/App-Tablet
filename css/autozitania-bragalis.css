@@ -1021,3 +1021,95 @@ button:not(.primary-btn):not(.btn-primary):not(.danger):not(.delete-btn):not(.in
     pointer-events: auto !important;
   }
 }
+
+/* Final visual cleanup */
+html,
+body {
+  background:
+    linear-gradient(180deg, #171717 0%, #121212 52%, #0f0f0f 100%) !important;
+}
+
+body::before {
+  opacity: .42 !important;
+}
+
+.brand::after,
+.premium-brand::after,
+.reference-header::before,
+.sidebar-user-card {
+  display: none !important;
+  content: none !important;
+}
+
+.brand,
+.premium-brand {
+  min-height: 64px !important;
+  overflow: hidden !important;
+}
+
+.metric-card,
+.stat-card,
+.summary-card,
+.dashboard-card,
+.radio-card,
+.info-list-item,
+.pc-card,
+.stock-card,
+.porta-card,
+.pistola-card,
+.manutencao-card,
+.card,
+.panel {
+  border-bottom-color: var(--app-accent) !important;
+}
+
+.metric-card::after,
+.dashboard-card::after,
+.card::after,
+.panel::after {
+  background: linear-gradient(90deg, var(--app-accent), var(--app-accent-light)) !important;
+}
+
+@media (max-width: 760px) {
+  body.device-phone .sidebar,
+  body.device-phone aside.sidebar {
+    width: min(340px, 88vw) !important;
+    max-width: 340px !important;
+    min-width: 286px !important;
+  }
+
+  body.device-phone .sidebar a,
+  body.device-phone aside.sidebar a {
+    justify-content: flex-start !important;
+    text-align: left !important;
+    font-size: 14px !important;
+    line-height: 1.2 !important;
+    padding: 12px 13px !important;
+    color: #f8fafc !important;
+  }
+
+  body.device-phone .sidebar a .sidebar-link-text,
+  body.device-phone aside.sidebar a .sidebar-link-text {
+    display: inline-block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  body.device-phone .brand h2,
+  body.device-phone .premium-brand h2,
+  body.device-phone .brand > div:not(.brand-badge),
+  body.device-phone .premium-brand > div:not(.brand-badge) {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  body.device-phone .main,
+  body.device-phone .main-content,
+  body.device-phone .page-content,
+  body.device-phone .dashboard-container,
+  body.device-phone .content-area {
+    margin-left: 0 !important;
+    width: 100vw !important;
+  }
+}

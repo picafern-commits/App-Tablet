@@ -18,8 +18,10 @@
     background: #020617 !important;
   }
 
-  body {
+  body,
+  body.device-phone {
     display: block !important;
+    background: #141414 !important;
   }
 
   .main,
@@ -85,6 +87,8 @@
   }
 
   /* Sidebar fechada */
+  body.device-phone aside.sidebar,
+  body.device-phone .sidebar,
   aside.sidebar,
   .sidebar,
   #sidebar,
@@ -93,7 +97,7 @@
     top: 0 !important;
     left: 0 !important;
     height: 100dvh !important;
-    width: 86vw !important;
+    width: min(340px, 88vw) !important;
     max-width: 340px !important;
     min-width: 286px !important;
     margin: 0 !important;
@@ -110,6 +114,8 @@
   }
 
   /* Sidebar aberta */
+  body.device-phone aside.sidebar.app-open,
+  body.device-phone .sidebar.app-open,
   aside.sidebar.app-open,
   .sidebar.app-open,
   #sidebar.app-open,
@@ -135,6 +141,8 @@
   }
 
   /* Texto dos botões da sidebar */
+  body.device-phone aside.sidebar a,
+  body.device-phone .sidebar a,
   aside.sidebar a,
   .sidebar a,
   #sidebar a,
@@ -165,6 +173,16 @@
     filter: none !important;
   }
 
+  body.device-phone aside.sidebar a::before,
+  body.device-phone .sidebar a::before,
+  aside.sidebar a::before,
+  .sidebar a::before {
+    margin-right: 12px !important;
+    width: 24px !important;
+    min-width: 24px !important;
+    font-size: 17px !important;
+  }
+
   .sidebar-link-text {
     display: inline-block !important;
     opacity: 1 !important;
@@ -179,12 +197,18 @@
     filter: none !important;
   }
 
+  body.device-phone .brand,
+  body.device-phone .premium-brand,
   .brand,
   .premium-brand {
     width: 100% !important;
     max-width: 100% !important;
   }
 
+  body.device-phone .brand h2,
+  body.device-phone .premium-brand h2,
+  body.device-phone .brand > div:not(.brand-badge),
+  body.device-phone .premium-brand > div:not(.brand-badge),
   .brand h2,
   .premium-brand h2 {
     display: block !important;

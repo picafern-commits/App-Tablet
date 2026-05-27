@@ -129,7 +129,25 @@
     overlay.onclick = close;
 
     sidebar.querySelectorAll("a").forEach(function (a) {
-      a.addEventListener("click", close);
+      if (a.dataset.iphoneNavBound === "1") return;
+      a.dataset.iphoneNavBound = "1";
+      a.addEventListener("click", function (event) {
+        var href = a.getAttribute("href");
+        if (!href || href === "#") {
+          close();
+          return;
+        }
+        if (!isMobile()) {
+          close();
+          return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        close();
+        setTimeout(function () {
+          window.location.href = href;
+        }, 40);
+      });
     });
   }
 
