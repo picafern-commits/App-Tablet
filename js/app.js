@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.6.6";
+const APP_VERSION = "1.6.7";
 
 
 
@@ -563,6 +563,14 @@ function renderDashboardResumoInteligente() {
     </div>`;
 }
 
+function getDashboardPrinterImage(item = {}) {
+  const modelo = normalizarTexto(item.modelo || "");
+  if (modelo.includes("taskalfa")) return "../img/taskalfa2554ci.png";
+  if (modelo.includes("pa5500")) return "../img/pa5500x.png";
+  if (modelo.includes("p3155")) return "../img/kyocerap3155dn.png";
+  return "../img/printer.png";
+}
+
 function renderDashboardCards(items) {
   try { updateEnterpriseDashboard(); } catch (e) { console.error(e); }
   const lista = el("listaDashboardStock");
@@ -607,8 +615,12 @@ function renderDashboardCards(items) {
 
     const residueHtml = residue ? gerarHTMLBarraToner(residue.percent, residue.label || "Resíduo", "waste") : "";
 
+    const printerImage = getDashboardPrinterImage(item);
     return `
       <div class="dashboard-card dashboard-critical-card">
+        <div class="equipment-art equipment-photo">
+          <img class="equipment-real-image" src="${printerImage}" alt="${safeRefHtml(item.modelo)}" loading="lazy" onerror="this.src='../img/printer.png'">
+        </div>
         <div class="stock-id">${item.modelo}</div>
         <div class="meta-line">Série: <span class="meta-value">${item.serie}</span></div>
         <div class="meta-line">Local: <span class="meta-value">${item.localizacao} (${item.armazem})</span></div>
@@ -6827,26 +6839,25 @@ window.renderPistolas = function(lista) {
   container.innerHTML = items.length ? items.map((pistola, index) => {
     const id = getPistolaId(pistola, index);
     return `
-      <article class="enterprise-item-card pistol-card">
-        <div class="item-topline">
-          <div>
-            <h3>${safeRefHtml(pistola.nome || "Pistola CK65")}</h3>
-            <p>Nº ${safeRefHtml(pistola.num || "-")}</p>
-          </div>
-          <span class="status-pill ok">Ativa</span>
-        </div>
-        <div class="item-meta-grid">
-          <span><strong>Operador</strong>${safeRefHtml(pistola.operador || "-")}</span>
-          <span><strong>Armazém</strong>${safeRefHtml(pistola.armazem || "-")}</span>
-          <span><strong>CN</strong>${safeRefHtml(pistola.cn || "-")}</span>
-          <span><strong>SN</strong>${safeRefHtml(pistola.sn || "-")}</span>
-        </div>
+      <div class="pc-card pistol-card">
+        <div class="pc-name">${safeRefHtml(pistola.nome || "Pistola CK65")}</div>
+        <div class="meta-line">Nº: <span class="meta-value">${safeRefHtml(pistola.num || "-")}</span></div>
+        <div class="meta-line">Operador: <span class="meta-value">${safeRefHtml(pistola.operador || "-")}</span></div>
+        <div class="meta-line">Armazém: <span class="meta-value">${safeRefHtml(pistola.armazem || "-")}</span></div>
+        <div class="meta-line">CN: <span class="meta-value">${safeRefHtml(pistola.cn || "-")}</span></div>
+        <div class="meta-line">SN: <span class="meta-value">${safeRefHtml(pistola.sn || "-")}</span></div>
         <div class="item-actions">
-          <button class="secondary-btn" type="button" onclick="editarPistola('${safeRefHtml(id)}')">Editar</button>
-          <button class="secondary-btn" type="button" onclick="verMaisPistola('${safeRefHtml(id)}')">Ver Mais</button>
-          <button class="secondary-btn danger" type="button" onclick="apagarPistola('${safeRefHtml(id)}')">Apagar</button>
+          <button class="secondary-btn" type="button" onclick="editarPistola('${safeRefHtml(id)}')">
+            Editar
+          </button>
+          <button class="secondary-btn" type="button" onclick="verMaisPistola('${safeRefHtml(id)}')">
+            Ver Mais
+          </button>
+          <button class="secondary-btn" type="button" onclick="apagarPistola('${safeRefHtml(id)}')">
+            Apagar
+          </button>
         </div>
-      </article>
+      </div>
     `;
   }).join("") : `<div class="reference-empty">Sem pistolas registadas.</div>`;
 };
