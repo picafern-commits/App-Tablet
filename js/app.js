@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.6.4";
+const APP_VERSION = "1.6.5";
 
 
 
@@ -1969,11 +1969,11 @@ function renderRadios() {
         <p>Serial: ${safeRefHtml(item.serial || "-")}</p>
       </div>
       <div class="radio-card-actions">
-        <button class="reference-icon" type="button" onclick="editarRadio('${item.id}')" title="Editar r?dio">E</button>
-        <button class="reference-icon danger" type="button" onclick="apagarRadio('${item.id}')" title="Apagar r?dio">X</button>
+        <button class="reference-icon" type="button" onclick="editarRadio('${item.id}')" title="Editar rádio">E</button>
+        <button class="reference-icon danger" type="button" onclick="apagarRadio('${item.id}')" title="Apagar rádio">X</button>
       </div>
     </article>
-  `).join("") : `<div class="reference-empty">Sem r?dios registados na Firestore.</div>`;
+  `).join("") : `<div class="reference-empty">Sem rádios registados na Firestore.</div>`;
 
   if (detalheNode) {
     detalheNode.innerHTML = radiosData.length ? radiosData.map((item) => `
@@ -1982,7 +1982,7 @@ function renderRadios() {
         <span>MAC ${safeRefHtml(item.mac || "-")} - Serial ${safeRefHtml(item.serial || "-")}</span>
         <small>Users associados: ${safeRefHtml(item.users || item.user || "Sem users associados")}</small>
       </div>
-    `).join("") : `<div class="reference-empty">Sem r?dios usados nesta semana.</div>`;
+    `).join("") : `<div class="reference-empty">Sem rádios usados nesta semana.</div>`;
   }
 }
 
@@ -1991,7 +1991,7 @@ function initRadiosPage() {
   const dbRef = window.db;
   if (!dbRef || typeof dbRef.collection !== "function") {
     const listaNode = document.getElementById("listaRadios");
-    if (listaNode) listaNode.innerHTML = `<div class="reference-empty">Firebase indispon?vel. Confirma a liga??o da app.</div>`;
+    if (listaNode) listaNode.innerHTML = `<div class="reference-empty">Firebase indisponível. Confirma a ligação da app.</div>`;
     return;
   }
 
@@ -2002,7 +2002,7 @@ function initRadiosPage() {
   }, (error) => {
     console.error("Erro realtime radios:", error);
     const listaNode = document.getElementById("listaRadios");
-    if (listaNode) listaNode.innerHTML = `<div class="reference-empty">Erro ao carregar r?dios da Firestore.</div>`;
+    if (listaNode) listaNode.innerHTML = `<div class="reference-empty">Erro ao carregar rádios da Firestore.</div>`;
   });
 }
 
@@ -2017,7 +2017,7 @@ function abrirModalRadio(id = null) {
   const nome = document.getElementById("radioNome");
   const mac = document.getElementById("radioMac");
   const serial = document.getElementById("radioSerial");
-  if (title) title.textContent = id ? "Editar R?dio" : "Novo R?dio";
+  if (title) title.textContent = id ? "Editar Rádio" : "Novo Rádio";
   if (nome) nome.value = item?.nome || "";
   if (mac) mac.value = item?.mac || "";
   if (serial) serial.value = item?.serial || "";
@@ -2036,7 +2036,7 @@ async function guardarRadio() {
   const mac = document.getElementById("radioMac")?.value.trim() || "";
   const serial = document.getElementById("radioSerial")?.value.trim() || "";
   if (!nome) {
-    mostrarMensagem("Preenche o nome do r?dio.", "erro");
+    mostrarMensagem("Preenche o nome do rádio.", "erro");
     return;
   }
 
@@ -2045,15 +2045,15 @@ async function guardarRadio() {
   try {
     if (radioEditId) {
       await window.db.collection("radios").doc(radioEditId).update(payload);
-      mostrarMensagem("R?dio atualizado.");
+      mostrarMensagem("Rádio atualizado.");
     } else {
       await window.db.collection("radios").add({ ...payload, createdAt: Date.now() });
-      mostrarMensagem("R?dio criado.");
+      mostrarMensagem("Rádio criado.");
     }
     fecharModalRadio();
   } catch (error) {
     console.error(error);
-    mostrarMensagem("Erro ao guardar r?dio.", "erro");
+    mostrarMensagem("Erro ao guardar rádio.", "erro");
   }
 }
 
@@ -2064,10 +2064,10 @@ function editarRadio(id) {
 async function apagarRadio(id) {
   try {
     await window.db.collection("radios").doc(id).delete();
-    mostrarMensagem("R?dio apagado.");
+    mostrarMensagem("Rádio apagado.");
   } catch (error) {
     console.error(error);
-    mostrarMensagem("Erro ao apagar r?dio.", "erro");
+    mostrarMensagem("Erro ao apagar rádio.", "erro");
   }
 }
 
