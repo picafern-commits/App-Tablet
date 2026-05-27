@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.8.0";
+const APP_VERSION = "1.8.2";
 
 
 
@@ -600,9 +600,9 @@ function renderDashboardCards(items) {
     const colors = Array.isArray(info?.colors) ? info.colors : [];
     const residue = info?.residue || null;
 
-    const criticalColors = colors.filter(c => isTonerEmpty(c.percent));
+    const criticalColors = colors.filter(c => isDashboardTonerLow(c.percent));
     const monoPercent = typeof info?.percent === "number" ? info.percent : null;
-    const monoCritical = colors.length === 0 && isTonerEmpty(monoPercent);
+    const monoCritical = colors.length === 0 && isDashboardTonerLow(monoPercent);
 
     const isCritical = criticalColors.length > 0 || monoCritical;
     return { item, info, criticalColors, monoCritical, residue, isCritical };
@@ -621,7 +621,7 @@ function renderDashboardCards(items) {
   });
 
   if (!criticas.length) {
-    lista.innerHTML = `<div class="panel empty-state"><h3>Sem toners vazios</h3><p>Só aparecem aqui impressoras com toner a 0%.</p></div>`;
+    lista.innerHTML = `<div class="panel empty-state"><h3>Sem toners abaixo de 25%</h3><p>As impressoras com toner a 25% ou menos vão aparecer aqui.</p></div>`;
     return;
   }
 
@@ -1026,29 +1026,49 @@ function extrairPercentagemTonerDoHTML(html) {
 const tonerAlertState = {};
 const tonerInfoState = {};
 const TONER_EMPTY_THRESHOLD = 0;
+const DASHBOARD_TONER_LOW_THRESHOLD = 25;
 
 function isTonerEmpty(percentagem) {
   return typeof percentagem === "number" && percentagem <= TONER_EMPTY_THRESHOLD;
 }
 
+function isDashboardTonerLow(percentagem) {
+  return typeof percentagem === "number" && percentagem <= DASHBOARD_TONER_LOW_THRESHOLD;
+}
+
 function corBarraToner(percentagem, cor = "black") {
   if (percentagem === null || percentagem === undefined) return "#94a3b8";
-  if (cor === "waste") return percentagem >= 100 ? "#dc2626" : "#16a34a";
-  if (isTonerEmpty(percentagem)) return "#dc2626";
+  if (cor === "waste") {
+    if (percentagem >= 80) return "#dc2626";
+    if (percentagem >= 60) return "#d97706";
+    return "#16a34a";
+  }
+  if (percentagem <= 20) return "#dc2626";
+  if (percentagem <= 50) return "#d97706";
   return "#16a34a";
 }
 
 function estadoBarraToner(percentagem, cor = "black") {
   if (percentagem === null || percentagem === undefined) return "Sem leitura";
-  if (cor === "waste") return percentagem >= 100 ? "Cheio" : "OK";
-  if (isTonerEmpty(percentagem)) return "Vazio";
+  if (cor === "waste") {
+    if (percentagem >= 80) return "Crítico";
+    if (percentagem >= 60) return "Médio";
+    return "OK";
+  }
+  if (percentagem <= 20) return "Crítico";
+  if (percentagem <= 50) return "Médio";
   return "Bom";
 }
 
 function classeEstadoToner(percentagem, cor = "black") {
   if (percentagem === null || percentagem === undefined) return "is-muted";
-  if (cor === "waste") return percentagem >= 100 ? "is-critical" : "is-good";
-  if (isTonerEmpty(percentagem)) return "is-critical";
+  if (cor === "waste") {
+    if (percentagem >= 80) return "is-critical";
+    if (percentagem >= 60) return "is-medium";
+    return "is-good";
+  }
+  if (percentagem <= 20) return "is-critical";
+  if (percentagem <= 50) return "is-medium";
   return "is-good";
 }
 
@@ -5293,6 +5313,23 @@ async function gerarWordEtiquetaPartilhada(dados, opts = {}) {
 
 window.gerarWordEtiquetaPartilhada = gerarWordEtiquetaPartilhada;
 
+function getEtiquetaDateValue(item = {}) {
+  const candidates = [item.data, item.dataScan, item.dataFolha, item.dataEtiqueta, item.createdAt, item.created];
+  for (const value of candidates) {
+    if (!value) continue;
+    if (typeof value === "number") return value;
+    if (value.seconds) return value.seconds * 1000;
+    const text = String(value);
+    const iso = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (iso) return new Date(`${iso[1]}-${iso[2]}-${iso[3]}T12:00:00`).getTime();
+    const pt = text.match(/^(\d{2})[\/-](\d{2})[\/-](\d{4})/);
+    if (pt) return new Date(`${pt[3]}-${pt[2]}-${pt[1]}T12:00:00`).getTime();
+    const parsed = Date.parse(text);
+    if (!Number.isNaN(parsed)) return parsed;
+  }
+  return 0;
+}
+
 function renderEtiquetasWordCards() {
   const host = el("listaEtiquetasWord");
   if (!host) return;
@@ -5303,6 +5340,7 @@ function renderEtiquetasWordCards() {
   if (texto) {
     items = items.filter(x => [x.serie,x.localCurto,x.localizacao,x.equipamento,x.cor,x.lote,x.dataEtiqueta].some(v => normalizarTexto(v).includes(texto)));
   }
+  items.sort((a, b) => getEtiquetaDateValue(b) - getEtiquetaDateValue(a));
   setText("countEtiquetasTotal", items.length);
   const hoje = new Date();
   const ymd = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-${String(hoje.getDate()).padStart(2,'0')}`;
