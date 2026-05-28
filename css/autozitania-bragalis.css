@@ -1022,6 +1022,26 @@ button:not(.primary-btn):not(.btn-primary):not(.danger):not(.delete-btn):not(.in
   }
 }
 
+/* Whole-screen scroll behaviour */
+html,
+body {
+  overflow-y: auto !important;
+  height: auto !important;
+}
+
+body:not(.device-phone) .sidebar {
+  overscroll-behavior: none !important;
+}
+
+body:not(.device-phone) .main,
+body:not(.device-phone) main,
+body.device-tablet .main,
+body.device-tablet main {
+  overflow: visible !important;
+  min-height: 100vh !important;
+  height: auto !important;
+}
+
 /* Radio cards final layout */
 .radios-page .radio-cards-grid {
   grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)) !important;
