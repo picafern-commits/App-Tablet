@@ -1042,6 +1042,19 @@ body.device-tablet main {
   height: auto !important;
 }
 
+body:not(.sidebar-open) .app-sidebar-overlay {
+  pointer-events: none !important;
+}
+
+body:not(.device-phone) .panel,
+body:not(.device-phone) .card,
+body:not(.device-phone) .reference-panel,
+body.device-tablet .panel,
+body.device-tablet .card,
+body.device-tablet .reference-panel {
+  overscroll-behavior: auto !important;
+}
+
 /* Radio cards final layout */
 .radios-page .radio-cards-grid {
   grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)) !important;
