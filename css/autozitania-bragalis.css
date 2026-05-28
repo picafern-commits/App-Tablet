@@ -1078,6 +1078,60 @@ body.device-tablet .secondary-btn {
   font-size: 16px !important;
 }
 
+/* Sidebar icon/text alignment fix */
+.sidebar a,
+aside.sidebar a,
+body.device-tablet .sidebar a,
+body.device-tablet aside.sidebar a,
+body.device-phone .sidebar a,
+body.device-phone aside.sidebar a {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 12px !important;
+  padding-left: 16px !important;
+  padding-right: 14px !important;
+  text-align: left !important;
+  text-indent: 0 !important;
+}
+
+.sidebar a::before,
+aside.sidebar a::before,
+body.device-tablet .sidebar a::before,
+body.device-tablet aside.sidebar a::before,
+body.device-phone .sidebar a::before,
+body.device-phone aside.sidebar a::before {
+  position: static !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  flex: 0 0 28px !important;
+  width: 28px !important;
+  min-width: 28px !important;
+  height: 28px !important;
+  margin: 0 !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+  text-align: center !important;
+}
+
+.sidebar a .sidebar-link-text,
+aside.sidebar a .sidebar-link-text,
+body.device-tablet .sidebar a .sidebar-link-text,
+body.device-tablet aside.sidebar a .sidebar-link-text,
+body.device-phone .sidebar a .sidebar-link-text,
+body.device-phone aside.sidebar a .sidebar-link-text {
+  display: inline-block !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  line-height: 1.2 !important;
+}
+
 /* Final Android tablet fit */
 body.device-tablet {
   font-size: 19px !important;

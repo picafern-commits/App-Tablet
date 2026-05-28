@@ -177,10 +177,20 @@
   body.device-phone .sidebar a::before,
   aside.sidebar a::before,
   .sidebar a::before {
-    margin-right: 12px !important;
-    width: 24px !important;
-    min-width: 24px !important;
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    transform: none !important;
+    display: inline-grid !important;
+    place-items: center !important;
+    flex: 0 0 28px !important;
+    margin: 0 12px 0 0 !important;
+    width: 28px !important;
+    min-width: 28px !important;
+    height: 28px !important;
     font-size: 17px !important;
+    line-height: 1 !important;
+    text-align: center !important;
   }
 
   .sidebar-link-text {
