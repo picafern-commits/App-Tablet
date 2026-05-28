@@ -104,22 +104,20 @@
   <div class="reference-header" data-breadcrumb="Home > Rádios">
     <div>
       <h1>Rádios</h1>
-      <p>Gerencie rádios diretamente na Firestore em tempo real.</p>
     </div>
     <div class="reference-actions">
       <div class="reference-search">
         <input id="radioSearch" type="text" placeholder="Pesquisar por rádio..." oninput="filtrarRadios()">
         <span>⌕</span>
       </div>
-      <button class="primary-btn reference-primary" type="button" onclick="adicionarRadio()">+ Novo Rádio</button>
+      <button class="primary-btn reference-primary" type="button" onclick="adicionarRadio()">Novo Rádio</button>
     </div>
   </div>
 
   <section class="reference-panel">
     <div class="section-header">
       <div>
-        <h3>Rádios Firestore</h3>
-        <p class="section-subtitle">Coleção: radios · ordenado por nome · realtime onSnapshot()</p>
+        <h3>Rádios</h3>
       </div>
       <span class="status-pill"><strong id="radiosTotal">0</strong> rádios</span>
     </div>
@@ -130,10 +128,9 @@
     <div class="section-header">
       <div>
         <h3>Registo semanal</h3>
-        <p id="radioSemanaLabel" class="section-subtitle">Semana</p>
       </div>
       <div class="weekly-actions">
-        <button class="primary-btn" type="button" onclick="abrirRegistoSemanalRadios()">+ Adicionar registo</button>
+        <button class="primary-btn" type="button" onclick="abrirRegistoSemanalRadios()">Adicionar registo</button>
       </div>
     </div>
     <div id="radioWeeklySummary" class="weekly-radio-list"></div>
