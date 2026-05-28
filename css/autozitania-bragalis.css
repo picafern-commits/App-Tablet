@@ -1022,6 +1022,167 @@ button:not(.primary-btn):not(.btn-primary):not(.danger):not(.delete-btn):not(.in
   }
 }
 
+/* Global polish pass */
+:root {
+  --az-bg: #121316;
+  --az-bg-2: #18191d;
+  --az-panel: rgba(26, 27, 32, .96);
+  --az-panel-2: rgba(32, 33, 39, .94);
+  --az-text: #f7f7f8;
+  --az-muted: #b9bec8;
+  --app-button-text: #ffffff;
+  --app-button-icon: var(--app-button-text);
+}
+
+html,
+body {
+  background:
+    radial-gradient(circle at 12% 0%, rgb(var(--app-accent-rgb) / .10), transparent 34%),
+    linear-gradient(180deg, #16171a 0%, #111215 52%, #0f1012 100%) !important;
+}
+
+.page-hero,
+.dashboard-header,
+.reference-header,
+.topbar,
+.premium-topbar {
+  background:
+    linear-gradient(135deg, rgb(var(--app-accent-rgb) / .12), rgba(24, 25, 30, .92)),
+    var(--az-panel) !important;
+}
+
+.panel,
+.reference-panel,
+.card,
+.pc-card,
+.stock-card,
+.history-card,
+.dashboard-card,
+.stat-card,
+.metric-card,
+.modal-card,
+.info-list-item,
+.radio-card,
+.porta-card,
+.pistola-card,
+.manutencao-card {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.018)),
+    var(--az-panel) !important;
+  border-color: var(--app-accent-line) !important;
+}
+
+.stat-card,
+.metric-card,
+.dashboard-card,
+.summary-card,
+.pc-card,
+.radio-card,
+.porta-card,
+.pistola-card,
+.manutencao-card {
+  border-bottom-color: var(--app-accent) !important;
+}
+
+.primary-btn,
+.reference-primary,
+.action-btn,
+.save-btn,
+.add-btn,
+button.primary-btn,
+button.btn-primary,
+.btn-primary {
+  color: var(--app-button-text, #fff) !important;
+}
+
+.primary-btn *,
+.reference-primary *,
+.action-btn *,
+.save-btn *,
+.add-btn *,
+button.primary-btn *,
+button.btn-primary *,
+.btn-primary * {
+  color: inherit !important;
+  fill: currentColor !important;
+  stroke: currentColor !important;
+}
+
+.secondary-btn,
+.reference-outline,
+.ghost-btn,
+button.secondary-btn {
+  color: #f4f7fb !important;
+  background: rgba(255, 255, 255, .055) !important;
+}
+
+.reference-empty,
+.section-subtitle,
+.meta-line,
+.toolbar-search input::placeholder,
+input::placeholder,
+textarea::placeholder {
+  color: var(--az-muted) !important;
+}
+
+.radio-card {
+  display: grid !important;
+  grid-template-columns: 92px minmax(0, 1fr) auto !important;
+  gap: 16px !important;
+  align-items: center !important;
+}
+
+.radio-card-icon {
+  width: 84px !important;
+  height: 84px !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, .045) !important;
+  border: 1px solid rgba(255, 255, 255, .10) !important;
+  overflow: hidden !important;
+}
+
+.radio-device-img {
+  width: 78px !important;
+  height: 78px !important;
+  object-fit: contain !important;
+  display: block !important;
+  mix-blend-mode: normal !important;
+}
+
+.users-grid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+}
+
+.pc-card .item-actions,
+.radio-card-actions,
+.weekly-record-actions,
+.info-card-actions {
+  justify-content: flex-start !important;
+}
+
+@media (max-width: 760px) {
+  .radio-card {
+    grid-template-columns: 72px minmax(0, 1fr) !important;
+  }
+
+  .radio-card-actions {
+    grid-column: 1 / -1 !important;
+  }
+
+  .radio-card-icon {
+    width: 68px !important;
+    height: 68px !important;
+    border-radius: 14px !important;
+  }
+
+  .radio-device-img {
+    width: 64px !important;
+    height: 64px !important;
+  }
+}
+
 /* Absolute last tablet override */
 body.device-tablet {
   font-size: 19px !important;

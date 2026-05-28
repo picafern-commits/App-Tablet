@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.9.3";
+const APP_VERSION = "1.9.4";
 
 
 
@@ -1746,9 +1746,10 @@ function renderUsers(lista = window.usersData) {
   const container = el("listaUsers");
   if (!container) return;
 
-  atualizarContadoresUsers(lista);
+  const usersList = Array.isArray(lista) ? [...lista] : [];
+  atualizarContadoresUsers(usersList);
 
-window.usersData.sort((a,b)=>{
+usersList.sort((a,b)=>{
  
   const aTxt =
     String(a.nome || "")
@@ -1771,11 +1772,12 @@ window.usersData.sort((a,b)=>{
  
 });
   
-  container.innerHTML = lista.map((u, index) => {
-    const ref = u.idDoc ? `'${u.idDoc}'` : `'${u._ref || `local-user-${index}`}'`;
+  container.innerHTML = usersList.length ? usersList.map((u, index) => {
+    const refValue = u.idDoc || u.firebaseId || u._ref || `local-user-${index}`;
+    const ref = `'${escapeHtmlAppBraga(refValue)}'`;
     return `
     <div class="pc-card">
-      <div class="pc-name">${u.nome}</div>
+      <div class="pc-name">${escapeHtmlAppBraga(u.nome || "Sem nome")}</div>
       <div class="meta-line">Zona: <span class="meta-value">${u.zona || "-"}</span></div>
       <div class="meta-line">User PC/EYE: <span class="meta-value">${u.user_pc_eye || "-"}</span></div>
       <div class="meta-line">Pass Remote: <span class="meta-value">${u.pass_remote || "-"}</span></div>
@@ -1795,7 +1797,7 @@ window.usersData.sort((a,b)=>{
       </div>
     </div>
   `;
-  }).join("");
+  }).join("") : `<div class="reference-empty">Sem users carregados da Firebase.</div>`;
 }
 
 function filtrarUsers(txt = "") {
@@ -2057,6 +2059,8 @@ function initResolucaoApp() {
     const accentColor = data.accentColor || getCachedCorApp() || APP_DEFAULT_ACCENT;
     aplicarCorApp(accentColor);
     cacheCorApp(accentColor);
+    setCookieAppBraga("appButtonTextMode", data.buttonTextMode || getButtonTextMode(), 31536000);
+    if (typeof aplicarModoTextoBotoes === "function") aplicarModoTextoBotoes(data.buttonTextMode || getButtonTextMode());
     aplicarSegurancaApp(data.pinHash || "", data.lockTimeoutMinutes || 0, data.pinLength || 0, data.authMethod || "pin", data.biometricEnabled || false, data.biometricCredentialId || "");
   }, (error) => console.error("Erro ao carregar resolução:", error));
 }
@@ -2693,17 +2697,19 @@ function getRadiosFiltrados() {
   });
 }
 
-function radioDeviceImageHtml(serial = "") {
-  const ref = safeRefHtml(String(serial || "").slice(-4) || "BR");
-  return `
-    <div class="radio-device-visual" aria-label="Rádio">
-      <div class="radio-device-antenna"></div>
-      <div class="radio-device-screen">${ref}</div>
-      <div class="radio-device-pad">
-        <span></span><span></span><span></span><span></span>
-      </div>
-    </div>
-  `;
+function appAssetPath(path) {
+  const clean = String(path || "").replace(/^\/+/, "");
+  const isHtmlPage = /\/html\//i.test(window.location.pathname || "");
+  return `${isHtmlPage ? "../" : ""}${clean}`;
+}
+
+function getRadioImageSource(radio = {}) {
+  return radio.imagem || radio.imageUrl || radio.foto || radio.photoUrl || appAssetPath("img/motorola-tlk25-radio.webp");
+}
+
+function radioDeviceImageHtml(radio = {}) {
+  const serial = String(radio.serial || radio.nome || "Radio").trim();
+  return `<img class="radio-device-img" src="${safeRefHtml(getRadioImageSource(radio))}" alt="${safeRefHtml(serial)}" loading="lazy">`;
 }
 
 function renderRadios() {
@@ -2725,7 +2731,7 @@ function renderRadios() {
 
   listaNode.innerHTML = lista.length ? lista.map((item) => `
     <article class="radio-card">
-      <div class="radio-card-icon">${radioDeviceImageHtml(item.serial)}</div>
+      <div class="radio-card-icon">${radioDeviceImageHtml(item)}</div>
       <div class="radio-card-main">
         <h3>${safeRefHtml(item.nome || "Sem nome")}</h3>
         <p>MAC: ${safeRefHtml(item.mac || "-")}</p>
@@ -4476,32 +4482,48 @@ function fecharAvisoAtualizacao() {
   document.body.style.overflow = "";
 }
 
-function atualizarAppObrigatorio() {
+async function limparCacheAtualizacaoAppBraga() {
+  try {
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((reg) => {
+        if (reg.waiting) reg.waiting.postMessage({ type: "SKIP_WAITING" });
+        return reg.unregister();
+      }));
+    }
+  } catch (error) {
+    console.error("Erro a limpar service worker:", error);
+  }
+
+  try {
+    if (window.caches?.keys) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((key) => caches.delete(key)));
+    }
+  } catch (error) {
+    console.error("Erro a limpar cache:", error);
+  }
+}
+
+async function atualizarAppObrigatorio() {
   const box = document.getElementById("updateBoxAppBraga");
   if (box) {
     box.innerHTML = `
       <div class="update-title">A atualizar...</div>
-      <div class="update-subtitle">A recarregar a versão mais recente da app.</div>
+      <div class="update-subtitle">A limpar cache e a carregar a versao mais recente da app.</div>
     `;
   }
 
+  deleteCookieAppBraga("appUpdateDismissedVersion");
   const targetUrl = new URL(window.location.href);
+  targetUrl.searchParams.set("v", APP_VERSION);
   targetUrl.searchParams.set("update", String(Date.now()));
   const target = targetUrl.toString();
   const currentBefore = window.location.href;
 
-  setTimeout(async () => {
-    try {
-      if ("serviceWorker" in navigator) {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        regs.forEach((reg) => {
-          if (reg.waiting) reg.waiting.postMessage({ type: "SKIP_WAITING" });
-        });
-      }
-    } catch (e) {
-      console.error(e);
-    }
-
+  try {
+    await limparCacheAtualizacaoAppBraga();
+  } finally {
     try {
       window.location.replace(target);
     } catch (e) {
@@ -4533,12 +4555,13 @@ function atualizarAppObrigatorio() {
         }
       }
     }, 2200);
-  }, 400);
+  }
 }
 
 window.addEventListener("load", verificarAtualizacao);
 window.addEventListener("load", () => atualizarVersaoUI(APP_VERSION));
 window.fecharAvisoAtualizacao = fecharAvisoAtualizacao;
+window.atualizarAppObrigatorio = atualizarAppObrigatorio;
 
 
 
@@ -4559,7 +4582,7 @@ function itemPorRef(lista, ref) {
 
 function idxPorRef(lista, ref) {
   if (typeof ref === "string") {
-    return lista.findIndex(i => i.idDoc === ref || i._ref === ref);
+    return lista.findIndex(i => i.idDoc === ref || i._ref === ref || i.firebaseId === ref);
   }
   const idx = Number(ref);
   return Number.isNaN(idx) ? -1 : idx;
@@ -7745,18 +7768,30 @@ window.renderPistolas = function(lista) {
 
 /* ===== BUTTON TEXT CONTRAST SETTINGS ===== */
 function getButtonTextMode() {
-  return localStorage.getItem("appButtonTextMode") || "auto";
+  return getCookieAppBraga("appButtonTextMode") || "auto";
 }
 
-function guardarModoTextoBotoes(mode) {
+async function guardarModoTextoBotoes(mode) {
   const allowed = ["auto", "dark", "light"];
   const finalMode = allowed.includes(mode) ? mode : "auto";
-  localStorage.setItem("appButtonTextMode", finalMode);
-  aplicarModoTextoBotoes();
+  setCookieAppBraga("appButtonTextMode", finalMode, 31536000);
+  aplicarModoTextoBotoes(finalMode);
+  if (!window.db || !window.db.collection) return;
+  try {
+    await window.db.collection("config").doc("layout").set({
+      buttonTextMode: finalMode,
+      updatedAt: Date.now()
+    }, { merge: true });
+    mostrarMensagem("Cor do texto dos botÃµes atualizada.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar a cor do texto.", "erro");
+  }
 }
 
-function aplicarModoTextoBotoes() {
-  const mode = getButtonTextMode();
+function aplicarModoTextoBotoes(modeValue = getButtonTextMode()) {
+  const allowed = ["auto", "dark", "light"];
+  const mode = allowed.includes(modeValue) ? modeValue : "auto";
   const root = document.documentElement;
 
   root.setAttribute("data-button-text-mode", mode);
