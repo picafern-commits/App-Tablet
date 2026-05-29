@@ -1,4 +1,4 @@
-const APP_BRAGA_SW = "app-braga-runtime-v1";
+const APP_BRAGA_SW = "app-braga-runtime-v2";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -53,4 +53,48 @@ self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
   }
+  if (event.data && event.data.type === "APP_BRAGA_NOTIFY") {
+    const payload = event.data.payload || {};
+    event.waitUntil(
+      self.registration.showNotification(payload.title || "App Braga", {
+        body: payload.body || "",
+        icon: "./icon-192.png",
+        badge: "./icon-192.png",
+        tag: payload.tag || "app-braga",
+        data: payload.data || {}
+      })
+    );
+  }
+});
+
+self.addEventListener("push", (event) => {
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch (error) {
+    payload = { title: "App Braga", body: event.data ? event.data.text() : "Nova notificacao" };
+  }
+  event.waitUntil(
+    self.registration.showNotification(payload.title || "App Braga", {
+      body: payload.body || "",
+      icon: "./icon-192.png",
+      badge: "./icon-192.png",
+      tag: payload.tag || "app-braga-push",
+      data: payload.data || { url: "./index.html" }
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const targetUrl = event.notification.data && event.notification.data.url ? event.notification.data.url : "./index.html";
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if ("focus" in client) return client.focus();
+      }
+      if (clients.openWindow) return clients.openWindow(targetUrl);
+      return null;
+    })
+  );
 });

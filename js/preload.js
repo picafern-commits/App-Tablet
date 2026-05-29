@@ -6,7 +6,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onDownloaded: (cb) => ipcRenderer.on("update_downloaded", cb),
   installUpdate: () => ipcRenderer.send("install_update"),
   getPrinterHTML: (ip) => ipcRenderer.invoke("printer:get-html", ip),
-  getTonerSNMP: (ip) => ipcRenderer.invoke("printer:get-toner-snmp", ip)
+  getTonerSNMP: (ip) => ipcRenderer.invoke("printer:get-toner-snmp", ip),
+  showNotification: (payload) => ipcRenderer.invoke("app:notify", payload)
 });
 
 

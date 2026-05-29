@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell, ipcMain, Tray, Menu } = require("electron");
+const { app, BrowserWindow, shell, ipcMain, Tray, Menu, Notification } = require("electron");
 const path = require("path");
 const http = require("http");
 const https = require("https");
@@ -218,6 +218,23 @@ app.whenReady().then(() => {
   app.on("activate", () => {
     mostrarJanelaPrincipal();
   });
+});
+
+ipcMain.handle("app:notify", async (_event, payload = {}) => {
+  try {
+    const title = String(payload.title || "App Braga");
+    const body = String(payload.body || "");
+    if (!Notification.isSupported()) return { ok: false, error: "Notificacoes nao suportadas" };
+    new Notification({
+      title,
+      body,
+      icon: path.join(__dirname, "..", "icon-192.png"),
+      silent: false
+    }).show();
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
 });
 
 app.on("before-quit", () => {

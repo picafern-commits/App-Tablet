@@ -22,7 +22,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.9.7";
+const APP_VERSION = "1.9.8";
 
 
 
@@ -75,6 +75,16 @@ let stockGlobal = [];
 let historicoGlobal = [];
 let pcsGlobal = [];
 let manutencoesGlobal = [];
+let appNotificationTimer = null;
+
+const appNotificationState = {
+  enabled: false,
+  tonerZero: true,
+  stockMin: true,
+  maintenance: true,
+  intervalMinutes: 15,
+  sent: {}
+};
 
 function el(id) {
   return document.getElementById(id);
@@ -1159,15 +1169,195 @@ function maybeNotifyCriticalSupply(ip, info) {
   const message = `Toner vazio em ${printerLabel} — ${key}`;
   mostrarMensagem(message, "erro");
 
-  if ("Notification" in window) {
-    if (Notification.permission === "granted") {
-      new Notification("Toner vazio", { body: message });
-    } else if (Notification.permission !== "denied") {
-      Notification.requestPermission().then((perm) => {
-        if (perm === "granted") new Notification("Toner vazio", { body: message });
-      }).catch(() => {});
-    }
+  enviarNotificacaoApp("Toner vazio", message, `toner-${ip}-${key}`, { url: "html/impressoras.html" });
+}
+
+function aplicarConfigNotificacoesApp(config = {}) {
+  appNotificationState.enabled = config.notificationEnabled === true;
+  appNotificationState.tonerZero = config.notifyTonerZero !== false;
+  appNotificationState.stockMin = config.notifyStockMin !== false;
+  appNotificationState.maintenance = config.notifyMaintenance !== false;
+  appNotificationState.intervalMinutes = Math.max(5, Number(config.notificationIntervalMinutes || 15));
+
+  const setChecked = (id, value) => {
+    const node = document.getElementById(id);
+    if (node) node.checked = !!value;
+  };
+  setChecked("notifyEnabled", appNotificationState.enabled);
+  setChecked("notifyTonerZero", appNotificationState.tonerZero);
+  setChecked("notifyStockMin", appNotificationState.stockMin);
+  setChecked("notifyMaintenance", appNotificationState.maintenance);
+  const interval = document.getElementById("notifyIntervalMinutes");
+  if (interval) interval.value = String(appNotificationState.intervalMinutes);
+
+  iniciarMonitorNotificacoesApp();
+}
+
+function notificationPermissionApp() {
+  if (window.electronAPI?.showNotification) return "electron";
+  if (!("Notification" in window)) return "unsupported";
+  return Notification.permission;
+}
+
+async function pedirPermissaoNotificacoesApp() {
+  if (window.electronAPI?.showNotification) {
+    await guardarConfigNotificacoesApp({ notificationEnabled: true });
+    await enviarNotificacaoApp("App Braga", "Notificações ativas no Electron.", "test-electron", { force: true });
+    return;
   }
+
+  if (!("Notification" in window)) {
+    mostrarMensagem("Este dispositivo não suporta notificações Web.", "erro");
+    return;
+  }
+
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission === "granted") {
+      await registarServiceWorkerAppBraga();
+      await guardarConfigNotificacoesApp({ notificationEnabled: true });
+      await enviarNotificacaoApp("App Braga", "Notificações ativas neste dispositivo.", "test-web", { force: true });
+    } else {
+      mostrarMensagem("Permissão de notificações recusada.", "erro");
+    }
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao ativar notificações.", "erro");
+  }
+}
+
+async function guardarConfigNotificacoesApp(overrides = null) {
+  const data = overrides || {
+    notificationEnabled: !!document.getElementById("notifyEnabled")?.checked,
+    notifyTonerZero: !!document.getElementById("notifyTonerZero")?.checked,
+    notifyStockMin: !!document.getElementById("notifyStockMin")?.checked,
+    notifyMaintenance: !!document.getElementById("notifyMaintenance")?.checked,
+    notificationIntervalMinutes: Number(document.getElementById("notifyIntervalMinutes")?.value || 15)
+  };
+
+  aplicarConfigNotificacoesApp(data);
+
+  if (!window.db || !window.db.collection) {
+    mostrarMensagem("Firebase indisponível para guardar notificações.", "erro");
+    return;
+  }
+
+  try {
+    await window.db.collection("config").doc("layout").set({
+      ...data,
+      updatedAt: Date.now()
+    }, { merge: true });
+    mostrarMensagem("Notificações atualizadas.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar notificações.", "erro");
+  }
+}
+
+async function enviarNotificacaoApp(title, body, tag = "app-braga", options = {}) {
+  if (!options.force && !appNotificationState.enabled) return false;
+
+  try {
+    if (window.electronAPI?.showNotification) {
+      const result = await window.electronAPI.showNotification({ title, body, tag, data: options });
+      return !!result?.ok;
+    }
+
+    if (!("Notification" in window) || Notification.permission !== "granted") return false;
+
+    const payload = { title, body, tag, data: options };
+    if ("serviceWorker" in navigator) {
+      const registration = await navigator.serviceWorker.ready.catch(() => null);
+      if (registration?.showNotification) {
+        await registration.showNotification(title, {
+          body,
+          icon: location.pathname.includes("/html/") ? "../icon-192.png" : "icon-192.png",
+          badge: location.pathname.includes("/html/") ? "../icon-192.png" : "icon-192.png",
+          tag,
+          data: options
+        });
+        return true;
+      }
+      navigator.serviceWorker.controller?.postMessage({ type: "APP_BRAGA_NOTIFY", payload });
+    }
+
+    new Notification(title, { body, tag });
+    return true;
+  } catch (error) {
+    console.error("Erro notificação:", error);
+    return false;
+  }
+}
+
+function buildAlertasNotificacoesApp() {
+  const alerts = [];
+
+  if (appNotificationState.stockMin && typeof buildAlertasInteligentes === "function") {
+    buildAlertasInteligentes()
+      .filter((item) => item.tipo === "stock")
+      .forEach((item) => alerts.push({
+        key: `stock-${item.titulo}-${item.detalhe}`,
+        title: "Stock abaixo do mínimo",
+        body: `${item.titulo}: ${item.detalhe}`,
+        url: "html/stock.html"
+      }));
+  }
+
+  if (appNotificationState.tonerZero && typeof impressorasData !== "undefined" && typeof tonerInfoState !== "undefined") {
+    impressorasData.forEach((printer) => {
+      const info = tonerInfoState[printer.ip];
+      const colors = Array.isArray(info?.colors) ? info.colors : [];
+      const empty = colors.filter((item) => isTonerEmpty(item.percent));
+      if (!empty.length) return;
+      alerts.push({
+        key: `toner-${printer.ip}-${empty.map((item) => `${item.label}-${item.percent}`).join("-")}`,
+        title: "Toner vazio",
+        body: `${printer.modelo} ${printer.localizacao}: ${empty.map((item) => `${item.label} ${item.percent}%`).join(", ")}`,
+        url: "html/impressoras.html"
+      });
+    });
+  }
+
+  if (appNotificationState.maintenance && Array.isArray(manutencoesGlobal)) {
+    manutencoesGlobal
+      .filter((item) => String(item.estado || "").toLowerCase().includes("pendente"))
+      .slice(0, 5)
+      .forEach((item) => alerts.push({
+        key: `manut-${item.idDoc || item.ip || item.numeroSerie || item.modelo || item.dataPedido}`,
+        title: "Manutenção pendente",
+        body: `${item.modelo || item.numeroSerie || "Impressora"} - ${item.localizacao || item.ip || "sem local"}`,
+        url: "html/manutencao-impressoras.html"
+      }));
+  }
+
+  return alerts;
+}
+
+async function verificarAlertasNotificacoesApp(force = false) {
+  if (!force && !appNotificationState.enabled) return;
+  const alerts = buildAlertasNotificacoesApp();
+  if (force && !alerts.length) {
+    mostrarMensagem("Sem alertas ativos para notificar.");
+    return;
+  }
+
+  for (const alert of alerts) {
+    if (!force && appNotificationState.sent[alert.key]) continue;
+    appNotificationState.sent[alert.key] = Date.now();
+    await enviarNotificacaoApp(alert.title, alert.body, alert.key, { url: alert.url, force });
+  }
+}
+
+function iniciarMonitorNotificacoesApp() {
+  clearInterval(appNotificationTimer);
+  if (!appNotificationState.enabled) return;
+  const intervalMs = Math.max(5, appNotificationState.intervalMinutes) * 60 * 1000;
+  appNotificationTimer = setInterval(() => verificarAlertasNotificacoesApp(false), intervalMs);
+}
+
+async function testarNotificacaoApp() {
+  const ok = await enviarNotificacaoApp("App Braga", "Teste de notificação concluído.", "app-braga-test", { force: true, url: "html/config.html" });
+  mostrarMensagem(ok ? "Notificação de teste enviada." : "Ativa as permissões de notificações primeiro.", ok ? "sucesso" : "erro");
 }
 
 async function obterTonerInfo(ip) {
@@ -2061,6 +2251,7 @@ function initResolucaoApp() {
     cacheCorApp(accentColor);
     setCookieAppBraga("appButtonTextMode", data.buttonTextMode || getButtonTextMode(), 31536000);
     if (typeof aplicarModoTextoBotoes === "function") aplicarModoTextoBotoes(data.buttonTextMode || getButtonTextMode());
+    aplicarConfigNotificacoesApp(data);
     aplicarSegurancaApp(data.pinHash || "", data.lockTimeoutMinutes || 0, data.pinLength || 0, data.authMethod || "pin", data.biometricEnabled || false, data.biometricCredentialId || "");
   }, (error) => console.error("Erro ao carregar resolução:", error));
 }
@@ -2490,6 +2681,9 @@ async function verificarSistemasApp() {
   setHealthStatus("healthNetwork", navigator.onLine ? "Online" : "Offline", navigator.onLine ? "ok" : "bad");
   setHealthStatus("healthDevice", window.appBragaDeviceType || (document.body.classList.contains("device-phone") ? "Telemóvel" : (document.body.classList.contains("device-tablet") ? "Tablet" : "PC")), "ok");
   setHealthStatus("healthPin", appSecurityState.biometricEnabled ? "Biometria ativa" : (appSecurityState.pinHash ? "PIN ativo" : "Desligado"), hasSecurityEnabledApp() ? "ok" : "warn");
+  const notifyPermission = notificationPermissionApp();
+  const notifyOk = notifyPermission === "granted" || notifyPermission === "electron";
+  setHealthStatus("healthNotifications", notifyOk ? "Ativas" : (notifyPermission === "unsupported" ? "Sem suporte" : "Sem permissao"), notifyOk ? "ok" : "warn");
   setHealthStatus("healthFirebase", window.firebase ? "Carregado" : "Indisponível", window.firebase ? "ok" : "bad");
   setHealthStatus("healthAuth", window.firebase?.auth ? "Carregado" : "Indisponível", window.firebase?.auth ? "ok" : "warn");
 

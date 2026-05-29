@@ -2133,6 +2133,19 @@ body.device-tablet .config-layout {
   color: #fecaca;
 }
 
+.config-section-notifications {
+  display: grid;
+  gap: 16px;
+}
+
+.notification-note {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--app-accent-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .035);
+}
+
 @media (max-width: 760px) {
   .weekly-record-actions,
   .config-security-actions {

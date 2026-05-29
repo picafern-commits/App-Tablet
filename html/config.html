@@ -212,8 +212,42 @@
         <div class="health-card"><span>Auth</span><strong id="healthAuth">A verificar</strong></div>
         <div class="health-card"><span>Rede</span><strong id="healthNetwork">A verificar</strong></div>
         <div class="health-card"><span>PIN / biometria</span><strong id="healthPin">A verificar</strong></div>
+        <div class="health-card"><span>Notificações</span><strong id="healthNotifications">A verificar</strong></div>
         <div class="health-card"><span>Dispositivo</span><strong id="healthDevice">A verificar</strong></div>
       </div>
+    </div>
+
+    <div class="panel config-section config-section-notifications">
+      <div class="section-header">
+        <div>
+          <h3>Notificações</h3>
+          <p class="section-subtitle">Alertas de toner, stock, manutenção e estado da APP.</p>
+        </div>
+        <button class="primary-btn" type="button" onclick="pedirPermissaoNotificacoesApp()">Ativar notificações</button>
+      </div>
+
+      <div class="config-form-grid">
+        <label class="switch-row config-field-inline"><input type="checkbox" id="notifyEnabled" onchange="guardarConfigNotificacoesApp()"> <span>Sistema ativo</span></label>
+        <label class="switch-row config-field-inline"><input type="checkbox" id="notifyTonerZero" onchange="guardarConfigNotificacoesApp()"> <span>Toner a 0%</span></label>
+        <label class="switch-row config-field-inline"><input type="checkbox" id="notifyStockMin" onchange="guardarConfigNotificacoesApp()"> <span>Stock abaixo do mínimo</span></label>
+        <label class="switch-row config-field-inline"><input type="checkbox" id="notifyMaintenance" onchange="guardarConfigNotificacoesApp()"> <span>Manutenções pendentes</span></label>
+        <label class="config-auth-field">
+          <span>Verificar alertas</span>
+          <select id="notifyIntervalMinutes" onchange="guardarConfigNotificacoesApp()">
+            <option value="5">5 minutos</option>
+            <option value="10">10 minutos</option>
+            <option value="15">15 minutos</option>
+            <option value="30">30 minutos</option>
+            <option value="60">60 minutos</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="config-actions-row">
+        <button class="secondary-btn" type="button" onclick="testarNotificacaoApp()">Testar notificação</button>
+        <button class="secondary-btn" type="button" onclick="verificarAlertasNotificacoesApp(true)">Verificar alertas agora</button>
+      </div>
+      <p class="section-subtitle notification-note">Electron consegue avisar com a janela fechada para a tray. Web/iPhone/Android precisam de permissão do sistema; push com a app totalmente fechada depende de suporte Web Push do dispositivo.</p>
     </div>
 
     <div class="panel config-section config-section-backups">
