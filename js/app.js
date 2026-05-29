@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.10.0";
+const APP_VERSION = "1.10.1";
 
 
 
@@ -1402,8 +1402,11 @@ function carregarScriptAppBraga(src) {
 }
 
 async function garantirFirebaseMessagingApp() {
-  if (window.electronAPI?.showNotification) throw new Error("FCM Web Push é para Web/PWA; Electron usa notificações nativas.");
-  if (!window.firebase || !firebase.apps?.length) throw new Error("Firebase v8 não está carregado.");
+  if (window.electronAPI?.showNotification) throw new Error("FCM Web Push e para Web/PWA; Electron usa notificacoes nativas.");
+  if (!window.isSecureContext) throw new Error("Push Service precisa de HTTPS.");
+  if (!("serviceWorker" in navigator)) throw new Error("Service Worker indisponivel neste dispositivo.");
+  if (!("PushManager" in window)) throw new Error("Push Service indisponivel neste dispositivo/browser.");
+  if (!window.firebase || !firebase.apps?.length) throw new Error("Firebase v8 nao esta carregado.");
   if (!firebase.messaging) {
     await carregarScriptAppBraga("https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js");
   }
@@ -1415,6 +1418,32 @@ async function garantirFirebaseMessagingApp() {
 
 function getNotificationTokenDocId(token) {
   return encodeURIComponent(String(token || "")).replace(/\./g, "%2E").slice(0, 1400);
+}
+
+function webPushDisponivelApp() {
+  return !!(window.isSecureContext && "serviceWorker" in navigator && "PushManager" in window);
+}
+
+async function registarDispositivoLocalNotificacoesApp(source = "web-local") {
+  await guardarConfigNotificacoesApp({ notificationEnabled: true, notificationVapidKey: appNotificationState.vapidKey });
+  if (window.db?.collection) {
+    const id = `${source}-${encodeURIComponent(navigator.platform || "device")}-${Math.abs(hashTextoAppBraga(navigator.userAgent || ""))}`;
+    await window.db.collection("notificationTokens").doc(id).set({
+      active: true,
+      source,
+      appVersion: APP_VERSION,
+      deviceType: window.appBragaDeviceType || (document.body.classList.contains("device-tablet") ? "tablet" : (document.body.classList.contains("device-phone") ? "phone" : "pc")),
+      userAgent: navigator.userAgent,
+      platform: navigator.platform || "",
+      permission: "Notification" in window ? Notification.permission : "unsupported",
+      pushAvailable: webPushDisponivelApp(),
+      updatedAt: Date.now(),
+      createdAt: Date.now()
+    }, { merge: true });
+  }
+  setNotificationTokenStatus("Local ativo", "warn");
+  await enviarNotificacaoApp("App Braga", "Notificacoes locais ativas neste dispositivo.", `${source}-register`, { force: true });
+  mostrarMensagem("Push remoto indisponivel; notificacoes locais ativadas.");
 }
 
 async function registarDispositivoPushApp() {
@@ -1451,6 +1480,11 @@ async function registarDispositivoPushApp() {
     await pedirPermissaoNotificacoesApp();
     if (!("Notification" in window) || Notification.permission !== "granted") return;
 
+    if (!webPushDisponivelApp()) {
+      await registarDispositivoLocalNotificacoesApp("web-local-no-push");
+      return;
+    }
+
     setNotificationTokenStatus("A registar...", "warn");
     await registarServiceWorkerAppBraga();
     const messaging = await garantirFirebaseMessagingApp();
@@ -1485,6 +1519,10 @@ async function registarDispositivoPushApp() {
     if (code.includes("messaging/unsupported-browser")) friendly = "Este browser/dispositivo nao suporta Firebase Cloud Messaging.";
     if (code.includes("messaging/invalid-vapid-key")) friendly = "A VAPID key nao e valida. Confirma a chave Web Push no Firebase.";
     if (code.includes("messaging/token-subscribe-failed")) friendly = "Falhou a subscricao push. Confirma permissoes e a VAPID key.";
+    if (message.toLowerCase().includes("push service")) {
+      await registarDispositivoLocalNotificacoesApp("web-local-no-push");
+      return;
+    }
     mostrarMensagem(friendly, "erro");
   }
 }
