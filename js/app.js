@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.10.5";
+const APP_VERSION = "1.10.6";
 
 
 
@@ -86,6 +86,7 @@ const appNotificationState = {
   tonerZero: true,
   stockMin: true,
   maintenance: true,
+  radios: true,
   intervalMinutes: 15,
   vapidKey: "",
   fcmToken: "",
@@ -1187,6 +1188,7 @@ function aplicarConfigNotificacoesApp(config = {}) {
   appNotificationState.tonerZero = config.notifyTonerZero !== false;
   appNotificationState.stockMin = config.notifyStockMin !== false;
   appNotificationState.maintenance = config.notifyMaintenance !== false;
+  appNotificationState.radios = config.notifyRadios === true;
   appNotificationState.intervalMinutes = Math.max(5, Number(config.notificationIntervalMinutes || 15));
   appNotificationState.vapidKey = String(config.notificationVapidKey || "").trim();
 
@@ -1198,6 +1200,7 @@ function aplicarConfigNotificacoesApp(config = {}) {
   setChecked("notifyTonerZero", appNotificationState.tonerZero);
   setChecked("notifyStockMin", appNotificationState.stockMin);
   setChecked("notifyMaintenance", appNotificationState.maintenance);
+  setChecked("notifyRadios", appNotificationState.radios);
   const interval = document.getElementById("notifyIntervalMinutes");
   if (interval) interval.value = String(appNotificationState.intervalMinutes);
   const vapid = document.getElementById("notifyVapidKey");
@@ -1245,6 +1248,7 @@ async function guardarConfigNotificacoesApp(overrides = null) {
     notifyTonerZero: !!document.getElementById("notifyTonerZero")?.checked,
     notifyStockMin: !!document.getElementById("notifyStockMin")?.checked,
     notifyMaintenance: !!document.getElementById("notifyMaintenance")?.checked,
+    notifyRadios: !!document.getElementById("notifyRadios")?.checked,
     notificationIntervalMinutes: Number(document.getElementById("notifyIntervalMinutes")?.value || 15),
     notificationVapidKey: String(document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || "").trim()
   };
@@ -1253,6 +1257,7 @@ async function guardarConfigNotificacoesApp(overrides = null) {
     if (typeof data.notifyTonerZero === "undefined") data.notifyTonerZero = appNotificationState.tonerZero;
     if (typeof data.notifyStockMin === "undefined") data.notifyStockMin = appNotificationState.stockMin;
     if (typeof data.notifyMaintenance === "undefined") data.notifyMaintenance = appNotificationState.maintenance;
+    if (typeof data.notifyRadios === "undefined") data.notifyRadios = appNotificationState.radios;
     if (typeof data.notificationIntervalMinutes === "undefined") data.notificationIntervalMinutes = appNotificationState.intervalMinutes;
     if (typeof data.notificationVapidKey === "undefined") data.notificationVapidKey = appNotificationState.vapidKey;
   }
