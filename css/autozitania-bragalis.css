@@ -2379,3 +2379,56 @@ button.btn-primary,
     flex: 1 1 auto !important;
   }
 }
+
+/* Final native scroll reset for Android tablets, iPhone and desktop.
+   The page must scroll through the browser viewport, not through nested app panes. */
+html,
+body {
+  height: auto !important;
+  min-height: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+body.device-phone,
+body.device-tablet {
+  position: static !important;
+  touch-action: pan-y !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+body.device-phone .main,
+body.device-phone main,
+body.device-phone .main-content,
+body.device-phone .page-content,
+body.device-phone .dashboard-container,
+body.device-phone .content-area,
+body.device-tablet .main,
+body.device-tablet main,
+body.device-tablet .main-content,
+body.device-tablet .page-content,
+body.device-tablet .dashboard-container,
+body.device-tablet .content-area {
+  height: auto !important;
+  max-height: none !important;
+  min-height: 100svh !important;
+  overflow: visible !important;
+  touch-action: pan-y !important;
+  overscroll-behavior-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+body:not(.sidebar-open) .app-sidebar-overlay {
+  display: none !important;
+  pointer-events: none !important;
+  touch-action: none !important;
+}
+
+body.sidebar-open .app-sidebar-overlay {
+  pointer-events: auto !important;
+  touch-action: auto !important;
+}

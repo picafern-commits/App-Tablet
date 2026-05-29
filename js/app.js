@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.10.3";
+const APP_VERSION = "1.10.4";
 
 
 
@@ -8265,45 +8265,9 @@ window.addEventListener("orientationchange", () => {
 
 /* ===== FULL PAGE SCROLL PROXY ===== */
 (function(){
-  const isTouchDevice = () => ("ontouchstart" in window) || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
-
-  function isPhoneSidebarOpen() {
-    return document.body.classList.contains("device-phone") && document.body.classList.contains("sidebar-open");
-  }
-
-  function isInteractiveTarget(target) {
-    return !!target?.closest?.("input, textarea, select, option, button, a, [contenteditable='true']");
-  }
-
-  function hasOwnVerticalScroll(node) {
-    let current = node;
-    while (current && current !== document.body && current !== document.documentElement) {
-      if (current.closest?.(".modal-card, .table-scroll, .printers-table-wrap")) return true;
-      const style = window.getComputedStyle(current);
-      const canScroll = /(auto|scroll)/.test(style.overflowY || "") && current.scrollHeight > current.clientHeight + 4;
-      if (canScroll && !current.closest?.(".sidebar")) return true;
-      current = current.parentElement;
-    }
-    return false;
-  }
-
-  function shouldProxyScroll(target) {
-    if (isTouchDevice()) return false;
-    if (!target || isPhoneSidebarOpen()) return false;
-    if (isInteractiveTarget(target)) return false;
-    if (hasOwnVerticalScroll(target)) return false;
-    return !!target.closest?.(".sidebar, .app-menu-toggle, .app-sidebar-overlay");
-  }
-
-  document.addEventListener("wheel", function(event) {
-    if (!shouldProxyScroll(event.target)) return;
-    if (Math.abs(event.deltaY) < 1) return;
-    event.preventDefault();
-    window.scrollBy({
-      top: event.deltaY,
-      left: 0,
-      behavior: "auto"
-    });
-  }, { passive: false, capture: true });
+  /*
+    Disabled on purpose: mobile/tablet browsers need native body scrolling.
+    Proxying wheel/touch events caused sticky scrolling on Android tablets and iPhone.
+  */
 })();
 /* ===== END FULL PAGE SCROLL PROXY ===== */

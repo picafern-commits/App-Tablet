@@ -264,3 +264,40 @@
     font-size: 13px !important;
   }
 }
+
+/* Last mobile override: keep scrolling native on iPhone and small tablets. */
+@media screen and (max-width: 768px) {
+  html,
+  body {
+    height: auto !important;
+    min-height: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    touch-action: pan-y !important;
+    overscroll-behavior-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .main,
+  main,
+  .main-content,
+  .page-content,
+  .dashboard-container,
+  .content-area,
+  .dashboard-shell,
+  .content {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 100svh !important;
+    overflow: visible !important;
+    touch-action: pan-y !important;
+    overscroll-behavior-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  body:not(.sidebar-open) .app-sidebar-overlay {
+    display: none !important;
+    pointer-events: none !important;
+    touch-action: none !important;
+  }
+}
