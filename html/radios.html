@@ -107,10 +107,8 @@
     </div>
     <div class="reference-actions">
       <div class="reference-search">
-        <input id="radioSearch" type="text" placeholder="Pesquisar por rádio..." oninput="filtrarRadios()">
         <span>⌕</span>
       </div>
-      <button class="primary-btn reference-primary" type="button" onclick="adicionarRadio()">Novo Rádio</button>
     </div>
   </div>
 
@@ -118,6 +116,7 @@
     <div class="section-header">
       <div>
         <h3>Rádios</h3>
+        <button class="primary-btn reference-primary" type="button" onclick="adicionarRadio()">Novo Rádio</button>
       </div>
       <span class="status-pill"><strong id="radiosTotal">0</strong> rádios</span>
     </div>
@@ -148,7 +147,7 @@
     <div class="form-grid">
       <label><span>Nome</span><input id="radioNome" type="text" placeholder="Ex: Rádio 01"></label>
       <label><span>MAC</span><input id="radioMac" type="text" placeholder="Ex: AA:BB:CC:DD:EE:FF"></label>
-      <label><span>Serial</span><input id="radioSerial" type="text" placeholder="Serial do rádio"></label>
+      <label><span>Numero de Serie</span><input id="radioSerial" type="text" placeholder="Numero de Serie"></label>
     </div>
     <div class="card-actions" style="margin-top:18px;">
       <button class="primary-btn" type="button" onclick="guardarRadio()">Guardar</button>
