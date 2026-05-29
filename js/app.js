@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.9.9";
+const APP_VERSION = "1.10.0";
 
 
 
@@ -1419,14 +1419,35 @@ function getNotificationTokenDocId(token) {
 
 async function registarDispositivoPushApp() {
   try {
-    if (!window.db || !window.db.collection) throw new Error("Firestore indisponível.");
+    if (!window.db || !window.db.collection) throw new Error("Firestore indisponivel.");
     const vapidKey = String(document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || "").trim();
+
+    if (window.electronAPI?.showNotification) {
+      await guardarConfigNotificacoesApp({ notificationEnabled: true, notificationVapidKey: vapidKey });
+      await window.db.collection("notificationTokens").doc("electron-native").set({
+        active: true,
+        source: "electron-native",
+        appVersion: APP_VERSION,
+        deviceType: "pc-electron",
+        userAgent: navigator.userAgent,
+        platform: navigator.platform || "",
+        permission: "native",
+        updatedAt: Date.now(),
+        createdAt: Date.now()
+      }, { merge: true });
+      setNotificationTokenStatus("Electron nativo", "ok");
+      await enviarNotificacaoApp("App Braga", "Este PC ficou registado com notificacoes nativas.", "electron-register", { force: true });
+      mostrarMensagem("PC registado com notificacoes nativas.");
+      return;
+    }
+
     if (!vapidKey) {
       mostrarMensagem("Coloca primeiro a VAPID key do Firebase.", "erro");
       setNotificationTokenStatus("Falta VAPID key", "bad");
       return;
     }
 
+    await guardarConfigNotificacoesApp({ notificationEnabled: true, notificationVapidKey: vapidKey });
     await pedirPermissaoNotificacoesApp();
     if (!("Notification" in window) || Notification.permission !== "granted") return;
 
@@ -1435,7 +1456,7 @@ async function registarDispositivoPushApp() {
     const messaging = await garantirFirebaseMessagingApp();
     const registration = await navigator.serviceWorker.ready;
     const token = await messaging.getToken({ vapidKey, serviceWorkerRegistration: registration });
-    if (!token) throw new Error("Firebase não devolveu token.");
+    if (!token) throw new Error("Firebase nao devolveu token.");
 
     appNotificationState.fcmToken = token;
     await window.db.collection("notificationTokens").doc(getNotificationTokenDocId(token)).set({
@@ -1457,7 +1478,14 @@ async function registarDispositivoPushApp() {
   } catch (error) {
     console.error("Erro ao registar push:", error);
     setNotificationTokenStatus("Erro no registo", "bad");
-    mostrarMensagem(error.message || "Erro ao registar push.", "erro");
+    const code = String(error?.code || "");
+    const message = String(error?.message || "");
+    let friendly = message || "Erro ao registar push.";
+    if (code.includes("messaging/permission-blocked")) friendly = "As notificacoes estao bloqueadas neste dispositivo/browser.";
+    if (code.includes("messaging/unsupported-browser")) friendly = "Este browser/dispositivo nao suporta Firebase Cloud Messaging.";
+    if (code.includes("messaging/invalid-vapid-key")) friendly = "A VAPID key nao e valida. Confirma a chave Web Push no Firebase.";
+    if (code.includes("messaging/token-subscribe-failed")) friendly = "Falhou a subscricao push. Confirma permissoes e a VAPID key.";
+    mostrarMensagem(friendly, "erro");
   }
 }
 
