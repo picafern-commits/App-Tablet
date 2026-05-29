@@ -249,6 +249,7 @@
       </div>
 
       <div class="config-actions-row">
+        <button class="secondary-btn" type="button" onclick="entrarFullscreenApp()">Entrar em fullscreen</button>
         <button class="secondary-btn" type="button" onclick="testarNotificacaoApp()">Testar notificação</button>
         <button class="secondary-btn" type="button" onclick="verificarAlertasNotificacoesApp(true)">Verificar alertas agora</button>
         <button class="secondary-btn" type="button" onclick="registarDispositivoPushApp()">Registar este dispositivo</button>
@@ -256,6 +257,18 @@
       <div class="notification-token-status">
         <span>Token deste dispositivo</span>
         <strong id="notifyTokenStatus">Ainda não registado</strong>
+      </div>
+      <div class="notification-devices-panel">
+        <div class="section-header">
+          <div>
+            <h4>Dispositivos ativos</h4>
+            <p class="section-subtitle">Lista dos dispositivos com notificações registadas.</p>
+          </div>
+          <button class="secondary-btn" type="button" onclick="carregarDispositivosNotificacoesApp(true)">Atualizar lista</button>
+        </div>
+        <div id="notifyDevicesList" class="notification-devices-list">
+          <div class="empty-state mini">A carregar dispositivos...</div>
+        </div>
       </div>
       <p class="section-subtitle notification-note">Electron consegue avisar com a janela fechada para a tray. Web/iPhone/Android precisam de permissão do sistema; push com a app totalmente fechada depende de suporte Web Push do dispositivo.</p>
     </div>

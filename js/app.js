@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.10.7";
+const APP_VERSION = "1.10.8";
 
 
 
@@ -92,7 +92,10 @@ const appNotificationState = {
   fcmToken: "",
   sent: {},
   realtimeBoot: {},
-  realtimeLast: {}
+  realtimeLast: {},
+  devicesUnsubscribe: null,
+  restoreRunning: false,
+  restoredTokenDocId: ""
 };
 
 function el(id) {
@@ -1244,6 +1247,8 @@ function aplicarConfigNotificacoesApp(config = {}) {
   if (vapid) vapid.value = appNotificationState.vapidKey;
 
   iniciarMonitorNotificacoesApp();
+  carregarDispositivosNotificacoesApp(false);
+  restaurarRegistoPushAtualApp();
 }
 
 function notificationPermissionApp() {
@@ -1494,6 +1499,25 @@ async function testarNotificacaoApp() {
   mostrarMensagem(ok ? "Notificação de teste enviada." : "Ativa as permissões de notificações primeiro.", ok ? "sucesso" : "erro");
 }
 
+async function entrarFullscreenApp() {
+  try {
+    const root = document.documentElement;
+    if (document.fullscreenElement) {
+      mostrarMensagem("A APP ja esta em fullscreen.");
+      return;
+    }
+    if (root.requestFullscreen) {
+      await root.requestFullscreen({ navigationUI: "hide" });
+      mostrarMensagem("Fullscreen ativo.");
+      return;
+    }
+    mostrarMensagem("Instala a APP no ecra inicial para fullscreen no Android.", "erro");
+  } catch (error) {
+    console.warn("Erro fullscreen:", error);
+    mostrarMensagem("No Android, abre pelo icone instalado da APP para ficar fullscreen.", "erro");
+  }
+}
+
 function setNotificationTokenStatus(text, state = "warn") {
   const node = document.getElementById("notifyTokenStatus");
   if (!node) return;
@@ -1540,15 +1564,170 @@ function webPushDisponivelApp() {
   return !!(window.isSecureContext && "serviceWorker" in navigator && "PushManager" in window);
 }
 
+function getNotificationDeviceTypeApp() {
+  if (window.electronAPI?.showNotification) return "pc-electron";
+  return window.appBragaDeviceType || (document.body.classList.contains("device-tablet") ? "tablet" : (document.body.classList.contains("device-phone") ? "phone" : "pc"));
+}
+
+function getLocalNotificationDeviceIdApp(source = "web-local") {
+  return `${source}-${encodeURIComponent(navigator.platform || "device")}-${Math.abs(hashTextoAppBraga(navigator.userAgent || ""))}`;
+}
+
+function normalizeTimestampApp(value) {
+  if (!value) return 0;
+  if (typeof value === "number") return value;
+  if (typeof value.toMillis === "function") return value.toMillis();
+  if (typeof value.seconds === "number") return value.seconds * 1000;
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function formatTimestampApp(value) {
+  const time = normalizeTimestampApp(value);
+  if (!time) return "-";
+  return new Date(time).toLocaleString("pt-PT", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function renderDispositivosNotificacoesApp(items = []) {
+  const host = document.getElementById("notifyDevicesList");
+  if (!host) return;
+
+  const activeItems = items
+    .filter((item) => item.active !== false)
+    .sort((a, b) => normalizeTimestampApp(b.updatedAt || b.createdAt) - normalizeTimestampApp(a.updatedAt || a.createdAt));
+
+  if (!activeItems.length) {
+    host.innerHTML = `<div class="empty-state mini">Ainda não há dispositivos ativos.</div>`;
+    return;
+  }
+
+  host.innerHTML = activeItems.map((item) => {
+    const isCurrent = item.id === appNotificationState.restoredTokenDocId || (appNotificationState.fcmToken && item.token === appNotificationState.fcmToken);
+    const source = item.source || "desconhecido";
+    const device = item.deviceType || item.platform || "Dispositivo";
+    const permission = item.permission || "sem dados";
+    const updated = formatTimestampApp(item.updatedAt || item.createdAt);
+    return `
+      <div class="notification-device-card ${isCurrent ? "is-current" : ""}">
+        <div>
+          <strong>${escapeHtmlAppBraga(device)}</strong>
+          <span>${escapeHtmlAppBraga(source)} · ${escapeHtmlAppBraga(permission)}</span>
+          <small>Atualizado: ${escapeHtmlAppBraga(updated)}</small>
+        </div>
+        <span class="health-status ${isCurrent ? "ok" : "warn"}">${isCurrent ? "Este" : "Ativo"}</span>
+      </div>
+    `;
+  }).join("");
+}
+
+function carregarDispositivosNotificacoesApp(force = false) {
+  const host = document.getElementById("notifyDevicesList");
+  if (!host || !window.db?.collection) return;
+  if (appNotificationState.devicesUnsubscribe && !force) return;
+  if (appNotificationState.devicesUnsubscribe && force) {
+    appNotificationState.devicesUnsubscribe();
+    appNotificationState.devicesUnsubscribe = null;
+  }
+
+  appNotificationState.devicesUnsubscribe = window.db.collection("notificationTokens").onSnapshot((snapshot) => {
+    const items = [];
+    snapshot.forEach((doc) => items.push({ id: doc.id, ...doc.data() }));
+    renderDispositivosNotificacoesApp(items);
+  }, (error) => {
+    console.error("Erro ao carregar dispositivos:", error);
+    host.innerHTML = `<div class="empty-state mini">Erro ao carregar dispositivos.</div>`;
+  });
+}
+
+async function restaurarRegistoPushAtualApp() {
+  if (appNotificationState.restoreRunning || !window.db?.collection) return;
+  appNotificationState.restoreRunning = true;
+  try {
+    if (window.electronAPI?.showNotification) {
+      const docId = "electron-native";
+      const doc = await window.db.collection("notificationTokens").doc(docId).get();
+      if (doc.exists && doc.data()?.active !== false) {
+        appNotificationState.restoredTokenDocId = docId;
+        await window.db.collection("notificationTokens").doc(docId).set({
+          active: true,
+          appVersion: APP_VERSION,
+          deviceType: "pc-electron",
+          permission: "native",
+          updatedAt: Date.now()
+        }, { merge: true });
+        setNotificationTokenStatus("Electron registado", "ok");
+      }
+      return;
+    }
+
+    const permission = "Notification" in window ? Notification.permission : "unsupported";
+    if (permission !== "granted") {
+      setNotificationTokenStatus(permission === "denied" ? "Permissão bloqueada" : "Sem permissão", permission === "denied" ? "bad" : "warn");
+      return;
+    }
+
+    const vapidKey = String(appNotificationState.vapidKey || document.getElementById("notifyVapidKey")?.value || "").trim();
+    if (vapidKey && webPushDisponivelApp()) {
+      await registarServiceWorkerAppBraga();
+      const messaging = await garantirFirebaseMessagingApp();
+      const registration = await navigator.serviceWorker.ready;
+      const token = await messaging.getToken({ vapidKey, serviceWorkerRegistration: registration });
+      if (token) {
+        const docId = getNotificationTokenDocId(token);
+        appNotificationState.fcmToken = token;
+        appNotificationState.restoredTokenDocId = docId;
+        await window.db.collection("notificationTokens").doc(docId).set({
+          token,
+          active: true,
+          source: "web-push",
+          appVersion: APP_VERSION,
+          deviceType: getNotificationDeviceTypeApp(),
+          userAgent: navigator.userAgent,
+          platform: navigator.platform || "",
+          permission,
+          updatedAt: Date.now()
+        }, { merge: true });
+        setNotificationTokenStatus("Registado", "ok");
+        return;
+      }
+    }
+
+    const localId = getLocalNotificationDeviceIdApp("web-local-no-push");
+    const localDoc = await window.db.collection("notificationTokens").doc(localId).get();
+    if (localDoc.exists && localDoc.data()?.active !== false) {
+      appNotificationState.restoredTokenDocId = localId;
+      await window.db.collection("notificationTokens").doc(localId).set({
+        active: true,
+        appVersion: APP_VERSION,
+        deviceType: getNotificationDeviceTypeApp(),
+        permission,
+        updatedAt: Date.now()
+      }, { merge: true });
+      setNotificationTokenStatus("Local ativo", "warn");
+    }
+  } catch (error) {
+    console.warn("Não foi possível restaurar registo push:", error);
+  } finally {
+    appNotificationState.restoreRunning = false;
+    carregarDispositivosNotificacoesApp(false);
+  }
+}
+
 async function registarDispositivoLocalNotificacoesApp(source = "web-local") {
   await guardarConfigNotificacoesApp({ notificationEnabled: true, notificationVapidKey: appNotificationState.vapidKey });
   if (window.db?.collection) {
-    const id = `${source}-${encodeURIComponent(navigator.platform || "device")}-${Math.abs(hashTextoAppBraga(navigator.userAgent || ""))}`;
+    const id = getLocalNotificationDeviceIdApp(source);
+    appNotificationState.restoredTokenDocId = id;
     await window.db.collection("notificationTokens").doc(id).set({
       active: true,
       source,
       appVersion: APP_VERSION,
-      deviceType: window.appBragaDeviceType || (document.body.classList.contains("device-tablet") ? "tablet" : (document.body.classList.contains("device-phone") ? "phone" : "pc")),
+      deviceType: getNotificationDeviceTypeApp(),
       userAgent: navigator.userAgent,
       platform: navigator.platform || "",
       permission: "Notification" in window ? Notification.permission : "unsupported",
@@ -1569,6 +1748,7 @@ async function registarDispositivoPushApp() {
 
     if (window.electronAPI?.showNotification) {
       await guardarConfigNotificacoesApp({ notificationEnabled: true, notificationVapidKey: vapidKey });
+      appNotificationState.restoredTokenDocId = "electron-native";
       await window.db.collection("notificationTokens").doc("electron-native").set({
         active: true,
         source: "electron-native",
@@ -1609,12 +1789,13 @@ async function registarDispositivoPushApp() {
     if (!token) throw new Error("Firebase nao devolveu token.");
 
     appNotificationState.fcmToken = token;
+    appNotificationState.restoredTokenDocId = getNotificationTokenDocId(token);
     await window.db.collection("notificationTokens").doc(getNotificationTokenDocId(token)).set({
       token,
       active: true,
       source: "web-push",
       appVersion: APP_VERSION,
-      deviceType: window.appBragaDeviceType || (document.body.classList.contains("device-tablet") ? "tablet" : (document.body.classList.contains("device-phone") ? "phone" : "pc")),
+      deviceType: getNotificationDeviceTypeApp(),
       userAgent: navigator.userAgent,
       platform: navigator.platform || "",
       permission: Notification.permission,
@@ -3733,6 +3914,13 @@ window.removerBiometriaApp = removerBiometriaApp;
 window.bloquearAppAgora = bloquearAppAgora;
 window.desbloquearAppComPin = desbloquearAppComPin;
 window.desbloquearAppComBiometria = desbloquearAppComBiometria;
+window.entrarFullscreenApp = entrarFullscreenApp;
+window.carregarDispositivosNotificacoesApp = carregarDispositivosNotificacoesApp;
+window.registarDispositivoPushApp = registarDispositivoPushApp;
+window.guardarConfigNotificacoesApp = guardarConfigNotificacoesApp;
+window.verificarAlertasNotificacoesApp = verificarAlertasNotificacoesApp;
+window.testarNotificacaoApp = testarNotificacaoApp;
+window.pedirPermissaoNotificacoesApp = pedirPermissaoNotificacoesApp;
 window.verificarSistemasApp = verificarSistemasApp;
 window.adicionarInformacao = adicionarInformacao;
 window.selecionarInformacao = selecionarInformacao;

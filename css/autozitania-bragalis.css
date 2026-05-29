@@ -2589,3 +2589,64 @@ body.device-phone .computadores-grid,
 body.device-phone .computadores-checklist {
   grid-template-columns: 1fr !important;
 }
+
+.notification-devices-panel {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--app-border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .035);
+}
+
+.notification-devices-panel h4 {
+  margin: 0;
+  color: #f8fafc;
+}
+
+.notification-devices-list {
+  display: grid;
+  gap: 10px;
+}
+
+.notification-device-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, .10);
+  border-radius: 12px;
+  background: rgba(16, 17, 20, .72);
+}
+
+.notification-device-card.is-current {
+  border-color: var(--app-accent-line);
+  box-shadow: inset 3px 0 0 var(--app-accent);
+}
+
+.notification-device-card strong,
+.notification-device-card span,
+.notification-device-card small {
+  display: block;
+}
+
+.notification-device-card strong {
+  color: #f8fafc;
+  font-size: 14px;
+}
+
+.notification-device-card span,
+.notification-device-card small {
+  color: var(--app-muted);
+  font-size: 12px;
+  margin-top: 3px;
+}
+
+.empty-state.mini {
+  padding: 12px;
+  color: var(--app-muted);
+  border: 1px dashed var(--app-border);
+  border-radius: 12px;
+}
