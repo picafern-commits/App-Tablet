@@ -1092,6 +1092,21 @@ body.device-tablet .reference-panel {
   overscroll-behavior: auto !important;
 }
 
+body.device-phone,
+body.device-tablet {
+  touch-action: pan-y !important;
+  overscroll-behavior-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+body.device-phone .main,
+body.device-phone main,
+body.device-tablet .main,
+body.device-tablet main {
+  overflow-y: visible !important;
+  transform: none !important;
+}
+
 /* Radio cards final layout */
 .radios-page .radio-cards-grid {
   grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)) !important;

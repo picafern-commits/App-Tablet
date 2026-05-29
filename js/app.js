@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.10.2";
+const APP_VERSION = "1.10.3";
 
 
 
@@ -8265,8 +8265,7 @@ window.addEventListener("orientationchange", () => {
 
 /* ===== FULL PAGE SCROLL PROXY ===== */
 (function(){
-  let touchStartY = 0;
-  let touchTarget = null;
+  const isTouchDevice = () => ("ontouchstart" in window) || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
 
   function isPhoneSidebarOpen() {
     return document.body.classList.contains("device-phone") && document.body.classList.contains("sidebar-open");
@@ -8289,10 +8288,11 @@ window.addEventListener("orientationchange", () => {
   }
 
   function shouldProxyScroll(target) {
+    if (isTouchDevice()) return false;
     if (!target || isPhoneSidebarOpen()) return false;
     if (isInteractiveTarget(target)) return false;
     if (hasOwnVerticalScroll(target)) return false;
-    return true;
+    return !!target.closest?.(".sidebar, .app-menu-toggle, .app-sidebar-overlay");
   }
 
   document.addEventListener("wheel", function(event) {
@@ -8304,22 +8304,6 @@ window.addEventListener("orientationchange", () => {
       left: 0,
       behavior: "auto"
     });
-  }, { passive: false, capture: true });
-
-  document.addEventListener("touchstart", function(event) {
-    touchTarget = event.target;
-    touchStartY = event.touches && event.touches.length ? event.touches[0].clientY : 0;
-  }, { passive: true, capture: true });
-
-  document.addEventListener("touchmove", function(event) {
-    if (!shouldProxyScroll(touchTarget)) return;
-    if (!event.touches || !event.touches.length) return;
-    const currentY = event.touches[0].clientY;
-    const delta = touchStartY - currentY;
-    if (Math.abs(delta) < 2) return;
-    event.preventDefault();
-    window.scrollBy(0, delta);
-    touchStartY = currentY;
   }, { passive: false, capture: true });
 })();
 /* ===== END FULL PAGE SCROLL PROXY ===== */
