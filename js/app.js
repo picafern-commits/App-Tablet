@@ -7,7 +7,11 @@ window.portasData = window.portasData || [];
 const firebaseConfig = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
   authDomain: "toner-manager-756c4.firebaseapp.com",
-  projectId: "toner-manager-756c4"
+  databaseURL: "https://toner-manager-756c4-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "toner-manager-756c4",
+  storageBucket: "toner-manager-756c4.firebasestorage.app",
+  messagingSenderId: "1004492465437",
+  appId: "1:1004492465437:web:6a745933c51fc17b04adf4"
 };
 
 if(typeof firebase !== "undefined"){
@@ -22,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.9.8";
+const APP_VERSION = "1.9.9";
 
 
 
@@ -83,6 +87,8 @@ const appNotificationState = {
   stockMin: true,
   maintenance: true,
   intervalMinutes: 15,
+  vapidKey: "",
+  fcmToken: "",
   sent: {}
 };
 
@@ -1178,6 +1184,7 @@ function aplicarConfigNotificacoesApp(config = {}) {
   appNotificationState.stockMin = config.notifyStockMin !== false;
   appNotificationState.maintenance = config.notifyMaintenance !== false;
   appNotificationState.intervalMinutes = Math.max(5, Number(config.notificationIntervalMinutes || 15));
+  appNotificationState.vapidKey = String(config.notificationVapidKey || "").trim();
 
   const setChecked = (id, value) => {
     const node = document.getElementById(id);
@@ -1189,6 +1196,8 @@ function aplicarConfigNotificacoesApp(config = {}) {
   setChecked("notifyMaintenance", appNotificationState.maintenance);
   const interval = document.getElementById("notifyIntervalMinutes");
   if (interval) interval.value = String(appNotificationState.intervalMinutes);
+  const vapid = document.getElementById("notifyVapidKey");
+  if (vapid) vapid.value = appNotificationState.vapidKey;
 
   iniciarMonitorNotificacoesApp();
 }
@@ -1232,8 +1241,17 @@ async function guardarConfigNotificacoesApp(overrides = null) {
     notifyTonerZero: !!document.getElementById("notifyTonerZero")?.checked,
     notifyStockMin: !!document.getElementById("notifyStockMin")?.checked,
     notifyMaintenance: !!document.getElementById("notifyMaintenance")?.checked,
-    notificationIntervalMinutes: Number(document.getElementById("notifyIntervalMinutes")?.value || 15)
+    notificationIntervalMinutes: Number(document.getElementById("notifyIntervalMinutes")?.value || 15),
+    notificationVapidKey: String(document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || "").trim()
   };
+
+  if (overrides) {
+    if (typeof data.notifyTonerZero === "undefined") data.notifyTonerZero = appNotificationState.tonerZero;
+    if (typeof data.notifyStockMin === "undefined") data.notifyStockMin = appNotificationState.stockMin;
+    if (typeof data.notifyMaintenance === "undefined") data.notifyMaintenance = appNotificationState.maintenance;
+    if (typeof data.notificationIntervalMinutes === "undefined") data.notificationIntervalMinutes = appNotificationState.intervalMinutes;
+    if (typeof data.notificationVapidKey === "undefined") data.notificationVapidKey = appNotificationState.vapidKey;
+  }
 
   aplicarConfigNotificacoesApp(data);
 
@@ -1358,6 +1376,89 @@ function iniciarMonitorNotificacoesApp() {
 async function testarNotificacaoApp() {
   const ok = await enviarNotificacaoApp("App Braga", "Teste de notificação concluído.", "app-braga-test", { force: true, url: "html/config.html" });
   mostrarMensagem(ok ? "Notificação de teste enviada." : "Ativa as permissões de notificações primeiro.", ok ? "sucesso" : "erro");
+}
+
+function setNotificationTokenStatus(text, state = "warn") {
+  const node = document.getElementById("notifyTokenStatus");
+  if (!node) return;
+  node.textContent = text;
+  node.className = `health-status ${state}`;
+}
+
+function carregarScriptAppBraga(src) {
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector(`script[src="${src}"]`);
+    if (existing) {
+      existing.addEventListener("load", resolve, { once: true });
+      if (window.firebase?.messaging) resolve();
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = src;
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+}
+
+async function garantirFirebaseMessagingApp() {
+  if (window.electronAPI?.showNotification) throw new Error("FCM Web Push é para Web/PWA; Electron usa notificações nativas.");
+  if (!window.firebase || !firebase.apps?.length) throw new Error("Firebase v8 não está carregado.");
+  if (!firebase.messaging) {
+    await carregarScriptAppBraga("https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js");
+  }
+  if (!firebase.messaging) throw new Error("Firebase Messaging indisponível.");
+  const supported = firebase.messaging.isSupported ? await Promise.resolve(firebase.messaging.isSupported()) : true;
+  if (!supported) throw new Error("Este browser/dispositivo não suporta Firebase Messaging.");
+  return firebase.messaging();
+}
+
+function getNotificationTokenDocId(token) {
+  return encodeURIComponent(String(token || "")).replace(/\./g, "%2E").slice(0, 1400);
+}
+
+async function registarDispositivoPushApp() {
+  try {
+    if (!window.db || !window.db.collection) throw new Error("Firestore indisponível.");
+    const vapidKey = String(document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || "").trim();
+    if (!vapidKey) {
+      mostrarMensagem("Coloca primeiro a VAPID key do Firebase.", "erro");
+      setNotificationTokenStatus("Falta VAPID key", "bad");
+      return;
+    }
+
+    await pedirPermissaoNotificacoesApp();
+    if (!("Notification" in window) || Notification.permission !== "granted") return;
+
+    setNotificationTokenStatus("A registar...", "warn");
+    await registarServiceWorkerAppBraga();
+    const messaging = await garantirFirebaseMessagingApp();
+    const registration = await navigator.serviceWorker.ready;
+    const token = await messaging.getToken({ vapidKey, serviceWorkerRegistration: registration });
+    if (!token) throw new Error("Firebase não devolveu token.");
+
+    appNotificationState.fcmToken = token;
+    await window.db.collection("notificationTokens").doc(getNotificationTokenDocId(token)).set({
+      token,
+      active: true,
+      source: "web-push",
+      appVersion: APP_VERSION,
+      deviceType: window.appBragaDeviceType || (document.body.classList.contains("device-tablet") ? "tablet" : (document.body.classList.contains("device-phone") ? "phone" : "pc")),
+      userAgent: navigator.userAgent,
+      platform: navigator.platform || "",
+      permission: Notification.permission,
+      updatedAt: Date.now(),
+      createdAt: Date.now()
+    }, { merge: true });
+
+    await guardarConfigNotificacoesApp({ notificationEnabled: true, notificationVapidKey: vapidKey });
+    setNotificationTokenStatus("Registado", "ok");
+    mostrarMensagem("Dispositivo registado para push.");
+  } catch (error) {
+    console.error("Erro ao registar push:", error);
+    setNotificationTokenStatus("Erro no registo", "bad");
+    mostrarMensagem(error.message || "Erro ao registar push.", "erro");
+  }
 }
 
 async function obterTonerInfo(ip) {

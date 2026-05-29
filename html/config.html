@@ -241,11 +241,20 @@
             <option value="60">60 minutos</option>
           </select>
         </label>
+        <label class="config-auth-field">
+          <span>Firebase Web Push VAPID key</span>
+          <input id="notifyVapidKey" type="text" placeholder="Chave Web Push do Firebase" onchange="guardarConfigNotificacoesApp()">
+        </label>
       </div>
 
       <div class="config-actions-row">
         <button class="secondary-btn" type="button" onclick="testarNotificacaoApp()">Testar notificação</button>
         <button class="secondary-btn" type="button" onclick="verificarAlertasNotificacoesApp(true)">Verificar alertas agora</button>
+        <button class="secondary-btn" type="button" onclick="registarDispositivoPushApp()">Registar este dispositivo</button>
+      </div>
+      <div class="notification-token-status">
+        <span>Token deste dispositivo</span>
+        <strong id="notifyTokenStatus">Ainda não registado</strong>
       </div>
       <p class="section-subtitle notification-note">Electron consegue avisar com a janela fechada para a tray. Web/iPhone/Android precisam de permissão do sistema; push com a app totalmente fechada depende de suporte Web Push do dispositivo.</p>
     </div>

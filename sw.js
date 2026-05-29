@@ -1,4 +1,35 @@
 const APP_BRAGA_SW = "app-braga-runtime-v2";
+const APP_BRAGA_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
+  authDomain: "toner-manager-756c4.firebaseapp.com",
+  databaseURL: "https://toner-manager-756c4-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "toner-manager-756c4",
+  storageBucket: "toner-manager-756c4.firebasestorage.app",
+  messagingSenderId: "1004492465437",
+  appId: "1:1004492465437:web:6a745933c51fc17b04adf4"
+};
+
+try {
+  importScripts("https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js");
+  importScripts("https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js");
+  if (self.firebase && !firebase.apps.length) firebase.initializeApp(APP_BRAGA_FIREBASE_CONFIG);
+  if (self.firebase && firebase.messaging) {
+    const messaging = firebase.messaging();
+    messaging.onBackgroundMessage((payload) => {
+      const notification = payload.notification || {};
+      const data = payload.data || {};
+      self.registration.showNotification(notification.title || data.title || "App Braga", {
+        body: notification.body || data.body || "",
+        icon: data.icon || "./icon-192.png",
+        badge: "./icon-192.png",
+        tag: data.tag || "app-braga-fcm",
+        data: { url: data.url || "./index.html" }
+      });
+    });
+  }
+} catch (error) {
+  console.log("Firebase Messaging indisponivel no SW", error);
+}
 const APP_SHELL = [
   "./",
   "./index.html",
