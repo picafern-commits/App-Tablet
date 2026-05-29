@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.10.9";
+const APP_VERSION = "1.11.0";
 
 
 
@@ -1501,21 +1501,80 @@ async function testarNotificacaoApp() {
 
 async function entrarFullscreenApp() {
   try {
-    const root = document.documentElement;
     if (document.fullscreenElement) {
-      mostrarMensagem("A APP ja esta em fullscreen.");
+      guardarFullscreenPreferidoApp(false);
+      await document.exitFullscreen?.();
+      mostrarMensagem("Fullscreen desligado.");
+      atualizarBotaoFullscreenApp();
       return;
     }
-    if (root.requestFullscreen) {
-      await root.requestFullscreen({ navigationUI: "hide" });
-      mostrarMensagem("Fullscreen ativo.");
-      return;
-    }
-    mostrarMensagem("Instala a APP no ecra inicial para fullscreen no Android.", "erro");
+    guardarFullscreenPreferidoApp(true);
+    await pedirFullscreenApp(true);
   } catch (error) {
     console.warn("Erro fullscreen:", error);
-    mostrarMensagem("No Android, abre pelo icone instalado da APP para ficar fullscreen.", "erro");
+    atualizarBotaoFullscreenApp();
+    mostrarMensagem("Nao foi possivel trocar fullscreen.", "erro");
   }
+}
+
+const APP_FULLSCREEN_PREF_KEY = "appBragaFullscreenPreferido";
+
+function fullscreenPreferidoApp() {
+  try {
+    return localStorage.getItem(APP_FULLSCREEN_PREF_KEY) === "1";
+  } catch (error) {
+    return false;
+  }
+}
+
+function guardarFullscreenPreferidoApp(value) {
+  try {
+    localStorage.setItem(APP_FULLSCREEN_PREF_KEY, value ? "1" : "0");
+  } catch (error) {
+    console.warn("Nao foi possivel guardar fullscreen.", error);
+  }
+}
+
+function atualizarBotaoFullscreenApp() {
+  const btn = document.getElementById("fullscreenToggleBtn");
+  if (!btn) return;
+  const active = !!document.fullscreenElement || fullscreenPreferidoApp();
+  btn.textContent = active ? "Sair do fullscreen" : "Entrar em fullscreen";
+  btn.classList.toggle("is-active", active);
+}
+
+async function pedirFullscreenApp(showMessage = true) {
+  const root = document.documentElement;
+  if (document.fullscreenElement) {
+    if (showMessage) mostrarMensagem("Fullscreen ativo.");
+    atualizarBotaoFullscreenApp();
+    return true;
+  }
+
+  if (!root.requestFullscreen) {
+    if (showMessage) mostrarMensagem("Instala a APP no ecra inicial para fullscreen no Android.", "erro");
+    atualizarBotaoFullscreenApp();
+    return false;
+  }
+
+  try {
+    await root.requestFullscreen({ navigationUI: "hide" });
+    if (showMessage) mostrarMensagem("Fullscreen ativo.");
+    atualizarBotaoFullscreenApp();
+    return true;
+  } catch (error) {
+    console.warn("Erro fullscreen:", error);
+    if (showMessage) mostrarMensagem("Toca outra vez para ativar fullscreen.", "erro");
+    atualizarBotaoFullscreenApp();
+    return false;
+  }
+}
+
+function initFullscreenPreferidoApp() {
+  atualizarBotaoFullscreenApp();
+  document.addEventListener("fullscreenchange", atualizarBotaoFullscreenApp);
+  if (!fullscreenPreferidoApp() || document.fullscreenElement) return;
+  window.setTimeout(() => pedirFullscreenApp(false), 800);
 }
 
 function setNotificationTokenStatus(text, state = "warn") {
@@ -3889,6 +3948,7 @@ function guardarInformacoes() {
 document.addEventListener("DOMContentLoaded", initRadiosPage);
 document.addEventListener("DOMContentLoaded", initInformacoesPage);
 document.addEventListener("DOMContentLoaded", initResolucaoApp);
+document.addEventListener("DOMContentLoaded", initFullscreenPreferidoApp);
 window.adicionarRadio = adicionarRadio;
 window.editarRadio = editarRadio;
 window.guardarRadio = guardarRadio;
