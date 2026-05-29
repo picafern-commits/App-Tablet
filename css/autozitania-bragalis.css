@@ -1022,6 +1022,43 @@ button:not(.primary-btn):not(.btn-primary):not(.danger):not(.delete-btn):not(.in
   }
 }
 
+/* Invisible scrollbars, scroll remains active */
+html,
+body,
+.main,
+main,
+.sidebar,
+.panel,
+.reference-panel,
+.modal-card,
+.table-scroll,
+.printers-table-wrap,
+.content-area,
+.page-content,
+.dashboard-container {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+.main::-webkit-scrollbar,
+main::-webkit-scrollbar,
+.sidebar::-webkit-scrollbar,
+.panel::-webkit-scrollbar,
+.reference-panel::-webkit-scrollbar,
+.modal-card::-webkit-scrollbar,
+.table-scroll::-webkit-scrollbar,
+.printers-table-wrap::-webkit-scrollbar,
+.content-area::-webkit-scrollbar,
+.page-content::-webkit-scrollbar,
+.dashboard-container::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+  background: transparent !important;
+}
+
 /* Whole-screen scroll behaviour */
 html,
 body {
