@@ -105,19 +105,48 @@
 </aside>
 <main class="main">
 
-  <div class="page-hero">
-    <div class="page-hero-title">Computadores</div>
-	<span class="status-pill">Sistema Online</span>
+  <div class="page-hero computadores-hero">
+    <div>
+      <div class="breadcrumb">Home &gt; Computadores</div>
+      <div class="page-hero-title">Computadores</div>
+      <p class="section-subtitle">Preparação e validação de computadores para entrega.</p>
+    </div>
+    <span class="status-pill">Sistema Online</span>
   </div>
 
-  <div class="stats-grid"><div class="stat-card stat-card-full"><span>Total Registos</span><strong id="countPCs">0</strong></div></div>
-  <div class="panel form-grid">
-    <label><span>Nome do computador</span><input id="nomePC" type="text" placeholder="Nome do computador"></label>
-    <label><span>Data</span><input id="dataPC" type="date"></label>
-    <div id="checklist"></div>
-    <button class="primary-btn" onclick="guardarPC()">Guardar</button>
+  <div class="stats-grid computadores-stats">
+    <div class="stat-card stat-card-full">
+      <span>Total Registos</span>
+      <strong id="countPCs">0</strong>
+    </div>
   </div>
-  <div class="panel"><div id="listaPC" class="cards-list"></div></div>
+
+  <div class="panel computadores-form-panel">
+    <div class="section-header">
+      <div>
+        <h3>Novo computador</h3>
+        <p class="section-subtitle">Marca os passos concluídos antes de guardar.</p>
+      </div>
+      <button class="primary-btn" onclick="guardarPC()">Guardar computador</button>
+    </div>
+
+    <div class="form-grid computadores-form-grid">
+      <label><span>Nome do computador</span><input id="nomePC" type="text" placeholder="Ex: BR-PC-001"></label>
+      <label><span>Data</span><input id="dataPC" type="date"></label>
+    </div>
+
+    <div id="checklist" class="computadores-checklist"></div>
+  </div>
+
+  <div class="panel computadores-list-panel">
+    <div class="section-header">
+      <div>
+        <h3>Registos</h3>
+        <p class="section-subtitle">Computadores guardados na Firebase.</p>
+      </div>
+    </div>
+    <div id="listaPC" class="cards-list computadores-grid"></div>
+  </div>
 
 </main>
 

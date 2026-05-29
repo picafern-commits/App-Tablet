@@ -2432,3 +2432,160 @@ body.sidebar-open .app-sidebar-overlay {
   pointer-events: auto !important;
   touch-action: auto !important;
 }
+
+/* Tablet fullscreen and performance polish */
+@media (min-width: 900px) and (pointer: coarse) {
+  html,
+  body {
+    width: 100vw !important;
+    min-height: 100dvh !important;
+    background: #101114 !important;
+  }
+
+  body.device-tablet {
+    --app-sidebar-width: clamp(252px, 19vw, 292px) !important;
+    font-size: 16px !important;
+    background: #101114 !important;
+  }
+
+  body.device-tablet .sidebar,
+  body.device-tablet aside.sidebar {
+    width: var(--app-sidebar-width) !important;
+    min-width: var(--app-sidebar-width) !important;
+    max-width: var(--app-sidebar-width) !important;
+  }
+
+  body.device-tablet .main,
+  body.device-tablet main,
+  body.device-tablet .main-content,
+  body.device-tablet .page-content,
+  body.device-tablet .dashboard-container,
+  body.device-tablet .content-area {
+    width: calc(100vw - var(--app-sidebar-width)) !important;
+    margin-left: var(--app-sidebar-width) !important;
+    padding: clamp(18px, 2vw, 28px) !important;
+    gap: clamp(16px, 1.8vw, 24px) !important;
+  }
+
+  body.device-tablet .stats-grid,
+  body.device-tablet .cards-grid,
+  body.device-tablet .equipment-grid,
+  body.device-tablet .radio-cards-grid,
+  body.device-tablet .dashboard-grid,
+  body.device-tablet .computadores-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+  }
+
+  body.device-tablet .panel,
+  body.device-tablet .pc-card,
+  body.device-tablet .stock-card,
+  body.device-tablet .history-card,
+  body.device-tablet .dashboard-card,
+  body.device-tablet .stat-card,
+  body.device-tablet .radio-card,
+  body.device-tablet .info-list-item {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, .24) !important;
+  }
+}
+
+.computadores-hero {
+  align-items: flex-start !important;
+}
+
+.computadores-form-panel,
+.computadores-list-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.computadores-form-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+}
+
+.computadores-checklist {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 10px;
+}
+
+.computadores-checklist .checkItem {
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .035);
+}
+
+.computadores-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.computer-card {
+  display: flex !important;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.computer-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.computer-progress {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .10);
+  overflow: hidden;
+}
+
+.computer-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--app-accent), var(--app-accent-light));
+}
+
+.computer-step-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.computer-step {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  color: var(--app-muted);
+}
+
+.computer-step.is-done {
+  color: #f8fafc;
+}
+
+.computer-step-dot {
+  width: 10px;
+  height: 10px;
+  min-width: 10px;
+  border-radius: 999px;
+  background: #64748b;
+}
+
+.computer-step.is-done .computer-step-dot {
+  background: var(--app-accent);
+  box-shadow: 0 0 0 4px var(--app-accent-soft);
+}
+
+body.device-tablet .computadores-checklist {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+body.device-phone .computadores-grid,
+body.device-phone .computadores-checklist {
+  grid-template-columns: 1fr !important;
+}

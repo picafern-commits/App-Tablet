@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.10.6";
+const APP_VERSION = "1.10.7";
 
 
 
@@ -416,7 +416,6 @@ db.collection("stock").onSnapshot(snap => {
   renderStockMinimoPainel();
   renderAlertasInteligentes();
   renderDashboardResumoInteligente();
-  renderAlertasInteligentes();
   renderModoGestorExtremo();
 }, error => {
   console.error(error);
@@ -428,7 +427,6 @@ db.collection("stock").onSnapshot(snap => {
   renderStockMinimoPainel();
   renderAlertasInteligentes();
   renderDashboardResumoInteligente();
-  renderAlertasInteligentes();
   renderModoGestorExtremo();
 });
 
@@ -449,8 +447,6 @@ db.collection("historico").onSnapshot(snap => {
   renderAlertasInteligentes();
   renderModoGestorExtremo();
   renderDashboardResumoInteligente();
-  renderAlertasInteligentes();
-  renderModoGestorExtremo();
 }, error => {
   console.error(error);
   historicoGlobal = loadBackupAppBraga(BACKUP_KEYS_APP_BRAGA.historico);
@@ -460,8 +456,6 @@ db.collection("historico").onSnapshot(snap => {
   renderAlertasInteligentes();
   renderModoGestorExtremo();
   renderDashboardResumoInteligente();
-  renderAlertasInteligentes();
-  renderModoGestorExtremo();
 });
 
 db.collection("pcs").onSnapshot(snap => {
@@ -794,7 +788,7 @@ function carregarChecklist() {
   checklist.innerHTML = passos.map((p, i) => `
     <label class="checkItem">
       <input type="checkbox" id="p${i}">
-      <span>${p}</span>
+      <span>${escapeHtmlAppBraga(p)}</span>
     </label>
   `).join("");
 }
@@ -822,6 +816,49 @@ function renderPCCards(items) {
         </div>
         <div class="card-actions">
           <button class="small-btn btn-delete" onclick="apagarPC('${d.idDoc}')">Apagar</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderPCCards(items) {
+  const lista = el("listaPC");
+  if (!lista) return;
+
+  if (!items.length) {
+    lista.innerHTML = `<div class="panel empty-state"><h3>Sem registos de computadores</h3><p>Os computadores guardados aparecem aqui.</p></div>`;
+    return;
+  }
+
+  lista.innerHTML = items.map(d => {
+    const steps = Array.isArray(d.passos) ? d.passos : [];
+    const total = steps.length || passos.length || 1;
+    const done = steps.filter(p => !!p.feito).length;
+    const progress = Math.round((done / total) * 100);
+    const statusClass = progress >= 100 ? "ok" : (progress >= 60 ? "warn" : "bad");
+    const htmlPassos = steps.map(p => `
+      <div class="computer-step ${p.feito ? "is-done" : "is-open"}">
+        <span class="computer-step-dot"></span>
+        <span>${escapeHtmlAppBraga(p.passo || "-")}</span>
+      </div>
+    `).join("");
+
+    return `
+      <div class="pc-card computer-card">
+        <div class="computer-card-head">
+          <div>
+            <div class="pc-name">${escapeHtmlAppBraga(d.nome || "Computador")}</div>
+            <div class="meta-line">Data: <span class="meta-value">${escapeHtmlAppBraga(d.data || "Sem Data")}</span></div>
+          </div>
+          <span class="health-status ${statusClass}">${progress}%</span>
+        </div>
+        <div class="computer-progress"><span style="width:${progress}%"></span></div>
+        <div class="computer-step-grid">
+          ${htmlPassos || `<div class="meta-line">Sem passos registados.</div>`}
+        </div>
+        <div class="card-actions">
+          <button class="secondary-btn btn-delete" onclick="apagarPC('${escapeHtmlAppBraga(d.idDoc)}')">Apagar</button>
         </div>
       </div>
     `;
@@ -5804,6 +5841,7 @@ window.abrirAdicionarPistola = abrirAdicionarPistola;
 
 /* ===== MODO VISUAL ===== */
 function modoVisualInit() {
+  if (window.matchMedia?.("(pointer: coarse)")?.matches || document.body.classList.contains("device-tablet") || document.body.classList.contains("device-phone")) return;
   document.body.classList.add("modo-visual-on");
   document.querySelectorAll(".panel, .pc-card, .dashboard-card, .stock-card, .history-card").forEach((node, index) => {
     node.style.opacity = "0";
