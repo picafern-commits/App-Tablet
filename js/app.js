@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.10.4";
+const APP_VERSION = "1.10.5";
 
 
 
@@ -89,7 +89,9 @@ const appNotificationState = {
   intervalMinutes: 15,
   vapidKey: "",
   fcmToken: "",
-  sent: {}
+  sent: {},
+  realtimeBoot: {},
+  realtimeLast: {}
 };
 
 function el(id) {
@@ -395,6 +397,7 @@ async function disponivel() {
 }
 
 db.collection("stock").onSnapshot(snap => {
+  notificarAlteracaoRealtimeApp("stock", snap);
   stockGlobal = [];
   setText("countStock", snap.size);
 
@@ -485,6 +488,7 @@ db.collection("pcs").onSnapshot(snap => {
 });
 
 db.collection("manutencoes").onSnapshot(snap => {
+  notificarAlteracaoRealtimeApp("manutencoes", snap);
   manutencoesGlobal = [];
 
   snap.forEach(doc => {
@@ -1363,6 +1367,76 @@ async function verificarAlertasNotificacoesApp(force = false) {
     if (!force && appNotificationState.sent[alert.key]) continue;
     appNotificationState.sent[alert.key] = Date.now();
     await enviarNotificacaoApp(alert.title, alert.body, alert.key, { url: alert.url, force });
+  }
+}
+
+function getSnapshotChangeSummaryApp(snapshot) {
+  const summary = { added: 0, modified: 0, removed: 0, total: snapshot?.size || 0 };
+  if (!snapshot || typeof snapshot.docChanges !== "function") return summary;
+  snapshot.docChanges().forEach((change) => {
+    if (change.type === "added") summary.added += 1;
+    if (change.type === "modified") summary.modified += 1;
+    if (change.type === "removed") summary.removed += 1;
+  });
+  return summary;
+}
+
+function formatRealtimeChangeBodyApp(summary, label) {
+  const parts = [];
+  if (summary.added) parts.push(`${summary.added} novo${summary.added > 1 ? "s" : ""}`);
+  if (summary.modified) parts.push(`${summary.modified} alterado${summary.modified > 1 ? "s" : ""}`);
+  if (summary.removed) parts.push(`${summary.removed} apagado${summary.removed > 1 ? "s" : ""}`);
+  return parts.length ? `${label}: ${parts.join(", ")}.` : `${label}: dados atualizados.`;
+}
+
+function canNotifyRealtimeCollectionApp(collectionKey) {
+  if (!appNotificationState.enabled) return false;
+  if (collectionKey === "stock") return appNotificationState.stockMin;
+  if (collectionKey === "manutencoes") return appNotificationState.maintenance;
+  if (collectionKey === "printers") return appNotificationState.tonerZero;
+  return false;
+}
+
+async function notificarAlteracaoRealtimeApp(collectionKey, snapshot) {
+  if (!snapshot || typeof snapshot.docChanges !== "function") return;
+
+  if (!appNotificationState.realtimeBoot[collectionKey]) {
+    appNotificationState.realtimeBoot[collectionKey] = true;
+    return;
+  }
+
+  if (!canNotifyRealtimeCollectionApp(collectionKey)) return;
+
+  const summary = getSnapshotChangeSummaryApp(snapshot);
+  const changedCount = summary.added + summary.modified + summary.removed;
+  if (!changedCount) return;
+
+  const config = {
+    stock: {
+      title: "Stock atualizado",
+      label: "Stock",
+      url: "html/stock.html"
+    },
+    manutencoes: {
+      title: "Manutenção atualizada",
+      label: "Manutenções",
+      url: "html/manutencao-impressoras.html"
+    },
+    printers: {
+      title: "Impressoras atualizadas",
+      label: "Impressoras / toner",
+      url: "html/impressoras.html"
+    }
+  }[collectionKey];
+
+  if (!config) return;
+
+  const body = formatRealtimeChangeBodyApp(summary, config.label);
+  const tag = `realtime-${collectionKey}-${Date.now()}`;
+  await enviarNotificacaoApp(config.title, body, tag, { url: config.url });
+
+  if (collectionKey === "stock" || collectionKey === "manutencoes" || collectionKey === "printers") {
+    window.setTimeout(() => verificarAlertasNotificacoesApp(false), 350);
   }
 }
 
@@ -3876,6 +3950,7 @@ function bindPrintersFirebaseRealtime() {
   if (!db || !db.collection) return;
 
   db.collection("printers").onSnapshot((snap) => {
+    notificarAlteracaoRealtimeApp("printers", snap);
     snap.forEach((doc) => {
       const data = ({ firebaseId: doc.id, ...doc.data() }) || {};
       const ip = normalizePrinterIp(data.ip || doc.id);
