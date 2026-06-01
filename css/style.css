@@ -5192,3 +5192,373 @@ body.is-android-tablet.tablet-portrait .dashboard-container {
   }
 }
 /* ===== END RADIOS SELECT ACTIONS FINAL CLEAN ===== */
+
+
+
+/* =========================================================
+   APP BRAGA - ENTERPRISE BUTTON SYSTEM
+   Visual global profissional para todos os botões da APP
+   ========================================================= */
+
+:root {
+  --btn-radius: 16px;
+  --btn-height: 46px;
+  --btn-height-sm: 38px;
+  --btn-font: 900;
+  --btn-shadow: 0 14px 32px rgba(0,0,0,.26);
+  --btn-shadow-hover: 0 18px 42px rgba(0,0,0,.34);
+  --btn-border: rgba(255,255,255,.13);
+  --btn-surface: rgba(255,255,255,.075);
+  --btn-surface-hover: rgba(255,255,255,.12);
+  --btn-danger: #ef4444;
+  --btn-danger-hover: #dc2626;
+  --btn-danger-soft: rgba(239,68,68,.13);
+  --btn-text-light: #f8fafc;
+}
+
+/* Base global */
+button,
+.btn,
+.primary-btn,
+.secondary-btn,
+.small-btn,
+.reference-icon,
+.enterprise-btn,
+.add-btn,
+.save-btn,
+.btn-primary,
+.btn-edit,
+.btn-delete,
+.btn-use,
+.card-actions button,
+.item-actions button,
+.toolbar button,
+.modal-card button,
+.weekly-record-actions button,
+.radio-selected-buttons button,
+.config-card button {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  min-height: var(--btn-height) !important;
+  border-radius: var(--btn-radius) !important;
+  padding: 0 16px !important;
+  border: 1px solid var(--btn-border) !important;
+  font-size: 13px !important;
+  font-weight: var(--btn-font) !important;
+  letter-spacing: .01em !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  max-width: 100% !important;
+  transition:
+    transform .16s ease,
+    box-shadow .16s ease,
+    background .16s ease,
+    border-color .16s ease,
+    opacity .16s ease !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,.18) !important;
+}
+
+/* Hover / active */
+button:hover,
+.btn:hover,
+.primary-btn:hover,
+.secondary-btn:hover,
+.small-btn:hover,
+.reference-icon:hover,
+.enterprise-btn:hover,
+.add-btn:hover,
+.save-btn:hover,
+.btn-primary:hover,
+.card-actions button:hover,
+.item-actions button:hover,
+.toolbar button:hover,
+.modal-card button:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: var(--btn-shadow-hover) !important;
+}
+
+button:active,
+.btn:active,
+.primary-btn:active,
+.secondary-btn:active,
+.small-btn:active,
+.reference-icon:active,
+.enterprise-btn:active,
+.add-btn:active,
+.save-btn:active,
+.btn-primary:active {
+  transform: translateY(0) scale(.985) !important;
+  box-shadow: 0 7px 16px rgba(0,0,0,.24) !important;
+}
+
+/* Focus acessível */
+button:focus-visible,
+.btn:focus-visible,
+.primary-btn:focus-visible,
+.secondary-btn:focus-visible,
+.small-btn:focus-visible,
+.reference-icon:focus-visible,
+.enterprise-btn:focus-visible,
+.add-btn:focus-visible,
+.save-btn:focus-visible,
+.btn-primary:focus-visible {
+  outline: none !important;
+  box-shadow:
+    0 0 0 3px var(--app-accent-soft, rgba(37,99,235,.25)),
+    var(--btn-shadow) !important;
+  border-color: var(--app-accent, #2563eb) !important;
+}
+
+/* Botão principal */
+.primary-btn,
+.btn-primary,
+.add-btn,
+.save-btn,
+.enterprise-btn.primary,
+button.primary,
+button[type="submit"],
+.radio-action-main {
+  background:
+    linear-gradient(135deg,
+      var(--app-accent, #2563eb),
+      var(--app-accent-hover, #1d4ed8)
+    ) !important;
+  color: var(--app-button-text, #fff) !important;
+  border-color: var(--app-accent-line, rgba(37,99,235,.36)) !important;
+  box-shadow:
+    0 14px 34px var(--app-accent-soft, rgba(37,99,235,.24)),
+    0 10px 24px rgba(0,0,0,.22) !important;
+}
+
+/* Botão secundário */
+.secondary-btn,
+.btn,
+.enterprise-btn,
+.reference-outline,
+.card-actions .secondary-btn,
+.item-actions .secondary-btn,
+.modal-card .secondary-btn,
+.config-card .secondary-btn {
+  background:
+    linear-gradient(180deg,
+      rgba(255,255,255,.105),
+      rgba(255,255,255,.065)
+    ) !important;
+  color: var(--btn-text-light) !important;
+  border-color: rgba(255,255,255,.14) !important;
+}
+
+/* Secundário hover */
+.secondary-btn:hover,
+.btn:hover,
+.enterprise-btn:hover,
+.reference-outline:hover,
+.card-actions .secondary-btn:hover,
+.item-actions .secondary-btn:hover,
+.modal-card .secondary-btn:hover {
+  background:
+    linear-gradient(180deg,
+      rgba(255,255,255,.15),
+      rgba(255,255,255,.09)
+    ) !important;
+  border-color: var(--app-accent-line, rgba(37,99,235,.34)) !important;
+}
+
+/* Botões pequenos */
+.small-btn,
+.reference-icon,
+.btn-use,
+.btn-edit,
+.btn-delete {
+  min-height: var(--btn-height-sm) !important;
+  height: var(--btn-height-sm) !important;
+  padding: 0 12px !important;
+  border-radius: 13px !important;
+  font-size: 12px !important;
+}
+
+/* Botões de ícone */
+.reference-icon {
+  width: 42px !important;
+  min-width: 42px !important;
+  max-width: 42px !important;
+  padding: 0 !important;
+  border-radius: 14px !important;
+  background:
+    linear-gradient(180deg,
+      rgba(255,255,255,.11),
+      rgba(255,255,255,.065)
+    ) !important;
+  color: #fff !important;
+}
+
+/* Editar */
+.btn-edit,
+button[title*="Editar"],
+button[onclick*="editar"],
+button[onclick*="Editar"] {
+  background:
+    linear-gradient(180deg,
+      rgba(59,130,246,.22),
+      rgba(59,130,246,.12)
+    ) !important;
+  color: #dbeafe !important;
+  border-color: rgba(59,130,246,.36) !important;
+}
+
+/* Apagar / perigo */
+.btn-delete,
+.danger,
+button.danger,
+.secondary-btn.danger,
+.reference-icon.danger,
+button[title*="Apagar"],
+button[onclick*="apagar"],
+button[onclick*="Apagar"],
+button[onclick*="delete"],
+button[onclick*="Delete"] {
+  background:
+    linear-gradient(180deg,
+      rgba(239,68,68,.22),
+      rgba(239,68,68,.12)
+    ) !important;
+  color: #fecaca !important;
+  border-color: rgba(239,68,68,.38) !important;
+}
+
+.btn-delete:hover,
+.danger:hover,
+button.danger:hover,
+.secondary-btn.danger:hover,
+.reference-icon.danger:hover,
+button[title*="Apagar"]:hover,
+button[onclick*="apagar"]:hover,
+button[onclick*="Apagar"]:hover {
+  background:
+    linear-gradient(180deg,
+      rgba(239,68,68,.30),
+      rgba(239,68,68,.16)
+    ) !important;
+  border-color: rgba(248,113,113,.55) !important;
+}
+
+/* Usar / sucesso */
+.btn-use,
+button[onclick*="usar"],
+button[onclick*="resolver"],
+button[onclick*="confirmar"] {
+  background:
+    linear-gradient(180deg,
+      rgba(34,197,94,.22),
+      rgba(34,197,94,.12)
+    ) !important;
+  color: #bbf7d0 !important;
+  border-color: rgba(34,197,94,.38) !important;
+}
+
+/* Botões dentro de cards */
+.card-actions,
+.item-actions,
+.weekly-record-actions,
+.radio-selected-buttons {
+  gap: 10px !important;
+}
+
+.card-actions button,
+.item-actions button,
+.weekly-record-actions button,
+.radio-selected-buttons button {
+  min-width: 0 !important;
+}
+
+/* Toolbar */
+.toolbar button,
+.reference-primary,
+.config-card button {
+  min-height: 48px !important;
+}
+
+/* Botões desativados */
+button:disabled,
+.btn:disabled,
+.primary-btn:disabled,
+.secondary-btn:disabled,
+.small-btn:disabled {
+  opacity: .45 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Ícones/texto dentro dos botões */
+button *,
+.btn *,
+.primary-btn *,
+.secondary-btn *,
+.small-btn *,
+.reference-icon *,
+.enterprise-btn *,
+.add-btn *,
+.save-btn *,
+.btn-primary * {
+  color: inherit !important;
+}
+
+/* Botões em light mode */
+body:not(.dark) button,
+body:not(.dark) .btn,
+body:not(.dark) .secondary-btn,
+body:not(.dark) .enterprise-btn {
+  color: #0f172a !important;
+  border-color: rgba(15,23,42,.14) !important;
+  background:
+    linear-gradient(180deg,
+      rgba(255,255,255,.92),
+      rgba(241,245,249,.92)
+    ) !important;
+}
+
+body:not(.dark) .primary-btn,
+body:not(.dark) .btn-primary,
+body:not(.dark) .add-btn,
+body:not(.dark) .save-btn,
+body:not(.dark) button.primary,
+body:not(.dark) button[type="submit"],
+body:not(.dark) .radio-action-main {
+  color: var(--app-button-text, #fff) !important;
+  background:
+    linear-gradient(135deg,
+      var(--app-accent, #2563eb),
+      var(--app-accent-hover, #1d4ed8)
+    ) !important;
+}
+
+/* Mobile / tablet */
+@media (max-width: 768px) {
+  button,
+  .btn,
+  .primary-btn,
+  .secondary-btn,
+  .small-btn,
+  .enterprise-btn,
+  .add-btn,
+  .save-btn,
+  .btn-primary {
+    min-height: 46px !important;
+    font-size: 12px !important;
+    padding: 0 13px !important;
+  }
+
+  .reference-icon {
+    width: 42px !important;
+    min-width: 42px !important;
+  }
+}
+/* ===== END APP BRAGA ENTERPRISE BUTTON SYSTEM ===== */
