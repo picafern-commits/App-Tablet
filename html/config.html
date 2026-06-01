@@ -70,7 +70,7 @@
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/style.css?v=theme-builder-1">
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -308,13 +308,57 @@
       </div>
     </div>
   </section>
+
+<div class="config-card enterprise-config-card">
+  <h3>Personalização Visual Avançada</h3>
+  <p>Edita as cores da APP por tipo de elemento. As alterações ficam guardadas neste dispositivo.</p>
+
+  <div class="theme-builder-grid">
+    <label class="theme-builder-item"><span>Botão Principal - Fundo</span><input type="color" data-theme-key="uiPrimaryBg" onchange="guardarVisualThemeCampoAppBraga('uiPrimaryBg', this.value)"></label>
+    <label class="theme-builder-item"><span>Botão Principal - Letra</span><input type="color" data-theme-key="uiPrimaryText" onchange="guardarVisualThemeCampoAppBraga('uiPrimaryText', this.value)"></label>
+    <label class="theme-builder-item"><span>Botão Principal - Borda</span><input type="color" data-theme-key="uiPrimaryBorder" onchange="guardarVisualThemeCampoAppBraga('uiPrimaryBorder', this.value)"></label>
+
+    <label class="theme-builder-item"><span>Botão Secundário - Fundo</span><input type="color" data-theme-key="uiSecondaryBg" onchange="guardarVisualThemeCampoAppBraga('uiSecondaryBg', this.value)"></label>
+    <label class="theme-builder-item"><span>Botão Secundário - Letra</span><input type="color" data-theme-key="uiSecondaryText" onchange="guardarVisualThemeCampoAppBraga('uiSecondaryText', this.value)"></label>
+    <label class="theme-builder-item"><span>Botão Secundário - Borda</span><input type="color" data-theme-key="uiSecondaryBorder" onchange="guardarVisualThemeCampoAppBraga('uiSecondaryBorder', this.value)"></label>
+
+    <label class="theme-builder-item"><span>Botão Editar - Fundo</span><input type="color" data-theme-key="uiEditBg" onchange="guardarVisualThemeCampoAppBraga('uiEditBg', this.value)"></label>
+    <label class="theme-builder-item"><span>Botão Editar - Letra</span><input type="color" data-theme-key="uiEditText" onchange="guardarVisualThemeCampoAppBraga('uiEditText', this.value)"></label>
+    <label class="theme-builder-item"><span>Botão Editar - Borda</span><input type="color" data-theme-key="uiEditBorder" onchange="guardarVisualThemeCampoAppBraga('uiEditBorder', this.value)"></label>
+
+    <label class="theme-builder-item"><span>Botão Apagar - Fundo</span><input type="color" data-theme-key="uiDangerBg" onchange="guardarVisualThemeCampoAppBraga('uiDangerBg', this.value)"></label>
+    <label class="theme-builder-item"><span>Botão Apagar - Letra</span><input type="color" data-theme-key="uiDangerText" onchange="guardarVisualThemeCampoAppBraga('uiDangerText', this.value)"></label>
+    <label class="theme-builder-item"><span>Botão Apagar - Borda</span><input type="color" data-theme-key="uiDangerBorder" onchange="guardarVisualThemeCampoAppBraga('uiDangerBorder', this.value)"></label>
+
+    <label class="theme-builder-item"><span>Botão Confirmar - Fundo</span><input type="color" data-theme-key="uiSuccessBg" onchange="guardarVisualThemeCampoAppBraga('uiSuccessBg', this.value)"></label>
+    <label class="theme-builder-item"><span>Botão Confirmar - Letra</span><input type="color" data-theme-key="uiSuccessText" onchange="guardarVisualThemeCampoAppBraga('uiSuccessText', this.value)"></label>
+    <label class="theme-builder-item"><span>Botão Confirmar - Borda</span><input type="color" data-theme-key="uiSuccessBorder" onchange="guardarVisualThemeCampoAppBraga('uiSuccessBorder', this.value)"></label>
+
+    <label class="theme-builder-item"><span>Cards - Fundo</span><input type="color" data-theme-key="uiCardBg" onchange="guardarVisualThemeCampoAppBraga('uiCardBg', this.value)"></label>
+    <label class="theme-builder-item"><span>Cards - Borda</span><input type="color" data-theme-key="uiCardBorder" onchange="guardarVisualThemeCampoAppBraga('uiCardBorder', this.value)"></label>
+    <label class="theme-builder-item"><span>Títulos</span><input type="color" data-theme-key="uiTitleColor" onchange="guardarVisualThemeCampoAppBraga('uiTitleColor', this.value)"></label>
+    <label class="theme-builder-item"><span>Texto Geral</span><input type="color" data-theme-key="uiTextColor" onchange="guardarVisualThemeCampoAppBraga('uiTextColor', this.value)"></label>
+
+    <label class="theme-builder-item"><span>Sidebar - Fundo</span><input type="color" data-theme-key="uiSidebarBg" onchange="guardarVisualThemeCampoAppBraga('uiSidebarBg', this.value)"></label>
+    <label class="theme-builder-item"><span>Sidebar - Texto</span><input type="color" data-theme-key="uiSidebarText" onchange="guardarVisualThemeCampoAppBraga('uiSidebarText', this.value)"></label>
+    <label class="theme-builder-item"><span>Sidebar Ativa - Fundo</span><input type="color" data-theme-key="uiSidebarActiveBg" onchange="guardarVisualThemeCampoAppBraga('uiSidebarActiveBg', this.value)"></label>
+    <label class="theme-builder-item"><span>Sidebar Ativa - Texto</span><input type="color" data-theme-key="uiSidebarActiveText" onchange="guardarVisualThemeCampoAppBraga('uiSidebarActiveText', this.value)"></label>
+  </div>
+
+  <div class="theme-builder-actions">
+    <button class="secondary-btn" type="button" onclick="resetVisualThemeAppBraga()">Repor cores</button>
+    <button class="secondary-btn" type="button" onclick="exportVisualThemeAppBraga()">Exportar tema</button>
+    <button class="secondary-btn" type="button" onclick="importVisualThemeAppBraga()">Importar tema</button>
+  </div>
+</div>
+
 </main>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<script src="../js/app.js"></script>
+<script src="../js/app.js?v=theme-builder-1"></script>
   <script src="../js/core/helpers.js"></script>
   <script src="../js/iphone-force-final.js?v=v2-final"></script>
 </body>

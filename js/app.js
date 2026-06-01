@@ -3483,6 +3483,13 @@ function renderRadios() {
         <div class="radio-card-user">${assigned ? `User: ${safeRefHtml(currentUser)}` : "Sem user atribuído"}</div>
         ${assignedAt ? `<small>Atribuído em ${safeRefHtml(assignedAt)}</small>` : ""}
       </div>
+      <div class="radio-card-actions" onclick="event.stopPropagation()">
+        <button class="secondary-btn" type="button" onclick="editarRadio('${safeRefHtml(item.id)}')">Editar</button>
+        <button class="secondary-btn reference-outline" type="button" onclick="abrirAtribuirRadio('${safeRefHtml(item.id)}')">Atribuir</button>
+        <button class="secondary-btn" type="button" onclick="devolverRadio('${safeRefHtml(item.id)}')">Devolver</button>
+        <button class="secondary-btn reference-outline" type="button" onclick="abrirHistoricoRadio('${safeRefHtml(item.id)}')">Histórico</button>
+        <button class="secondary-btn danger" type="button" onclick="apagarRadio('${safeRefHtml(item.id)}')">Apagar</button>
+      </div>
     </article>
   `;
   }).join("") : `<div class="reference-empty">Sem rádios registados na Firestore.</div>`;
@@ -4215,7 +4222,6 @@ function radioAcaoSelecionada(acao) {
 
   const id = radio.id;
 
-  if (acao === "novo") return adicionarRadio();
   if (acao === "editar") return editarRadio(id);
   if (acao === "atribuir") return abrirAtribuirRadio(id);
   if (acao === "devolver") return devolverRadio(id);
@@ -8928,3 +8934,152 @@ window.addEventListener("orientationchange", () => {
   */
 })();
 /* ===== END FULL PAGE SCROLL PROXY ===== */
+
+
+
+/* ===== APP BRAGA VISUAL THEME BUILDER ===== */
+const APP_BRAGA_THEME_DEFAULTS = {
+  uiPrimaryBg: "#2563eb",
+  uiPrimaryText: "#ffffff",
+  uiPrimaryBorder: "#2563eb",
+
+  uiSecondaryBg: "#1f2937",
+  uiSecondaryText: "#f8fafc",
+  uiSecondaryBorder: "#475569",
+
+  uiDangerBg: "#7f1d1d",
+  uiDangerText: "#fecaca",
+  uiDangerBorder: "#ef4444",
+
+  uiEditBg: "#1e3a8a",
+  uiEditText: "#dbeafe",
+  uiEditBorder: "#3b82f6",
+
+  uiSuccessBg: "#14532d",
+  uiSuccessText: "#bbf7d0",
+  uiSuccessBorder: "#22c55e",
+
+  uiCardBg: "#111827",
+  uiCardBorder: "#334155",
+  uiTitleColor: "#ffffff",
+  uiTextColor: "#cbd5e1",
+
+  uiSidebarBg: "#0f172a",
+  uiSidebarText: "#f8fafc",
+  uiSidebarActiveBg: "#2563eb",
+  uiSidebarActiveText: "#ffffff"
+};
+
+const APP_BRAGA_THEME_MAP = {
+  uiPrimaryBg: "--ui-primary-bg",
+  uiPrimaryText: "--ui-primary-text",
+  uiPrimaryBorder: "--ui-primary-border",
+  uiSecondaryBg: "--ui-secondary-bg",
+  uiSecondaryText: "--ui-secondary-text",
+  uiSecondaryBorder: "--ui-secondary-border",
+  uiDangerBg: "--ui-danger-bg",
+  uiDangerText: "--ui-danger-text",
+  uiDangerBorder: "--ui-danger-border",
+  uiEditBg: "--ui-edit-bg",
+  uiEditText: "--ui-edit-text",
+  uiEditBorder: "--ui-edit-border",
+  uiSuccessBg: "--ui-success-bg",
+  uiSuccessText: "--ui-success-text",
+  uiSuccessBorder: "--ui-success-border",
+  uiCardBg: "--ui-card-bg",
+  uiCardBorder: "--ui-card-border",
+  uiTitleColor: "--ui-title-color",
+  uiTextColor: "--ui-text-color",
+  uiSidebarBg: "--ui-sidebar-bg",
+  uiSidebarText: "--ui-sidebar-text",
+  uiSidebarActiveBg: "--ui-sidebar-active-bg",
+  uiSidebarActiveText: "--ui-sidebar-active-text"
+};
+
+function normalizarThemeColorAppBraga(value, fallback = "#2563eb") {
+  const v = String(value || "").trim();
+  return /^#[0-9a-fA-F]{6}$/.test(v) ? v.toLowerCase() : fallback;
+}
+
+function getVisualThemeAppBraga() {
+  try {
+    return {
+      ...APP_BRAGA_THEME_DEFAULTS,
+      ...(JSON.parse(localStorage.getItem("appBragaVisualTheme") || "{}"))
+    };
+  } catch (e) {
+    return { ...APP_BRAGA_THEME_DEFAULTS };
+  }
+}
+
+function aplicarVisualThemeAppBraga() {
+  const theme = getVisualThemeAppBraga();
+  Object.entries(APP_BRAGA_THEME_MAP).forEach(([key, cssVar]) => {
+    document.documentElement.style.setProperty(cssVar, normalizarThemeColorAppBraga(theme[key], APP_BRAGA_THEME_DEFAULTS[key]));
+  });
+
+  Object.entries(theme).forEach(([key, value]) => {
+    const input = document.querySelector(`[data-theme-key="${key}"]`);
+    if (input) input.value = normalizarThemeColorAppBraga(value, APP_BRAGA_THEME_DEFAULTS[key]);
+  });
+}
+
+function guardarVisualThemeCampoAppBraga(key, value) {
+  const theme = getVisualThemeAppBraga();
+  theme[key] = normalizarThemeColorAppBraga(value, APP_BRAGA_THEME_DEFAULTS[key]);
+  localStorage.setItem("appBragaVisualTheme", JSON.stringify(theme));
+  aplicarVisualThemeAppBraga();
+}
+
+function resetVisualThemeAppBraga() {
+  if (!confirm("Repor cores visuais da APP?")) return;
+  localStorage.removeItem("appBragaVisualTheme");
+  aplicarVisualThemeAppBraga();
+}
+
+function exportVisualThemeAppBraga() {
+  const data = JSON.stringify(getVisualThemeAppBraga(), null, 2);
+  const blob = new Blob([data], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "app-braga-tema-visual.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importVisualThemeAppBraga() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "application/json";
+  input.onchange = () => {
+    const file = input.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result);
+        const finalTheme = { ...APP_BRAGA_THEME_DEFAULTS };
+        Object.keys(APP_BRAGA_THEME_DEFAULTS).forEach((key) => {
+          if (data[key]) finalTheme[key] = normalizarThemeColorAppBraga(data[key], APP_BRAGA_THEME_DEFAULTS[key]);
+        });
+        localStorage.setItem("appBragaVisualTheme", JSON.stringify(finalTheme));
+        aplicarVisualThemeAppBraga();
+        if (typeof mostrarMensagem === "function") mostrarMensagem("Tema importado.");
+      } catch (e) {
+        alert("Ficheiro de tema inválido.");
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+document.addEventListener("DOMContentLoaded", aplicarVisualThemeAppBraga);
+window.addEventListener("pageshow", aplicarVisualThemeAppBraga);
+
+window.aplicarVisualThemeAppBraga = aplicarVisualThemeAppBraga;
+window.guardarVisualThemeCampoAppBraga = guardarVisualThemeCampoAppBraga;
+window.resetVisualThemeAppBraga = resetVisualThemeAppBraga;
+window.exportVisualThemeAppBraga = exportVisualThemeAppBraga;
+window.importVisualThemeAppBraga = importVisualThemeAppBraga;
+/* ===== END APP BRAGA VISUAL THEME BUILDER ===== */

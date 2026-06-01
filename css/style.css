@@ -5043,152 +5043,184 @@ body.is-android-tablet.tablet-portrait .dashboard-container {
 /* ===== END RADIOS SELECT ACTIONS FIX ===== */
 
 
-/* ===== RADIOS SELECT ACTIONS FINAL CLEAN ===== */
-.radios-page .toolbar.radio-toolbar {
-  display: block !important;
-  margin-bottom: 14px !important;
+
+/* ===== APP BRAGA VISUAL THEME BUILDER ===== */
+:root {
+  --ui-primary-bg: var(--app-accent, #2563eb);
+  --ui-primary-text: var(--app-button-text, #ffffff);
+  --ui-primary-border: var(--app-accent, #2563eb);
+
+  --ui-secondary-bg: rgba(255,255,255,.08);
+  --ui-secondary-text: #f8fafc;
+  --ui-secondary-border: rgba(255,255,255,.16);
+
+  --ui-danger-bg: rgba(239,68,68,.18);
+  --ui-danger-text: #fecaca;
+  --ui-danger-border: rgba(239,68,68,.45);
+
+  --ui-edit-bg: rgba(59,130,246,.18);
+  --ui-edit-text: #dbeafe;
+  --ui-edit-border: rgba(59,130,246,.42);
+
+  --ui-success-bg: rgba(34,197,94,.18);
+  --ui-success-text: #bbf7d0;
+  --ui-success-border: rgba(34,197,94,.42);
+
+  --ui-card-bg: rgba(255,255,255,.06);
+  --ui-card-border: rgba(255,255,255,.10);
+  --ui-title-color: #ffffff;
+  --ui-text-color: #cbd5e1;
+
+  --ui-sidebar-bg: rgba(15,23,42,.92);
+  --ui-sidebar-text: #f8fafc;
+  --ui-sidebar-active-bg: var(--app-accent, #2563eb);
+  --ui-sidebar-active-text: var(--app-button-text, #ffffff);
 }
 
-.radios-page .toolbar.radio-toolbar .primary-btn,
-.radios-page .toolbar.radio-toolbar .reference-primary {
-  display: none !important;
+/* Botões principais */
+.primary-btn,
+.reference-primary,
+.btn-primary,
+.add-btn,
+.save-btn,
+button[type="submit"],
+button.primary,
+.radio-action-main {
+  background: var(--ui-primary-bg) !important;
+  color: var(--ui-primary-text) !important;
+  border-color: var(--ui-primary-border) !important;
 }
 
-.radios-page #radioSearch {
-  width: 100% !important;
-  min-height: 48px !important;
-  border-radius: 16px !important;
-  padding: 0 14px !important;
+/* Botões secundários */
+.secondary-btn,
+.reference-outline,
+.btn,
+.enterprise-btn {
+  background: var(--ui-secondary-bg) !important;
+  color: var(--ui-secondary-text) !important;
+  border-color: var(--ui-secondary-border) !important;
 }
 
-.radio-selected-actions {
-  margin: 14px 0 18px 0 !important;
-  padding: 16px !important;
-  border-radius: 22px !important;
-  background: rgba(255,255,255,.055) !important;
-  border: 1px solid rgba(255,255,255,.10) !important;
-  display: grid !important;
-  grid-template-columns: minmax(280px, 1.15fr) 2.85fr !important;
-  gap: 14px !important;
-  align-items: end !important;
+/* Editar */
+.btn-edit,
+button[onclick*="editar"],
+button[onclick*="Editar"],
+button[title*="Editar"] {
+  background: var(--ui-edit-bg) !important;
+  color: var(--ui-edit-text) !important;
+  border-color: var(--ui-edit-border) !important;
 }
 
-.radio-select-label {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 8px !important;
-  margin: 0 !important;
+/* Apagar / perigo */
+.btn-delete,
+.danger,
+button.danger,
+.reference-icon.danger,
+button[onclick*="apagar"],
+button[onclick*="Apagar"],
+button[title*="Apagar"] {
+  background: var(--ui-danger-bg) !important;
+  color: var(--ui-danger-text) !important;
+  border-color: var(--ui-danger-border) !important;
 }
 
-.radio-select-label span {
+/* Confirmar / usar */
+.btn-use,
+button[onclick*="usar"],
+button[onclick*="resolver"],
+button[onclick*="confirmar"] {
+  background: var(--ui-success-bg) !important;
+  color: var(--ui-success-text) !important;
+  border-color: var(--ui-success-border) !important;
+}
+
+/* Cards e painéis */
+.card,
+.panel,
+.stat-card,
+.metric-card,
+.dashboard-card,
+.pc-card,
+.radio-card,
+.info-card,
+.config-card,
+.modal-card,
+.enterprise-card {
+  background: var(--ui-card-bg) !important;
+  border-color: var(--ui-card-border) !important;
+}
+
+h1, h2, h3,
+.page-hero-title,
+.section-header h3,
+.card-title,
+.pc-name,
+.radio-card-main strong {
+  color: var(--ui-title-color) !important;
+}
+
+body,
+.meta-line,
+.section-subtitle,
+.card p,
+.panel p,
+small {
+  color: var(--ui-text-color);
+}
+
+/* Sidebar */
+.sidebar,
+.enterprise-sidebar {
+  background: var(--ui-sidebar-bg) !important;
+}
+
+.sidebar a,
+.enterprise-sidebar a {
+  color: var(--ui-sidebar-text) !important;
+}
+
+.sidebar a.active,
+.sidebar .active,
+.enterprise-sidebar a.active {
+  background: var(--ui-sidebar-active-bg) !important;
+  color: var(--ui-sidebar-active-text) !important;
+}
+
+/* Inputs do editor visual */
+.theme-builder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.theme-builder-item {
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.055);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+.theme-builder-item span {
+  display: block;
   color: #cbd5e1 !important;
-  font-weight: 900 !important;
-  font-size: 13px !important;
+  font-size: 13px;
+  font-weight: 900;
+  margin-bottom: 8px;
 }
 
-#radioSelectedId {
-  width: 100% !important;
-  min-height: 48px !important;
-  height: 48px !important;
-  border-radius: 16px !important;
-  padding: 0 14px !important;
+.theme-builder-item input[type="color"] {
+  width: 100%;
+  height: 44px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
 }
 
-.radio-selected-buttons {
-  display: grid !important;
-  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
-  gap: 8px !important;
-  align-items: end !important;
+.theme-builder-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
 }
-
-.radio-selected-buttons button,
-.radio-selected-buttons .secondary-btn,
-.radio-selected-buttons .primary-btn,
-.radio-selected-buttons .reference-outline,
-.radio-selected-buttons .danger {
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: 100% !important;
-  height: 48px !important;
-  min-height: 48px !important;
-  padding: 0 10px !important;
-  border-radius: 15px !important;
-  font-size: 12px !important;
-  font-weight: 900 !important;
-  line-height: 1 !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-.radio-selected-buttons .radio-action-main {
-  background: linear-gradient(135deg,var(--app-accent,#2563eb),var(--app-accent-hover,#1d4ed8)) !important;
-  color: var(--app-button-text,#fff) !important;
-  border: 0 !important;
-}
-
-.radio-selected-info {
-  grid-column: 1 / -1 !important;
-  color: #94a3b8 !important;
-  font-size: 13px !important;
-  font-weight: 800 !important;
-  padding-top: 2px !important;
-}
-
-.radio-card-actions {
-  display: none !important;
-}
-
-.radio-card {
-  cursor: pointer !important;
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: flex-start !important;
-  min-height: 245px !important;
-  overflow: hidden !important;
-}
-
-.radio-card.is-selected {
-  border-color: var(--app-accent, #2563eb) !important;
-  box-shadow: 0 0 0 2px var(--app-accent-soft, rgba(37,99,235,.22)),
-              0 18px 46px rgba(0,0,0,.28) !important;
-}
-
-.radio-card:hover {
-  border-color: var(--app-accent, #2563eb) !important;
-}
-
-.radio-cards-grid {
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)) !important;
-  gap: 18px !important;
-}
-
-@media (max-width: 1200px) {
-  .radio-selected-actions {
-    grid-template-columns: 1fr !important;
-  }
-
-  .radio-selected-buttons {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  }
-}
-
-@media (max-width: 620px) {
-  .radio-selected-buttons {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-
-  .radio-selected-buttons button,
-  .radio-selected-buttons .secondary-btn,
-  .radio-selected-buttons .primary-btn {
-    font-size: 11px !important;
-  }
-
-  .radio-cards-grid {
-    grid-template-columns: 1fr !important;
-  }
-}
-/* ===== END RADIOS SELECT ACTIONS FINAL CLEAN ===== */
+/* ===== END APP BRAGA VISUAL THEME BUILDER ===== */
