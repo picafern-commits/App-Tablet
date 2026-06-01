@@ -3429,6 +3429,24 @@ function radioDeviceImageHtml(radio = {}) {
   return `<img class="radio-device-img" src="${safeRefHtml(getRadioImageSource(radio))}" alt="${safeRefHtml(serial)}" loading="lazy">`;
 }
 
+function radioCurrentUserName(radio = {}) {
+  return radio.userNome || radio.user || radio.utilizador || radio.operadorAtual || "";
+}
+
+function radioSearchText(item = {}) {
+  return normalizarTexto([
+    item.nome,
+    item.mac,
+    item.serial,
+    item.numeroSerie,
+    item.sn,
+    item.userNome,
+    item.user,
+    item.utilizador,
+    item.operadorAtual
+  ].join(" "));
+}
+
 function renderRadios() {
   const listaNode = document.getElementById("listaRadios");
   const totalNode = document.getElementById("radiosTotal");
@@ -3437,7 +3455,12 @@ function renderRadios() {
   const resumoNode = document.getElementById("radioWeeklySummary");
   if (!listaNode) return;
 
-  const lista = getRadiosFiltrados();
+  const search = normalizarTexto(document.getElementById("radioSearch")?.value || "");
+  const lista = radiosData
+    .filter((item) => !search || radioSearchText(item).includes(search))
+    .slice()
+    .sort((a, b) => String(a.nome || a.serial || a.mac || "").localeCompare(String(b.nome || b.serial || b.mac || ""), "pt", { numeric: true, sensitivity: "base" }));
+
   const weekInfo = getRadioWeekInfo();
   const records = getSortedRadioWeeklyRecords();
 
@@ -3446,25 +3469,35 @@ function renderRadios() {
     ? `${records.length} registo${records.length === 1 ? "" : "s"} semanal${records.length === 1 ? "" : "is"} guardado${records.length === 1 ? "" : "s"}`
     : weekInfo.label;
 
-  listaNode.innerHTML = lista.length ? lista.map((item) => `
+  listaNode.innerHTML = lista.length ? lista.map((item) => {
+    const currentUser = radioCurrentUserName(item);
+    const assigned = !!currentUser;
+    const assignedAt = item.atribuidoAt ? new Date(Number(item.atribuidoAt)).toLocaleString("pt-PT") : "";
+    return `
     <article class="radio-card">
       <div class="radio-card-icon">${radioDeviceImageHtml(item)}</div>
       <div class="radio-card-main">
-        <h3>${safeRefHtml(item.nome || "Sem nome")}</h3>
-        <p>MAC: ${safeRefHtml(item.mac || "-")}</p>
-        <p>Serial: ${safeRefHtml(item.serial || "-")}</p>
+        <strong>${safeRefHtml(item.nome || "Sem nome")}</strong>
+        <small>MAC ${safeRefHtml(item.mac || "-")} · Série ${safeRefHtml(item.serial || item.numeroSerie || "-")}</small>
+        <div class="radio-status-pill ${assigned ? "assigned" : "available"}">${assigned ? "Atribuído" : "Disponível"}</div>
+        <div class="radio-card-user">${assigned ? `User: ${safeRefHtml(currentUser)}` : "Sem user atribuído"}</div>
+        ${assignedAt ? `<small>Atribuído em ${safeRefHtml(assignedAt)}</small>` : ""}
       </div>
       <div class="radio-card-actions">
-        <button class="reference-icon" type="button" onclick="editarRadio('${item.id}')" title="Editar rádio">E</button>
-        <button class="reference-icon danger" type="button" onclick="apagarRadio('${item.id}')" title="Apagar rádio">X</button>
+        <button class="secondary-btn" type="button" onclick="editarRadio('${safeRefHtml(item.id)}')">Editar</button>
+        <button class="secondary-btn reference-outline" type="button" onclick="abrirAtribuirRadio('${safeRefHtml(item.id)}')">Atribuir</button>
+        <button class="secondary-btn" type="button" onclick="devolverRadio('${safeRefHtml(item.id)}')">Devolver</button>
+        <button class="secondary-btn reference-outline" type="button" onclick="abrirHistoricoRadio('${safeRefHtml(item.id)}')">Histórico</button>
+        <button class="secondary-btn danger" type="button" onclick="apagarRadio('${safeRefHtml(item.id)}')">Apagar</button>
       </div>
     </article>
-  `).join("") : `<div class="reference-empty">Sem rádios registados na Firestore.</div>`;
+  `;
+  }).join("") : `<div class="reference-empty">Sem rádios registados na Firestore.</div>`;
 
   if (resumoNode) {
     resumoNode.innerHTML = records.length ? records.map((record) => {
       const assignments = Array.isArray(record.assignments) ? record.assignments : [];
-      const usedCount = assignments.filter(item => item.userId || item.userNome).length;
+      const usedCount = assignments.filter(item => item.userNome || item.userId).length;
       const recordId = getRadioWeeklyRecordId(record);
       return `
       <div class="weekly-radio-row compact radio-record-row">
@@ -3945,6 +3978,171 @@ function apagarInformacaoSelecionada() {
 function guardarInformacoes() {
   adicionarInformacao();
 }
+
+let radioAssignId = null;
+let unsubscribeRadioHistoryOpen = null;
+
+function getRadioById(id) {
+  return radiosData.find((radio) => String(radio.id) === String(id));
+}
+
+function getRadioUsersList() {
+  return (radioUsersData.length ? radioUsersData : (window.usersData || []));
+}
+
+function renderRadioAssignUsers(selectedId = "") {
+  const select = document.getElementById("radioAssignUser");
+  if (!select) return;
+  const users = getRadioUsersList()
+    .slice()
+    .sort((a, b) => radioUserLabel(a).localeCompare(radioUserLabel(b), "pt", { numeric: true, sensitivity: "base" }));
+
+  select.innerHTML = `<option value="">Escolher user...</option>` + users.map((user) => {
+    const id = radioUserId(user);
+    return `<option value="${safeRefHtml(id)}"${String(id) === String(selectedId) ? " selected" : ""}>${safeRefHtml(radioUserLabel(user))}</option>`;
+  }).join("");
+}
+
+function abrirAtribuirRadio(id) {
+  const radio = getRadioById(id);
+  if (!radio) return mostrarMensagem("Rádio não encontrado.", "erro");
+  radioAssignId = id;
+  const title = document.getElementById("radioAssignTitle");
+  if (title) title.textContent = `Atribuir ${radio.nome || "Rádio"}`;
+  renderRadioAssignUsers(radio.userId || "");
+  const obs = document.getElementById("radioAssignObs");
+  if (obs) obs.value = "";
+  const modal = document.getElementById("radioAssignModal");
+  if (modal) modal.style.display = "flex";
+}
+
+function fecharAtribuirRadio() {
+  radioAssignId = null;
+  const modal = document.getElementById("radioAssignModal");
+  if (modal) modal.style.display = "none";
+}
+
+async function guardarHistoricoRadio(radio, tipo, extra = {}) {
+  if (!window.db?.collection || !radio?.id) return;
+  await window.db.collection("radioHistory").add({
+    radioId: radio.id,
+    radioNome: radio.nome || "",
+    radioMac: radio.mac || "",
+    radioSerial: radio.serial || radio.numeroSerie || "",
+    tipo,
+    ...extra,
+    createdAt: Date.now(),
+    createdLabel: nowPt()
+  });
+}
+
+async function guardarAtribuirRadio() {
+  if (!window.db) return mostrarMensagem("Firebase indisponível.", "erro");
+  const radio = getRadioById(radioAssignId);
+  if (!radio) return mostrarMensagem("Rádio não encontrado.", "erro");
+
+  const userId = document.getElementById("radioAssignUser")?.value || "";
+  if (!userId) return mostrarMensagem("Escolhe um user.", "erro");
+
+  const user = getRadioUsersList().find((item) => radioUserId(item) === userId);
+  const userNome = user ? radioUserLabel(user) : userId;
+  const obs = document.getElementById("radioAssignObs")?.value.trim() || "";
+
+  try {
+    const payload = {
+      userId,
+      userNome,
+      estado: "atribuido",
+      atribuidoAt: Date.now(),
+      obsAtribuicao: obs,
+      updatedAt: Date.now()
+    };
+
+    await window.db.collection("radios").doc(radio.id).set(payload, { merge: true });
+    await guardarHistoricoRadio(radio, "atribuido", { userId, userNome, obs });
+    fecharAtribuirRadio();
+    mostrarMensagem("Rádio atribuído.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao atribuir rádio.", "erro");
+  }
+}
+
+async function devolverRadio(id) {
+  if (!window.db) return mostrarMensagem("Firebase indisponível.", "erro");
+  const radio = getRadioById(id);
+  if (!radio) return mostrarMensagem("Rádio não encontrado.", "erro");
+  const userNome = radioCurrentUserName(radio);
+
+  if (!userNome && !window.confirm("Este rádio não tem user associado. Marcar como devolvido mesmo assim?")) return;
+
+  try {
+    await window.db.collection("radios").doc(radio.id).set({
+      userId: "",
+      userNome: "",
+      user: "",
+      utilizador: "",
+      operadorAtual: "",
+      estado: "disponivel",
+      devolvidoAt: Date.now(),
+      updatedAt: Date.now()
+    }, { merge: true });
+    await guardarHistoricoRadio(radio, "devolvido", { userNome, obs: "Devolução manual" });
+    mostrarMensagem("Rádio devolvido.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao devolver rádio.", "erro");
+  }
+}
+
+function abrirHistoricoRadio(id) {
+  const radio = getRadioById(id);
+  if (!radio) return mostrarMensagem("Rádio não encontrado.", "erro");
+  const title = document.getElementById("radioHistoryTitle");
+  const list = document.getElementById("radioHistoryList");
+  if (title) title.textContent = `Histórico · ${radio.nome || "Rádio"}`;
+  if (list) list.innerHTML = `<div class="reference-empty">A carregar histórico...</div>`;
+  const modal = document.getElementById("radioHistoryModal");
+  if (modal) modal.style.display = "flex";
+
+  if (unsubscribeRadioHistoryOpen) unsubscribeRadioHistoryOpen();
+
+  if (!window.db?.collection) {
+    if (list) list.innerHTML = `<div class="reference-empty">Firebase indisponível.</div>`;
+    return;
+  }
+
+  unsubscribeRadioHistoryOpen = window.db.collection("radioHistory")
+    .where("radioId", "==", String(radio.id))
+    .onSnapshot((snapshot) => {
+      const items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+        .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+
+      if (!list) return;
+      list.innerHTML = items.length ? items.map((item) => `
+        <div class="radio-history-item">
+          <strong>${safeRefHtml(item.tipo === "atribuido" ? "Atribuído" : item.tipo === "devolvido" ? "Devolvido" : item.tipo || "Evento")}</strong>
+          <small>User: ${safeRefHtml(item.userNome || "-")}</small>
+          <small>${safeRefHtml(item.createdLabel || (item.createdAt ? new Date(Number(item.createdAt)).toLocaleString("pt-PT") : "-"))}</small>
+          ${item.obs ? `<small>Obs: ${safeRefHtml(item.obs)}</small>` : ""}
+        </div>
+      `).join("") : `<div class="reference-empty">Sem histórico para este rádio.</div>`;
+    }, (error) => {
+      console.error(error);
+      if (list) list.innerHTML = `<div class="reference-empty">Erro ao carregar histórico.</div>`;
+    });
+}
+
+function fecharHistoricoRadio() {
+  if (unsubscribeRadioHistoryOpen) {
+    unsubscribeRadioHistoryOpen();
+    unsubscribeRadioHistoryOpen = null;
+  }
+  const modal = document.getElementById("radioHistoryModal");
+  if (modal) modal.style.display = "none";
+}
+
+
 document.addEventListener("DOMContentLoaded", initRadiosPage);
 document.addEventListener("DOMContentLoaded", initInformacoesPage);
 document.addEventListener("DOMContentLoaded", initResolucaoApp);
@@ -3963,6 +4161,14 @@ window.fecharRegistoSemanalRadios = fecharRegistoSemanalRadios;
 window.renderRadioWeeklyForm = renderRadioWeeklyForm;
 window.guardarRegistoSemanalRadios = guardarRegistoSemanalRadios;
 window.apagarRegistoSemanalRadios = apagarRegistoSemanalRadios;
+
+window.abrirAtribuirRadio = abrirAtribuirRadio;
+window.fecharAtribuirRadio = fecharAtribuirRadio;
+window.guardarAtribuirRadio = guardarAtribuirRadio;
+window.devolverRadio = devolverRadio;
+window.abrirHistoricoRadio = abrirHistoricoRadio;
+window.fecharHistoricoRadio = fecharHistoricoRadio;
+
 window.guardarResolucaoApp = guardarResolucaoApp;
 window.guardarCorApp = guardarCorApp;
 window.guardarPinApp = guardarPinApp;
