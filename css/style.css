@@ -4858,3 +4858,69 @@ body.is-android-tablet.tablet-portrait .dashboard-container {
 /* A etiqueta dos Users é gerada por js/users-print-label-100x150-fix.js
    em 100mm x 150mm, sem page-break e com linhas/letras fortes para Zebra. */
 /* ===== END USERS PRINT LABEL 100x150 FIX ===== */
+
+
+/* ===== RADIOS OPERACIONAL FIX ===== */
+.radio-toolbar {
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  align-items:center;
+  margin-bottom:16px;
+}
+.radio-toolbar input {
+  flex:1 1 260px;
+  min-height:48px;
+}
+.radio-status-pill {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:30px;
+  padding:0 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  margin-top:8px;
+}
+.radio-status-pill.available {
+  color:#bbf7d0!important;
+  background:rgba(34,197,94,.14);
+  border:1px solid rgba(34,197,94,.32);
+}
+.radio-status-pill.assigned {
+  color:#bfdbfe!important;
+  background:rgba(59,130,246,.14);
+  border:1px solid rgba(59,130,246,.32);
+}
+.radio-card-user {
+  margin-top:8px;
+  color:#e5e7eb!important;
+  font-size:13px;
+  font-weight:800;
+}
+.radio-history-item {
+  padding:13px 14px;
+  border-radius:16px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.10);
+  margin-bottom:10px;
+}
+.radio-history-item strong {
+  color:#fff!important;
+}
+.radio-history-item small {
+  display:block;
+  color:#94a3b8!important;
+  margin-top:4px;
+}
+.radio-card-actions {
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+.radio-card-actions button {
+  flex:1 1 80px;
+}
+/* ===== END RADIOS OPERACIONAL FIX ===== */
