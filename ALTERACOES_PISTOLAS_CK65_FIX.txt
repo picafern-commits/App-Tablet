@@ -1,7 +1,0 @@
-Correção Pistolas CK65:
-- Corrigido botão Editar.
-- Corrigido botão Ver Mais.
-- Corrigido lookup por idDoc/firebaseId/id/docId/_ref.
-- Criado js/pistolas-ck65-final-fix.js carregado depois de firebase-pistolas.js.
-- firebase-pistolas.js agora guarda também idDoc além de firebaseId.
-- Firebase não foi alterada.
