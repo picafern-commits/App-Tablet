@@ -1,7 +1,8 @@
 
-/* APP BRAGA - THEME PRESETS ONLY */
+/* APP BRAGA - THEME PRESETS + SIMPLE CUSTOM */
 (function(){
   const STORAGE_KEY = "appBragaThemeStudioSimpleV3";
+  const CUSTOM_KEY = "appBragaThemeCustomSimple";
 
   const themes = {
     enterpriseBlue:{name:"Enterprise Blue",desc:"Azul profissional e moderno.",bg:"#020617",bg2:"#0f172a",card:"#111827",border:"#334155",text:"#cbd5e1",title:"#ffffff",primary:"#2563eb",primaryText:"#ffffff",secondary:"#1f2937",secondaryText:"#f8fafc",edit:"#1e3a8a",editText:"#dbeafe",danger:"#7f1d1d",dangerText:"#fecaca",success:"#14532d",successText:"#bbf7d0",input:"#0f172a",inputText:"#ffffff",inputBorder:"#334155",sidebar:"#0f172a",sidebarText:"#f8fafc",sidebarIcon:"#f8fafc",sidebarActive:"#2563eb",sidebarActiveText:"#ffffff",sidebarButton:"#111827",sidebarButtonHover:"#1f2937",sidebarGlow:"#2563eb",sidebarDivider:"#334155",sidebarBrand:"#2563eb",sidebarBrandText:"#ffffff",sidebarTitle:"#ffffff",sidebarSubtitle:"#cbd5e1",buttonGlow:"#2563eb",cardGlow:"#2563eb"},
@@ -15,6 +16,51 @@
 
   function valid(v,f="#2563eb"){v=String(v||"").trim();return /^#[0-9a-fA-F]{6}$/.test(v)?v.toLowerCase():f;}
   function rgba(hex,a){hex=valid(hex).replace("#","");return `rgba(${parseInt(hex.slice(0,2),16)},${parseInt(hex.slice(2,4),16)},${parseInt(hex.slice(4,6),16)},${a})`;}
+  function shade(hex, amount){
+    hex=valid(hex).replace("#","");
+    let r=parseInt(hex.slice(0,2),16), g=parseInt(hex.slice(2,4),16), b=parseInt(hex.slice(4,6),16);
+    r=Math.max(0,Math.min(255,r+amount)); g=Math.max(0,Math.min(255,g+amount)); b=Math.max(0,Math.min(255,b+amount));
+    return "#"+[r,g,b].map(x=>x.toString(16).padStart(2,"0")).join("");
+  }
+  function luminance(hex){
+    hex=valid(hex).replace("#","");
+    const [r,g,b]=[parseInt(hex.slice(0,2),16),parseInt(hex.slice(2,4),16),parseInt(hex.slice(4,6),16)].map(v=>{
+      v/=255; return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);
+    });
+    return 0.2126*r+0.7152*g+0.0722*b;
+  }
+  function contrastText(hex){return luminance(hex)>0.45?"#0f172a":"#ffffff";}
+
+  function getCustom(){
+    try{return {...defaultCustom(), ...(JSON.parse(localStorage.getItem(CUSTOM_KEY)||"{}"))};}
+    catch(e){return defaultCustom();}
+  }
+  function defaultCustom(){
+    return {name:"O Meu Tema", mode:"dark", primary:"#2563eb", background:"#020617", card:"#111827", text:"#cbd5e1", sidebar:"#0f172a"};
+  }
+  function buildCustomTheme(){
+    const c=getCustom();
+    const dark=c.mode!=="light";
+    const primary=valid(c.primary), bg=valid(c.background), card=valid(c.card), text=valid(c.text), sidebar=valid(c.sidebar);
+    const title=contrastText(bg)==="#ffffff"?"#ffffff":"#0f172a";
+    const primaryText=contrastText(primary);
+    const border=dark?shade(card,36):shade(card,-42);
+    const secondary=dark?shade(card,18):shade(card,-10);
+    return {
+      name:c.name||"O Meu Tema", desc:"Tema personalizado simples.",
+      bg, bg2:dark?shade(bg,18):shade(bg,-8), card, border, text, title,
+      primary, primaryText, secondary, secondaryText:contrastText(secondary),
+      edit: dark?"#1e3a8a":"#dbeafe", editText: dark?"#dbeafe":"#1e3a8a",
+      danger: dark?"#7f1d1d":"#fee2e2", dangerText: dark?"#fecaca":"#991b1b",
+      success: dark?"#14532d":"#dcfce7", successText: dark?"#bbf7d0":"#166534",
+      input: dark?shade(card,-8):"#ffffff", inputText:title, inputBorder:border,
+      sidebar, sidebarText:contrastText(sidebar), sidebarIcon:contrastText(sidebar), sidebarActive:primary, sidebarActiveText:primaryText,
+      sidebarButton:dark?shade(sidebar,14):shade(sidebar,-8), sidebarButtonHover:dark?shade(sidebar,28):shade(sidebar,-18),
+      sidebarGlow:primary, sidebarDivider:border, sidebarBrand:primary, sidebarBrandText:primaryText, sidebarTitle:contrastText(sidebar), sidebarSubtitle:text,
+      buttonGlow:primary, cardGlow:primary
+    };
+  }
+
   function getTheme(){try{return {...themes.enterpriseBlue,...(JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}"))};}catch(e){return {...themes.enterpriseBlue};}}
   function setVar(n,v){document.documentElement.style.setProperty(n,v,"important");}
 
@@ -46,28 +92,39 @@
     document.querySelectorAll(".card,.panel,.stat-card,.metric-card,.dashboard-card,.pc-card,.radio-card,.info-card,.user-card,.config-card,.modal-card,.enterprise-card,.reference-card,.page-hero,.reference-header,article[class*='card'],div[class*='card']").forEach(el=>{if(el.matches("button,[class*='btn']"))return;el.style.setProperty("background",t.card,"important");el.style.setProperty("border-color",t.border,"important");el.style.setProperty("color",t.text,"important");});
   }
 
-  function applyPreset(id){
-    if(!themes[id])return;
-    localStorage.setItem(STORAGE_KEY,JSON.stringify(themes[id]));
-    applyTheme(); render();
-    if(typeof window.themeFirebasePushNow==="function"){setTimeout(window.themeFirebasePushNow,150);setTimeout(window.themeFirebasePushNow,800);}
-  }
+  function saveTheme(t){localStorage.setItem(STORAGE_KEY,JSON.stringify(t));applyTheme();render();if(typeof window.themeFirebasePushNow==="function"){setTimeout(window.themeFirebasePushNow,150);setTimeout(window.themeFirebasePushNow,800);}}
+  function applyPreset(id){if(themes[id])saveTheme(themes[id]);}
+  function applyCustom(){saveTheme(buildCustomTheme());}
+  function updateCustom(key,value){const c=getCustom();c[key]=value;localStorage.setItem(CUSTOM_KEY,JSON.stringify(c));render();}
 
   function render(){
     const root=document.getElementById("themeSimpleRoot"); if(!root)return;
     const current=getTheme().name||"Enterprise Blue";
+    const c=getCustom();
     root.innerHTML=`<div class="theme-presets-only">
-      <div class="theme-current-box"><strong>Tema atual</strong><span>${current}</span><small>Escolhe só um esquema. A Firebase sincroniza para os outros dispositivos.</small></div>
+      <div class="theme-current-box"><strong>Tema atual</strong><span>${current}</span><small>Escolhe um esquema pronto ou cria o teu de forma simples.</small></div>
+      <h3>Esquemas prontos</h3>
       <div class="theme-preset-simple-grid">${Object.entries(themes).map(([id,t])=>`<button type="button" class="theme-preset-simple-card ${current===t.name?"active":""}" onclick="themePresetOnlyApply('${id}')"><div><strong>${t.name}</strong><small>${t.desc}</small></div><div class="theme-preset-simple-swatches"><i style="background:${t.bg}"></i><i style="background:${t.card}"></i><i style="background:${t.primary}"></i><i style="background:${t.secondary}"></i><i style="background:${t.success}"></i></div></button>`).join("")}</div>
+      <div class="theme-custom-simple">
+        <h3>Criar o meu esquema</h3>
+        <p>Escolhe só as cores principais. A APP calcula o resto automaticamente.</p>
+        <div class="theme-custom-grid">
+          <label><span>Nome do tema</span><input type="text" value="${c.name||"O Meu Tema"}" oninput="themeCustomUpdate('name',this.value)"></label>
+          <label><span>Modo</span><select onchange="themeCustomUpdate('mode',this.value)"><option value="dark" ${c.mode!=="light"?"selected":""}>Escuro</option><option value="light" ${c.mode==="light"?"selected":""}>Claro</option></select></label>
+          <label><span>Cor principal</span><input type="color" value="${valid(c.primary)}" onchange="themeCustomUpdate('primary',this.value)"></label>
+          <label><span>Fundo</span><input type="color" value="${valid(c.background)}" onchange="themeCustomUpdate('background',this.value)"></label>
+          <label><span>Cards</span><input type="color" value="${valid(c.card)}" onchange="themeCustomUpdate('card',this.value)"></label>
+          <label><span>Texto</span><input type="color" value="${valid(c.text)}" onchange="themeCustomUpdate('text',this.value)"></label>
+          <label><span>Sidebar</span><input type="color" value="${valid(c.sidebar)}" onchange="themeCustomUpdate('sidebar',this.value)"></label>
+        </div>
+        <button class="primary-btn" type="button" onclick="themeCustomApply()">Aplicar o meu esquema</button>
+      </div>
       <div class="theme-preview"><h3>Preview</h3><p>Pré-visualização do esquema selecionado.</p><div class="theme-preview-row"><button class="primary-btn">Principal</button><button class="secondary-btn">Secundário</button><button class="secondary-btn" onclick="editarDemoThemeStudio()">Editar</button><button class="secondary-btn danger">Apagar</button></div><div class="theme-preview-card"><strong>Card exemplo</strong><p>Cards, botões, sidebar, inputs e grids seguem este esquema.</p></div></div>
-      <div class="theme-simple-actions"><button class="secondary-btn" type="button" onclick="themePresetOnlyReset()">Repor Enterprise Blue</button></div>
     </div>`;
   }
 
-  function reset(){if(!confirm("Repor para Enterprise Blue?"))return;applyPreset("enterpriseBlue");}
-
-  window.themePresetOnlyApply=applyPreset; window.themePresetOnlyReset=reset;
-  window.themeSimplePreset=applyPreset; window.themeSimpleReset=reset; window.themeSimpleUpdate=function(){}; window.themeSimpleImport=function(){};
+  window.themePresetOnlyApply=applyPreset; window.themeCustomUpdate=updateCustom; window.themeCustomApply=applyCustom;
+  window.themeSimplePreset=applyPreset; window.themeSimpleReset=function(){applyPreset("enterpriseBlue")}; window.themeSimpleUpdate=function(){}; window.themeSimpleImport=function(){};
   window.themeStudioRender=render; window.editarDemoThemeStudio=function(){};
   document.addEventListener("DOMContentLoaded",()=>{applyTheme();render();setTimeout(applyTheme,300);setTimeout(applyTheme,1000);});
   window.addEventListener("pageshow",()=>setTimeout(()=>{applyTheme();render();},100));
