@@ -1,0 +1,40 @@
+
+/* APP BRAGA - THEME FIREBASE SYNC */
+.theme-sync-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 950;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.075);
+  color: #cbd5e1 !important;
+  margin-top: 10px;
+}
+
+.theme-sync-status.ok {
+  color: #bbf7d0 !important;
+  background: rgba(34,197,94,.14);
+  border-color: rgba(34,197,94,.36);
+}
+
+.theme-sync-status.warn {
+  color: #fde68a !important;
+  background: rgba(245,158,11,.12);
+  border-color: rgba(245,158,11,.34);
+}
+
+.theme-sync-status.bad {
+  color: #fecaca !important;
+  background: rgba(239,68,68,.13);
+  border-color: rgba(239,68,68,.36);
+}
+
+.theme-sync-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}

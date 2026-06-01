@@ -82,6 +82,7 @@
   <link rel="stylesheet" href="../css/theme-studio-pro.css?v=clean-old-colors-1">
   <link rel="stylesheet" href="../css/theme-global-all-pages.css?v=clean-old-colors-1">
   <link rel="stylesheet" href="../css/theme-zone-editor.css?v=zone-editor-1">
+  <link rel="stylesheet" href="../css/theme-firebase-sync.css?v=firebase-sync-1">
 </head>
 <body>
 <aside class="sidebar">
@@ -323,6 +324,13 @@
     <p>Escolhe um esquema pronto ou personaliza a APP de forma simples: cores gerais, botões, glow, sidebar, símbolos e linha divisória.</p>
   </div>
 
+  
+<div class="theme-sync-status warn" id="themeFirebaseSyncStatus">Tema: a ligar Firebase...</div>
+<div class="theme-sync-actions">
+  <button class="secondary-btn" type="button" onclick="themeFirebasePushNow()">Guardar tema na Firebase</button>
+  <button class="secondary-btn" type="button" onclick="themeFirebaseReloadNow()">Recarregar tema da Firebase</button>
+</div>
+
   <div id="themeSimpleRoot" class="theme-simple-layout"></div>
 </div>
 
@@ -344,5 +352,6 @@
   <script src="../js/theme-studio-pro.js?v=clean-old-colors-1"></script>
   <script src="../js/theme-global-all-pages.js?v=clean-old-colors-1"></script>
   <script src="../js/theme-zone-editor.js?v=zone-editor-1"></script>
+  <script src="../js/theme-firebase-sync.js?v=firebase-sync-1"></script>
 </body>
 </html>
