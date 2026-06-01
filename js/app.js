@@ -3483,13 +3483,6 @@ function renderRadios() {
         <div class="radio-card-user">${assigned ? `User: ${safeRefHtml(currentUser)}` : "Sem user atribuído"}</div>
         ${assignedAt ? `<small>Atribuído em ${safeRefHtml(assignedAt)}</small>` : ""}
       </div>
-      <div class="radio-card-actions" onclick="event.stopPropagation()">
-        <button class="secondary-btn" type="button" onclick="editarRadio('${safeRefHtml(item.id)}')">Editar</button>
-        <button class="secondary-btn reference-outline" type="button" onclick="abrirAtribuirRadio('${safeRefHtml(item.id)}')">Atribuir</button>
-        <button class="secondary-btn" type="button" onclick="devolverRadio('${safeRefHtml(item.id)}')">Devolver</button>
-        <button class="secondary-btn reference-outline" type="button" onclick="abrirHistoricoRadio('${safeRefHtml(item.id)}')">Histórico</button>
-        <button class="secondary-btn danger" type="button" onclick="apagarRadio('${safeRefHtml(item.id)}')">Apagar</button>
-      </div>
     </article>
   `;
   }).join("") : `<div class="reference-empty">Sem rádios registados na Firestore.</div>`;
@@ -4222,6 +4215,7 @@ function radioAcaoSelecionada(acao) {
 
   const id = radio.id;
 
+  if (acao === "novo") return adicionarRadio();
   if (acao === "editar") return editarRadio(id);
   if (acao === "atribuir") return abrirAtribuirRadio(id);
   if (acao === "devolver") return devolverRadio(id);
