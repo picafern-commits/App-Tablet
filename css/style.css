@@ -5041,3 +5041,154 @@ body.is-android-tablet.tablet-portrait .dashboard-container {
   }
 }
 /* ===== END RADIOS SELECT ACTIONS FIX ===== */
+
+
+/* ===== RADIOS SELECT ACTIONS FINAL CLEAN ===== */
+.radios-page .toolbar.radio-toolbar {
+  display: block !important;
+  margin-bottom: 14px !important;
+}
+
+.radios-page .toolbar.radio-toolbar .primary-btn,
+.radios-page .toolbar.radio-toolbar .reference-primary {
+  display: none !important;
+}
+
+.radios-page #radioSearch {
+  width: 100% !important;
+  min-height: 48px !important;
+  border-radius: 16px !important;
+  padding: 0 14px !important;
+}
+
+.radio-selected-actions {
+  margin: 14px 0 18px 0 !important;
+  padding: 16px !important;
+  border-radius: 22px !important;
+  background: rgba(255,255,255,.055) !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  display: grid !important;
+  grid-template-columns: minmax(280px, 1.15fr) 2.85fr !important;
+  gap: 14px !important;
+  align-items: end !important;
+}
+
+.radio-select-label {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  margin: 0 !important;
+}
+
+.radio-select-label span {
+  color: #cbd5e1 !important;
+  font-weight: 900 !important;
+  font-size: 13px !important;
+}
+
+#radioSelectedId {
+  width: 100% !important;
+  min-height: 48px !important;
+  height: 48px !important;
+  border-radius: 16px !important;
+  padding: 0 14px !important;
+}
+
+.radio-selected-buttons {
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  align-items: end !important;
+}
+
+.radio-selected-buttons button,
+.radio-selected-buttons .secondary-btn,
+.radio-selected-buttons .primary-btn,
+.radio-selected-buttons .reference-outline,
+.radio-selected-buttons .danger {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  padding: 0 10px !important;
+  border-radius: 15px !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.radio-selected-buttons .radio-action-main {
+  background: linear-gradient(135deg,var(--app-accent,#2563eb),var(--app-accent-hover,#1d4ed8)) !important;
+  color: var(--app-button-text,#fff) !important;
+  border: 0 !important;
+}
+
+.radio-selected-info {
+  grid-column: 1 / -1 !important;
+  color: #94a3b8 !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  padding-top: 2px !important;
+}
+
+.radio-card-actions {
+  display: none !important;
+}
+
+.radio-card {
+  cursor: pointer !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  min-height: 245px !important;
+  overflow: hidden !important;
+}
+
+.radio-card.is-selected {
+  border-color: var(--app-accent, #2563eb) !important;
+  box-shadow: 0 0 0 2px var(--app-accent-soft, rgba(37,99,235,.22)),
+              0 18px 46px rgba(0,0,0,.28) !important;
+}
+
+.radio-card:hover {
+  border-color: var(--app-accent, #2563eb) !important;
+}
+
+.radio-cards-grid {
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)) !important;
+  gap: 18px !important;
+}
+
+@media (max-width: 1200px) {
+  .radio-selected-actions {
+    grid-template-columns: 1fr !important;
+  }
+
+  .radio-selected-buttons {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .radio-selected-buttons {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .radio-selected-buttons button,
+  .radio-selected-buttons .secondary-btn,
+  .radio-selected-buttons .primary-btn {
+    font-size: 11px !important;
+  }
+
+  .radio-cards-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+/* ===== END RADIOS SELECT ACTIONS FINAL CLEAN ===== */
