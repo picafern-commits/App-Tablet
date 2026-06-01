@@ -552,3 +552,39 @@ body:has(.theme-studio-pro) main,
   transition: none !important;
 }
 /* ===== END CONFIG CRASH GUARD ===== */
+
+
+/* ===== OLD COLOR SYSTEM NEUTRALIZER ===== */
+/* Só o Theme Studio manda nas cores. Remove efeitos antigos/lixo de cards vermelhos. */
+:root {
+  --orange: var(--ts-primary-bg) !important;
+  --pink: var(--ts-primary-bg) !important;
+  --red: var(--ts-danger-bg) !important;
+  --accent: var(--ts-primary-bg) !important;
+  --primary: var(--ts-primary-bg) !important;
+  --brand: var(--ts-primary-bg) !important;
+}
+
+body .red-card,
+body .orange-card,
+body .pink-card,
+body .danger-card,
+body .alert-card:not(.danger):not(.critical),
+body [class*="red"]:not(button):not(.danger):not(.btn-delete),
+body [class*="orange"]:not(button):not(.danger):not(.btn-delete) {
+  background: var(--ts-card) !important;
+  border-color: var(--ts-card-border) !important;
+  color: var(--ts-text) !important;
+}
+
+body [style*="background: red"],
+body [style*="background:red"],
+body [style*="background-color: red"],
+body [style*="background-color:red"],
+body [style*="#ff0000"],
+body [style*="#dc2626"]:not(button):not(.danger):not(.btn-delete) {
+  background: var(--ts-card) !important;
+  border-color: var(--ts-card-border) !important;
+  color: var(--ts-text) !important;
+}
+/* ===== END OLD COLOR SYSTEM NEUTRALIZER ===== */

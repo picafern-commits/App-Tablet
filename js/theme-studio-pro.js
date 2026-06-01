@@ -1,4 +1,30 @@
 
+/* ===== CLEAN OLD COLOR SYSTEMS ===== */
+(function(){
+  const oldKeys = [
+    "appBragaVisualTheme",
+    "appBragaTheme",
+    "appTheme",
+    "buttonTheme",
+    "appBragaButtonTheme",
+    "appBragaColors",
+    "bragaColors",
+    "customColors",
+    "appColors"
+  ];
+
+  function cleanOldColorSystems(){
+    oldKeys.forEach(k => {
+      try { localStorage.removeItem(k); } catch(e) {}
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", cleanOldColorSystems);
+  window.cleanOldColorSystemsAppBraga = cleanOldColorSystems;
+})();
+/* ===== END CLEAN OLD COLOR SYSTEMS ===== */
+
+
 /* APP BRAGA - THEME STUDIO PRO */
 (function(){
   const storageKey = "appBragaThemeStudioPro";
