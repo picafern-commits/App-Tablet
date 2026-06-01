@@ -954,3 +954,16 @@ body .enterprise-btn:hover {
   margin-top: 10px;
 }
 /* ===== END THEME EDIT NO REFRESH FIX ===== */
+
+/* ===== CUSTOM THEME FROM PRESET UX ===== */
+.theme-custom-simple {
+  border-color: color-mix(in srgb, var(--ts-primary-bg,#2563eb) 28%, rgba(255,255,255,.12)) !important;
+}
+
+.theme-custom-simple h3::after {
+  content: "  •  editável";
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--ts-primary-bg,#2563eb);
+}
+/* ===== END CUSTOM THEME FROM PRESET UX ===== */

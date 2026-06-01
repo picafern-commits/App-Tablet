@@ -5313,3 +5313,115 @@ small {
   font-weight: 950 !important;
 }
 /* ===== END TONER PERCENT COLOR BARS ===== */
+
+
+/* ===== CONFIG NOTIFICAÇÕES FULL WIDTH ===== */
+.config-notificacoes-full,
+.config-card:has(#notifyTonerZero),
+.config-card:has([id*="notify"]),
+.config-card:has([id*="Notify"]),
+.config-card:has(.config-notificacoes-title) {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+}
+
+.config-notificacoes-full .config-options,
+.config-card:has(#notifyTonerZero) .config-options,
+.config-card:has([id*="notify"]) .config-options,
+.config-card:has([id*="Notify"]) .config-options {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+  gap: 14px !important;
+}
+
+.config-notificacoes-full .switch-row,
+.config-card:has(#notifyTonerZero) .switch-row,
+.config-card:has([id*="notify"]) .switch-row,
+.config-card:has([id*="Notify"]) .switch-row {
+  min-height: 54px !important;
+  border-radius: 18px !important;
+  background: rgba(255,255,255,.055) !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  padding: 12px 14px !important;
+}
+/* ===== END CONFIG NOTIFICAÇÕES FULL WIDTH ===== */
+
+
+/* ===== CONFIG COLLAPSIBLE SECTIONS ===== */
+.config-collapse-global-actions {
+  grid-column: 1 / -1 !important;
+  display: flex !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+  margin: 12px 0 18px 0 !important;
+}
+
+.config-collapsible-card {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.config-collapse-header {
+  width: 100% !important;
+  min-height: 54px !important;
+  margin: -4px 0 12px 0 !important;
+  padding: 0 14px !important;
+  border-radius: 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  text-align: left !important;
+  background: rgba(255,255,255,.065) !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  color: var(--ts-title, #fff) !important;
+  box-shadow: none !important;
+}
+
+.config-collapse-header:hover {
+  transform: none !important;
+  filter: brightness(1.05) !important;
+}
+
+.config-collapse-title {
+  color: inherit !important;
+  font-weight: 950 !important;
+  font-size: 15px !important;
+}
+
+.config-collapse-icon {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 999px !important;
+  background: var(--ts-primary-bg, #2563eb) !important;
+  color: var(--ts-primary-text, #fff) !important;
+  font-size: 22px !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+}
+
+.config-collapse-body {
+  animation: configCollapseFade .16s ease both;
+}
+
+.config-collapsible-card.is-collapsed {
+  padding-bottom: 14px !important;
+}
+
+.config-collapsible-card.is-collapsed .config-collapse-header {
+  margin-bottom: 0 !important;
+}
+
+.config-original-heading-hidden {
+  display: none !important;
+}
+
+@keyframes configCollapseFade {
+  from { opacity: .55; transform: translateY(-2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* ===== END CONFIG COLLAPSIBLE SECTIONS ===== */

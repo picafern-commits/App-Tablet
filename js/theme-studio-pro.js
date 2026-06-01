@@ -55,6 +55,43 @@
     return base;
   }
 
+
+  function presetToCustom(t){
+    return {
+      name: t.name || "O Meu Tema",
+      mode: (t.bg && luminance(t.bg) > 0.45) ? "light" : "dark",
+      primary: t.primary || "#2563eb",
+      background: t.bg || "#020617",
+      card: t.card || "#111827",
+      text: t.text || "#cbd5e1",
+      sidebar: t.sidebar || "#0f172a",
+
+      primaryText: t.primaryText,
+      secondary: t.secondary,
+      secondaryText: t.secondaryText,
+      edit: t.edit,
+      editText: t.editText,
+      danger: t.danger,
+      dangerText: t.dangerText,
+      success: t.success,
+      successText: t.successText,
+      border: t.border,
+      input: t.input,
+      inputText: t.inputText,
+      inputBorder: t.inputBorder,
+      sidebarText: t.sidebarText,
+      sidebarIcon: t.sidebarIcon,
+      sidebarActive: t.sidebarActive,
+      sidebarButton: t.sidebarButton,
+      sidebarButtonHover: t.sidebarButtonHover,
+      sidebarDivider: t.sidebarDivider,
+      sidebarBrand: t.sidebarBrand,
+      sidebarTitle: t.sidebarTitle,
+      buttonGlow: t.buttonGlow,
+      cardGlow: t.cardGlow
+    };
+  }
+
   function getTheme(){try{return {...themes.enterpriseBlue,...(JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}"))};}catch(e){return {...themes.enterpriseBlue};}}
   function setVar(n,v){document.documentElement.style.setProperty(n,v,"important");}
 
@@ -124,7 +161,7 @@
       <div class="theme-preset-simple-grid">${Object.entries(themes).map(([id,t])=>`<button type="button" class="theme-preset-simple-card ${!activeCustom&&current===t.name?"active":""}" onclick="themePresetOnlyApply('${id}')"><div><strong>${t.name}</strong><small>${t.desc}</small></div><div class="theme-preset-simple-swatches"><i style="background:${t.bg}"></i><i style="background:${t.card}"></i><i style="background:${t.primary}"></i><i style="background:${t.secondary}"></i><i style="background:${t.success}"></i></div></button>`).join("")}</div>
       <div class="theme-custom-simple ${activeCustom?"active":""}">
         <h3>Criar o meu esquema</h3>
-        <p>Modo simples: poucas cores e a APP calcula o resto. O avançado fica escondido.</p>
+        <p>Quando escolhes um esquema pronto, ele aparece aqui para poderes ajustar antes de aplicar como teu.</p>
         <div class="theme-custom-grid">
           <label><span>Nome do tema</span><input type="text" value="${c.name||"O Meu Tema"}" oninput="themeCustomUpdate('name',this.value)"></label>
           <label><span>Modo</span><select onchange="themeCustomLive('mode',this.value)"><option value="dark" ${c.mode!=="light"?"selected":""}>Escuro</option><option value="light" ${c.mode==="light"?"selected":""}>Claro</option></select></label>
