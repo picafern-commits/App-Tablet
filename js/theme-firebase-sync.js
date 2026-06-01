@@ -17,6 +17,11 @@
   let lastZoneJson = "";
   let syncReady = false;
 
+  function themeUserIsEditing() {
+    const el = document.activeElement;
+    return !!(el && el.matches && el.matches("input, select, textarea"));
+  }
+
   function safeParse(value, fallback = {}) {
     try {
       const parsed = JSON.parse(value || "{}");
@@ -70,23 +75,17 @@
 
   function refreshThemeUI() {
     try {
+      if (themeUserIsEditing()) return;
       if (typeof window.applyThemeGlobalAllPages === "function") window.applyThemeGlobalAllPages();
-      if (typeof window.themeZoneApply === "function") window.themeZoneApply();
-      if (typeof window.themeZoneRender === "function") window.themeZoneRender();
-      if (typeof window.themeStudioRender === "function") window.themeStudioRender();
       if (typeof window.aplicarVisualThemeAppBraga === "function") window.aplicarVisualThemeAppBraga();
-
-      // Forçar render do Theme Simple sem mudar separador.
-      const activeBtn = document.querySelector(".theme-mode-tabs button.active");
-      if (activeBtn && typeof activeBtn.click === "function") {
-        setTimeout(() => activeBtn.click(), 20);
-      }
+      // Não chamar render do Theme Studio aqui para não fechar color pickers/selects.
     } catch (error) {
       console.warn("Refresh tema UI falhou:", error);
     }
   }
 
   function applyRemoteTheme(data) {
+    if (themeUserIsEditing()) return;
     // Se o utilizador acabou de aplicar "O Meu Tema", não deixar snapshot antigo da Firebase voltar atrás.
     try {
       if (localStorage.getItem("appBragaThemeCustomActive") === "1") {
@@ -111,6 +110,7 @@
   }
 
   function applyRemoteZones(data) {
+    if (themeUserIsEditing()) return;
     const json = JSON.stringify(data || {});
     if (!json || json === "{}") return;
     if (json === lastZoneJson) return;

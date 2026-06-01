@@ -943,3 +943,14 @@ body .enterprise-btn:hover {
   border-top: 1px solid rgba(255,255,255,.12);
 }
 /* ===== END CUSTOM ADVANCED HIDDEN ===== */
+
+/* ===== THEME EDIT NO REFRESH FIX ===== */
+.theme-custom-simple input,
+.theme-custom-simple select {
+  touch-action: manipulation;
+}
+
+.theme-custom-simple .primary-btn {
+  margin-top: 10px;
+}
+/* ===== END THEME EDIT NO REFRESH FIX ===== */

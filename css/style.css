@@ -5224,3 +5224,92 @@ small {
   margin-top: 16px;
 }
 /* ===== END APP BRAGA VISUAL THEME BUILDER ===== */
+
+
+/* ===== TONER PERCENT COLOR BARS ===== */
+.printer-toner-bar-wrap,
+.toner-progress,
+.stock-progress {
+  background: rgba(15,23,42,.78) !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  overflow: hidden !important;
+}
+
+.printer-toner-bar,
+.toner-fill,
+.toner-bar-fill,
+.progress-fill,
+.stock-progress-fill {
+  transition: width .25s ease, background .25s ease, box-shadow .25s ease !important;
+}
+
+/* 51% - 100% */
+.printer-toner-box.toner-good .printer-toner-bar,
+.printer-toner-bar.toner-good {
+  background: #22c55e !important;
+  box-shadow: 0 0 18px rgba(34,197,94,.55) !important;
+}
+
+/* 26% - 50% */
+.printer-toner-box.toner-medium .printer-toner-bar,
+.printer-toner-bar.toner-medium {
+  background: #eab308 !important;
+  box-shadow: 0 0 18px rgba(234,179,8,.55) !important;
+}
+
+/* 11% - 25% */
+.printer-toner-box.toner-low .printer-toner-bar,
+.printer-toner-bar.toner-low {
+  background: #f97316 !important;
+  box-shadow: 0 0 18px rgba(249,115,22,.55) !important;
+}
+
+/* 0% - 10% */
+.printer-toner-box.toner-critical .printer-toner-bar,
+.printer-toner-bar.toner-critical {
+  background: #dc2626 !important;
+  box-shadow: 0 0 18px rgba(220,38,38,.58) !important;
+}
+
+.printer-toner-box.toner-muted .printer-toner-bar,
+.printer-toner-bar.toner-muted,
+.printer-toner-bar-empty {
+  background: #64748b !important;
+  box-shadow: none !important;
+}
+
+.printer-toner-status.is-good {
+  color: #bbf7d0 !important;
+  background: rgba(34,197,94,.14) !important;
+  border: 1px solid rgba(34,197,94,.34) !important;
+}
+
+.printer-toner-status.is-medium {
+  color: #fef3c7 !important;
+  background: rgba(234,179,8,.14) !important;
+  border: 1px solid rgba(234,179,8,.34) !important;
+}
+
+.printer-toner-status.is-low {
+  color: #fed7aa !important;
+  background: rgba(249,115,22,.14) !important;
+  border: 1px solid rgba(249,115,22,.36) !important;
+}
+
+.printer-toner-status.is-critical {
+  color: #fecaca !important;
+  background: rgba(220,38,38,.16) !important;
+  border: 1px solid rgba(220,38,38,.40) !important;
+}
+
+.printer-toner-status.is-muted {
+  color: #cbd5e1 !important;
+  background: rgba(100,116,139,.16) !important;
+  border: 1px solid rgba(100,116,139,.34) !important;
+}
+
+.printer-toner-value {
+  color: var(--toner-color, var(--ts-title,#fff)) !important;
+  font-weight: 950 !important;
+}
+/* ===== END TONER PERCENT COLOR BARS ===== */

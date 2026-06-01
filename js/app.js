@@ -1098,39 +1098,76 @@ function isDashboardTonerLow(percentagem) {
 }
 
 function corBarraToner(percentagem, cor = "black") {
-  if (percentagem === null || percentagem === undefined) return "#94a3b8";
+  if (percentagem === null || percentagem === undefined || Number.isNaN(Number(percentagem))) return "#64748b";
+
+  const value = Math.max(0, Math.min(100, Number(percentagem)));
+
+  // Resíduo é ao contrário: quanto maior pior.
   if (cor === "waste") {
-    if (percentagem >= 80) return "#dc2626";
-    if (percentagem >= 60) return "#d97706";
-    return "#16a34a";
+    if (value >= 85) return "#dc2626"; // vermelho
+    if (value >= 65) return "#f97316"; // laranja
+    if (value >= 45) return "#eab308"; // amarelo
+    return "#22c55e";                 // verde
   }
-  if (percentagem <= 20) return "#dc2626";
-  if (percentagem <= 50) return "#d97706";
-  return "#16a34a";
+
+  // Toner normal: quanto maior melhor.
+  if (value <= 10) return "#dc2626";  // vermelho crítico
+  if (value <= 25) return "#f97316";  // laranja baixo
+  if (value <= 50) return "#eab308";  // amarelo médio
+  return "#22c55e";                  // verde bom
 }
 
 function estadoBarraToner(percentagem, cor = "black") {
-  if (percentagem === null || percentagem === undefined) return "Sem leitura";
+  if (percentagem === null || percentagem === undefined || Number.isNaN(Number(percentagem))) return "Sem leitura";
+
+  const value = Math.max(0, Math.min(100, Number(percentagem)));
+
   if (cor === "waste") {
-    if (percentagem >= 80) return "Crítico";
-    if (percentagem >= 60) return "Médio";
+    if (value >= 85) return "Crítico";
+    if (value >= 65) return "Alto";
+    if (value >= 45) return "Médio";
     return "OK";
   }
-  if (percentagem <= 20) return "Crítico";
-  if (percentagem <= 50) return "Médio";
+
+  if (value <= 10) return "Crítico";
+  if (value <= 25) return "Baixo";
+  if (value <= 50) return "Médio";
   return "Bom";
 }
 
 function classeEstadoToner(percentagem, cor = "black") {
-  if (percentagem === null || percentagem === undefined) return "is-muted";
+  if (percentagem === null || percentagem === undefined || Number.isNaN(Number(percentagem))) return "is-muted";
+
+  const value = Math.max(0, Math.min(100, Number(percentagem)));
+
   if (cor === "waste") {
-    if (percentagem >= 80) return "is-critical";
-    if (percentagem >= 60) return "is-medium";
+    if (value >= 85) return "is-critical";
+    if (value >= 65) return "is-low";
+    if (value >= 45) return "is-medium";
     return "is-good";
   }
-  if (percentagem <= 20) return "is-critical";
-  if (percentagem <= 50) return "is-medium";
+
+  if (value <= 10) return "is-critical";
+  if (value <= 25) return "is-low";
+  if (value <= 50) return "is-medium";
   return "is-good";
+}
+
+function tonerBarClass(percentagem, cor = "black") {
+  if (percentagem === null || percentagem === undefined || Number.isNaN(Number(percentagem))) return "toner-muted";
+  const value = Math.max(0, Math.min(100, Number(percentagem)));
+
+  if (cor === "waste") {
+    if (value >= 85) return "toner-critical";
+    if (value >= 65) return "toner-low";
+    if (value >= 45) return "toner-medium";
+    return "toner-good";
+  }
+
+  if (value <= 10) return "toner-critical";
+  if (value <= 25) return "toner-low";
+  if (value <= 50) return "toner-medium";
+  return "toner-good";
 }
 
 function gerarHTMLBarraToner(percentagem, label = "Toner", cor = "black") {
@@ -1139,7 +1176,7 @@ function gerarHTMLBarraToner(percentagem, label = "Toner", cor = "black") {
 
   if (percentagem === null || percentagem === undefined) {
     return `
-      <div class="printer-toner-box">
+      <div class="printer-toner-box toner-muted">
         <div class="printer-toner-head">
           <span class="printer-toner-title">${label}</span>
           <span class="printer-toner-status ${estadoClasse}">${estado}</span>
@@ -1156,15 +1193,16 @@ function gerarHTMLBarraToner(percentagem, label = "Toner", cor = "black") {
 
   const largura = Math.max(0, Math.min(100, percentagem));
   const barraCor = corBarraToner(percentagem, cor);
+  const barraClasse = tonerBarClass(percentagem, cor);
 
   return `
-    <div class="printer-toner-box">
+    <div class="printer-toner-box ${barraClasse}" style="--toner-color:${barraCor};">
       <div class="printer-toner-head">
         <span class="printer-toner-title">${label}</span>
         <span class="printer-toner-status ${estadoClasse}">${estado}</span>
       </div>
       <div class="printer-toner-bar-wrap">
-        <div class="printer-toner-bar" style="width:${largura}%; background:${barraCor};"></div>
+        <div class="printer-toner-bar ${barraClasse}" style="width:${largura}%; background:${barraCor} !important; box-shadow:0 0 18px ${barraCor};"></div>
       </div>
       <div class="printer-toner-foot">
         <span class="printer-toner-value">${largura}%</span>

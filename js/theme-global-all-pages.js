@@ -88,7 +88,13 @@
     document.documentElement.style.setProperty(name,value,"important");
   }
 
+  function globalThemeUserEditing(){
+    const el = document.activeElement;
+    return !!(el && el.matches && el.matches("input,select,textarea"));
+  }
+
   function applyThemeGlobalAllPages(){
+    if(globalThemeUserEditing()) return;
     const t = loadTheme();
 
     set("--ts-bg", valid(t.bg)); set("--ts-bg2", valid(t.bg2));

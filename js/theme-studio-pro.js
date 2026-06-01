@@ -88,13 +88,23 @@
 
   function saveTheme(t){
     localStorage.setItem(STORAGE_KEY,JSON.stringify(t));
-    applyTheme(); render();
-    if(typeof window.themeFirebasePushNow==="function"){setTimeout(window.themeFirebasePushNow,150);setTimeout(window.themeFirebasePushNow,800);}
+    applyTheme();
+    // Não chamar render aqui para não fechar color picker/select enquanto editas.
+    if(typeof window.themeFirebasePushNow==="function"){
+      setTimeout(window.themeFirebasePushNow,300);
+      setTimeout(window.themeFirebasePushNow,1000);
+    }
   }
-  function applyPreset(id){if(themes[id]){localStorage.removeItem(CUSTOM_ACTIVE_KEY);saveTheme(themes[id]);}}
-  function applyCustom(){localStorage.setItem(CUSTOM_ACTIVE_KEY,"1"); saveTheme(buildCustomTheme());}
+  function applyPreset(id){if(themes[id]){localStorage.removeItem(CUSTOM_ACTIVE_KEY);saveTheme(themes[id]);setTimeout(render,50);}}
+  function applyCustom(){localStorage.setItem(CUSTOM_ACTIVE_KEY,"1"); saveTheme(buildCustomTheme()); setTimeout(render,80);}
   function updateCustom(key,value){const c=getCustom();c[key]=value;localStorage.setItem(CUSTOM_KEY,JSON.stringify(c));render();}
-  function updateCustomAndApply(key,value){updateCustom(key,value); if(localStorage.getItem(CUSTOM_ACTIVE_KEY)==="1") applyCustom();}
+  function updateCustomAndApply(key,value){
+    // Apenas guarda o valor no editor. Não aplica nem faz render automático,
+    // porque isso fecha o seletor de cores/select no browser.
+    const c=getCustom();
+    c[key]=value;
+    localStorage.setItem(CUSTOM_KEY,JSON.stringify(c));
+  }
   function toggleAdvanced(){
     const el=document.getElementById("themeCustomAdvanced");
     const btn=document.getElementById("themeAdvancedBtn");
@@ -136,7 +146,10 @@
 
   window.themePresetOnlyApply=applyPreset; window.themeCustomUpdate=updateCustom; window.themeCustomLive=updateCustomAndApply; window.themeCustomApply=applyCustom; window.themeCustomToggleAdvanced=toggleAdvanced;
   window.themeSimplePreset=applyPreset; window.themeSimpleReset=function(){applyPreset("enterpriseBlue")}; window.themeSimpleUpdate=function(){}; window.themeSimpleImport=function(){};
-  window.themeStudioRender=render; window.editarDemoThemeStudio=function(){};
+  window.themeStudioRender=function(){
+    if(document.activeElement && (document.activeElement.matches("input,select,textarea"))) return;
+    render();
+  }; window.editarDemoThemeStudio=function(){};
   document.addEventListener("DOMContentLoaded",()=>{applyTheme();render();setTimeout(applyTheme,300);setTimeout(applyTheme,1000);});
   window.addEventListener("pageshow",()=>setTimeout(()=>{applyTheme();render();},100));
 })();
