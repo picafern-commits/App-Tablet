@@ -401,3 +401,198 @@ body .menu-item.active {
   margin-top: 18px;
 }
 /* ===== END THEME STUDIO PRO ===== */
+
+
+
+/* =========================================================
+   THEME STUDIO PRO V2 - CARDS + SIDEBAR BRAND + GLOW
+   ========================================================= */
+:root {
+  --ts-card-title: var(--ts-title, #ffffff);
+  --ts-card-text: var(--ts-text, #cbd5e1);
+  --ts-card-radius: 22px;
+
+  --ts-dashboard-card-bg: var(--ts-card, #111827);
+  --ts-dashboard-card-border: var(--ts-card-border, #334155);
+  --ts-dashboard-card-text: var(--ts-text, #cbd5e1);
+
+  --ts-info-card-bg: var(--ts-card, #111827);
+  --ts-info-card-border: var(--ts-card-border, #334155);
+  --ts-info-card-text: var(--ts-text, #cbd5e1);
+
+  --ts-radio-card-bg: var(--ts-card, #111827);
+  --ts-radio-card-border: var(--ts-card-border, #334155);
+  --ts-radio-card-text: var(--ts-text, #cbd5e1);
+
+  --ts-user-card-bg: var(--ts-card, #111827);
+  --ts-user-card-border: var(--ts-card-border, #334155);
+  --ts-user-card-text: var(--ts-text, #cbd5e1);
+
+  --ts-sidebar-icon: var(--ts-sidebar-text, #f8fafc);
+  --ts-sidebar-brand-bg: var(--ts-primary-bg, #2563eb);
+  --ts-sidebar-brand-text: #ffffff;
+  --ts-sidebar-brand-border: var(--ts-primary-border, #3b82f6);
+  --ts-sidebar-title: #ffffff;
+  --ts-sidebar-subtitle: var(--ts-text, #cbd5e1);
+
+  --ts-button-glow: rgba(37,99,235,.32);
+  --ts-button-glow-size: 38px;
+  --ts-card-glow: rgba(37,99,235,.14);
+}
+
+/* Cards específicos */
+body .dashboard-card,
+body .stat-card,
+body .metric-card {
+  background: var(--ts-dashboard-card-bg) !important;
+  border-color: var(--ts-dashboard-card-border) !important;
+  color: var(--ts-dashboard-card-text) !important;
+  box-shadow: 0 18px 48px var(--ts-card-glow) !important;
+}
+
+body .info-card {
+  background: var(--ts-info-card-bg) !important;
+  border-color: var(--ts-info-card-border) !important;
+  color: var(--ts-info-card-text) !important;
+  box-shadow: 0 18px 48px var(--ts-card-glow) !important;
+}
+
+body .radio-card {
+  background: var(--ts-radio-card-bg) !important;
+  border-color: var(--ts-radio-card-border) !important;
+  color: var(--ts-radio-card-text) !important;
+  box-shadow: 0 18px 48px var(--ts-card-glow) !important;
+}
+
+body .user-card,
+body .pc-card {
+  background: var(--ts-user-card-bg) !important;
+  border-color: var(--ts-user-card-border) !important;
+  color: var(--ts-user-card-text) !important;
+  box-shadow: 0 18px 48px var(--ts-card-glow) !important;
+}
+
+body .card,
+body .panel,
+body .modal-card,
+body .config-card {
+  border-radius: var(--ts-card-radius) !important;
+}
+
+/* Sidebar símbolos / brand / título */
+body .sidebar .brand,
+body .sidebar .premium-brand,
+body .enterprise-sidebar .brand,
+body .enterprise-sidebar .premium-brand {
+  background: color-mix(in srgb, var(--ts-sidebar-brand-bg) 22%, transparent) !important;
+  border-color: var(--ts-sidebar-brand-border) !important;
+}
+
+body .brand-badge,
+body .brand-logo,
+body .sidebar-logo,
+body .premium-brand-icon {
+  background: var(--ts-sidebar-brand-bg) !important;
+  color: var(--ts-sidebar-brand-text) !important;
+  border-color: var(--ts-sidebar-brand-border) !important;
+  box-shadow: 0 14px 34px color-mix(in srgb, var(--ts-sidebar-brand-bg) 40%, transparent) !important;
+}
+
+body .sidebar h1,
+body .sidebar h2,
+body .sidebar .brand-title,
+body .premium-brand h2,
+body .enterprise-sidebar h1,
+body .enterprise-sidebar h2 {
+  color: var(--ts-sidebar-title) !important;
+}
+
+body .sidebar .brand small,
+body .sidebar .brand p,
+body .premium-brand p,
+body .enterprise-sidebar .brand small,
+body .enterprise-sidebar .brand p {
+  color: var(--ts-sidebar-subtitle) !important;
+}
+
+/* Símbolos/ícones/primeira letra da sidebar */
+body .sidebar a::before,
+body .enterprise-sidebar a::before,
+body .sidebar .nav-icon,
+body .sidebar .menu-icon,
+body .sidebar svg,
+body .enterprise-sidebar svg {
+  color: var(--ts-sidebar-icon) !important;
+  fill: var(--ts-sidebar-icon) !important;
+  stroke: var(--ts-sidebar-icon) !important;
+}
+
+/* Glow dos botões */
+body button,
+body .primary-btn,
+body .secondary-btn,
+body .reference-primary,
+body .reference-outline,
+body .btn,
+body .enterprise-btn {
+  box-shadow:
+    0 0 var(--ts-button-glow-size) var(--ts-button-glow),
+    0 12px 28px rgba(0,0,0,.24) !important;
+}
+
+body button:hover,
+body .primary-btn:hover,
+body .secondary-btn:hover,
+body .reference-primary:hover,
+body .reference-outline:hover,
+body .btn:hover,
+body .enterprise-btn:hover {
+  box-shadow:
+    0 0 calc(var(--ts-button-glow-size) + 16px) var(--ts-button-glow),
+    0 22px 52px rgba(0,0,0,.38) !important;
+}
+
+/* Configs organizada */
+.config-page .main,
+.config-page main,
+body:has(.theme-studio-pro) main {
+  max-width: 1480px !important;
+}
+
+.config-card.enterprise-config-card.theme-studio-pro {
+  grid-column: 1 / -1 !important;
+}
+
+.configs-grid,
+.config-grid,
+.settings-grid {
+  align-items: start !important;
+}
+
+.theme-studio-pro {
+  padding: 20px !important;
+}
+
+.theme-studio-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+.theme-studio-block {
+  padding: 18px;
+  border-radius: 22px;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+.theme-studio-block h3 {
+  margin-top: 0 !important;
+}
+
+@media (min-width: 1200px) {
+  .theme-studio-layout.two-cols {
+    grid-template-columns: .95fr 1.05fr;
+  }
+}
+/* ===== END THEME STUDIO PRO V2 ===== */

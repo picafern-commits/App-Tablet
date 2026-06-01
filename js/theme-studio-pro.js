@@ -86,8 +86,9 @@
 
   const labels = {
     base: [
-      ["tsBg","Fundo principal"],["tsBg2","Fundo secundário"],["tsCard","Cards - fundo"],["tsCardBorder","Cards - borda"],
-      ["tsTitle","Títulos"],["tsText","Texto geral"],["tsAccent","Cor destaque"],["tsAccent2","Cor destaque 2"]
+      ["tsBg","Fundo principal"],["tsBg2","Fundo secundário"],["tsCard","Cards gerais - fundo"],["tsCardBorder","Cards gerais - borda"],
+      ["tsTitle","Títulos"],["tsText","Texto geral"],["tsAccent","Cor destaque"],["tsAccent2","Cor destaque 2"],
+      ["tsInputBg","Inputs - fundo"],["tsInputText","Inputs - texto"],["tsInputBorder","Inputs - borda"]
     ],
     buttons: [
       ["tsPrimaryBg","Principal - fundo"],["tsPrimaryText","Principal - letra"],["tsPrimaryBorder","Principal - borda"],
@@ -95,11 +96,20 @@
       ["tsEditBg","Editar - fundo"],["tsEditText","Editar - letra"],["tsEditBorder","Editar - borda"],
       ["tsDangerBg","Apagar - fundo"],["tsDangerText","Apagar - letra"],["tsDangerBorder","Apagar - borda"],
       ["tsSuccessBg","Confirmar - fundo"],["tsSuccessText","Confirmar - letra"],["tsSuccessBorder","Confirmar - borda"],
-      ["tsWarningBg","Aviso - fundo"],["tsWarningText","Aviso - letra"],["tsWarningBorder","Aviso - borda"]
+      ["tsWarningBg","Aviso - fundo"],["tsWarningText","Aviso - letra"],["tsWarningBorder","Aviso - borda"],
+      ["tsButtonGlow","Glow dos botões"],["tsButtonGlowSize","Intensidade glow"],["tsCardGlow","Glow dos cards"]
+    ],
+    cards: [
+      ["tsDashboardCardBg","Dashboard cards - fundo"],["tsDashboardCardBorder","Dashboard cards - borda"],["tsDashboardCardText","Dashboard cards - texto"],
+      ["tsInfoCardBg","Informações cards - fundo"],["tsInfoCardBorder","Informações cards - borda"],["tsInfoCardText","Informações cards - texto"],
+      ["tsRadioCardBg","Rádios cards - fundo"],["tsRadioCardBorder","Rádios cards - borda"],["tsRadioCardText","Rádios cards - texto"],
+      ["tsUserCardBg","Users/PC cards - fundo"],["tsUserCardBorder","Users/PC cards - borda"],["tsUserCardText","Users/PC cards - texto"],
+      ["tsCardRadius","Arredondamento cards"]
     ],
     sidebar: [
-      ["tsSidebarBg","Sidebar - fundo"],["tsSidebarText","Sidebar - texto"],["tsSidebarActiveBg","Sidebar ativa - fundo"],["tsSidebarActiveText","Sidebar ativa - texto"],
-      ["tsInputBg","Inputs - fundo"],["tsInputText","Inputs - texto"],["tsInputBorder","Inputs - borda"]
+      ["tsSidebarBg","Sidebar - fundo"],["tsSidebarText","Sidebar - texto"],["tsSidebarIcon","Sidebar - símbolos"],["tsSidebarActiveBg","Sidebar ativa - fundo"],["tsSidebarActiveText","Sidebar ativa - texto"],
+      ["tsSidebarBrandBg","Logo BR - fundo"],["tsSidebarBrandText","Logo BR - letra"],["tsSidebarBrandBorder","Logo BR - borda"],
+      ["tsSidebarTitle","Título App Braga"],["tsSidebarSubtitle","Subtítulo sidebar"]
     ]
   };
 
@@ -110,7 +120,19 @@
     return /^#[0-9a-fA-F]{6}$/.test(v) ? v.toLowerCase() : f;
   }
 
-  function defaults(){ return {...presets.enterpriseBlue}; }
+  function defaults(){
+    return {
+      ...presets.enterpriseBlue,
+      tsDashboardCardBg:"#111827", tsDashboardCardBorder:"#334155", tsDashboardCardText:"#cbd5e1",
+      tsInfoCardBg:"#111827", tsInfoCardBorder:"#334155", tsInfoCardText:"#cbd5e1",
+      tsRadioCardBg:"#111827", tsRadioCardBorder:"#334155", tsRadioCardText:"#cbd5e1",
+      tsUserCardBg:"#111827", tsUserCardBorder:"#334155", tsUserCardText:"#cbd5e1",
+      tsCardRadius:"#161616",
+      tsSidebarIcon:"#f8fafc", tsSidebarBrandBg:"#2563eb", tsSidebarBrandText:"#ffffff", tsSidebarBrandBorder:"#3b82f6",
+      tsSidebarTitle:"#ffffff", tsSidebarSubtitle:"#cbd5e1",
+      tsButtonGlow:"#2563eb", tsButtonGlowSize:"#262626", tsCardGlow:"#2563eb"
+    };
+  }
 
   function getTheme(){
     try { return {...defaults(), ...(JSON.parse(localStorage.getItem(storageKey) || "{}"))}; }
@@ -123,8 +145,39 @@
     renderStudio();
   }
 
+  function keyToVar(key){
+    return "--"+key.replace(/[A-Z]/g, m=>"-"+m.toLowerCase());
+  }
+
+  function toCssValue(key,value){
+    const v = String(value || "").trim();
+    if(key === "tsButtonGlowSize"){
+      // color input stores fake grayscale; convert brightness to px
+      const hex = valid(v, "#262626");
+      const n = parseInt(hex.slice(1,3),16);
+      return Math.max(6, Math.round((n / 255) * 70)) + "px";
+    }
+    if(key === "tsCardRadius"){
+      const hex = valid(v, "#161616");
+      const n = parseInt(hex.slice(1,3),16);
+      return Math.max(8, Math.round((n / 255) * 34)) + "px";
+    }
+    if(key === "tsButtonGlow" || key === "tsCardGlow"){
+      return hexToRgba(valid(v, "#2563eb"), key === "tsButtonGlow" ? .34 : .16);
+    }
+    return valid(v);
+  }
+
+  function hexToRgba(hex, alpha){
+    hex = valid(hex, "#2563eb").replace("#","");
+    const r = parseInt(hex.slice(0,2),16);
+    const g = parseInt(hex.slice(2,4),16);
+    const b = parseInt(hex.slice(4,6),16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
   function setVar(key,value){
-    document.documentElement.style.setProperty("--"+key.replace(/[A-Z]/g, m=>"-"+m.toLowerCase()), valid(value), "important");
+    document.documentElement.style.setProperty(keyToVar(key), toCssValue(key,value), "important");
   }
 
   function applyTheme(){
@@ -157,9 +210,29 @@
     set(".btn-delete,.danger,button.danger,.reference-icon.danger,button[onclick*='apagar'],button[title*='Apagar']", t.tsDangerBg, t.tsDangerText, t.tsDangerBorder);
     set(".btn-use,button[onclick*='usar'],button[onclick*='resolver'],button[onclick*='confirmar']", t.tsSuccessBg, t.tsSuccessText, t.tsSuccessBorder);
 
-    document.querySelectorAll(".card,.panel,.stat-card,.metric-card,.dashboard-card,.pc-card,.radio-card,.info-card,.config-card,.modal-card,.enterprise-card,.reference-card,.page-hero,.reference-header").forEach(el=>{
+    document.querySelectorAll(".card,.panel,.config-card,.modal-card,.enterprise-card,.reference-card,.page-hero,.reference-header").forEach(el=>{
       el.style.setProperty("background", t.tsCard, "important");
       el.style.setProperty("border-color", t.tsCardBorder, "important");
+    });
+    document.querySelectorAll(".dashboard-card,.stat-card,.metric-card").forEach(el=>{
+      el.style.setProperty("background", t.tsDashboardCardBg, "important");
+      el.style.setProperty("border-color", t.tsDashboardCardBorder, "important");
+      el.style.setProperty("color", t.tsDashboardCardText, "important");
+    });
+    document.querySelectorAll(".info-card").forEach(el=>{
+      el.style.setProperty("background", t.tsInfoCardBg, "important");
+      el.style.setProperty("border-color", t.tsInfoCardBorder, "important");
+      el.style.setProperty("color", t.tsInfoCardText, "important");
+    });
+    document.querySelectorAll(".radio-card").forEach(el=>{
+      el.style.setProperty("background", t.tsRadioCardBg, "important");
+      el.style.setProperty("border-color", t.tsRadioCardBorder, "important");
+      el.style.setProperty("color", t.tsRadioCardText, "important");
+    });
+    document.querySelectorAll(".user-card,.pc-card").forEach(el=>{
+      el.style.setProperty("background", t.tsUserCardBg, "important");
+      el.style.setProperty("border-color", t.tsUserCardBorder, "important");
+      el.style.setProperty("color", t.tsUserCardText, "important");
     });
   }
 
