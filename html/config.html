@@ -314,41 +314,14 @@
 
 
 
+
 <div class="config-card enterprise-config-card theme-studio-pro">
   <div class="theme-studio-hero">
-    <h3>Theme Studio Pro</h3>
-    <p>Controla as cores da APP, botões, cards, sidebar, símbolos, título e glow dos botões.</p>
+    <h3>Theme Studio</h3>
+    <p>Escolhe um esquema pronto ou personaliza a APP de forma simples: cores gerais, botões, glow, sidebar, símbolos e linha divisória.</p>
   </div>
 
-  <div class="theme-studio-layout two-cols">
-    <div class="theme-studio-block">
-      <h3>Esquemas prontos</h3>
-      <p class="section-subtitle">Escolhe um tema completo para aplicar na APP inteira.</p>
-      <div id="themePresetGrid" class="theme-preset-grid"></div>
-
-      <div id="themeStudioPreview" class="theme-preview"></div>
-
-      <div class="theme-studio-actions">
-        <button class="secondary-btn" type="button" onclick="themeStudioReset()">Repor tema</button>
-        <button class="secondary-btn" type="button" onclick="themeStudioExport()">Exportar tema</button>
-        <button class="secondary-btn" type="button" onclick="themeStudioImport()">Importar tema</button>
-      </div>
-    </div>
-
-    <div class="theme-studio-block">
-      <h3>Criar tema personalizado</h3>
-      <p class="section-subtitle">Edita por grupos. As alterações aparecem logo.</p>
-
-      <div class="theme-editor-tabs">
-        <button type="button" data-tab="base" class="secondary-btn active" onclick="themeStudioSetTab('base')">Base</button>
-        <button type="button" data-tab="buttons" class="secondary-btn" onclick="themeStudioSetTab('buttons')">Botões & Glow</button>
-        <button type="button" data-tab="cards" class="secondary-btn" onclick="themeStudioSetTab('cards')">Cards</button>
-        <button type="button" data-tab="sidebar" class="secondary-btn" onclick="themeStudioSetTab('sidebar')">Sidebar</button>
-      </div>
-
-      <div id="themeEditorContent"></div>
-    </div>
-  </div>
+  <div id="themeSimpleRoot" class="theme-simple-layout"></div>
 </div>
 </main>
 

@@ -596,3 +596,252 @@ body:has(.theme-studio-pro) main {
   }
 }
 /* ===== END THEME STUDIO PRO V2 ===== */
+
+
+/* =========================================================
+   THEME STUDIO SIMPLE CLEAN V3
+   Mais simples, bonito, sem cards vermelhos, sidebar glow/linha
+   ========================================================= */
+:root {
+  --ts-all-cards-bg: var(--ts-card, #111827);
+  --ts-all-cards-border: var(--ts-card-border, #334155);
+  --ts-all-cards-text: var(--ts-text, #cbd5e1);
+
+  --ts-sidebar-button-bg: rgba(255,255,255,.07);
+  --ts-sidebar-button-text: var(--ts-sidebar-text, #f8fafc);
+  --ts-sidebar-button-hover-bg: rgba(255,255,255,.12);
+  --ts-sidebar-button-glow: rgba(37,99,235,.28);
+  --ts-sidebar-divider: rgba(255,255,255,.12);
+
+  --ts-global-button-glow: rgba(37,99,235,.26);
+  --ts-global-card-glow: rgba(37,99,235,.10);
+}
+
+/* Remover vermelhos dos cards: só botões danger podem ficar vermelhos */
+body .card,
+body .panel,
+body .stat-card,
+body .metric-card,
+body .dashboard-card,
+body .pc-card,
+body .radio-card,
+body .info-card,
+body .user-card,
+body .config-card,
+body .modal-card,
+body .enterprise-card,
+body .reference-card,
+body .page-hero,
+body .reference-header,
+body article[class*="card"],
+body div[class*="card"] {
+  background: var(--ts-all-cards-bg) !important;
+  border-color: var(--ts-all-cards-border) !important;
+  color: var(--ts-all-cards-text) !important;
+  box-shadow: 0 18px 48px var(--ts-global-card-glow) !important;
+}
+
+/* Se existir algum card com class danger, não deixa o card inteiro vermelho */
+body .card.danger,
+body .panel.danger,
+body .stat-card.danger,
+body .metric-card.danger,
+body .dashboard-card.danger,
+body .pc-card.danger,
+body .radio-card.danger,
+body .info-card.danger,
+body .user-card.danger {
+  background: var(--ts-all-cards-bg) !important;
+  border-color: var(--ts-all-cards-border) !important;
+  color: var(--ts-all-cards-text) !important;
+}
+
+/* Sidebar completa */
+body .sidebar,
+body .enterprise-sidebar {
+  background: var(--ts-sidebar-bg) !important;
+  border-right: 1px solid var(--ts-sidebar-divider) !important;
+  box-shadow: 12px 0 42px rgba(0,0,0,.20) !important;
+}
+
+body .sidebar a,
+body .enterprise-sidebar a,
+body .sidebar button,
+body .enterprise-sidebar button {
+  background: var(--ts-sidebar-button-bg) !important;
+  color: var(--ts-sidebar-button-text) !important;
+  border-color: transparent !important;
+  box-shadow: 0 0 0 transparent !important;
+}
+
+body .sidebar a:hover,
+body .enterprise-sidebar a:hover,
+body .sidebar button:hover,
+body .enterprise-sidebar button:hover {
+  background: var(--ts-sidebar-button-hover-bg) !important;
+  box-shadow: 0 0 34px var(--ts-sidebar-button-glow) !important;
+}
+
+body .sidebar a.active,
+body .sidebar .active,
+body .enterprise-sidebar a.active,
+body .nav-link.active,
+body .menu-item.active {
+  background: var(--ts-sidebar-active-bg) !important;
+  color: var(--ts-sidebar-active-text) !important;
+  box-shadow: 0 0 38px var(--ts-sidebar-button-glow) !important;
+}
+
+/* Linha/separadores dentro da sidebar */
+body .sidebar hr,
+body .enterprise-sidebar hr,
+body .sidebar .divider,
+body .enterprise-sidebar .divider,
+body .sidebar::after,
+body .enterprise-sidebar::after {
+  border-color: var(--ts-sidebar-divider) !important;
+  background: var(--ts-sidebar-divider) !important;
+}
+
+/* Glow global dos botões */
+body button,
+body .primary-btn,
+body .secondary-btn,
+body .reference-primary,
+body .reference-outline,
+body .btn,
+body .enterprise-btn {
+  box-shadow:
+    0 0 32px var(--ts-global-button-glow),
+    0 12px 28px rgba(0,0,0,.24) !important;
+}
+
+body button:hover,
+body .primary-btn:hover,
+body .secondary-btn:hover,
+body .reference-primary:hover,
+body .reference-outline:hover,
+body .btn:hover,
+body .enterprise-btn:hover {
+  box-shadow:
+    0 0 48px var(--ts-global-button-glow),
+    0 22px 52px rgba(0,0,0,.38) !important;
+}
+
+/* Nova UI simples */
+.theme-simple-layout {
+  display: grid;
+  gap: 18px;
+}
+
+.theme-simple-top {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.theme-quick-presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px;
+}
+
+.theme-simple-preset {
+  min-height: 112px !important;
+  border-radius: 22px !important;
+  padding: 14px !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  flex-direction: column !important;
+  background: rgba(255,255,255,.06) !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+}
+
+.theme-simple-preset strong {
+  color: #fff !important;
+  font-size: 15px;
+}
+
+.theme-simple-preset small {
+  color: #cbd5e1 !important;
+}
+
+.theme-simple-swatches {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.theme-simple-swatches i {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.28);
+}
+
+.theme-simple-editor {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 14px;
+}
+
+.theme-simple-field {
+  border-radius: 18px;
+  padding: 14px;
+  background: rgba(255,255,255,.055);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+.theme-simple-field span {
+  display: block;
+  color: #dbeafe !important;
+  font-size: 13px;
+  font-weight: 950;
+  margin-bottom: 10px;
+}
+
+.theme-simple-field input[type="color"] {
+  width: 100%;
+  height: 46px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.theme-simple-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.theme-mode-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.theme-mode-tabs button {
+  min-height: 42px !important;
+}
+
+.theme-mode-tabs button.active {
+  background: var(--ts-primary-bg) !important;
+  color: var(--ts-primary-text) !important;
+}
+
+.theme-simple-section {
+  display: none;
+}
+
+.theme-simple-section.active {
+  display: block;
+}
+
+@media (min-width: 1180px) {
+  .theme-simple-top {
+    grid-template-columns: .95fr 1.05fr;
+  }
+}
+/* ===== END THEME STUDIO SIMPLE CLEAN V3 ===== */
