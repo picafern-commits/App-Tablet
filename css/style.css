@@ -4839,3 +4839,16 @@ body.is-android-tablet.tablet-portrait .dashboard-container {
 }
 
 /* ===== END ANDROID TABLET SCALE FIX ===== */
+
+
+/* ===== PISTOLAS CK65 CODEX FIX ===== */
+.pistol-card .item-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+.pistol-card .item-actions button {
+  flex: 1 1 92px;
+}
+/* ===== END PISTOLAS CK65 CODEX FIX ===== */
