@@ -119,10 +119,7 @@
       </div>
       <span class="status-pill"><strong id="radiosTotal">0</strong> rádios</span>
     </div>
-    <div class="toolbar radio-toolbar">
-      <button class="primary-btn reference-primary" type="button" onclick="adicionarRadio()">Novo Rádio</button>
-      <input id="radioSearch" type="text" placeholder="Pesquisar rádio, MAC, série ou user..." oninput="filtrarRadios()">
-    </div>
+    <button class="primary-btn reference-primary" type="button" onclick="adicionarRadio()">Novo Rádio</button>
     <div id="listaRadios" class="radio-cards-grid"></div>
   </section>
 
@@ -137,42 +134,6 @@
     <button class="primary-btn" type="button" onclick="abrirRegistoSemanalRadios()">Adicionar registo</button>
     <div id="radioWeeklySummary" class="weekly-radio-list"></div>
   </section>
-
-<div id="radioAssignModal" class="modal-overlay" style="display:none;">
-  <div class="modal-card radio-modal-card">
-    <div class="section-header">
-      <div>
-        <h3 id="radioAssignTitle">Atribuir Rádio</h3>
-        <p class="section-subtitle">Escolhe o user que vai ficar com este rádio.</p>
-      </div>
-      <button class="secondary-btn" type="button" onclick="fecharAtribuirRadio()">Fechar</button>
-    </div>
-
-    <div class="form-grid">
-      <label><span>User</span><select id="radioAssignUser"></select></label>
-      <label><span>Observações</span><input id="radioAssignObs" type="text" placeholder="Opcional"></label>
-    </div>
-
-    <div class="card-actions" style="margin-top:14px;">
-      <button class="primary-btn" type="button" onclick="guardarAtribuirRadio()">Atribuir</button>
-      <button class="secondary-btn" type="button" onclick="fecharAtribuirRadio()">Cancelar</button>
-    </div>
-  </div>
-</div>
-
-<div id="radioHistoryModal" class="modal-overlay" style="display:none;">
-  <div class="modal-card radio-modal-card">
-    <div class="section-header">
-      <div>
-        <h3 id="radioHistoryTitle">Histórico do Rádio</h3>
-        <p class="section-subtitle">Entregas, devoluções e alterações deste rádio.</p>
-      </div>
-      <button class="secondary-btn" type="button" onclick="fecharHistoricoRadio()">Fechar</button>
-    </div>
-    <div id="radioHistoryList" class="weekly-radio-list"></div>
-  </div>
-</div>
-
 </main>
 
 <div id="radioModal" class="modal-overlay" style="display:none;">
@@ -232,7 +193,6 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="../js/app.js"></script>
-<script src="../js/radios-operacional-fix.js?v=operacional-1"></script>
 <script src="../js/core/helpers.js"></script>
   <script src="../js/iphone-force-final.js?v=v2-final"></script>
 </body>
