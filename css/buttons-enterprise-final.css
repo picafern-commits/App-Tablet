@@ -1,0 +1,253 @@
+
+/* =========================================================
+   APP BRAGA - BOTÕES ENTERPRISE FINAL
+   Ficheiro dedicado carregado por último
+   ========================================================= */
+
+:root {
+  --be-radius: 16px;
+  --be-height: 48px;
+  --be-small-height: 40px;
+  --be-text: var(--app-button-text, #ffffff);
+  --be-glass: rgba(255,255,255,.085);
+  --be-glass-2: rgba(255,255,255,.13);
+  --be-border: rgba(255,255,255,.16);
+  --be-shadow: 0 14px 34px rgba(0,0,0,.28);
+  --be-shadow-hover: 0 22px 48px rgba(0,0,0,.38);
+}
+
+/* Base real para TODOS os botões */
+body button,
+body .btn,
+body .primary-btn,
+body .secondary-btn,
+body .small-btn,
+body .reference-icon,
+body .reference-primary,
+body .reference-outline,
+body .enterprise-btn,
+body .add-btn,
+body .save-btn,
+body .btn-primary,
+body .btn-edit,
+body .btn-delete,
+body .btn-use,
+body [class*="btn"],
+body [class*="button"] {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  min-height: var(--be-height) !important;
+  height: auto !important;
+  border-radius: var(--be-radius) !important;
+  padding: 0 17px !important;
+  border: 1px solid var(--be-border) !important;
+  font-size: 13px !important;
+  font-weight: 950 !important;
+  letter-spacing: .01em !important;
+  line-height: 1 !important;
+  color: #f8fafc !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.065)) !important;
+  box-shadow: 0 10px 24px rgba(0,0,0,.22) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  transition: transform .16s ease, box-shadow .16s ease, background .16s ease, border-color .16s ease !important;
+}
+
+/* Principal */
+body .primary-btn,
+body .reference-primary,
+body .btn-primary,
+body .add-btn,
+body .save-btn,
+body button[type="submit"],
+body .radio-action-main,
+body button.primary {
+  background: linear-gradient(135deg, var(--app-accent,#2563eb), var(--app-accent-hover,#1d4ed8)) !important;
+  color: var(--app-button-text,#fff) !important;
+  border-color: var(--app-accent-line, rgba(37,99,235,.42)) !important;
+  box-shadow: 0 16px 38px var(--app-accent-soft, rgba(37,99,235,.26)), 0 10px 24px rgba(0,0,0,.24) !important;
+}
+
+/* Secundário */
+body .secondary-btn,
+body .reference-outline,
+body .btn,
+body .enterprise-btn {
+  background: linear-gradient(180deg, rgba(255,255,255,.115), rgba(255,255,255,.065)) !important;
+  color: #f8fafc !important;
+  border-color: rgba(255,255,255,.17) !important;
+}
+
+/* Editar */
+body .btn-edit,
+body button[onclick*="editar"],
+body button[onclick*="Editar"],
+body button[title*="Editar"] {
+  background: linear-gradient(180deg, rgba(59,130,246,.26), rgba(59,130,246,.13)) !important;
+  color: #dbeafe !important;
+  border-color: rgba(59,130,246,.44) !important;
+}
+
+/* Apagar / perigo */
+body .btn-delete,
+body .danger,
+body button.danger,
+body .reference-icon.danger,
+body button[onclick*="apagar"],
+body button[onclick*="Apagar"],
+body button[title*="Apagar"] {
+  background: linear-gradient(180deg, rgba(239,68,68,.28), rgba(239,68,68,.14)) !important;
+  color: #fecaca !important;
+  border-color: rgba(239,68,68,.48) !important;
+}
+
+/* Confirmar / usar / resolver */
+body .btn-use,
+body button[onclick*="usar"],
+body button[onclick*="resolver"],
+body button[onclick*="confirmar"],
+body button[onclick*="guardar"],
+body button[onclick*="Guardar"] {
+  background: linear-gradient(180deg, rgba(34,197,94,.24), rgba(34,197,94,.13)) !important;
+  color: #bbf7d0 !important;
+  border-color: rgba(34,197,94,.44) !important;
+}
+
+/* Guardar mas quando for primary mantém accent */
+body .primary-btn[onclick*="guardar"],
+body .primary-btn[onclick*="Guardar"],
+body .save-btn {
+  background: linear-gradient(135deg, var(--app-accent,#2563eb), var(--app-accent-hover,#1d4ed8)) !important;
+  color: var(--app-button-text,#fff) !important;
+}
+
+/* Ícones/letras pequenas */
+body .reference-icon,
+body .small-btn {
+  min-height: var(--be-small-height) !important;
+  height: var(--be-small-height) !important;
+  border-radius: 14px !important;
+  padding: 0 13px !important;
+  font-size: 12px !important;
+}
+
+body .reference-icon {
+  width: 44px !important;
+  min-width: 44px !important;
+  padding: 0 !important;
+}
+
+/* Hover */
+body button:hover,
+body .btn:hover,
+body .primary-btn:hover,
+body .secondary-btn:hover,
+body .small-btn:hover,
+body .reference-icon:hover,
+body .reference-primary:hover,
+body .reference-outline:hover,
+body [class*="btn"]:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: var(--be-shadow-hover) !important;
+  border-color: var(--app-accent-line, rgba(37,99,235,.45)) !important;
+  filter: brightness(1.06) !important;
+}
+
+body button:active,
+body .btn:active,
+body .primary-btn:active,
+body .secondary-btn:active,
+body .small-btn:active,
+body [class*="btn"]:active {
+  transform: translateY(0) scale(.985) !important;
+}
+
+/* Focus */
+body button:focus-visible,
+body .btn:focus-visible,
+body .primary-btn:focus-visible,
+body .secondary-btn:focus-visible,
+body [class*="btn"]:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 3px var(--app-accent-soft, rgba(37,99,235,.25)), var(--be-shadow) !important;
+  border-color: var(--app-accent,#2563eb) !important;
+}
+
+/* Disabled */
+body button:disabled,
+body .btn:disabled,
+body .primary-btn:disabled,
+body .secondary-btn:disabled,
+body [class*="btn"]:disabled {
+  opacity: .45 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Texto interno */
+body button *,
+body .btn *,
+body .primary-btn *,
+body .secondary-btn *,
+body .small-btn *,
+body .reference-icon *,
+body [class*="btn"] * {
+  color: inherit !important;
+}
+
+/* Actions ficam alinhadas */
+body .card-actions,
+body .item-actions,
+body .weekly-record-actions,
+body .radio-selected-buttons {
+  gap: 10px !important;
+}
+
+body .radio-selected-buttons button {
+  height: 48px !important;
+  min-height: 48px !important;
+  font-size: 12px !important;
+  border-radius: 15px !important;
+}
+
+/* Light mode */
+body:not(.dark) button,
+body:not(.dark) .btn,
+body:not(.dark) .secondary-btn,
+body:not(.dark) .reference-outline,
+body:not(.dark) [class*="btn"] {
+  color: #0f172a !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(241,245,249,.92)) !important;
+  border-color: rgba(15,23,42,.16) !important;
+}
+
+body:not(.dark) .primary-btn,
+body:not(.dark) .reference-primary,
+body:not(.dark) .btn-primary,
+body:not(.dark) .add-btn,
+body:not(.dark) .save-btn,
+body:not(.dark) .radio-action-main {
+  color: var(--app-button-text,#fff) !important;
+  background: linear-gradient(135deg, var(--app-accent,#2563eb), var(--app-accent-hover,#1d4ed8)) !important;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  body button,
+  body .btn,
+  body .primary-btn,
+  body .secondary-btn,
+  body [class*="btn"] {
+    min-height: 46px !important;
+    padding: 0 13px !important;
+    font-size: 12px !important;
+  }
+}
+/* ===== END BOTÕES ENTERPRISE FINAL ===== */
