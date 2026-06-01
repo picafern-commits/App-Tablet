@@ -7,11 +7,6 @@
  }
  const usersRef =
    window.db.collection("users");
- const appUsersApi = {
-   editarUser: window.editarUser,
-   apagarUser: window.apagarUser,
-   imprimirUser: window.imprimirUser
- };
  // =========================
  // FIREBASE LISTENER
  // =========================
@@ -20,7 +15,6 @@
    snapshot.forEach((doc) => {
      lista.push({
        firebaseId: doc.id,
-       idDoc: doc.id,
        ...doc.data()
      });
    });
@@ -71,12 +65,6 @@
    // =========================
    if (typeof renderUsers === "function") {
      renderUsers(lista);
-   }
- }, (error) => {
-   console.error("Erro ao carregar users da Firebase:", error);
-   const listaUsers = document.getElementById("listaUsers");
-   if (listaUsers) {
-     listaUsers.innerHTML = '<div class="reference-empty">Erro ao carregar users da Firebase.</div>';
    }
  });
  // =========================
@@ -327,7 +315,3 @@ ${linhas}
      }, 1000);
    }, 500);
  };
- if (typeof appUsersApi.editarUser === "function") window.editarUser = appUsersApi.editarUser;
- if (typeof appUsersApi.apagarUser === "function") window.apagarUser = appUsersApi.apagarUser;
- if (typeof appUsersApi.imprimirUser === "function") window.imprimirUser = appUsersApi.imprimirUser;
-})();

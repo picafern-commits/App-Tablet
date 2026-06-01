@@ -32,7 +32,7 @@ body.dark {
   --primary-hover: #2563eb;
   --danger: #ef4444;
   --success: #22c55e;
-  --warning: var(--app-accent);
+  --warning: #f59e0b;
   --nav: #111827;
   --shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
 }
@@ -979,7 +979,7 @@ body.dark .app-version-mini {
 }
 
 .printer-toner-status.is-medium {
-  color: var(--app-accent-light);
+  color: #f59e0b;
   background: rgba(245, 158, 11, 0.14);
 }
 
@@ -1673,8 +1673,8 @@ body.dark .gestor-priority-card {
 }
 
 .gestor-chip.yellow {
-  background: var(--app-accent-soft);
-  color: var(--app-accent-light);
+  background: rgba(245,158,11,0.14);
+  color: #f59e0b;
 }
 
 .gestor-chip.green {
@@ -1799,7 +1799,7 @@ html.dark .minimo-item, body.dark .minimo-item {
 .diagnostics-status-row { display:flex; align-items:center; gap:10px; margin-top:6px; }
 .diag-dot { width:12px; height:12px; border-radius:999px; display:block !important; background:#64748b; box-shadow:0 0 0 3px rgba(100,116,139,.18); }
 .diag-dot.is-ok { background:#22c55e; box-shadow:0 0 0 3px rgba(34,197,94,.18); }
-.diag-dot.is-warn { background:var(--app-accent); box-shadow:0 0 0 3px var(--app-accent-soft); }
+.diag-dot.is-warn { background:#f59e0b; box-shadow:0 0 0 3px rgba(245,158,11,.18); }
 .diag-dot.is-error { background:#ef4444; box-shadow:0 0 0 3px rgba(239,68,68,.18); }
 .diag-dot.is-running { background:#38bdf8; box-shadow:0 0 0 3px rgba(56,189,248,.18); }
 .diagnostics-log-wrap { margin-top: 12px; }
@@ -1819,7 +1819,7 @@ html.dark .minimo-item, body.dark .minimo-item {
    Sidebar nova + Dashboard clean + visual premium
    ========================================================= */
 :root{
-  --brinka-bg:#120018;--brinka-bg2:#25002e;--brinka-panel:rgba(255,255,255,.095);--brinka-panel2:rgba(255,255,255,.16);--brinka-line:rgba(255,255,255,.14);--brinka-text:#fff8ff;--brinka-muted:#d9b6df;--brinka-pink:#c2188c;--brinka-purple:#8b1a9a;--brinka-orange:var(--app-accent);--brinka-orange2:var(--app-accent-light);--brinka-green:#31d27c;--brinka-red:#ff5c72;--brinka-shadow:0 24px 80px rgba(0,0,0,.38);--brinka-radius:26px;
+  --brinka-bg:#120018;--brinka-bg2:#25002e;--brinka-panel:rgba(255,255,255,.095);--brinka-panel2:rgba(255,255,255,.16);--brinka-line:rgba(255,255,255,.14);--brinka-text:#fff8ff;--brinka-muted:#d9b6df;--brinka-pink:#c2188c;--brinka-purple:#8b1a9a;--brinka-orange:#ff9500;--brinka-orange2:#ffc247;--brinka-green:#31d27c;--brinka-red:#ff5c72;--brinka-shadow:0 24px 80px rgba(0,0,0,.38);--brinka-radius:26px;
 }
 html,body{min-height:100%;overflow-x:hidden!important;
 color:var(--brinka-text)!important;
@@ -1846,7 +1846,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;ba
 input[type="text"],input[type="date"],input[type="number"],input[type="email"],input[type="password"],select,textarea{color:#fff!important;background:rgba(255,255,255,.08)!important;border:1px solid var(--brinka-line)!important;border-radius:17px!important;min-height:50px!important;outline:0!important;}
 input:focus,select:focus,textarea:focus{border-color:rgba(255,149,0,.72)!important;box-shadow:0 0 0 4px rgba(255,149,0,.12)!important;}
 button,.btn,.primary-btn,.soft-btn,.danger-btn,.action-btn,.add-btn,.save-btn{border-radius:16px!important;min-height:44px!important;font-weight:950!important;transition:.18s ease!important;}
-.primary-btn,.add-btn,.save-btn,button.btn-primary,.btn-primary{color:#351300!important;background:linear-gradient(135deg,var(--brinka-orange2),var(--brinka-orange))!important;box-shadow:0 14px 30px var(--app-accent-glow)!important;border:0!important;}
+.primary-btn,.add-btn,.save-btn,button.btn-primary,.btn-primary{color:#351300!important;background:linear-gradient(135deg,var(--brinka-orange2),var(--brinka-orange))!important;box-shadow:0 14px 30px rgba(255,149,0,.22)!important;border:0!important;}
 .soft-btn,.action-btn,.btn-secondary{color:#fff!important;background:rgba(255,255,255,.09)!important;border:1px solid var(--brinka-line)!important;}
 .danger-btn,.delete-row,.btn-danger{color:#ffd0d7!important;background:rgba(255,92,114,.15)!important;border:1px solid rgba(255,92,114,.28)!important;}
 table{color:var(--brinka-text)!important;}th{color:var(--brinka-muted)!important;}td{color:var(--brinka-text)!important;}.table-wrap{border-radius:22px!important;border:1px solid var(--brinka-line)!important;background:rgba(255,255,255,.04)!important;}
@@ -2140,7 +2140,7 @@ button{
   --ent-muted: #8fa2bf;
   --ent-blue: #2f6bff;
   --ent-green: #15b66a;
-  --ent-orange: var(--app-accent);
+  --ent-orange: #f59e0b;
   --ent-purple: #8b5cf6;
   --ent-red: #ef4444;
   --ent-radius: 14px;
@@ -2476,7 +2476,7 @@ button.btn-primary,
 
 .metric-blue { border-color: rgba(47,107,255,.34); }
 .metric-green { border-color: rgba(21,182,106,.34); }
-.metric-orange { border-color: var(--app-accent-line); }
+.metric-orange { border-color: rgba(245,158,11,.34); }
 .metric-purple { border-color: rgba(139,92,246,.34); }
 
 .sparkline {
@@ -2495,7 +2495,7 @@ button.btn-primary,
 }
 
 .metric-green .sparkline { color: rgba(21,182,106,.75); }
-.metric-orange .sparkline { color: var(--app-accent-light); }
+.metric-orange .sparkline { color: rgba(245,158,11,.75); }
 .metric-purple .sparkline { color: rgba(139,92,246,.75); }
 
 .dashboard-grid-main {
@@ -2672,7 +2672,7 @@ button.btn-primary,
 }
 
 .equipment-art.scanner {
-  background: linear-gradient(145deg, #0f172a, var(--app-accent));
+  background: linear-gradient(145deg, #0f172a, #f59e0b);
 }
 
 .equipment-card h3 {
@@ -3238,20 +3238,20 @@ body {
   color: #cbd5e1 !important;
 }
 
-.sidebar a[href$="index.html"]::before { content: "⌂" !important; }
-.sidebar a[href$="add-toner.html"]::before { content: "+" !important; }
-.sidebar a[href$="stock.html"]::before { content: "□" !important; }
-.sidebar a[href$="historico.html"]::before { content: "↗" !important; }
-.sidebar a[href$="etiquetas-word.html"]::before { content: "▤" !important; }
-.sidebar a[href$="impressoras.html"]::before { content: "▣" !important; }
-.sidebar a[href$="manutencao-impressoras.html"]::before { content: "◇" !important; }
-.sidebar a[href$="computadores.html"]::before { content: "▭" !important; }
-.sidebar a[href$="users.html"]::before { content: "○" !important; }
-.sidebar a[href$="pistolas.html"]::before { content: "⌁" !important; }
-.sidebar a[href$="portas.html"]::before { content: "▧" !important; }
-.sidebar a[href$="radios.html"]::before { content: "⌁" !important; }
-.sidebar a[href$="informacoes.html"]::before { content: "ⓘ" !important; }
-.sidebar a[href$="config.html"]::before { content: "⚙" !important; }
+.sidebar a[href$="index.html"]::before { content: "D" !important; }
+.sidebar a[href$="add-toner.html"]::before { content: "T" !important; }
+.sidebar a[href$="stock.html"]::before { content: "S" !important; }
+.sidebar a[href$="historico.html"]::before { content: "H" !important; }
+.sidebar a[href$="etiquetas-word.html"]::before { content: "E" !important; }
+.sidebar a[href$="impressoras.html"]::before { content: "I" !important; }
+.sidebar a[href$="manutencao-impressoras.html"]::before { content: "M" !important; }
+.sidebar a[href$="computadores.html"]::before { content: "C" !important; }
+.sidebar a[href$="users.html"]::before { content: "U" !important; }
+.sidebar a[href$="pistolas.html"]::before { content: "P" !important; }
+.sidebar a[href$="portas.html"]::before { content: "R" !important; }
+.sidebar a[href$="radios.html"]::before { content: "W" !important; }
+.sidebar a[href$="informacoes.html"]::before { content: "i" !important; }
+.sidebar a[href$="config.html"]::before { content: "*" !important; }
 
 .sidebar a:hover,
 .sidebar a.active,
@@ -3291,6 +3291,16 @@ body {
   border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
+}
+
+.page-hero::before {
+  content: "Home > App Braga";
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .page-hero-title {
@@ -3765,93 +3775,6 @@ body.app-light textarea {
   font-size: 17px !important;
 }
 
-.radio-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 16px;
-}
-
-.radio-card {
-  display: grid;
-  grid-template-columns: 52px 1fr auto;
-  gap: 14px;
-  align-items: center;
-  min-height: 132px;
-  padding: 18px;
-  border: 1px solid rgba(148, 163, 184, .13);
-  border-radius: 8px;
-  color: #f8fafc;
-  background: rgba(10, 20, 36, .62);
-}
-
-.radio-card-icon {
-  display: grid;
-  place-items: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 12px;
-  color: #dbeafe;
-  background: linear-gradient(135deg, rgba(37, 99, 235, .95), rgba(29, 78, 216, .80));
-  font-weight: 900;
-}
-
-.radio-card-main h3 {
-  margin: 0 0 8px;
-  color: #f8fafc;
-  font-size: 17px;
-}
-
-.radio-card-main p {
-  margin: 3px 0;
-  color: #94a3b8;
-  font-size: 13px;
-}
-
-.radio-card-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.reference-empty {
-  grid-column: 1 / -1;
-  padding: 18px;
-  border: 1px dashed rgba(148, 163, 184, .22);
-  border-radius: 8px;
-  color: #94a3b8;
-  background: rgba(10, 20, 36, .34);
-}
-
-.weekly-panel {
-  min-height: 124px;
-}
-
-.weekly-radio-list {
-  display: grid;
-  gap: 10px;
-}
-
-.weekly-radio-row {
-  display: grid;
-  gap: 5px;
-  padding: 14px;
-  border: 1px solid rgba(148, 163, 184, .13);
-  border-radius: 8px;
-  background: rgba(10, 20, 36, .52);
-}
-
-.weekly-radio-row strong {
-  color: #f8fafc;
-}
-
-.weekly-radio-row span,
-.weekly-radio-row small {
-  color: #94a3b8;
-}
-
-.radio-modal-card {
-  max-width: 720px;
-}
-
 @media (max-width: 1180px) {
   .reference-header,
   .reference-actions {
@@ -3900,18 +3823,6 @@ body.app-light textarea {
   .info-actions-preview button {
     width: 100%;
   }
-
-  .radio-card {
-    grid-template-columns: 1fr;
-  }
-
-  .radio-card-actions {
-    justify-content: stretch;
-  }
-
-  .radio-card-actions button {
-    flex: 1;
-  }
 }
 
 
@@ -3926,26 +3837,6 @@ body.app-light textarea {
   height:120px;
   object-fit:contain;
   display:block;
-}
-
-.dashboard-critical-card .equipment-photo,
-.dashboard-critical-card .equipment-art {
-  height: 118px;
-  margin: 0 0 14px;
-  padding: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(145deg, rgba(226, 232, 240, .94), rgba(100, 116, 139, .72));
-  overflow: hidden;
-}
-
-.dashboard-critical-card .equipment-real-image {
-  width: 100%;
-  height: 100%;
-  max-height: 98px;
-  object-fit: contain;
-  filter: drop-shadow(0 16px 18px rgba(2, 8, 23, .28));
 }
 
 .dashboard-critical-card{
@@ -4053,789 +3944,14 @@ body{
 }
 
 
-.info-list{
- display:grid;
- grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
- gap:16px;
- width:100%;
-}
-.info-list-item{
- background:#111827;
- border:1px solid rgba(255,255,255,.08);
- border-radius:18px;
- padding:18px;
- text-align:left;
- display:flex;
- flex-direction:column;
- gap:14px;
- min-height:180px;
-}
-.info-list-item strong{font-size:16px;color:#fff;}
-.info-list-item span{color:#cbd5e1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;}
-.info-card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;}
-.info-card-actions .secondary-btn,
-.info-card-actions .reference-outline{
-  min-width:0 !important;
-  min-height:38px !important;
-  margin-top:0 !important;
-  padding:8px 12px !important;
-}
-.info-search{background:#0f172a;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 14px;color:#fff;min-width:260px;}
-.info-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:9999;}
-.info-modal.hidden{display:none;}
-.info-modal-content{background:#111827;border-radius:20px;padding:24px;width:min(700px,95%);color:#fff;}
-.info-modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
-.info-close-btn{background:#dc2626;color:#fff;border:none;border-radius:10px;padding:8px 12px;cursor:pointer;}
-.info-modal-body{white-space:pre-wrap;line-height:1.6;color:#cbd5e1;max-height:60vh;overflow:auto;}
-
-/* ===== APP BRAGA ENTERPRISE FINAL POLISH ===== */
-:root {
-  --app-sidebar-width: 244px;
-  --app-bg: #020817;
-  --app-panel: rgba(15, 23, 42, .82);
-  --app-panel-soft: rgba(15, 23, 42, .58);
-  --app-border: rgba(148, 163, 184, .18);
-  --app-text: #f8fafc;
-  --app-muted: #94a3b8;
-  --app-blue: #2563eb;
-  --app-blue-soft: rgba(37, 99, 235, .16);
-  --app-red: #ef4444;
-  --app-green: #22c55e;
-}
-
-html,
-body {
-  min-height: 100%;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-  scrollbar-width: none;
-}
-
-body::-webkit-scrollbar,
-.main::-webkit-scrollbar,
-.modal-card::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
-
-body {
-  background:
-    radial-gradient(circle at 18% 10%, rgba(37, 99, 235, .18), transparent 34%),
-    radial-gradient(circle at 82% 0%, rgba(20, 184, 166, .08), transparent 32%),
-    var(--app-bg) !important;
-  color: var(--app-text);
-}
-
-.sidebar {
-  width: var(--app-sidebar-width) !important;
-  background: linear-gradient(180deg, rgba(2, 8, 23, .98), rgba(8, 13, 29, .98)) !important;
-  border-right: 1px solid var(--app-border) !important;
-  box-shadow: 18px 0 42px rgba(2, 8, 23, .28);
-  padding: 22px 14px !important;
-  gap: 6px;
-}
-
-.brand,
-.premium-brand {
-  min-height: 64px;
-  padding: 12px !important;
-  margin-bottom: 18px !important;
-  border: 1px solid var(--app-border);
-  border-radius: 14px !important;
-  background: rgba(15, 23, 42, .72);
-}
-
-.brand-badge {
-  width: 42px !important;
-  height: 42px !important;
-  border-radius: 12px !important;
-  background: linear-gradient(135deg, #2563eb, #14b8a6) !important;
-  box-shadow: 0 14px 30px rgba(37, 99, 235, .32);
-}
-
-.sidebar a {
-  min-height: 42px;
-  border-radius: 10px !important;
-  color: #cbd5e1 !important;
-  font-weight: 600;
-  letter-spacing: 0;
-  border: 1px solid transparent;
-  transition: background .18s ease, border-color .18s ease, color .18s ease;
-}
-
-.sidebar a:hover {
-  background: rgba(37, 99, 235, .10) !important;
-  border-color: rgba(96, 165, 250, .22);
-  color: #fff !important;
-}
-
-.sidebar a.active {
-  background: linear-gradient(135deg, rgba(37, 99, 235, .92), rgba(30, 64, 175, .76)) !important;
-  border-color: rgba(96, 165, 250, .42);
-  color: #fff !important;
-  box-shadow: 0 12px 26px rgba(37, 99, 235, .26);
-}
-
-.main,
-.main-content,
-.page-content,
-.dashboard-container,
-.content-area {
-  margin-left: var(--app-sidebar-width) !important;
-  width: calc(100vw - var(--app-sidebar-width)) !important;
-  padding: 24px !important;
-}
-
-.panel,
-.card,
-.reference-panel,
-.modal-card,
-.enterprise-item-card {
-  background: var(--app-panel) !important;
-  border: 1px solid var(--app-border) !important;
-  border-radius: 14px !important;
-  box-shadow: 0 18px 50px rgba(2, 8, 23, .22);
-}
-
-.primary-btn,
-.secondary-btn,
-.action-btn,
-.reference-icon,
-.info-close-btn,
-button {
-  border-radius: 10px !important;
-  min-height: 40px;
-  font-weight: 700;
-  letter-spacing: 0;
-}
-
-.primary-btn,
-.reference-primary {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
-  border: 1px solid rgba(96, 165, 250, .42) !important;
-  color: #fff !important;
-}
-
-.secondary-btn,
-.reference-outline {
-  background: rgba(15, 23, 42, .72) !important;
-  border: 1px solid rgba(96, 165, 250, .28) !important;
-  color: #dbeafe !important;
-}
-
-.secondary-btn.danger,
-.reference-icon.danger {
-  border-color: rgba(239, 68, 68, .55) !important;
-  color: #fecaca !important;
-}
-
-.reference-search input,
-.form-grid input,
-.form-grid textarea,
-.form-grid select,
-.radio-week-row select,
-.config-resolution-field select,
-select,
-input,
-textarea {
-  background: rgba(2, 8, 23, .34) !important;
-  border: 1px solid rgba(148, 163, 184, .22) !important;
-  border-radius: 10px !important;
-  color: var(--app-text) !important;
-}
-
-.radio-cards-grid,
-.cards-grid,
-.equipamentos-grid,
-.impressoras-grid,
-.dashboard-grid {
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
-}
-
-.radio-card,
-.enterprise-item-card {
-  padding: 16px;
-  display: grid;
-  gap: 14px;
-}
-
-.radio-card {
-  grid-template-columns: 48px 1fr auto;
-  align-items: center;
-  background: var(--app-panel-soft);
-  border: 1px solid var(--app-border);
-  border-radius: 14px;
-}
-
-.radio-card-icon {
-  width: 48px;
-  height: 48px;
-  display: grid;
-  place-items: center;
-  border-radius: 12px;
-  background: var(--app-blue-soft);
-  color: #93c5fd;
-  font-weight: 800;
-}
-
-.radio-card-main h3,
-.enterprise-item-card h3 {
-  margin: 0 0 6px;
-  color: #fff;
-}
-
-.radio-card-main p,
-.enterprise-item-card p,
-.section-subtitle {
-  color: var(--app-muted) !important;
-}
-
-.radio-card-actions,
-.item-actions,
-.card-actions,
-.weekly-actions {
+/* ===== PISTOLAS CK65 FINAL FIX ===== */
+.pistol-card .item-actions {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
-  align-items: center;
+  margin-top: 14px;
 }
-
-.reference-icon {
-  width: 40px;
-  min-width: 40px;
-  padding: 0 !important;
-  display: grid;
-  place-items: center;
+.pistol-card .item-actions button {
+  flex: 1 1 95px;
 }
-
-.weekly-radio-list,
-.radio-weekly-rows {
-  display: grid;
-  gap: 12px;
-}
-
-.weekly-radio-row,
-.radio-week-row {
-  display: grid;
-  grid-template-columns: minmax(180px, 1fr) minmax(220px, 420px);
-  gap: 14px;
-  align-items: center;
-  padding: 14px;
-  border: 1px solid var(--app-border);
-  border-radius: 12px;
-  background: rgba(2, 8, 23, .26);
-}
-
-.weekly-radio-row.compact {
-  grid-template-columns: minmax(160px, 1fr) auto;
-}
-
-.radio-record-row > div {
-  display: grid;
-  gap: 4px;
-}
-
-.radio-record-row small {
-  color: var(--app-muted);
-  font-size: 13px;
-}
-
-.radio-record-row .reference-outline {
-  margin-top: 0 !important;
-  white-space: nowrap;
-}
-
-.radio-week-row span {
-  display: block;
-  margin-top: 4px;
-  color: var(--app-muted);
-  font-size: 13px;
-}
-
-.radio-week-row select {
-  width: 100%;
-  min-height: 44px;
-  padding: 0 12px;
-}
-
-.radio-weekly-modal-card {
-  width: min(920px, calc(100vw - 28px));
-  max-height: min(82vh, 760px);
-  overflow: auto;
-}
-
-.item-topline {
-  display: flex;
-  justify-content: space-between;
-  gap: 14px;
-  align-items: flex-start;
-}
-
-.item-meta-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 10px;
-}
-
-.item-meta-grid span {
-  color: var(--app-muted);
-  font-size: 13px;
-}
-
-.item-meta-grid strong {
-  display: block;
-  margin-bottom: 3px;
-  color: #dbeafe;
-  font-size: 12px;
-  text-transform: uppercase;
-}
-
-.config-quick-panel {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 16px;
-  align-items: end;
-}
-
-.switch-row,
-.config-resolution-field {
-  display: grid;
-  gap: 8px;
-  color: #e2e8f0;
-  font-weight: 700;
-}
-
-.config-resolution-field select {
-  min-height: 44px;
-  padding: 0 12px;
-}
-
-.resolution-compact .main,
-.resolution-compact .main-content,
-.resolution-compact .page-content {
-  padding: 14px !important;
-}
-
-.resolution-compact .panel,
-.resolution-compact .card,
-.resolution-compact .reference-panel,
-.resolution-compact .enterprise-item-card {
-  padding: 14px !important;
-}
-
-.resolution-compact .cards-grid,
-.resolution-compact .radio-cards-grid,
-.resolution-compact .equipamentos-grid {
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)) !important;
-  gap: 12px !important;
-}
-
-.resolution-wide .main,
-.resolution-wide .main-content,
-.resolution-wide .page-content {
-  padding: 30px !important;
-}
-
-.resolution-wide .cards-grid,
-.resolution-wide .radio-cards-grid,
-.resolution-wide .equipamentos-grid {
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
-}
-
-@media (max-width: 900px) {
-  .sidebar {
-    position: static !important;
-    width: 100% !important;
-    min-height: auto !important;
-  }
-
-  .main,
-  .main-content,
-  .page-content,
-  .dashboard-container,
-  .content-area {
-    margin-left: 0 !important;
-    width: 100% !important;
-    padding: 16px !important;
-  }
-
-  .weekly-radio-row,
-  .radio-week-row,
-  .radio-card {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ===== FULLSCREEN TABLET / IPHONE FINAL VIEWPORT ===== */
-html {
-  width: 100%;
-  min-height: 100%;
-  height: 100%;
-  background: var(--app-bg) !important;
-  overscroll-behavior: none;
-}
-
-body {
-  width: 100%;
-  min-height: 100vh;
-  min-height: calc(var(--app-vh, 1vh) * 100);
-  margin: 0 !important;
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-  touch-action: manipulation;
-}
-
-@supports (height: 100dvh) {
-  body,
-  .main,
-  main {
-    min-height: 100dvh !important;
-  }
-}
-
-.main,
-main {
-  padding-top: max(24px, env(safe-area-inset-top)) !important;
-  padding-right: max(24px, env(safe-area-inset-right)) !important;
-  padding-bottom: max(24px, env(safe-area-inset-bottom)) !important;
-}
-
-body.device-tablet .main,
-body.device-tablet main {
-  padding: 18px !important;
-}
-
-body.device-tablet .sidebar {
-  width: 220px !important;
-}
-
-body.device-tablet .main,
-body.device-tablet .main-content,
-body.device-tablet .page-content,
-body.device-tablet .dashboard-container,
-body.device-tablet .content-area {
-  margin-left: 220px !important;
-  width: calc(100vw - 220px) !important;
-}
-
-body.device-tablet .cards-grid,
-body.device-tablet .equipment-grid,
-body.device-tablet .radio-cards-grid,
-body.device-tablet .stats-grid,
-body.device-tablet .enterprise-metrics {
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
-  gap: 14px !important;
-}
-
-body.device-phone {
-  overflow-y: auto !important;
-}
-
-body.device-phone .sidebar {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  z-index: 5000 !important;
-  width: 86px !important;
-  height: calc(var(--app-vh, 1vh) * 100) !important;
-  min-height: calc(var(--app-vh, 1vh) * 100) !important;
-  max-height: none !important;
-  padding: calc(10px + env(safe-area-inset-top)) 8px calc(10px + env(safe-area-inset-bottom)) !important;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 8px !important;
-  border-right: 1px solid var(--app-border) !important;
-  border-bottom: 0 !important;
-}
-
-body.device-phone .brand,
-body.device-phone .premium-brand {
-  grid-column: auto;
-  min-height: 58px;
-  margin-bottom: 6px !important;
-  justify-content: center !important;
-  padding: 8px !important;
-}
-
-body.device-phone .brand h2,
-body.device-phone .premium-brand h2,
-body.device-phone .brand > div:not(.brand-badge),
-body.device-phone .premium-brand > div:not(.brand-badge) {
-  display: none !important;
-}
-
-body.device-phone .brand-badge {
-  width: 44px !important;
-  height: 44px !important;
-  min-width: 44px !important;
-}
-
-body.device-phone .sidebar a {
-  min-height: 48px !important;
-  margin: 0 !important;
-  padding: 8px 6px !important;
-  justify-content: center !important;
-  text-align: center !important;
-  font-size: 0 !important;
-}
-
-body.device-phone .sidebar a::before {
-  margin: 0 !important;
-  width: 24px !important;
-  min-width: 24px !important;
-  font-size: 16px !important;
-}
-
-body.device-phone .main,
-body.device-phone .main-content,
-body.device-phone .page-content,
-body.device-phone .dashboard-container,
-body.device-phone .content-area {
-  margin-left: 86px !important;
-  width: calc(100vw - 86px) !important;
-  min-height: calc(var(--app-vh, 1vh) * 100) !important;
-  padding: max(12px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) 10px !important;
-}
-
-body.device-phone.is-ios .sidebar {
-  width: 92px !important;
-}
-
-body.device-phone.is-ios .main,
-body.device-phone.is-ios .main-content,
-body.device-phone.is-ios .page-content,
-body.device-phone.is-ios .dashboard-container,
-body.device-phone.is-ios .content-area {
-  margin-left: 92px !important;
-  width: calc(100vw - 92px) !important;
-}
-
-body.device-phone .page-hero,
-body.device-phone .dashboard-header,
-body.device-phone .reference-header,
-body.device-phone .toolbar,
-body.device-phone .section-header {
-  align-items: stretch !important;
-  flex-direction: column !important;
-  gap: 12px !important;
-}
-
-body.device-phone .cards-grid,
-body.device-phone .equipment-grid,
-body.device-phone .radio-cards-grid,
-body.device-phone .stats-grid,
-body.device-phone .enterprise-metrics,
-body.device-phone .form-grid {
-  grid-template-columns: 1fr !important;
-  gap: 12px !important;
-}
-
-body.device-phone .panel,
-body.device-phone .card,
-body.device-phone .pc-card,
-body.device-phone .dashboard-card,
-body.device-phone .reference-panel,
-body.device-phone .modal-card {
-  border-radius: 12px !important;
-  padding: 14px !important;
-}
-
-body.device-phone input,
-body.device-phone select,
-body.device-phone textarea,
-body.device-phone button {
-  min-height: 44px !important;
-  font-size: 16px !important;
-}
-
-body.device-phone .modal-overlay {
-  align-items: flex-end !important;
-  padding: 0 !important;
-}
-
-body.device-phone .modal-card {
-  width: 100% !important;
-  max-width: 100% !important;
-  max-height: calc(var(--app-vh, 1vh) * 92) !important;
-  overflow: auto !important;
-  border-radius: 18px 18px 0 0 !important;
-}
-
-
-/* ===== ANDROID TABLET DETECTION FIX ===== */
-body.is-android-tablet.device-tablet .main,
-body.is-android-tablet.device-tablet main,
-body.is-android-tablet.device-tablet .main-content,
-body.is-android-tablet.device-tablet .page-content,
-body.is-android-tablet.device-tablet .dashboard-container {
-  /* Mantém layout tablet mesmo quando o Chrome reporta largura grande */
-}
-
-body.is-android-tablet .health-card strong#healthDevice {
-  color: #86efac !important;
-}
-/* ===== END ANDROID TABLET DETECTION FIX ===== */
-
-
-/* ===== ANDROID TABLET SCALE FIX ===== */
-/* Tablet Android estava a ser tratado quase como PC e ficava tudo pequeno.
-   Estas regras aumentam a escala só em Android Tablet. */
-
-body.is-android-tablet.device-tablet {
-  font-size: 18px !important;
-}
-
-body.is-android-tablet.device-tablet .sidebar {
-  width: 280px !important;
-  min-width: 280px !important;
-  max-width: 280px !important;
-  padding: 22px 16px !important;
-}
-
-body.is-android-tablet.device-tablet .main,
-body.is-android-tablet.device-tablet main,
-body.is-android-tablet.device-tablet .main-content,
-body.is-android-tablet.device-tablet .page-content,
-body.is-android-tablet.device-tablet .dashboard-container,
-body.is-android-tablet.device-tablet .content-area {
-  margin-left: 280px !important;
-  width: calc(100vw - 280px) !important;
-  max-width: calc(100vw - 280px) !important;
-  padding: 28px !important;
-  box-sizing: border-box !important;
-}
-
-body.is-android-tablet.device-tablet .brand,
-body.is-android-tablet.device-tablet .premium-brand {
-  min-height: 86px !important;
-  padding: 16px !important;
-}
-
-body.is-android-tablet.device-tablet .brand h2,
-body.is-android-tablet.device-tablet .premium-brand h2 {
-  font-size: 24px !important;
-}
-
-body.is-android-tablet.device-tablet .brand-badge,
-body.is-android-tablet.device-tablet .brand-logo {
-  width: 56px !important;
-  height: 56px !important;
-  min-width: 56px !important;
-  font-size: 17px !important;
-}
-
-body.is-android-tablet.device-tablet .sidebar a,
-body.is-android-tablet.device-tablet .sidebar .menu-btn {
-  min-height: 54px !important;
-  padding: 15px 16px !important;
-  font-size: 16px !important;
-  border-radius: 16px !important;
-  margin-bottom: 10px !important;
-}
-
-body.is-android-tablet.device-tablet .page-hero,
-body.is-android-tablet.device-tablet .dashboard-header,
-body.is-android-tablet.device-tablet .reference-header {
-  padding: 28px !important;
-  border-radius: 24px !important;
-}
-
-body.is-android-tablet.device-tablet .main h1,
-body.is-android-tablet.device-tablet h1,
-body.is-android-tablet.device-tablet .page-hero-title {
-  font-size: clamp(36px, 4vw, 54px) !important;
-  line-height: 1.05 !important;
-}
-
-body.is-android-tablet.device-tablet h2 {
-  font-size: 30px !important;
-}
-
-body.is-android-tablet.device-tablet h3,
-body.is-android-tablet.device-tablet .section-header h3 {
-  font-size: 23px !important;
-}
-
-body.is-android-tablet.device-tablet .panel,
-body.is-android-tablet.device-tablet .card,
-body.is-android-tablet.device-tablet .dashboard-card,
-body.is-android-tablet.device-tablet .stat-card,
-body.is-android-tablet.device-tablet .metric-card,
-body.is-android-tablet.device-tablet .stock-card,
-body.is-android-tablet.device-tablet .history-card,
-body.is-android-tablet.device-tablet .printer-card,
-body.is-android-tablet.device-tablet .user-card,
-body.is-android-tablet.device-tablet .summary-card,
-body.is-android-tablet.device-tablet .box {
-  padding: 24px !important;
-  border-radius: 24px !important;
-}
-
-body.is-android-tablet.device-tablet .stats-grid,
-body.is-android-tablet.device-tablet .dashboard-grid,
-body.is-android-tablet.device-tablet .cards-grid,
-body.is-android-tablet.device-tablet .form-grid {
-  gap: 22px !important;
-}
-
-body.is-android-tablet.device-tablet .stat-card strong,
-body.is-android-tablet.device-tablet .metric-card strong,
-body.is-android-tablet.device-tablet .dashboard-card strong {
-  font-size: 42px !important;
-}
-
-body.is-android-tablet.device-tablet .stat-card span,
-body.is-android-tablet.device-tablet .metric-card span,
-body.is-android-tablet.device-tablet .dashboard-card span,
-body.is-android-tablet.device-tablet .meta-line,
-body.is-android-tablet.device-tablet .section-subtitle,
-body.is-android-tablet.device-tablet .subtitle {
-  font-size: 17px !important;
-}
-
-body.is-android-tablet.device-tablet input,
-body.is-android-tablet.device-tablet select,
-body.is-android-tablet.device-tablet textarea,
-body.is-android-tablet.device-tablet button,
-body.is-android-tablet.device-tablet .btn,
-body.is-android-tablet.device-tablet .primary-btn,
-body.is-android-tablet.device-tablet .add-btn,
-body.is-android-tablet.device-tablet .save-btn,
-body.is-android-tablet.device-tablet .enterprise-btn {
-  min-height: 54px !important;
-  font-size: 16px !important;
-  border-radius: 16px !important;
-}
-
-body.is-android-tablet.device-tablet table,
-body.is-android-tablet.device-tablet td,
-body.is-android-tablet.device-tablet th {
-  font-size: 16px !important;
-}
-
-/* Tablet em paisagem largo: mantém enterprise mas maior */
-body.is-android-tablet.tablet-landscape .dashboard-grid,
-body.is-android-tablet.tablet-landscape .stats-grid {
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
-}
-
-/* Tablet em retrato: mais espaço para conteúdo */
-body.is-android-tablet.tablet-portrait .sidebar {
-  width: 240px !important;
-  min-width: 240px !important;
-  max-width: 240px !important;
-}
-
-body.is-android-tablet.tablet-portrait .main,
-body.is-android-tablet.tablet-portrait main,
-body.is-android-tablet.tablet-portrait .main-content,
-body.is-android-tablet.tablet-portrait .page-content,
-body.is-android-tablet.tablet-portrait .dashboard-container {
-  margin-left: 240px !important;
-  width: calc(100vw - 240px) !important;
-  max-width: calc(100vw - 240px) !important;
-}
-
-/* ===== END ANDROID TABLET SCALE FIX ===== */
+/* ===== END PISTOLAS CK65 FINAL FIX ===== */

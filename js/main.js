@@ -1,50 +1,20 @@
-const { app, BrowserWindow, shell, ipcMain, Tray, Menu, Notification } = require("electron");
+const { app, BrowserWindow, shell, ipcMain } = require("electron");
 const path = require("path");
 const http = require("http");
 const https = require("https");
 const snmp = require("net-snmp");
 
 let win;
-let tray;
-app.isQuitting = false;
-
-function mostrarJanelaPrincipal() {
-  if (!win) {
-    createWindow();
-    return;
-  }
-  win.show();
-  win.focus();
-}
-
-function createTray() {
-  if (tray) return;
-
-  tray = new Tray(path.join(__dirname, "..", "icon.ico"));
-  tray.setToolTip("App Braga");
-  tray.setContextMenu(Menu.buildFromTemplate([
-    { label: "Abrir App Braga", click: mostrarJanelaPrincipal },
-    {
-      label: "Sair",
-      click: () => {
-        app.isQuitting = true;
-        app.quit();
-      }
-    }
-  ]));
-  tray.on("double-click", mostrarJanelaPrincipal);
-}
 
 function createWindow() {
   win = new BrowserWindow({
-    width: 1600,
-    height: 1000,
+    width: 1400,
+    height: 900,
     minWidth: 1100,
     minHeight: 700,
-    fullscreen: true,
     autoHideMenuBar: true,
-    icon: path.join(__dirname, "..", "icon.ico"),
-    backgroundColor: "#101114",
+    icon: path.join(__dirname, "icon.ico"),
+    backgroundColor: "#0f172a",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -52,18 +22,11 @@ function createWindow() {
     }
   });
 
-  win.loadFile(path.join(__dirname, "..", "index.html"));
+  win.loadFile("index.html");
 
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: "deny" };
-  });
-
-  win.on("close", (event) => {
-    if (!app.isQuitting) {
-      event.preventDefault();
-      win.hide();
-    }
   });
 }
 
@@ -214,33 +177,69 @@ ipcMain.handle("printer:get-toner-snmp", async (_event, ip) => {
 
 app.whenReady().then(() => {
   createWindow();
-  createTray();
   app.on("activate", () => {
-    mostrarJanelaPrincipal();
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 });
 
-ipcMain.handle("app:notify", async (_event, payload = {}) => {
-  try {
-    const title = String(payload.title || "App Braga");
-    const body = String(payload.body || "");
-    if (!Notification.isSupported()) return { ok: false, error: "Notificacoes nao suportadas" };
-    new Notification({
-      title,
-      body,
-      icon: path.join(__dirname, "..", "icon-192.png"),
-      silent: false
-    }).show();
-    return { ok: true };
-  } catch (error) {
-    return { ok: false, error: error.message };
-  }
-});
-
-app.on("before-quit", () => {
-  app.isQuitting = true;
-});
-
 app.on("window-all-closed", () => {
-  if (process.platform === "darwin") return;
+  if (process.platform !== "darwin") app.quit();
 });
+
+
+// ===== APP_BRAGA_THEME_SYSTEM =====
+
+window.loadTheme = function(){
+
+  try{
+
+    const savedTheme =
+      localStorage.getItem("app-theme") || "dark";
+
+    document.documentElement.classList.remove("dark");
+    document.body.classList.remove("dark");
+
+    if(savedTheme === "dark"){
+      document.documentElement.classList.add("dark");
+      document.body.classList.add("dark");
+    }
+
+  }catch(e){
+    console.log(e);
+  }
+
+};
+
+window.saveTheme = function(theme){
+
+  try{
+    localStorage.setItem("app-theme", theme);
+  }catch(e){
+    console.log(e);
+  }
+
+};
+
+window.toggleTheme = function(){
+
+  const isDark =
+    document.body.classList.contains("dark");
+
+  const newTheme =
+    isDark ? "light" : "dark";
+
+  window.saveTheme(newTheme);
+  window.loadTheme();
+
+};
+
+document.addEventListener(
+  "DOMContentLoaded",
+  window.loadTheme
+);
+
+window.addEventListener(
+  "pageshow",
+  window.loadTheme
+);
+
