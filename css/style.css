@@ -4875,3 +4875,82 @@ body.is-android-tablet.tablet-portrait .dashboard-container {
 .radio-card-main small{display:block}
 .radio-card-main strong{display:block;color:#fff!important}
 /* ===== END RADIOS OPERACIONAL INTEGRADO APPJS ===== */
+
+
+/* ===== RADIOS BUTTONS LAYOUT FIX ===== */
+/* Corrige botões dos cards de rádios para não saírem para fora do card */
+.radio-cards-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)) !important;
+  gap: 18px !important;
+  align-items: stretch !important;
+  overflow: visible !important;
+}
+
+.radio-card {
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  padding: 18px !important;
+}
+
+.radio-card-main {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+
+.radio-card-actions {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  margin-top: 14px !important;
+  overflow: hidden !important;
+}
+
+.radio-card-actions button,
+.radio-card-actions .secondary-btn,
+.radio-card-actions .reference-outline,
+.radio-card-actions .danger {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 0 8px !important;
+  border-radius: 14px !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* O botão apagar ocupa a largura toda se for o último numa linha ímpar */
+.radio-card-actions button:last-child:nth-child(odd) {
+  grid-column: 1 / -1 !important;
+}
+
+/* Em tablet/PC largo deixa os cards consistentes */
+@media (min-width: 900px) {
+  .radio-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)) !important;
+  }
+}
+
+/* Em ecrãs mais pequenos continua legível */
+@media (max-width: 520px) {
+  .radio-cards-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .radio-card-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+/* ===== END RADIOS BUTTONS LAYOUT FIX ===== */
