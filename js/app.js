@@ -3993,6 +3993,7 @@ function getRadioUsersList() {
 function renderRadioAssignUsers(selectedId = "") {
   const select = document.getElementById("radioAssignUser");
   if (!select) return;
+
   const users = getRadioUsersList()
     .slice()
     .sort((a, b) => radioUserLabel(a).localeCompare(radioUserLabel(b), "pt", { numeric: true, sensitivity: "base" }));
@@ -4007,11 +4008,15 @@ function abrirAtribuirRadio(id) {
   const radio = getRadioById(id);
   if (!radio) return mostrarMensagem("Rádio não encontrado.", "erro");
   radioAssignId = id;
+
   const title = document.getElementById("radioAssignTitle");
   if (title) title.textContent = `Atribuir ${radio.nome || "Rádio"}`;
+
   renderRadioAssignUsers(radio.userId || "");
+
   const obs = document.getElementById("radioAssignObs");
   if (obs) obs.value = "";
+
   const modal = document.getElementById("radioAssignModal");
   if (modal) modal.style.display = "flex";
 }
@@ -4025,7 +4030,7 @@ function fecharAtribuirRadio() {
 async function guardarHistoricoRadio(radio, tipo, extra = {}) {
   if (!window.db?.collection || !radio?.id) return;
   await window.db.collection("radioHistory").add({
-    radioId: radio.id,
+    radioId: String(radio.id),
     radioNome: radio.nome || "",
     radioMac: radio.mac || "",
     radioSerial: radio.serial || radio.numeroSerie || "",
@@ -4038,6 +4043,7 @@ async function guardarHistoricoRadio(radio, tipo, extra = {}) {
 
 async function guardarAtribuirRadio() {
   if (!window.db) return mostrarMensagem("Firebase indisponível.", "erro");
+
   const radio = getRadioById(radioAssignId);
   if (!radio) return mostrarMensagem("Rádio não encontrado.", "erro");
 
@@ -4049,16 +4055,15 @@ async function guardarAtribuirRadio() {
   const obs = document.getElementById("radioAssignObs")?.value.trim() || "";
 
   try {
-    const payload = {
+    await window.db.collection("radios").doc(radio.id).set({
       userId,
       userNome,
       estado: "atribuido",
       atribuidoAt: Date.now(),
       obsAtribuicao: obs,
       updatedAt: Date.now()
-    };
+    }, { merge: true });
 
-    await window.db.collection("radios").doc(radio.id).set(payload, { merge: true });
     await guardarHistoricoRadio(radio, "atribuido", { userId, userNome, obs });
     fecharAtribuirRadio();
     mostrarMensagem("Rádio atribuído.");
@@ -4070,10 +4075,11 @@ async function guardarAtribuirRadio() {
 
 async function devolverRadio(id) {
   if (!window.db) return mostrarMensagem("Firebase indisponível.", "erro");
+
   const radio = getRadioById(id);
   if (!radio) return mostrarMensagem("Rádio não encontrado.", "erro");
-  const userNome = radioCurrentUserName(radio);
 
+  const userNome = radioCurrentUserName(radio);
   if (!userNome && !window.confirm("Este rádio não tem user associado. Marcar como devolvido mesmo assim?")) return;
 
   try {
@@ -4087,6 +4093,7 @@ async function devolverRadio(id) {
       devolvidoAt: Date.now(),
       updatedAt: Date.now()
     }, { merge: true });
+
     await guardarHistoricoRadio(radio, "devolvido", { userNome, obs: "Devolução manual" });
     mostrarMensagem("Rádio devolvido.");
   } catch (error) {
@@ -4098,10 +4105,13 @@ async function devolverRadio(id) {
 function abrirHistoricoRadio(id) {
   const radio = getRadioById(id);
   if (!radio) return mostrarMensagem("Rádio não encontrado.", "erro");
+
   const title = document.getElementById("radioHistoryTitle");
   const list = document.getElementById("radioHistoryList");
+
   if (title) title.textContent = `Histórico · ${radio.nome || "Rádio"}`;
   if (list) list.innerHTML = `<div class="reference-empty">A carregar histórico...</div>`;
+
   const modal = document.getElementById("radioHistoryModal");
   if (modal) modal.style.display = "flex";
 
