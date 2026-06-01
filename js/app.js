@@ -8637,3 +8637,113 @@ window.addEventListener("orientationchange", () => {
   */
 })();
 /* ===== END FULL PAGE SCROLL PROXY ===== */
+
+
+/* ===== DASHBOARD ENTERPRISE REALTIME CENTER ===== */
+(function(){
+  function safe(value){return String(value??"").replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]||c;});}
+  function arr(name){return Array.isArray(window[name])?window[name]:[];}
+  window.goPageDashboard=function(page){if(page) location.href=page;};
+
+  function deviceLabel(){
+    if(window.appBragaDeviceType) return window.appBragaDeviceType;
+    if(document.body.classList.contains("is-android-tablet")) return "Tablet Android";
+    if(document.body.classList.contains("device-tablet")) return "Tablet";
+    if(document.body.classList.contains("device-phone")) return "Telemóvel";
+    return "PC";
+  }
+
+  function alerts(){
+    const list=[];
+    arr("stockGlobal").forEach(function(t){
+      const percent=Number(t.percentagem??t.percent??t.nivel??t.toner??t.valor??NaN);
+      const estado=String(t.estado||"").toLowerCase();
+      const obs=String(t.obs||"").toLowerCase();
+      if(percent===0||estado.includes("vazio")||obs.includes("vazio")){
+        list.push({level:"critical",title:"Toner vazio",desc:`${t.equipamento||t.modelo||"Equipamento"} ${t.cor?"· "+t.cor:""}`});
+      }
+    });
+    arr("manutencoesGlobal").forEach(function(m){
+      const estado=String(m.estado||m.status||"").toLowerCase();
+      if(!estado||estado.includes("pendente")||estado.includes("decorrer")||estado.includes("aberto")){
+        list.push({level:"warn",title:"Manutenção pendente",desc:`${m.equipamento||m.modelo||m.impressora||"Impressora"} ${m.localizacao?"· "+m.localizacao:""}`});
+      }
+    });
+    const radios=arr("radiosData").length?arr("radiosData"):arr("radiosRealtime");
+    radios.forEach(function(r){
+      const user=r.user||r.userNome||r.utilizador||r.operador;
+      if(!user) list.push({level:"warn",title:"Rádio sem user",desc:`${r.nome||r.radio||"Rádio"} ${r.mac?"· MAC "+r.mac:""}`});
+    });
+    const portas=arr("portasData").length?arr("portasData"):arr("portasGlobal");
+    portas.forEach(function(p){
+      const equipamento=p.equipamento||p.device||p.nomeEquipamento;
+      if(!equipamento) list.push({level:"info",title:"Porta sem equipamento",desc:`${p.porta?"Porta "+p.porta:"Porta"} ${p.local?"· "+p.local:""}`});
+    });
+    return list;
+  }
+
+  function countRadios(){return arr("radiosData").length||arr("radiosRealtime").length;}
+  function countPortas(){return arr("portasData").length||arr("portasGlobal").length;}
+  function countPistolas(){return arr("pistolasData").length;}
+  function countUsers(){return arr("usersData").length||arr("usersGlobal").length;}
+  function countImpressoras(){return arr("impressorasData").length||arr("printersGlobal").length;}
+
+  function render(){
+    if(!document.querySelector(".dashboard-shell")&&!/index\.html$|\/$/.test(location.pathname)) return;
+    const target=document.querySelector(".dashboard-shell")||document.querySelector("main.main")||document.querySelector("main");
+    if(!target) return;
+
+    let zone=document.getElementById("dashboardEnterpriseRealtime");
+    if(!zone){
+      zone=document.createElement("section");
+      zone.id="dashboardEnterpriseRealtime";
+      zone.className="dashboard-realtime-zone";
+      const header=target.querySelector(".dashboard-header,.page-hero");
+      if(header) header.insertAdjacentElement("afterend",zone); else target.prepend(zone);
+    }
+
+    const al=alerts();
+    const critical=al.filter(a=>a.level==="critical").length;
+    const warn=al.filter(a=>a.level==="warn").length;
+    const firebaseOk=!!(window.db||window.firebase);
+    const onlineOk=navigator.onLine;
+    const statusClass=firebaseOk&&onlineOk?"ok":"bad";
+    const statusText=firebaseOk&&onlineOk?"Realtime ativo":"Verificar ligação";
+
+    zone.innerHTML=`
+      <div class="dashboard-live-panel">
+        <div class="dashboard-live-title"><h2>Centro Operacional</h2><span class="dashboard-status-pill ${statusClass}">${safe(statusText)}</span></div>
+        <div class="dashboard-live-grid">
+          <div class="dashboard-click-card" onclick="goPageDashboard('impressoras.html')"><span>Impressoras</span><strong>${countImpressoras()}</strong><small>Ver equipamentos</small></div>
+          <div class="dashboard-click-card" onclick="goPageDashboard('pistolas.html')"><span>Pistolas CK65</span><strong>${countPistolas()}</strong><small>Gerir pistolas</small></div>
+          <div class="dashboard-click-card" onclick="goPageDashboard('radios.html')"><span>Rádios</span><strong>${countRadios()}</strong><small>Ver rádios</small></div>
+          <div class="dashboard-click-card" onclick="goPageDashboard('portas.html')"><span>Portas Rede</span><strong>${countPortas()}</strong><small>Ver portas</small></div>
+          <div class="dashboard-click-card" onclick="goPageDashboard('users.html')"><span>Users</span><strong>${countUsers()}</strong><small>Ver utilizadores</small></div>
+          <div class="dashboard-click-card" onclick="goPageDashboard('manutencao-impressoras.html')"><span>Alertas</span><strong>${al.length}</strong><small>${critical} críticos · ${warn} avisos</small></div>
+        </div>
+        <div class="dashboard-health-strip">
+          <div class="dashboard-health-item"><span>Firebase</span><strong>${firebaseOk?"Ligada":"Indisponível"}</strong></div>
+          <div class="dashboard-health-item"><span>Rede</span><strong>${onlineOk?"Online":"Offline"}</strong></div>
+          <div class="dashboard-health-item"><span>Dispositivo</span><strong>${safe(deviceLabel())}</strong></div>
+        </div>
+      </div>
+      <div class="dashboard-alerts-panel">
+        <div class="dashboard-live-title"><h3>Notificações Reais</h3><span class="dashboard-status-pill ${al.length?"warn":"ok"}">${al.length}</span></div>
+        <div class="dashboard-alert-list">
+          ${al.length?al.slice(0,12).map(a=>`<div class="dashboard-alert-item ${safe(a.level)}"><div class="dashboard-alert-title">${safe(a.title)}</div><div class="dashboard-alert-desc">${safe(a.desc)}</div></div>`).join(""):`<div class="dashboard-alert-item info"><div class="dashboard-alert-title">Tudo certo</div><div class="dashboard-alert-desc">Sem alertas neste momento.</div></div>`}
+        </div>
+      </div>`;
+  }
+
+  function start(){
+    render();
+    setTimeout(render,800);
+    setTimeout(render,1800);
+    setInterval(render,10000);
+    window.addEventListener("online",render);
+    window.addEventListener("offline",render);
+  }
+  document.addEventListener("DOMContentLoaded",start);
+  window.addEventListener("pageshow",function(){setTimeout(start,200);});
+})();
+/* ===== END DASHBOARD ENTERPRISE REALTIME CENTER ===== */
