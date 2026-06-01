@@ -1,15 +1,4 @@
 
-function obterImagemDashboard(modelo = "") {
-  const nome = String(modelo).toLowerCase();
-
-  if (nome.includes("p3155")) return "../img/kyocerap3155dn.png";
-  if (nome.includes("pa5500")) return "../img/pa5500x.png";
-  if (nome.includes("2554")) return "../img/taskalfa2554ci.png";
-
-  return "../img/kyocera.png";
-}
-
-
 window.usersData = window.usersData || [];
 window.pistolasData = window.pistolasData || [];
 window.portasData = window.portasData || [];
@@ -18,7 +7,11 @@ window.portasData = window.portasData || [];
 const firebaseConfig = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
   authDomain: "toner-manager-756c4.firebaseapp.com",
-  projectId: "toner-manager-756c4"
+  databaseURL: "https://toner-manager-756c4-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "toner-manager-756c4",
+  storageBucket: "toner-manager-756c4.firebasestorage.app",
+  messagingSenderId: "1004492465437",
+  appId: "1:1004492465437:web:6a745933c51fc17b04adf4"
 };
 
 if(typeof firebase !== "undefined"){
@@ -33,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.6.3";
+const APP_VERSION = "1.11.0";
 
 
 
@@ -86,6 +79,24 @@ let stockGlobal = [];
 let historicoGlobal = [];
 let pcsGlobal = [];
 let manutencoesGlobal = [];
+let appNotificationTimer = null;
+
+const appNotificationState = {
+  enabled: false,
+  tonerZero: true,
+  stockMin: true,
+  maintenance: true,
+  radios: true,
+  intervalMinutes: 15,
+  vapidKey: "",
+  fcmToken: "",
+  sent: {},
+  realtimeBoot: {},
+  realtimeLast: {},
+  devicesUnsubscribe: null,
+  restoreRunning: false,
+  restoredTokenDocId: ""
+};
 
 function el(id) {
   return document.getElementById(id);
@@ -98,6 +109,20 @@ function setText(id, value) {
 
 function normalizarTexto(valor) {
   return String(valor || "").toLowerCase().trim();
+}
+
+function getFirestoreSortValue(value) {
+  if (!value) return 0;
+  if (typeof value === "number") return value;
+  if (value instanceof Date) return value.getTime();
+  if (typeof value.toMillis === "function") return value.toMillis();
+  if (typeof value.seconds === "number") return value.seconds * 1000;
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function sortFirestoreCreatedDesc(lista = []) {
+  return lista.sort((a, b) => getFirestoreSortValue(b.created || b.createdAt || b.updatedAt) - getFirestoreSortValue(a.created || a.createdAt || a.updatedAt));
 }
 
 function mostrarMensagem(texto, tipo = "sucesso") {
@@ -169,7 +194,7 @@ function guardarUsersLocal() {
     const serializavel = window.usersData.map(u => ({ ...u }));
     localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(serializavel));
   } catch (e) {
-    console.warn('Não foi possivel guardar users no localStorage.', e);
+    console.warn('Nao foi possivel guardar users no localStorage.', e);
   }
 }
 
@@ -188,7 +213,7 @@ function carregarUsersLocal() {
     window.usersData.splice(0, window.usersData.length, ...parsed);
     prepararRefsUsers();
   } catch (e) {
-    console.warn('Não foi possivel carregar users do localStorage.', e);
+    console.warn('Nao foi possivel carregar users do localStorage.', e);
     prepararRefsUsers();
   }
 }
@@ -375,7 +400,8 @@ async function disponivel() {
   }
 }
 
-db.collection("stock").orderBy("created", "desc").onSnapshot(snap => {
+db.collection("stock").onSnapshot(snap => {
+  notificarAlteracaoRealtimeApp("stock", snap);
   stockGlobal = [];
   setText("countStock", snap.size);
 
@@ -384,6 +410,7 @@ db.collection("stock").orderBy("created", "desc").onSnapshot(snap => {
     t.idDoc = doc.id;
     stockGlobal.push(t);
   });
+  sortFirestoreCreatedDesc(stockGlobal);
 
   saveBackupAppBraga(BACKUP_KEYS_APP_BRAGA.stock, stockGlobal);
   hideBackupBadge();
@@ -392,7 +419,6 @@ db.collection("stock").orderBy("created", "desc").onSnapshot(snap => {
   renderStockMinimoPainel();
   renderAlertasInteligentes();
   renderDashboardResumoInteligente();
-  renderAlertasInteligentes();
   renderModoGestorExtremo();
 }, error => {
   console.error(error);
@@ -404,11 +430,10 @@ db.collection("stock").orderBy("created", "desc").onSnapshot(snap => {
   renderStockMinimoPainel();
   renderAlertasInteligentes();
   renderDashboardResumoInteligente();
-  renderAlertasInteligentes();
   renderModoGestorExtremo();
 });
 
-db.collection("historico").orderBy("created", "desc").onSnapshot(snap => {
+db.collection("historico").onSnapshot(snap => {
   historicoGlobal = [];
   setText("countUsados", snap.size);
 
@@ -417,6 +442,7 @@ db.collection("historico").orderBy("created", "desc").onSnapshot(snap => {
     t.idDoc = doc.id;
     historicoGlobal.push(t);
   });
+  sortFirestoreCreatedDesc(historicoGlobal);
 
   saveBackupAppBraga(BACKUP_KEYS_APP_BRAGA.historico, historicoGlobal);
   hideBackupBadge();
@@ -424,8 +450,6 @@ db.collection("historico").orderBy("created", "desc").onSnapshot(snap => {
   renderAlertasInteligentes();
   renderModoGestorExtremo();
   renderDashboardResumoInteligente();
-  renderAlertasInteligentes();
-  renderModoGestorExtremo();
 }, error => {
   console.error(error);
   historicoGlobal = loadBackupAppBraga(BACKUP_KEYS_APP_BRAGA.historico);
@@ -435,11 +459,9 @@ db.collection("historico").orderBy("created", "desc").onSnapshot(snap => {
   renderAlertasInteligentes();
   renderModoGestorExtremo();
   renderDashboardResumoInteligente();
-  renderAlertasInteligentes();
-  renderModoGestorExtremo();
 });
 
-db.collection("pcs").orderBy("created", "desc").onSnapshot(snap => {
+db.collection("pcs").onSnapshot(snap => {
   pcsGlobal = [];
   setText("countPCs", snap.size);
 
@@ -448,6 +470,7 @@ db.collection("pcs").orderBy("created", "desc").onSnapshot(snap => {
     d.idDoc = doc.id;
     pcsGlobal.push(d);
   });
+  sortFirestoreCreatedDesc(pcsGlobal);
 
   saveBackupAppBraga(BACKUP_KEYS_APP_BRAGA.pcs, pcsGlobal);
   hideBackupBadge();
@@ -462,7 +485,8 @@ db.collection("pcs").orderBy("created", "desc").onSnapshot(snap => {
   renderModoGestorExtremo();
 });
 
-db.collection("manutencoes").orderBy("created", "desc").onSnapshot(snap => {
+db.collection("manutencoes").onSnapshot(snap => {
+  notificarAlteracaoRealtimeApp("manutencoes", snap);
   manutencoesGlobal = [];
 
   snap.forEach(doc => {
@@ -470,6 +494,7 @@ db.collection("manutencoes").orderBy("created", "desc").onSnapshot(snap => {
     item.idDoc = doc.id;
     manutencoesGlobal.push(item);
   });
+  sortFirestoreCreatedDesc(manutencoesGlobal);
 
   saveBackupAppBraga(BACKUP_KEYS_APP_BRAGA.manutencoes, manutencoesGlobal);
   hideBackupBadge();
@@ -511,8 +536,7 @@ function getCriticalityBucketsAppBraga() {
     }
 
     const minValue = Math.min(...allPercents);
-    if (minValue < 10) critical++;
-    else if (minValue <= 25) warning++;
+    if (isTonerEmpty(minValue)) critical++;
     else normal++;
   });
 
@@ -556,12 +580,12 @@ function renderDashboardResumoInteligente() {
       <div class="summary-card">
         <h4>Criticidade Real</h4>
         <div class="summary-value">${buckets.critical}</div>
-        <div class="meta-line">${critLabel} · toner abaixo de 10%</div>
+        <div class="meta-line">${critLabel} · toner a 0%</div>
       </div>
       <div class="summary-card">
         <h4>Atenção</h4>
         <div class="summary-value">${buckets.warning}</div>
-        <div class="meta-line">${warnLabel} · entre 10% e 25%</div>
+        <div class="meta-line">${warnLabel} · sem avisos intermédios de toner</div>
       </div>
       <div class="summary-card">
         <h4>Top Localizações</h4>
@@ -572,6 +596,14 @@ function renderDashboardResumoInteligente() {
         <ul class="summary-list">${ultimos.length ? ultimos.map(item => `<li>${item.equipamento || "-"} · ${item.cor || "-"} · ${item.localizacao || "-"}</li>`).join("") : "<li>Sem histórico ainda</li>"}</ul>
       </div>
     </div>`;
+}
+
+function getDashboardPrinterImage(item = {}) {
+  const modelo = normalizarTexto(item.modelo || "");
+  if (modelo.includes("taskalfa")) return "../img/taskalfa2554ci.png";
+  if (modelo.includes("pa5500")) return "../img/pa5500x.png";
+  if (modelo.includes("p3155")) return "../img/kyocerap3155dn.png";
+  return "../img/printer.png";
 }
 
 function renderDashboardCards(items) {
@@ -586,9 +618,9 @@ function renderDashboardCards(items) {
     const colors = Array.isArray(info?.colors) ? info.colors : [];
     const residue = info?.residue || null;
 
-    const criticalColors = colors.filter(c => typeof c.percent === "number" && c.percent <= 25);
+    const criticalColors = colors.filter(c => isDashboardTonerLow(c.percent));
     const monoPercent = typeof info?.percent === "number" ? info.percent : null;
-    const monoCritical = colors.length === 0 && monoPercent !== null && monoPercent <= 25;
+    const monoCritical = colors.length === 0 && isDashboardTonerLow(monoPercent);
 
     const isCritical = criticalColors.length > 0 || monoCritical;
     return { item, info, criticalColors, monoCritical, residue, isCritical };
@@ -607,7 +639,7 @@ function renderDashboardCards(items) {
   });
 
   if (!criticas.length) {
-    lista.innerHTML = `<div class="panel empty-state"><h3>Sem impressoras críticas</h3><p>As impressoras com toner a 25% ou menos vão aparecer aqui automaticamente.</p></div>`;
+    lista.innerHTML = `<div class="panel empty-state"><h3>Sem toners abaixo de 25%</h3><p>As impressoras com toner a 25% ou menos vão aparecer aqui.</p></div>`;
     return;
   }
 
@@ -618,44 +650,17 @@ function renderDashboardCards(items) {
 
     const residueHtml = residue ? gerarHTMLBarraToner(residue.percent, residue.label || "Resíduo", "waste") : "";
 
-    const percentValue =
-      criticalColors[0]?.percent ||
-      info?.percent ||
-      0;
-
+    const printerImage = getDashboardPrinterImage(item);
     return `
-      <div class="equipment-card dashboard-critical-card">
-        <img
-          src="${obterImagemDashboard(item.modelo)}"
-          class="equipment-real-image"
-          onerror="this.src='../img/printer.png'"
-        >
-
-        <div class="equipment-top-row">
-          <h3>${item.modelo || "Kyocera"}</h3>
-          <span class="status-badge offline">
-            ${percentValue <= 10 ? "Crítico" : "Atenção"}
-          </span>
+      <div class="dashboard-card dashboard-critical-card">
+        <div class="equipment-art equipment-photo">
+          <img class="equipment-real-image" src="${printerImage}" alt="${safeRefHtml(item.modelo)}" loading="lazy" onerror="this.src='../img/printer.png'">
         </div>
-
-        <p class="equipment-model">${item.modelo || "-"}</p>
-
-        <p class="equipment-ip">
-          IP: ${item.ip || "-"}
-        </p>
-
-        <p class="equipment-local">
-          Local: ${item.localizacao || "-"}
-        </p>
-
-        <div class="equipment-percent">
-          Toner: ${percentValue}%
-        </div>
-
-        <div class="printer-toners-grid" style="margin-top:10px;">
-          ${supplyHtml}
-          ${residueHtml}
-        </div>
+        <div class="stock-id">${item.modelo}</div>
+        <div class="meta-line">Série: <span class="meta-value">${item.serie}</span></div>
+        <div class="meta-line">Local: <span class="meta-value">${item.localizacao} (${item.armazem})</span></div>
+        <div class="meta-line">IP: <span class="meta-value">${item.ip}</span></div>
+        <div class="printer-toners-grid" style="margin-top:10px;">${supplyHtml}${residueHtml}</div>
       </div>
     `;
   }).join("");
@@ -786,7 +791,7 @@ function carregarChecklist() {
   checklist.innerHTML = passos.map((p, i) => `
     <label class="checkItem">
       <input type="checkbox" id="p${i}">
-      <span>${p}</span>
+      <span>${escapeHtmlAppBraga(p)}</span>
     </label>
   `).join("");
 }
@@ -814,6 +819,49 @@ function renderPCCards(items) {
         </div>
         <div class="card-actions">
           <button class="small-btn btn-delete" onclick="apagarPC('${d.idDoc}')">Apagar</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderPCCards(items) {
+  const lista = el("listaPC");
+  if (!lista) return;
+
+  if (!items.length) {
+    lista.innerHTML = `<div class="panel empty-state"><h3>Sem registos de computadores</h3><p>Os computadores guardados aparecem aqui.</p></div>`;
+    return;
+  }
+
+  lista.innerHTML = items.map(d => {
+    const steps = Array.isArray(d.passos) ? d.passos : [];
+    const total = steps.length || passos.length || 1;
+    const done = steps.filter(p => !!p.feito).length;
+    const progress = Math.round((done / total) * 100);
+    const statusClass = progress >= 100 ? "ok" : (progress >= 60 ? "warn" : "bad");
+    const htmlPassos = steps.map(p => `
+      <div class="computer-step ${p.feito ? "is-done" : "is-open"}">
+        <span class="computer-step-dot"></span>
+        <span>${escapeHtmlAppBraga(p.passo || "-")}</span>
+      </div>
+    `).join("");
+
+    return `
+      <div class="pc-card computer-card">
+        <div class="computer-card-head">
+          <div>
+            <div class="pc-name">${escapeHtmlAppBraga(d.nome || "Computador")}</div>
+            <div class="meta-line">Data: <span class="meta-value">${escapeHtmlAppBraga(d.data || "Sem Data")}</span></div>
+          </div>
+          <span class="health-status ${statusClass}">${progress}%</span>
+        </div>
+        <div class="computer-progress"><span style="width:${progress}%"></span></div>
+        <div class="computer-step-grid">
+          ${htmlPassos || `<div class="meta-line">Sem passos registados.</div>`}
+        </div>
+        <div class="card-actions">
+          <button class="secondary-btn btn-delete" onclick="apagarPC('${escapeHtmlAppBraga(d.idDoc)}')">Apagar</button>
         </div>
       </div>
     `;
@@ -1038,14 +1086,27 @@ function extrairPercentagemTonerDoHTML(html) {
 
 const tonerAlertState = {};
 const tonerInfoState = {};
+const TONER_EMPTY_THRESHOLD = 0;
+const DASHBOARD_TONER_LOW_THRESHOLD = 25;
+
+function isTonerEmpty(percentagem) {
+  return typeof percentagem === "number" && percentagem <= TONER_EMPTY_THRESHOLD;
+}
+
+function isDashboardTonerLow(percentagem) {
+  return typeof percentagem === "number" && percentagem <= DASHBOARD_TONER_LOW_THRESHOLD;
+}
 
 function corBarraToner(percentagem, cor = "black") {
   if (percentagem === null || percentagem === undefined) return "#94a3b8";
-  if (cor === "cyan") return percentagem <= 20 ? "#0ea5e9" : percentagem <= 50 ? "#38bdf8" : "#06b6d4";
-  if (cor === "magenta") return percentagem <= 20 ? "#db2777" : percentagem <= 50 ? "#ec4899" : "#d946ef";
-  if (cor === "yellow") return percentagem <= 20 ? "#ca8a04" : percentagem <= 50 ? "#eab308" : "#facc15";
-  if (cor === "waste") return percentagem >= 80 ? "#dc2626" : percentagem >= 60 ? "#d97706" : "#16a34a";
-  return percentagem <= 20 ? "#dc2626" : percentagem <= 50 ? "#d97706" : "#16a34a";
+  if (cor === "waste") {
+    if (percentagem >= 80) return "#dc2626";
+    if (percentagem >= 60) return "#d97706";
+    return "#16a34a";
+  }
+  if (percentagem <= 20) return "#dc2626";
+  if (percentagem <= 50) return "#d97706";
+  return "#16a34a";
 }
 
 function estadoBarraToner(percentagem, cor = "black") {
@@ -1053,7 +1114,7 @@ function estadoBarraToner(percentagem, cor = "black") {
   if (cor === "waste") {
     if (percentagem >= 80) return "Crítico";
     if (percentagem >= 60) return "Médio";
-    return "Bom";
+    return "OK";
   }
   if (percentagem <= 20) return "Crítico";
   if (percentagem <= 50) return "Médio";
@@ -1143,14 +1204,10 @@ function maybeNotifyCriticalSupply(ip, info) {
   const issues = [];
 
   (info.colors || []).forEach((item) => {
-    if (typeof item.percent === "number" && item.percent <= 20) {
+    if (isTonerEmpty(item.percent)) {
       issues.push(`${item.label}: ${item.percent}%`);
     }
   });
-
-  if (info.residue && typeof info.residue.percent === "number" && info.residue.percent >= 80) {
-    issues.push(`${info.residue.label || "Resíduo"}: ${info.residue.percent}%`);
-  }
 
   const key = issues.join(" | ");
   if (!key) {
@@ -1160,17 +1217,669 @@ function maybeNotifyCriticalSupply(ip, info) {
   if (tonerAlertState[ip] === key) return;
   tonerAlertState[ip] = key;
 
-  const message = `Estado crítico em ${printerLabel} — ${key}`;
+  const message = `Toner vazio em ${printerLabel} — ${key}`;
   mostrarMensagem(message, "erro");
 
-  if ("Notification" in window) {
-    if (Notification.permission === "granted") {
-      new Notification("Alerta de consumíveis", { body: message });
-    } else if (Notification.permission !== "denied") {
-      Notification.requestPermission().then((perm) => {
-        if (perm === "granted") new Notification("Alerta de consumíveis", { body: message });
-      }).catch(() => {});
+  enviarNotificacaoApp("Toner vazio", message, `toner-${ip}-${key}`, { url: "html/impressoras.html" });
+}
+
+function aplicarConfigNotificacoesApp(config = {}) {
+  appNotificationState.enabled = config.notificationEnabled === true;
+  appNotificationState.tonerZero = config.notifyTonerZero !== false;
+  appNotificationState.stockMin = config.notifyStockMin !== false;
+  appNotificationState.maintenance = config.notifyMaintenance !== false;
+  appNotificationState.radios = config.notifyRadios === true;
+  appNotificationState.intervalMinutes = Math.max(5, Number(config.notificationIntervalMinutes || 15));
+  appNotificationState.vapidKey = String(config.notificationVapidKey || "").trim();
+
+  const setChecked = (id, value) => {
+    const node = document.getElementById(id);
+    if (node) node.checked = !!value;
+  };
+  setChecked("notifyEnabled", appNotificationState.enabled);
+  setChecked("notifyTonerZero", appNotificationState.tonerZero);
+  setChecked("notifyStockMin", appNotificationState.stockMin);
+  setChecked("notifyMaintenance", appNotificationState.maintenance);
+  setChecked("notifyRadios", appNotificationState.radios);
+  const interval = document.getElementById("notifyIntervalMinutes");
+  if (interval) interval.value = String(appNotificationState.intervalMinutes);
+  const vapid = document.getElementById("notifyVapidKey");
+  if (vapid) vapid.value = appNotificationState.vapidKey;
+
+  iniciarMonitorNotificacoesApp();
+  carregarDispositivosNotificacoesApp(false);
+  restaurarRegistoPushAtualApp();
+}
+
+function notificationPermissionApp() {
+  if (window.electronAPI?.showNotification) return "electron";
+  if (!("Notification" in window)) return "unsupported";
+  return Notification.permission;
+}
+
+async function pedirPermissaoNotificacoesApp() {
+  if (window.electronAPI?.showNotification) {
+    await guardarConfigNotificacoesApp({ notificationEnabled: true });
+    await enviarNotificacaoApp("App Braga", "Notificações ativas no Electron.", "test-electron", { force: true });
+    return;
+  }
+
+  if (!("Notification" in window)) {
+    mostrarMensagem("Este dispositivo não suporta notificações Web.", "erro");
+    return;
+  }
+
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission === "granted") {
+      await registarServiceWorkerAppBraga();
+      await guardarConfigNotificacoesApp({ notificationEnabled: true });
+      await enviarNotificacaoApp("App Braga", "Notificações ativas neste dispositivo.", "test-web", { force: true });
+    } else {
+      mostrarMensagem("Permissão de notificações recusada.", "erro");
     }
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao ativar notificações.", "erro");
+  }
+}
+
+async function guardarConfigNotificacoesApp(overrides = null) {
+  const data = overrides || {
+    notificationEnabled: !!document.getElementById("notifyEnabled")?.checked,
+    notifyTonerZero: !!document.getElementById("notifyTonerZero")?.checked,
+    notifyStockMin: !!document.getElementById("notifyStockMin")?.checked,
+    notifyMaintenance: !!document.getElementById("notifyMaintenance")?.checked,
+    notifyRadios: !!document.getElementById("notifyRadios")?.checked,
+    notificationIntervalMinutes: Number(document.getElementById("notifyIntervalMinutes")?.value || 15),
+    notificationVapidKey: String(document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || "").trim()
+  };
+
+  if (overrides) {
+    if (typeof data.notifyTonerZero === "undefined") data.notifyTonerZero = appNotificationState.tonerZero;
+    if (typeof data.notifyStockMin === "undefined") data.notifyStockMin = appNotificationState.stockMin;
+    if (typeof data.notifyMaintenance === "undefined") data.notifyMaintenance = appNotificationState.maintenance;
+    if (typeof data.notifyRadios === "undefined") data.notifyRadios = appNotificationState.radios;
+    if (typeof data.notificationIntervalMinutes === "undefined") data.notificationIntervalMinutes = appNotificationState.intervalMinutes;
+    if (typeof data.notificationVapidKey === "undefined") data.notificationVapidKey = appNotificationState.vapidKey;
+  }
+
+  aplicarConfigNotificacoesApp(data);
+
+  if (!window.db || !window.db.collection) {
+    mostrarMensagem("Firebase indisponível para guardar notificações.", "erro");
+    return;
+  }
+
+  try {
+    await window.db.collection("config").doc("layout").set({
+      ...data,
+      updatedAt: Date.now()
+    }, { merge: true });
+    mostrarMensagem("Notificações atualizadas.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar notificações.", "erro");
+  }
+}
+
+async function enviarNotificacaoApp(title, body, tag = "app-braga", options = {}) {
+  if (!options.force && !appNotificationState.enabled) return false;
+
+  try {
+    if (window.electronAPI?.showNotification) {
+      const result = await window.electronAPI.showNotification({ title, body, tag, data: options });
+      return !!result?.ok;
+    }
+
+    if (!("Notification" in window) || Notification.permission !== "granted") return false;
+
+    const payload = { title, body, tag, data: options };
+    if ("serviceWorker" in navigator) {
+      const registration = await navigator.serviceWorker.ready.catch(() => null);
+      if (registration?.showNotification) {
+        await registration.showNotification(title, {
+          body,
+          icon: location.pathname.includes("/html/") ? "../icon-192.png" : "icon-192.png",
+          badge: location.pathname.includes("/html/") ? "../icon-192.png" : "icon-192.png",
+          tag,
+          data: options
+        });
+        return true;
+      }
+      navigator.serviceWorker.controller?.postMessage({ type: "APP_BRAGA_NOTIFY", payload });
+    }
+
+    new Notification(title, { body, tag });
+    return true;
+  } catch (error) {
+    console.error("Erro notificação:", error);
+    return false;
+  }
+}
+
+function buildAlertasNotificacoesApp() {
+  const alerts = [];
+
+  if (appNotificationState.stockMin && typeof buildAlertasInteligentes === "function") {
+    buildAlertasInteligentes()
+      .filter((item) => item.tipo === "stock")
+      .forEach((item) => alerts.push({
+        key: `stock-${item.titulo}-${item.detalhe}`,
+        title: "Stock abaixo do mínimo",
+        body: `${item.titulo}: ${item.detalhe}`,
+        url: "html/stock.html"
+      }));
+  }
+
+  if (appNotificationState.tonerZero && typeof impressorasData !== "undefined" && typeof tonerInfoState !== "undefined") {
+    impressorasData.forEach((printer) => {
+      const info = tonerInfoState[printer.ip];
+      const colors = Array.isArray(info?.colors) ? info.colors : [];
+      const empty = colors.filter((item) => isTonerEmpty(item.percent));
+      if (!empty.length) return;
+      alerts.push({
+        key: `toner-${printer.ip}-${empty.map((item) => `${item.label}-${item.percent}`).join("-")}`,
+        title: "Toner vazio",
+        body: `${printer.modelo} ${printer.localizacao}: ${empty.map((item) => `${item.label} ${item.percent}%`).join(", ")}`,
+        url: "html/impressoras.html"
+      });
+    });
+  }
+
+  if (appNotificationState.maintenance && Array.isArray(manutencoesGlobal)) {
+    manutencoesGlobal
+      .filter((item) => String(item.estado || "").toLowerCase().includes("pendente"))
+      .slice(0, 5)
+      .forEach((item) => alerts.push({
+        key: `manut-${item.idDoc || item.ip || item.numeroSerie || item.modelo || item.dataPedido}`,
+        title: "Manutenção pendente",
+        body: `${item.modelo || item.numeroSerie || "Impressora"} - ${item.localizacao || item.ip || "sem local"}`,
+        url: "html/manutencao-impressoras.html"
+      }));
+  }
+
+  return alerts;
+}
+
+async function verificarAlertasNotificacoesApp(force = false) {
+  if (!force && !appNotificationState.enabled) return;
+  const alerts = buildAlertasNotificacoesApp();
+  if (force && !alerts.length) {
+    mostrarMensagem("Sem alertas ativos para notificar.");
+    return;
+  }
+
+  for (const alert of alerts) {
+    if (!force && appNotificationState.sent[alert.key]) continue;
+    appNotificationState.sent[alert.key] = Date.now();
+    await enviarNotificacaoApp(alert.title, alert.body, alert.key, { url: alert.url, force });
+  }
+}
+
+function getSnapshotChangeSummaryApp(snapshot) {
+  const summary = { added: 0, modified: 0, removed: 0, total: snapshot?.size || 0 };
+  if (!snapshot || typeof snapshot.docChanges !== "function") return summary;
+  snapshot.docChanges().forEach((change) => {
+    if (change.type === "added") summary.added += 1;
+    if (change.type === "modified") summary.modified += 1;
+    if (change.type === "removed") summary.removed += 1;
+  });
+  return summary;
+}
+
+function formatRealtimeChangeBodyApp(summary, label) {
+  const parts = [];
+  if (summary.added) parts.push(`${summary.added} novo${summary.added > 1 ? "s" : ""}`);
+  if (summary.modified) parts.push(`${summary.modified} alterado${summary.modified > 1 ? "s" : ""}`);
+  if (summary.removed) parts.push(`${summary.removed} apagado${summary.removed > 1 ? "s" : ""}`);
+  return parts.length ? `${label}: ${parts.join(", ")}.` : `${label}: dados atualizados.`;
+}
+
+function canNotifyRealtimeCollectionApp(collectionKey) {
+  if (!appNotificationState.enabled) return false;
+  if (collectionKey === "stock") return appNotificationState.stockMin;
+  if (collectionKey === "manutencoes") return appNotificationState.maintenance;
+  if (collectionKey === "printers") return appNotificationState.tonerZero;
+  return false;
+}
+
+async function notificarAlteracaoRealtimeApp(collectionKey, snapshot) {
+  if (!snapshot || typeof snapshot.docChanges !== "function") return;
+
+  if (!appNotificationState.realtimeBoot[collectionKey]) {
+    appNotificationState.realtimeBoot[collectionKey] = true;
+    return;
+  }
+
+  if (!canNotifyRealtimeCollectionApp(collectionKey)) return;
+
+  const summary = getSnapshotChangeSummaryApp(snapshot);
+  const changedCount = summary.added + summary.modified + summary.removed;
+  if (!changedCount) return;
+
+  const config = {
+    stock: {
+      title: "Stock atualizado",
+      label: "Stock",
+      url: "html/stock.html"
+    },
+    manutencoes: {
+      title: "Manutenção atualizada",
+      label: "Manutenções",
+      url: "html/manutencao-impressoras.html"
+    },
+    printers: {
+      title: "Impressoras atualizadas",
+      label: "Impressoras / toner",
+      url: "html/impressoras.html"
+    }
+  }[collectionKey];
+
+  if (!config) return;
+
+  const body = formatRealtimeChangeBodyApp(summary, config.label);
+  const tag = `realtime-${collectionKey}-${Date.now()}`;
+  await enviarNotificacaoApp(config.title, body, tag, { url: config.url });
+
+  if (collectionKey === "stock" || collectionKey === "manutencoes" || collectionKey === "printers") {
+    window.setTimeout(() => verificarAlertasNotificacoesApp(false), 350);
+  }
+}
+
+function iniciarMonitorNotificacoesApp() {
+  clearInterval(appNotificationTimer);
+  if (!appNotificationState.enabled) return;
+  const intervalMs = Math.max(5, appNotificationState.intervalMinutes) * 60 * 1000;
+  appNotificationTimer = setInterval(() => verificarAlertasNotificacoesApp(false), intervalMs);
+}
+
+async function testarNotificacaoApp() {
+  const ok = await enviarNotificacaoApp("App Braga", "Teste de notificação concluído.", "app-braga-test", { force: true, url: "html/config.html" });
+  mostrarMensagem(ok ? "Notificação de teste enviada." : "Ativa as permissões de notificações primeiro.", ok ? "sucesso" : "erro");
+}
+
+async function entrarFullscreenApp() {
+  try {
+    if (document.fullscreenElement) {
+      guardarFullscreenPreferidoApp(false);
+      await document.exitFullscreen?.();
+      mostrarMensagem("Fullscreen desligado.");
+      atualizarBotaoFullscreenApp();
+      return;
+    }
+    guardarFullscreenPreferidoApp(true);
+    await pedirFullscreenApp(true);
+  } catch (error) {
+    console.warn("Erro fullscreen:", error);
+    atualizarBotaoFullscreenApp();
+    mostrarMensagem("Nao foi possivel trocar fullscreen.", "erro");
+  }
+}
+
+const APP_FULLSCREEN_PREF_KEY = "appBragaFullscreenPreferido";
+
+function fullscreenPreferidoApp() {
+  try {
+    return localStorage.getItem(APP_FULLSCREEN_PREF_KEY) === "1";
+  } catch (error) {
+    return false;
+  }
+}
+
+function guardarFullscreenPreferidoApp(value) {
+  try {
+    localStorage.setItem(APP_FULLSCREEN_PREF_KEY, value ? "1" : "0");
+  } catch (error) {
+    console.warn("Nao foi possivel guardar fullscreen.", error);
+  }
+}
+
+function atualizarBotaoFullscreenApp() {
+  const btn = document.getElementById("fullscreenToggleBtn");
+  if (!btn) return;
+  const active = !!document.fullscreenElement || fullscreenPreferidoApp();
+  btn.textContent = active ? "Sair do fullscreen" : "Entrar em fullscreen";
+  btn.classList.toggle("is-active", active);
+}
+
+async function pedirFullscreenApp(showMessage = true) {
+  const root = document.documentElement;
+  if (document.fullscreenElement) {
+    if (showMessage) mostrarMensagem("Fullscreen ativo.");
+    atualizarBotaoFullscreenApp();
+    return true;
+  }
+
+  if (!root.requestFullscreen) {
+    if (showMessage) mostrarMensagem("Instala a APP no ecra inicial para fullscreen no Android.", "erro");
+    atualizarBotaoFullscreenApp();
+    return false;
+  }
+
+  try {
+    await root.requestFullscreen({ navigationUI: "hide" });
+    if (showMessage) mostrarMensagem("Fullscreen ativo.");
+    atualizarBotaoFullscreenApp();
+    return true;
+  } catch (error) {
+    console.warn("Erro fullscreen:", error);
+    if (showMessage) mostrarMensagem("Toca outra vez para ativar fullscreen.", "erro");
+    atualizarBotaoFullscreenApp();
+    return false;
+  }
+}
+
+function initFullscreenPreferidoApp() {
+  atualizarBotaoFullscreenApp();
+  document.addEventListener("fullscreenchange", atualizarBotaoFullscreenApp);
+  if (!fullscreenPreferidoApp() || document.fullscreenElement) return;
+  window.setTimeout(() => pedirFullscreenApp(false), 800);
+}
+
+function setNotificationTokenStatus(text, state = "warn") {
+  const node = document.getElementById("notifyTokenStatus");
+  if (!node) return;
+  node.textContent = text;
+  node.className = `health-status ${state}`;
+}
+
+function carregarScriptAppBraga(src) {
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector(`script[src="${src}"]`);
+    if (existing) {
+      existing.addEventListener("load", resolve, { once: true });
+      if (window.firebase?.messaging) resolve();
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = src;
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+}
+
+async function garantirFirebaseMessagingApp() {
+  if (window.electronAPI?.showNotification) throw new Error("FCM Web Push e para Web/PWA; Electron usa notificacoes nativas.");
+  if (!window.isSecureContext) throw new Error("Push Service precisa de HTTPS.");
+  if (!("serviceWorker" in navigator)) throw new Error("Service Worker indisponivel neste dispositivo.");
+  if (!("PushManager" in window)) throw new Error("Push Service indisponivel neste dispositivo/browser.");
+  if (!window.firebase || !firebase.apps?.length) throw new Error("Firebase v8 nao esta carregado.");
+  if (!firebase.messaging) {
+    await carregarScriptAppBraga("https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js");
+  }
+  if (!firebase.messaging) throw new Error("Firebase Messaging indisponível.");
+  const supported = firebase.messaging.isSupported ? await Promise.resolve(firebase.messaging.isSupported()) : true;
+  if (!supported) throw new Error("Este browser/dispositivo não suporta Firebase Messaging.");
+  return firebase.messaging();
+}
+
+function getNotificationTokenDocId(token) {
+  return encodeURIComponent(String(token || "")).replace(/\./g, "%2E").slice(0, 1400);
+}
+
+function webPushDisponivelApp() {
+  return !!(window.isSecureContext && "serviceWorker" in navigator && "PushManager" in window);
+}
+
+function getNotificationDeviceTypeApp() {
+  if (window.electronAPI?.showNotification) return "pc-electron";
+  return window.appBragaDeviceType || (document.body.classList.contains("device-tablet") ? "tablet" : (document.body.classList.contains("device-phone") ? "phone" : "pc"));
+}
+
+function getLocalNotificationDeviceIdApp(source = "web-local") {
+  return `${source}-${encodeURIComponent(navigator.platform || "device")}-${Math.abs(hashTextoAppBraga(navigator.userAgent || ""))}`;
+}
+
+function normalizeTimestampApp(value) {
+  if (!value) return 0;
+  if (typeof value === "number") return value;
+  if (typeof value.toMillis === "function") return value.toMillis();
+  if (typeof value.seconds === "number") return value.seconds * 1000;
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function formatTimestampApp(value) {
+  const time = normalizeTimestampApp(value);
+  if (!time) return "-";
+  return new Date(time).toLocaleString("pt-PT", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function renderDispositivosNotificacoesApp(items = []) {
+  const host = document.getElementById("notifyDevicesList");
+  if (!host) return;
+
+  const activeItems = items
+    .filter((item) => item.active !== false)
+    .sort((a, b) => normalizeTimestampApp(b.updatedAt || b.createdAt) - normalizeTimestampApp(a.updatedAt || a.createdAt));
+
+  if (!activeItems.length) {
+    host.innerHTML = `<div class="empty-state mini">Ainda não há dispositivos ativos.</div>`;
+    return;
+  }
+
+  host.innerHTML = activeItems.map((item) => {
+    const isCurrent = item.id === appNotificationState.restoredTokenDocId || (appNotificationState.fcmToken && item.token === appNotificationState.fcmToken);
+    const source = item.source || "desconhecido";
+    const device = item.deviceType || item.platform || "Dispositivo";
+    const permission = item.permission || "sem dados";
+    const updated = formatTimestampApp(item.updatedAt || item.createdAt);
+    return `
+      <div class="notification-device-card ${isCurrent ? "is-current" : ""}">
+        <div>
+          <strong>${escapeHtmlAppBraga(device)}</strong>
+          <span>${escapeHtmlAppBraga(source)} · ${escapeHtmlAppBraga(permission)}</span>
+          <small>Atualizado: ${escapeHtmlAppBraga(updated)}</small>
+        </div>
+        <span class="health-status ${isCurrent ? "ok" : "warn"}">${isCurrent ? "Este" : "Ativo"}</span>
+      </div>
+    `;
+  }).join("");
+}
+
+function carregarDispositivosNotificacoesApp(force = false) {
+  const host = document.getElementById("notifyDevicesList");
+  if (!host || !window.db?.collection) return;
+  if (appNotificationState.devicesUnsubscribe && !force) return;
+  if (appNotificationState.devicesUnsubscribe && force) {
+    appNotificationState.devicesUnsubscribe();
+    appNotificationState.devicesUnsubscribe = null;
+  }
+
+  appNotificationState.devicesUnsubscribe = window.db.collection("notificationTokens").onSnapshot((snapshot) => {
+    const items = [];
+    snapshot.forEach((doc) => items.push({ id: doc.id, ...doc.data() }));
+    renderDispositivosNotificacoesApp(items);
+  }, (error) => {
+    console.error("Erro ao carregar dispositivos:", error);
+    host.innerHTML = `<div class="empty-state mini">Erro ao carregar dispositivos.</div>`;
+  });
+}
+
+async function restaurarRegistoPushAtualApp() {
+  if (appNotificationState.restoreRunning || !window.db?.collection) return;
+  appNotificationState.restoreRunning = true;
+  try {
+    if (window.electronAPI?.showNotification) {
+      const docId = "electron-native";
+      const doc = await window.db.collection("notificationTokens").doc(docId).get();
+      if (doc.exists && doc.data()?.active !== false) {
+        appNotificationState.restoredTokenDocId = docId;
+        await window.db.collection("notificationTokens").doc(docId).set({
+          active: true,
+          appVersion: APP_VERSION,
+          deviceType: "pc-electron",
+          permission: "native",
+          updatedAt: Date.now()
+        }, { merge: true });
+        setNotificationTokenStatus("Electron registado", "ok");
+      }
+      return;
+    }
+
+    const permission = "Notification" in window ? Notification.permission : "unsupported";
+    if (permission !== "granted") {
+      setNotificationTokenStatus(permission === "denied" ? "Permissão bloqueada" : "Sem permissão", permission === "denied" ? "bad" : "warn");
+      return;
+    }
+
+    const vapidKey = String(appNotificationState.vapidKey || document.getElementById("notifyVapidKey")?.value || "").trim();
+    if (vapidKey && webPushDisponivelApp()) {
+      await registarServiceWorkerAppBraga();
+      const messaging = await garantirFirebaseMessagingApp();
+      const registration = await navigator.serviceWorker.ready;
+      const token = await messaging.getToken({ vapidKey, serviceWorkerRegistration: registration });
+      if (token) {
+        const docId = getNotificationTokenDocId(token);
+        appNotificationState.fcmToken = token;
+        appNotificationState.restoredTokenDocId = docId;
+        await window.db.collection("notificationTokens").doc(docId).set({
+          token,
+          active: true,
+          source: "web-push",
+          appVersion: APP_VERSION,
+          deviceType: getNotificationDeviceTypeApp(),
+          userAgent: navigator.userAgent,
+          platform: navigator.platform || "",
+          permission,
+          updatedAt: Date.now()
+        }, { merge: true });
+        setNotificationTokenStatus("Registado", "ok");
+        return;
+      }
+    }
+
+    const localId = getLocalNotificationDeviceIdApp("web-local-no-push");
+    const localDoc = await window.db.collection("notificationTokens").doc(localId).get();
+    if (localDoc.exists && localDoc.data()?.active !== false) {
+      appNotificationState.restoredTokenDocId = localId;
+      await window.db.collection("notificationTokens").doc(localId).set({
+        active: true,
+        appVersion: APP_VERSION,
+        deviceType: getNotificationDeviceTypeApp(),
+        permission,
+        updatedAt: Date.now()
+      }, { merge: true });
+      setNotificationTokenStatus("Local ativo", "warn");
+    }
+  } catch (error) {
+    console.warn("Não foi possível restaurar registo push:", error);
+  } finally {
+    appNotificationState.restoreRunning = false;
+    carregarDispositivosNotificacoesApp(false);
+  }
+}
+
+async function registarDispositivoLocalNotificacoesApp(source = "web-local") {
+  await guardarConfigNotificacoesApp({ notificationEnabled: true, notificationVapidKey: appNotificationState.vapidKey });
+  if (window.db?.collection) {
+    const id = getLocalNotificationDeviceIdApp(source);
+    appNotificationState.restoredTokenDocId = id;
+    await window.db.collection("notificationTokens").doc(id).set({
+      active: true,
+      source,
+      appVersion: APP_VERSION,
+      deviceType: getNotificationDeviceTypeApp(),
+      userAgent: navigator.userAgent,
+      platform: navigator.platform || "",
+      permission: "Notification" in window ? Notification.permission : "unsupported",
+      pushAvailable: webPushDisponivelApp(),
+      updatedAt: Date.now(),
+      createdAt: Date.now()
+    }, { merge: true });
+  }
+  setNotificationTokenStatus("Local ativo", "warn");
+  await enviarNotificacaoApp("App Braga", "Notificacoes locais ativas neste dispositivo.", `${source}-register`, { force: true });
+  mostrarMensagem("Push remoto indisponivel; notificacoes locais ativadas.");
+}
+
+async function registarDispositivoPushApp() {
+  try {
+    if (!window.db || !window.db.collection) throw new Error("Firestore indisponivel.");
+    const vapidKey = String(document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || "").trim();
+
+    if (window.electronAPI?.showNotification) {
+      await guardarConfigNotificacoesApp({ notificationEnabled: true, notificationVapidKey: vapidKey });
+      appNotificationState.restoredTokenDocId = "electron-native";
+      await window.db.collection("notificationTokens").doc("electron-native").set({
+        active: true,
+        source: "electron-native",
+        appVersion: APP_VERSION,
+        deviceType: "pc-electron",
+        userAgent: navigator.userAgent,
+        platform: navigator.platform || "",
+        permission: "native",
+        updatedAt: Date.now(),
+        createdAt: Date.now()
+      }, { merge: true });
+      setNotificationTokenStatus("Electron nativo", "ok");
+      await enviarNotificacaoApp("App Braga", "Este PC ficou registado com notificacoes nativas.", "electron-register", { force: true });
+      mostrarMensagem("PC registado com notificacoes nativas.");
+      return;
+    }
+
+    if (!vapidKey) {
+      mostrarMensagem("Coloca primeiro a VAPID key do Firebase.", "erro");
+      setNotificationTokenStatus("Falta VAPID key", "bad");
+      return;
+    }
+
+    await guardarConfigNotificacoesApp({ notificationEnabled: true, notificationVapidKey: vapidKey });
+    await pedirPermissaoNotificacoesApp();
+    if (!("Notification" in window) || Notification.permission !== "granted") return;
+
+    if (!webPushDisponivelApp()) {
+      await registarDispositivoLocalNotificacoesApp("web-local-no-push");
+      return;
+    }
+
+    setNotificationTokenStatus("A registar...", "warn");
+    await registarServiceWorkerAppBraga();
+    const messaging = await garantirFirebaseMessagingApp();
+    const registration = await navigator.serviceWorker.ready;
+    const token = await messaging.getToken({ vapidKey, serviceWorkerRegistration: registration });
+    if (!token) throw new Error("Firebase nao devolveu token.");
+
+    appNotificationState.fcmToken = token;
+    appNotificationState.restoredTokenDocId = getNotificationTokenDocId(token);
+    await window.db.collection("notificationTokens").doc(getNotificationTokenDocId(token)).set({
+      token,
+      active: true,
+      source: "web-push",
+      appVersion: APP_VERSION,
+      deviceType: getNotificationDeviceTypeApp(),
+      userAgent: navigator.userAgent,
+      platform: navigator.platform || "",
+      permission: Notification.permission,
+      updatedAt: Date.now(),
+      createdAt: Date.now()
+    }, { merge: true });
+
+    await guardarConfigNotificacoesApp({ notificationEnabled: true, notificationVapidKey: vapidKey });
+    setNotificationTokenStatus("Registado", "ok");
+    mostrarMensagem("Dispositivo registado para push.");
+  } catch (error) {
+    console.error("Erro ao registar push:", error);
+    setNotificationTokenStatus("Erro no registo", "bad");
+    const code = String(error?.code || "");
+    const message = String(error?.message || "");
+    let friendly = message || "Erro ao registar push.";
+    if (code.includes("messaging/permission-blocked")) friendly = "As notificacoes estao bloqueadas neste dispositivo/browser.";
+    if (code.includes("messaging/unsupported-browser")) friendly = "Este browser/dispositivo nao suporta Firebase Cloud Messaging.";
+    if (code.includes("messaging/invalid-vapid-key")) friendly = "A VAPID key nao e valida. Confirma a chave Web Push no Firebase.";
+    if (code.includes("messaging/token-subscribe-failed")) friendly = "Falhou a subscricao push. Confirma permissoes e a VAPID key.";
+    if (message.toLowerCase().includes("push service")) {
+      await registarDispositivoLocalNotificacoesApp("web-local-no-push");
+      return;
+    }
+    mostrarMensagem(friendly, "erro");
   }
 }
 
@@ -1309,7 +2018,7 @@ function guardarImpressorasLocal() {
   try {
     impressorasData.forEach((item, i) => { if (!item._ref) item._ref = item.idDoc || `local-impressora-${i}`; });
     localStorage.setItem(IMPRESSORAS_STORAGE_KEY, JSON.stringify(impressorasData.map(i => ({ ...i }))));
-  } catch (e) { console.warn('Não foi possivel guardar impressoras no localStorage.', e); }
+  } catch (e) { console.warn('Nao foi possivel guardar impressoras no localStorage.', e); }
 }
 
 function carregarImpressorasLocal() {
@@ -1320,7 +2029,7 @@ function carregarImpressorasLocal() {
     if (!Array.isArray(parsed) || !parsed.length) return;
     parsed.forEach((item, i) => { if (!item._ref) item._ref = item.idDoc || `local-impressora-${i}`; });
     impressorasData.splice(0, impressorasData.length, ...parsed);
-  } catch (e) { console.warn('Não foi possivel carregar impressoras do localStorage.', e); }
+  } catch (e) { console.warn('Nao foi possivel carregar impressoras do localStorage.', e); }
 }
 
 function renderImpressoras(lista = impressorasData) {
@@ -1661,7 +2370,7 @@ function guardarPistolasLocal() {
     const serializavel = window.pistolasData.map(p => ({ ...p }));
     localStorage.setItem(PISTOLAS_STORAGE_KEY, JSON.stringify(serializavel));
   } catch (e) {
-    console.warn('Não foi possivel guardar pistolas no localStorage.', e);
+    console.warn('Nao foi possivel guardar pistolas no localStorage.', e);
   }
 }
 
@@ -1680,7 +2389,7 @@ function carregarPistolasLocal() {
     window.pistolasData.splice(0, window.pistolasData.length, ...parsed);
     prepararRefsPistolas();
   } catch (e) {
-    console.warn('Não foi possivel carregar pistolas do localStorage.', e);
+    console.warn('Nao foi possivel carregar pistolas do localStorage.', e);
     prepararRefsPistolas();
   }
 }
@@ -1696,7 +2405,7 @@ function guardarPortasLocal() {
     const serializavel = window.portasData.map(p => ({ ...p }));
     localStorage.setItem(PORTAS_STORAGE_KEY, JSON.stringify(serializavel));
   } catch (e) {
-    console.warn('Não foi possivel guardar portas no localStorage.', e);
+    console.warn('Nao foi possivel guardar portas no localStorage.', e);
   }
 }
 
@@ -1715,7 +2424,7 @@ function carregarPortasLocal() {
     window.portasData.splice(0, window.portasData.length, ...parsed);
     prepararRefsPortas();
   } catch (e) {
-    console.warn('Não foi possivel carregar portas do localStorage.', e);
+    console.warn('Nao foi possivel carregar portas do localStorage.', e);
     prepararRefsPortas();
   }
 }
@@ -1750,9 +2459,10 @@ function renderUsers(lista = window.usersData) {
   const container = el("listaUsers");
   if (!container) return;
 
-  atualizarContadoresUsers(lista);
+  const usersList = Array.isArray(lista) ? [...lista] : [];
+  atualizarContadoresUsers(usersList);
 
-window.usersData.sort((a,b)=>{
+usersList.sort((a,b)=>{
  
   const aTxt =
     String(a.nome || "")
@@ -1775,11 +2485,12 @@ window.usersData.sort((a,b)=>{
  
 });
   
-  container.innerHTML = lista.map((u, index) => {
-    const ref = u.idDoc ? `'${u.idDoc}'` : `'${u._ref || `local-user-${index}`}'`;
+  container.innerHTML = usersList.length ? usersList.map((u, index) => {
+    const refValue = u.idDoc || u.firebaseId || u._ref || `local-user-${index}`;
+    const ref = `'${escapeHtmlAppBraga(refValue)}'`;
     return `
     <div class="pc-card">
-      <div class="pc-name">${u.nome}</div>
+      <div class="pc-name">${escapeHtmlAppBraga(u.nome || "Sem nome")}</div>
       <div class="meta-line">Zona: <span class="meta-value">${u.zona || "-"}</span></div>
       <div class="meta-line">User PC/EYE: <span class="meta-value">${u.user_pc_eye || "-"}</span></div>
       <div class="meta-line">Pass Remote: <span class="meta-value">${u.pass_remote || "-"}</span></div>
@@ -1799,7 +2510,7 @@ window.usersData.sort((a,b)=>{
       </div>
     </div>
   `;
-  }).join("");
+  }).join("") : `<div class="reference-empty">Sem users carregados da Firebase.</div>`;
 }
 
 function filtrarUsers(txt = "") {
@@ -1907,6 +2618,615 @@ function initGlobalTheme() {
   applyAppTheme(localStorage.getItem("modo") === "light" ? "light" : "dark");
 }
 
+function aplicarResolucaoApp(mode = "comfortable") {
+  const value = ["compact", "comfortable", "wide"].includes(mode) ? mode : "comfortable";
+  document.body.classList.remove("resolution-compact", "resolution-comfortable", "resolution-wide");
+  document.documentElement.classList.remove("resolution-compact", "resolution-comfortable", "resolution-wide");
+  document.body.classList.add(`resolution-${value}`);
+  document.documentElement.classList.add(`resolution-${value}`);
+  const select = document.getElementById("appResolution");
+  if (select) select.value = value;
+}
+
+const APP_DEFAULT_ACCENT = "#ef4444";
+const appSecurityState = {
+  pinHash: "",
+  pinLength: 0,
+  authMethod: "pin",
+  biometricEnabled: false,
+  biometricCredentialId: "",
+  lockTimeoutMinutes: 0,
+  unlocked: false,
+  timer: null,
+  overlay: null,
+  autoUnlockTimer: null
+};
+
+function normalizarCorApp(value) {
+  const color = String(value || "").trim();
+  return /^#[0-9a-fA-F]{6}$/.test(color) ? color.toLowerCase() : APP_DEFAULT_ACCENT;
+}
+
+function hexToRgbAppBraga(hex) {
+  const clean = normalizarCorApp(hex).slice(1);
+  return {
+    r: parseInt(clean.slice(0, 2), 16),
+    g: parseInt(clean.slice(2, 4), 16),
+    b: parseInt(clean.slice(4, 6), 16)
+  };
+}
+
+function ajustarCorAppBraga(hex, amount = -28) {
+  const rgb = hexToRgbAppBraga(hex);
+  const next = [rgb.r, rgb.g, rgb.b].map((value) => Math.max(0, Math.min(255, value + amount)));
+  return `#${next.map((value) => value.toString(16).padStart(2, "0")).join("")}`;
+}
+
+function getCachedCorApp() {
+  const match = document.cookie.match(/(?:^|;\s*)appAccentColor=([^;]+)/);
+  return match ? normalizarCorApp(decodeURIComponent(match[1])) : "";
+}
+
+function cacheCorApp(value) {
+  const color = normalizarCorApp(value);
+  document.cookie = `appAccentColor=${encodeURIComponent(color)}; Max-Age=31536000; Path=/; SameSite=Lax`;
+}
+
+function getCookieAppBraga(name) {
+  try {
+    const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`));
+    return match ? decodeURIComponent(match[1]) : "";
+  } catch (error) {
+    return "";
+  }
+}
+
+function setCookieAppBraga(name, value, maxAgeSeconds = null) {
+  try {
+  const age = Number.isFinite(maxAgeSeconds) ? `; Max-Age=${Math.max(0, Math.floor(maxAgeSeconds))}` : "";
+  document.cookie = `${name}=${encodeURIComponent(String(value || ""))}${age}; Path=/; SameSite=Lax`;
+  } catch (error) {
+    console.warn("Cookie indisponível", error);
+  }
+}
+
+function deleteCookieAppBraga(name) {
+  try {
+    document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax`;
+  } catch (error) {
+    console.warn("Cookie indisponível", error);
+  }
+}
+
+function getSessionAppBraga(name) {
+  try {
+    return window.sessionStorage?.getItem(name) || "";
+  } catch (error) {
+    return "";
+  }
+}
+
+function setSessionAppBraga(name, value) {
+  try {
+    window.sessionStorage?.setItem(name, String(value || ""));
+  } catch (error) {
+    console.warn("Sessão temporária indisponível", error);
+  }
+}
+
+function deleteSessionAppBraga(name) {
+  try {
+    window.sessionStorage?.removeItem(name);
+  } catch (error) {
+    console.warn("Sessão temporária indisponível", error);
+  }
+}
+
+function aplicarCorApp(value = APP_DEFAULT_ACCENT) {
+  const color = normalizarCorApp(value);
+  const hover = ajustarCorAppBraga(color, -28);
+  const light = ajustarCorAppBraga(color, 34);
+  const rgb = hexToRgbAppBraga(color);
+  const soft = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, .16)`;
+  const softer = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, .08)`;
+  const glow = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, .28)`;
+  const line = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, .22)`;
+  const vars = {
+    "--app-accent": color,
+    "--app-accent-hover": hover,
+    "--app-accent-light": light,
+    "--app-accent-rgb": `${rgb.r} ${rgb.g} ${rgb.b}`,
+    "--app-accent-soft": soft,
+    "--app-accent-softer": softer,
+    "--app-accent-line": line,
+    "--app-accent-glow": glow,
+    "--az-orange": color,
+    "--az-orange-2": hover,
+    "--az-orange-soft": soft,
+    "--az-line": line,
+    "--primary": color,
+    "--primary-hover": hover,
+    "--sidebar-hover": color,
+    "--brinka-pink": color,
+    "--brinka-purple": hover,
+    "--brinka-orange": color,
+    "--brinka-orange2": light,
+    "--ent-blue": color,
+    "--ent-purple": hover,
+    "--ent-orange": color,
+    "--app-blue": color,
+    "--app-blue-soft": soft
+  };
+  Object.entries(vars).forEach(([key, val]) => document.documentElement.style.setProperty(key, val));
+  const picker = document.getElementById("appAccentColor");
+  if (picker) picker.value = color;
+}
+
+function initResolucaoApp() {
+  aplicarResolucaoApp("comfortable");
+  aplicarCorApp(getCachedCorApp() || APP_DEFAULT_ACCENT);
+  if (!window.db || !window.db.collection) return;
+  window.db.collection("config").doc("layout").onSnapshot((doc) => {
+    const data = doc.exists ? doc.data() : {};
+    aplicarResolucaoApp(data.resolution || "comfortable");
+    const accentColor = data.accentColor || getCachedCorApp() || APP_DEFAULT_ACCENT;
+    aplicarCorApp(accentColor);
+    cacheCorApp(accentColor);
+    setCookieAppBraga("appButtonTextMode", data.buttonTextMode || getButtonTextMode(), 31536000);
+    if (typeof aplicarModoTextoBotoes === "function") aplicarModoTextoBotoes(data.buttonTextMode || getButtonTextMode());
+    aplicarConfigNotificacoesApp(data);
+    aplicarSegurancaApp(data.pinHash || "", data.lockTimeoutMinutes || 0, data.pinLength || 0, data.authMethod || "pin", data.biometricEnabled || false, data.biometricCredentialId || "");
+  }, (error) => console.error("Erro ao carregar resolução:", error));
+}
+
+async function guardarResolucaoApp(value) {
+  aplicarResolucaoApp(value);
+  if (!window.db || !window.db.collection) return;
+  try {
+    await window.db.collection("config").doc("layout").set({
+      resolution: value,
+      updatedAt: Date.now()
+    }, { merge: true });
+    mostrarMensagem("Resolução atualizada.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar resolução.", "erro");
+  }
+}
+
+async function guardarCorApp(value) {
+  const accentColor = normalizarCorApp(value);
+  aplicarCorApp(accentColor);
+  cacheCorApp(accentColor);
+  if (!window.db || !window.db.collection) return;
+  try {
+    await window.db.collection("config").doc("layout").set({
+      accentColor,
+      updatedAt: Date.now()
+    }, { merge: true });
+    mostrarMensagem("Cor da APP atualizada.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar cor da APP.", "erro");
+  }
+}
+
+async function hashAppPin(pin) {
+  const text = String(pin || "");
+  if (!text) return "";
+  if (window.crypto?.subtle) {
+    const bytes = new TextEncoder().encode(text);
+    const hash = await window.crypto.subtle.digest("SHA-256", bytes);
+    return Array.from(new Uint8Array(hash)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+  }
+  let hash = 0;
+  for (let i = 0; i < text.length; i += 1) hash = ((hash << 5) - hash) + text.charCodeAt(i);
+  return `fallback-${Math.abs(hash)}`;
+}
+
+function setLockTimeoutInput(value) {
+  const select = document.getElementById("appLockTimeout");
+  if (select) select.value = String(Math.max(0, Number(value) || 0));
+}
+
+function setAuthMethodInput(value) {
+  const select = document.getElementById("appAuthMethod");
+  if (select) select.value = ["pin", "biometric", "both"].includes(value) ? value : "pin";
+}
+
+function getSecurityTokenApp() {
+  return appSecurityState.pinHash || appSecurityState.biometricCredentialId || "";
+}
+
+function hasSecurityEnabledApp() {
+  const method = appSecurityState.authMethod || "pin";
+  const pinOk = Boolean(appSecurityState.pinHash && method !== "biometric");
+  const bioOk = Boolean(appSecurityState.biometricEnabled && appSecurityState.biometricCredentialId && method !== "pin");
+  return pinOk || bioOk;
+}
+
+function webAuthnDisponivelApp() {
+  return Boolean(window.PublicKeyCredential && navigator.credentials?.create && navigator.credentials?.get && window.crypto?.getRandomValues);
+}
+
+function randomBytesApp(length = 32) {
+  const bytes = new Uint8Array(length);
+  window.crypto.getRandomValues(bytes);
+  return bytes;
+}
+
+function base64UrlFromBufferApp(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function bufferFromBase64UrlApp(value) {
+  const padded = String(value || "").replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(String(value || "").length / 4) * 4, "=");
+  const binary = atob(padded);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  return bytes.buffer;
+}
+
+function renderAppLockOverlayContent(overlay) {
+  const canUsePin = Boolean(appSecurityState.pinHash && appSecurityState.authMethod !== "biometric");
+  const canUseBio = Boolean(appSecurityState.biometricEnabled && appSecurityState.biometricCredentialId && appSecurityState.authMethod !== "pin");
+  overlay.innerHTML = `
+    <div class="app-lock-card">
+      <div class="brand-badge">BR</div>
+      <h2>APP bloqueada</h2>
+      <p>${canUseBio ? "Usa Face ID, impressão digital ou o PIN disponível." : "Introduz o PIN para continuar."}</p>
+      ${canUseBio ? `<button class="primary-btn biometric-unlock-btn" type="button" onclick="desbloquearAppComBiometria()">Face ID / impressão digital</button>` : ""}
+      ${canUsePin ? `<input id="appPinUnlock" type="password" inputmode="numeric" maxlength="12" placeholder="PIN" autocomplete="off">
+      <button class="secondary-btn" type="button" onclick="desbloquearAppComPin()">Desbloquear com PIN</button>` : ""}
+      <small id="appPinError"></small>
+    </div>
+  `;
+}
+
+function criarAppLockOverlay() {
+  let overlay = document.getElementById("appLockOverlay");
+  if (overlay) return overlay;
+  overlay = document.createElement("div");
+  overlay.id = "appLockOverlay";
+  overlay.className = "app-lock-overlay";
+  document.body.appendChild(overlay);
+  overlay.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") desbloquearAppComPin();
+  });
+  overlay.addEventListener("input", (event) => {
+    if (event.target?.id !== "appPinUnlock") return;
+    if (appSecurityState.autoUnlockTimer) clearTimeout(appSecurityState.autoUnlockTimer);
+    appSecurityState.autoUnlockTimer = setTimeout(() => tentarDesbloquearPinAutomatico(), 120);
+  });
+  return overlay;
+}
+
+function mostrarBloqueioApp() {
+  if (!hasSecurityEnabledApp()) return;
+  limparSessaoPinApp();
+  const overlay = criarAppLockOverlay();
+  renderAppLockOverlayContent(overlay);
+  appSecurityState.overlay = overlay;
+  appSecurityState.unlocked = false;
+  overlay.classList.add("show");
+  setTimeout(() => {
+    document.getElementById("appPinUnlock")?.focus();
+    if (appSecurityState.authMethod === "biometric") desbloquearAppComBiometria();
+  }, 120);
+}
+
+function esconderBloqueioApp() {
+  appSecurityState.overlay?.classList.remove("show");
+  appSecurityState.unlocked = true;
+  renovarSessaoPinApp();
+  reiniciarTemporizadorBloqueioApp();
+}
+
+function renovarSessaoPinApp() {
+  if (!hasSecurityEnabledApp() || !appSecurityState.unlocked || !appSecurityState.lockTimeoutMinutes) return;
+  const until = Date.now() + (appSecurityState.lockTimeoutMinutes * 60000);
+  setSessionAppBraga("appPinUnlockedUntil", String(until));
+  setSessionAppBraga("appPinHash", getSecurityTokenApp());
+}
+
+function sessaoPinAindaValida() {
+  const savedHash = getSessionAppBraga("appPinHash");
+  const sessionUntil = Number(getSessionAppBraga("appPinUnlockedUntil") || 0);
+  const until = sessionUntil;
+  const token = getSecurityTokenApp();
+  return Boolean(until && until > Date.now() && (!savedHash || savedHash === token));
+}
+
+function limparSessaoPinApp() {
+  deleteCookieAppBraga("appPinUnlockedUntil");
+  deleteSessionAppBraga("appPinUnlockedUntil");
+  deleteSessionAppBraga("appPinHash");
+}
+
+function reiniciarTemporizadorBloqueioApp() {
+  if (appSecurityState.timer) clearTimeout(appSecurityState.timer);
+  appSecurityState.timer = null;
+  if (!appSecurityState.pinHash || !appSecurityState.unlocked || !appSecurityState.lockTimeoutMinutes) return;
+  renovarSessaoPinApp();
+  appSecurityState.timer = setTimeout(() => mostrarBloqueioApp(), appSecurityState.lockTimeoutMinutes * 60000);
+}
+
+function aplicarSegurancaApp(pinHash, lockTimeoutMinutes, pinLength = 0, authMethod = "pin", biometricEnabled = false, biometricCredentialId = "") {
+  const previousToken = getSecurityTokenApp();
+  appSecurityState.pinHash = String(pinHash || "");
+  appSecurityState.pinLength = Math.max(0, Number(pinLength) || 0);
+  appSecurityState.authMethod = ["pin", "biometric", "both"].includes(authMethod) ? authMethod : "pin";
+  appSecurityState.biometricEnabled = Boolean(biometricEnabled);
+  appSecurityState.biometricCredentialId = String(biometricCredentialId || "");
+  appSecurityState.lockTimeoutMinutes = Math.max(0, Number(lockTimeoutMinutes) || 0);
+  setLockTimeoutInput(appSecurityState.lockTimeoutMinutes);
+  setAuthMethodInput(appSecurityState.authMethod);
+  if (!hasSecurityEnabledApp()) {
+    appSecurityState.unlocked = true;
+    limparSessaoPinApp();
+    esconderBloqueioApp();
+    return;
+  }
+  if (!appSecurityState.lockTimeoutMinutes) {
+    appSecurityState.unlocked = true;
+    limparSessaoPinApp();
+    esconderBloqueioApp();
+    return;
+  }
+  if (previousToken !== getSecurityTokenApp() || !appSecurityState.unlocked) {
+    appSecurityState.unlocked = sessaoPinAindaValida();
+  }
+  if (!appSecurityState.unlocked) mostrarBloqueioApp();
+  reiniciarTemporizadorBloqueioApp();
+}
+
+function initAppSecurityActivity() {
+  if (window.__appSecurityActivityBound) return;
+  window.__appSecurityActivityBound = true;
+  ["click", "keydown", "touchstart", "mousemove", "scroll"].forEach((eventName) => {
+    document.addEventListener(eventName, () => {
+      if (!appSecurityState.overlay?.classList.contains("show")) reiniciarTemporizadorBloqueioApp();
+    }, { passive: true });
+  });
+}
+
+async function desbloquearAppComPin() {
+  const input = document.getElementById("appPinUnlock");
+  const error = document.getElementById("appPinError");
+  const pin = input?.value || "";
+  if (!pin) {
+    if (error) error.textContent = "Escreve o PIN.";
+    return;
+  }
+  const hash = await hashAppPin(pin);
+  if (hash !== appSecurityState.pinHash) {
+    if (error) error.textContent = "PIN incorreto.";
+    if (input) input.value = "";
+    return;
+  }
+  if (error) error.textContent = "";
+  if (input) input.value = "";
+  esconderBloqueioApp();
+}
+
+async function tentarDesbloquearPinAutomatico() {
+  const input = document.getElementById("appPinUnlock");
+  const pin = input?.value || "";
+  if (!appSecurityState.pinHash || pin.length < 1) return;
+  if (appSecurityState.pinLength && pin.length < appSecurityState.pinLength) return;
+  const hash = await hashAppPin(pin);
+  if (hash !== appSecurityState.pinHash) return;
+  const error = document.getElementById("appPinError");
+  if (error) error.textContent = "";
+  if (input) input.value = "";
+  esconderBloqueioApp();
+}
+
+async function ativarBiometriaApp() {
+  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponível.", "erro");
+  if (!webAuthnDisponivelApp()) return mostrarMensagem("Este dispositivo não suporta Face ID / fingerprint nesta app.", "erro");
+  try {
+    const userId = randomBytesApp(16);
+    const credential = await navigator.credentials.create({
+      publicKey: {
+        challenge: randomBytesApp(32),
+        rp: { name: "App Braga" },
+        user: {
+          id: userId,
+          name: "admin@appbraga.pt",
+          displayName: "Administrador"
+        },
+        pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
+        authenticatorSelection: {
+          authenticatorAttachment: "platform",
+          userVerification: "required",
+          residentKey: "preferred"
+        },
+        timeout: 60000,
+        attestation: "none"
+      }
+    });
+    if (!credential?.rawId) return mostrarMensagem("Não foi possível ativar biometria.", "erro");
+    const biometricCredentialId = base64UrlFromBufferApp(credential.rawId);
+    await window.db.collection("config").doc("layout").set({
+      biometricEnabled: true,
+      biometricCredentialId,
+      biometricLabel: "Face ID / impressão digital",
+      authMethod: document.getElementById("appAuthMethod")?.value || "both",
+      updatedAt: Date.now()
+    }, { merge: true });
+    mostrarMensagem("Face ID / fingerprint ativado neste dispositivo.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Ativação biométrica cancelada ou indisponível.", "erro");
+  }
+}
+
+async function desbloquearAppComBiometria() {
+  if (!webAuthnDisponivelApp()) return mostrarMensagem("Biometria indisponível neste dispositivo.", "erro");
+  if (!appSecurityState.biometricCredentialId) return mostrarMensagem("Ativa primeiro a biometria nas Configurações.", "erro");
+  try {
+    await navigator.credentials.get({
+      publicKey: {
+        challenge: randomBytesApp(32),
+        allowCredentials: [{
+          type: "public-key",
+          id: bufferFromBase64UrlApp(appSecurityState.biometricCredentialId)
+        }],
+        userVerification: "required",
+        timeout: 60000
+      }
+    });
+    esconderBloqueioApp();
+  } catch (error) {
+    console.error(error);
+    const message = document.getElementById("appPinError");
+    if (message) message.textContent = "Face ID / fingerprint cancelado.";
+  }
+}
+
+async function guardarMetodoEntradaApp(value) {
+  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponível.", "erro");
+  const authMethod = ["pin", "biometric", "both"].includes(value) ? value : "pin";
+  if (authMethod === "biometric" && !appSecurityState.biometricCredentialId) {
+    setAuthMethodInput(appSecurityState.authMethod);
+    return mostrarMensagem("Ativa primeiro Face ID / fingerprint neste dispositivo.", "erro");
+  }
+  try {
+    await window.db.collection("config").doc("layout").set({
+      authMethod,
+      updatedAt: Date.now()
+    }, { merge: true });
+    appSecurityState.authMethod = authMethod;
+    mostrarMensagem("Método de entrada atualizado.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar método de entrada.", "erro");
+  }
+}
+
+async function removerBiometriaApp() {
+  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponível.", "erro");
+  if (!window.confirm("Remover Face ID / fingerprint desta APP?")) return;
+  try {
+    await window.db.collection("config").doc("layout").set({
+      biometricEnabled: false,
+      biometricCredentialId: "",
+      authMethod: appSecurityState.pinHash ? "pin" : "pin",
+      updatedAt: Date.now()
+    }, { merge: true });
+    limparSessaoPinApp();
+    mostrarMensagem("Biometria removida.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao remover biometria.", "erro");
+  }
+}
+
+async function guardarPinApp() {
+  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponível.", "erro");
+  const input = document.getElementById("appPinCode");
+  const pin = input?.value.trim() || "";
+  if (!pin) return mostrarMensagem("Escreve um PIN novo antes de guardar.", "erro");
+  const pinHash = await hashAppPin(pin);
+  const pinLength = pin.length;
+  const lockTimeoutMinutes = Math.max(0, Number(document.getElementById("appLockTimeout")?.value || appSecurityState.lockTimeoutMinutes) || 0);
+  try {
+    await window.db.collection("config").doc("layout").set({
+      pinHash,
+      pinLength,
+      lockTimeoutMinutes,
+      updatedAt: Date.now()
+    }, { merge: true });
+    if (input) input.value = "";
+    mostrarMensagem("PIN da APP atualizado.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar PIN.", "erro");
+  }
+}
+
+async function guardarTempoBloqueioApp(value) {
+  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponível.", "erro");
+  const lockTimeoutMinutes = Math.max(0, Number(value) || 0);
+  try {
+    await window.db.collection("config").doc("layout").set({
+      lockTimeoutMinutes,
+      updatedAt: Date.now()
+    }, { merge: true });
+    aplicarSegurancaApp(appSecurityState.pinHash, lockTimeoutMinutes, appSecurityState.pinLength, appSecurityState.authMethod, appSecurityState.biometricEnabled, appSecurityState.biometricCredentialId);
+    mostrarMensagem("Tempo de bloqueio atualizado.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar tempo de bloqueio.", "erro");
+  }
+}
+
+async function removerPinApp() {
+  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponível.", "erro");
+  if (!window.confirm("Remover o PIN de bloqueio da APP?")) return;
+  try {
+    await window.db.collection("config").doc("layout").set({
+      pinHash: "",
+      pinLength: 0,
+      lockTimeoutMinutes: 0,
+      authMethod: appSecurityState.biometricCredentialId ? "biometric" : "pin",
+      updatedAt: Date.now()
+    }, { merge: true });
+    limparSessaoPinApp();
+    aplicarSegurancaApp("", 0);
+    mostrarMensagem("PIN removido.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao remover PIN.", "erro");
+  }
+}
+
+function bloquearAppAgora() {
+  if (!appSecurityState.pinHash) return mostrarMensagem("Define um PIN primeiro.", "erro");
+  mostrarBloqueioApp();
+}
+
+document.addEventListener("DOMContentLoaded", initAppSecurityActivity);
+
+function setHealthStatus(id, label, state = "ok") {
+  const node = document.getElementById(id);
+  if (!node) return;
+  node.textContent = label;
+  node.className = `health-status ${state}`;
+}
+
+async function verificarSistemasApp() {
+  if (!document.getElementById("systemHealthGrid")) return;
+  setHealthStatus("healthNetwork", navigator.onLine ? "Online" : "Offline", navigator.onLine ? "ok" : "bad");
+  setHealthStatus("healthDevice", window.appBragaDeviceType || (document.body.classList.contains("device-phone") ? "Telemóvel" : (document.body.classList.contains("device-tablet") ? "Tablet" : "PC")), "ok");
+  setHealthStatus("healthPin", appSecurityState.biometricEnabled ? "Biometria ativa" : (appSecurityState.pinHash ? "PIN ativo" : "Desligado"), hasSecurityEnabledApp() ? "ok" : "warn");
+  const notifyPermission = notificationPermissionApp();
+  const notifyOk = notifyPermission === "granted" || notifyPermission === "electron";
+  setHealthStatus("healthNotifications", notifyOk ? "Ativas" : (notifyPermission === "unsupported" ? "Sem suporte" : "Sem permissao"), notifyOk ? "ok" : "warn");
+  setHealthStatus("healthFirebase", window.firebase ? "Carregado" : "Indisponível", window.firebase ? "ok" : "bad");
+  setHealthStatus("healthAuth", window.firebase?.auth ? "Carregado" : "Indisponível", window.firebase?.auth ? "ok" : "warn");
+
+  if (!window.db || typeof window.db.collection !== "function") {
+    setHealthStatus("healthFirestore", "Indisponível", "bad");
+    return;
+  }
+
+  setHealthStatus("healthFirestore", "A testar", "warn");
+  try {
+    await window.db.collection("config").doc("layout").get();
+    setHealthStatus("healthFirestore", "Realtime OK", "ok");
+  } catch (error) {
+    console.error("Erro no diagnóstico Firestore:", error);
+    setHealthStatus("healthFirestore", "Erro", "bad");
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => setTimeout(verificarSistemasApp, 900));
+
 function initFullScreenScroll() {
   if (window.__appBragaFullScrollBound) return;
   window.__appBragaFullScrollBound = true;
@@ -1934,11 +3254,83 @@ function initFullScreenScroll() {
 
 document.addEventListener("DOMContentLoaded", initFullScreenScroll);
 
-const RADIOS_STORAGE_KEY = "appBragaRadios";
-const INFORMACOES_STORAGE_KEY = "appBragaInformacoes";
+function initDeviceViewportMode() {
+  const apply = () => {
+    const width = window.innerWidth || document.documentElement.clientWidth || 0;
+    const height = window.innerHeight || document.documentElement.clientHeight || 0;
+    const ua = navigator.userAgent || "";
+
+    const isAndroid = /Android/i.test(ua);
+    const isIosPhone = /iPhone|iPod/i.test(ua);
+    const isIpad = /iPad/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    const hasTouch = ("ontouchstart" in window) || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+
+    const minSide = Math.min(width, height);
+    const maxSide = Math.max(width, height);
+
+    /*
+      Android tablets em Chrome/Samsung/desktop mode podem ter largura > 1400px.
+      Antes a APP marcava isso como PC.
+      Agora:
+      - Android + touch + ecrã grande = tablet
+      - iPad = tablet
+      - telemóveis continuam phone
+      - só é PC quando NÃO é Android/iPad touch tablet
+    */
+    const isPhone =
+      isIosPhone ||
+      (isAndroid && minSide < 700) ||
+      width <= 760;
+
+    const isAndroidTablet =
+      isAndroid && hasTouch && minSide >= 700;
+
+    const isTablet =
+      isIpad ||
+      isAndroidTablet ||
+      (!isPhone && hasTouch && minSide >= 700 && maxSide <= 1800) ||
+      (width > 760 && width <= 1400);
+
+    const isDesktop =
+      !isPhone && !isTablet;
+
+    document.documentElement.style.setProperty("--app-vh", `${height * 0.01}px`);
+
+    document.body.classList.toggle("device-phone", isPhone);
+    document.body.classList.toggle("device-tablet", isTablet);
+    document.body.classList.toggle("device-desktop", isDesktop);
+
+    document.body.classList.toggle("tablet-portrait", isTablet && height >= width);
+    document.body.classList.toggle("tablet-landscape", isTablet && width > height);
+
+    document.body.classList.toggle("is-ios", isIosPhone || isIpad);
+    document.body.classList.toggle("is-android", isAndroid);
+    document.body.classList.toggle("is-android-tablet", isAndroidTablet);
+    document.body.classList.toggle("is-ipad", isIpad);
+
+    window.appBragaDeviceType = isPhone
+      ? (isAndroid ? "Android Telemóvel" : "iPhone/Telemóvel")
+      : (isAndroidTablet ? "Tablet Android" : (isIpad ? "iPad" : (isTablet ? "Tablet" : "PC")));
+  };
+
+  apply();
+  window.addEventListener("resize", apply, { passive: true });
+  window.addEventListener("orientationchange", () => setTimeout(apply, 250), { passive: true });
+}
+
+document.addEventListener("DOMContentLoaded", initDeviceViewportMode);
+
 let radiosData = [];
+let radioEditId = null;
+let unsubscribeRadios = null;
+let radioUsersData = [];
+let radioWeeklyRecords = [];
+let radioWeeklyEditId = null;
+let unsubscribeRadioUsers = null;
+let unsubscribeRadioWeekly = null;
 let informacoesData = [];
 let informacaoSelecionada = null;
+let unsubscribeInformacoes = null;
 
 function nowPt() {
   return new Date().toLocaleString("pt-PT", {
@@ -1948,13 +3340,6 @@ function nowPt() {
     hour: "2-digit",
     minute: "2-digit"
   });
-}
-
-function splitUsersList(value) {
-  return String(value || "")
-    .split(",")
-    .map(item => item.trim())
-    .filter(Boolean);
 }
 
 function safeRefHtml(value) {
@@ -1967,247 +3352,642 @@ function safeRefHtml(value) {
   }[char] || char));
 }
 
-function defaultRadiosData() {
-  return [1, 2, 3, 4, 5].map(numero => ({
-    id: `radio-${numero}`,
-    radio: String(numero),
-    users: "",
-    obs: "",
-    updated: nowPt()
-  }));
+function getRadioWeekInfo(date = new Date()) {
+  const target = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const day = target.getUTCDay() || 7;
+  target.setUTCDate(target.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(target.getUTCFullYear(), 0, 1));
+  const week = Math.ceil((((target - yearStart) / 86400000) + 1) / 7);
+  const start = new Date(date);
+  const currentDay = start.getDay() || 7;
+  start.setDate(start.getDate() - currentDay + 1);
+  start.setHours(0, 0, 0, 0);
+  const endDate = new Date(start);
+  endDate.setDate(start.getDate() + 6);
+  endDate.setHours(23, 59, 59, 999);
+  const fmt = new Intl.DateTimeFormat("pt-PT", { day: "2-digit", month: "2-digit", year: "numeric" });
+  return {
+    year: start.getFullYear(),
+    week,
+    start,
+    end: endDate,
+    key: `${start.getFullYear()}-W${String(week).padStart(2, "0")}`,
+    label: `Semana ${week} de ${fmt.format(start)} a ${fmt.format(endDate)}`
+  };
 }
 
-function loadRadiosData() {
-  try {
-    const raw = localStorage.getItem(RADIOS_STORAGE_KEY);
-    radiosData = raw ? JSON.parse(raw) : defaultRadiosData();
-  } catch (e) {
-    console.warn("Não foi possivel carregar radios.", e);
-    radiosData = defaultRadiosData();
-  }
+function radioUserLabel(user) {
+  return user?.nome || user?.user_pc_eye || user?.email_bragalis || user?.user_mo365 || "User sem nome";
 }
 
-function saveRadiosData() {
-  localStorage.setItem(RADIOS_STORAGE_KEY, JSON.stringify(radiosData));
-  try {
-    if (window.db) {
-      window.db.collection("appRadios").doc("lista").set({
-        items: radiosData,
-        updated: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-    }
-  } catch (e) {
-    console.warn("Não foi possivel sincronizar radios.", e);
-  }
+function radioUserId(user) {
+  return user?.id || user?.firebaseId || user?.idDoc || user?._ref || radioUserLabel(user);
+}
+
+function radioCssEscape(value) {
+  const text = String(value || "");
+  return window.CSS && typeof window.CSS.escape === "function" ? window.CSS.escape(text) : text.replace(/"/g, '\\"');
+}
+
+function getRadioWeeklyRecord(weekKey = getRadioWeekInfo().key) {
+  return getSortedRadioWeeklyRecords().find(item => item.weekKey === weekKey) || null;
+}
+
+function getSortedRadioWeeklyRecords() {
+  return [...radioWeeklyRecords].sort((a, b) => {
+    const ad = Number(a.createdAt || a.updatedAt || a.startAt || 0);
+    const bd = Number(b.createdAt || b.updatedAt || b.startAt || 0);
+    if (ad !== bd) return bd - ad;
+    return String(b.weekKey || "").localeCompare(String(a.weekKey || ""), "pt", { numeric: true });
+  });
+}
+
+function getRadioWeeklyRecordId(record) {
+  return record?.recordId || record?.id || record?.weekKey || "REG";
+}
+
+function getRadiosFiltrados() {
+  const search = normalizarTexto(document.getElementById("radioSearch")?.value || "");
+  return radiosData.filter((item) => {
+    const text = `${item.nome || ""} ${item.mac || ""} ${item.serial || ""}`;
+    return !search || normalizarTexto(text).includes(search);
+  });
+}
+
+function appAssetPath(path) {
+  const clean = String(path || "").replace(/^\/+/, "");
+  const isHtmlPage = /\/html\//i.test(window.location.pathname || "");
+  return `${isHtmlPage ? "../" : ""}${clean}`;
+}
+
+function getRadioImageSource(radio = {}) {
+  return radio.imagem || radio.imageUrl || radio.foto || radio.photoUrl || appAssetPath("img/motorola-tlk25-radio.webp");
+}
+
+function radioDeviceImageHtml(radio = {}) {
+  const serial = String(radio.serial || radio.nome || "Radio").trim();
+  return `<img class="radio-device-img" src="${safeRefHtml(getRadioImageSource(radio))}" alt="${safeRefHtml(serial)}" loading="lazy">`;
 }
 
 function renderRadios() {
-  const editor = document.getElementById("radiosEditorRows");
-  const report = document.getElementById("radiosReportRows");
-  if (!editor || !report) return;
+  const listaNode = document.getElementById("listaRadios");
+  const totalNode = document.getElementById("radiosTotal");
+  const semanaNode = document.getElementById("radioSemanaLabel");
+  const detalheNode = document.getElementById("radioDetalhesLista");
+  const resumoNode = document.getElementById("radioWeeklySummary");
+  if (!listaNode) return;
 
-  const search = normalizarTexto(document.getElementById("radioSearch")?.value || "");
-  const lista = radiosData.filter(item => {
-    const text = `${item.radio} ${item.users} ${item.obs}`;
-    return !search || normalizarTexto(text).includes(search);
-  });
+  const lista = getRadiosFiltrados();
+  const weekInfo = getRadioWeekInfo();
+  const records = getSortedRadioWeeklyRecords();
 
-  editor.innerHTML = lista.map(item => `
-    <div class="radio-editor-grid radio-editor-row" data-radio-id="${item.id}">
-      <input type="text" value="${safeRefHtml(item.radio)}" aria-label="Radio" onchange="atualizarRadioCampo('${item.id}', 'radio', this.value)">
-      <span class="radio-arrow">→</span>
-      <input type="text" value="${safeRefHtml(item.users)}" placeholder="Selecionar users..." onchange="atualizarRadioCampo('${item.id}', 'users', this.value)">
-      <input type="text" value="${safeRefHtml(item.obs)}" placeholder="Observações (opcional)" onchange="atualizarRadioCampo('${item.id}', 'obs', this.value)">
-      <button class="reference-icon danger" type="button" onclick="apagarRadio('${item.id}')" title="Apagar rádio">🗑</button>
-    </div>
-  `).join("");
+  if (totalNode) totalNode.textContent = String(radiosData.length);
+  if (semanaNode) semanaNode.textContent = records.length
+    ? `${records.length} registo${records.length === 1 ? "" : "s"} semanal${records.length === 1 ? "" : "is"} guardado${records.length === 1 ? "" : "s"}`
+    : weekInfo.label;
 
-  report.innerHTML = lista.map(item => {
-    const users = splitUsersList(item.users);
-    const visible = users.slice(0, 3);
-    const extra = users.length - visible.length;
-    return `
-      <tr>
-        <td>${safeRefHtml(item.radio)}</td>
-        <td>
-          <div class="reference-tags">
-            ${visible.map(user => `<span>${safeRefHtml(user)}</span>`).join("")}
-            ${extra > 0 ? `<span>+${extra}</span>` : ""}
-          </div>
-        </td>
-        <td>${safeRefHtml(item.updated || nowPt())}</td>
-        <td>
-          <div class="reference-row-actions">
-            <button class="reference-icon" type="button" onclick="verRadio('${item.id}')" title="Ver detalhes">✎</button>
-            <button class="reference-icon danger" type="button" onclick="apagarRadio('${item.id}')" title="Apagar rádio">🗑</button>
-          </div>
-        </td>
-      </tr>
+  listaNode.innerHTML = lista.length ? lista.map((item) => `
+    <article class="radio-card">
+      <div class="radio-card-icon">${radioDeviceImageHtml(item)}</div>
+      <div class="radio-card-main">
+        <h3>${safeRefHtml(item.nome || "Sem nome")}</h3>
+        <p>MAC: ${safeRefHtml(item.mac || "-")}</p>
+        <p>Serial: ${safeRefHtml(item.serial || "-")}</p>
+      </div>
+      <div class="radio-card-actions">
+        <button class="reference-icon" type="button" onclick="editarRadio('${item.id}')" title="Editar rádio">E</button>
+        <button class="reference-icon danger" type="button" onclick="apagarRadio('${item.id}')" title="Apagar rádio">X</button>
+      </div>
+    </article>
+  `).join("") : `<div class="reference-empty">Sem rádios registados na Firestore.</div>`;
+
+  if (resumoNode) {
+    resumoNode.innerHTML = records.length ? records.map((record) => {
+      const assignments = Array.isArray(record.assignments) ? record.assignments : [];
+      const usedCount = assignments.filter(item => item.userId || item.userNome).length;
+      const recordId = getRadioWeeklyRecordId(record);
+      return `
+      <div class="weekly-radio-row compact radio-record-row">
+        <div>
+          <strong>${safeRefHtml(recordId)}</strong>
+          <span>${safeRefHtml(record.label || "Semana sem intervalo")}</span>
+          <small>${usedCount}/${assignments.length} rádios com user associado</small>
+        </div>
+        <div class="weekly-record-actions">
+          <button class="secondary-btn reference-outline" type="button" onclick="abrirRelatorioRadios('${safeRefHtml(record.id)}')">Ver mais</button>
+          <button class="secondary-btn" type="button" onclick="abrirEditarRegistoSemanalRadios('${safeRefHtml(record.id)}')">Editar</button>
+          <button class="secondary-btn danger" type="button" onclick="apagarRegistoSemanalRadios('${safeRefHtml(record.id)}')">Apagar</button>
+        </div>
+      </div>
     `;
-  }).join("");
+    }).join("") : `<div class="reference-empty">Ainda não existem registos semanais.</div>`;
+  }
+
+  if (detalheNode) {
+    detalheNode.innerHTML = `<div class="reference-empty">Escolhe um registo e clica em Ver mais.</div>`;
+  }
 }
 
 function initRadiosPage() {
-  if (!document.getElementById("radiosEditorRows")) return;
-  loadRadiosData();
-  renderRadios();
+  if (!document.getElementById("listaRadios")) return;
+  const dbRef = window.db;
+  if (!dbRef || typeof dbRef.collection !== "function") {
+    const listaNode = document.getElementById("listaRadios");
+    if (listaNode) listaNode.innerHTML = `<div class="reference-empty">Firebase indisponível. Confirma a ligação da app.</div>`;
+    return;
+  }
+
+  if (unsubscribeRadios) unsubscribeRadios();
+  unsubscribeRadios = dbRef.collection("radios").onSnapshot((snapshot) => {
+    radiosData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    radiosData.sort((a, b) => String(a.nome || a.serial || a.mac || "").localeCompare(String(b.nome || b.serial || b.mac || ""), "pt", { numeric: true, sensitivity: "base" }));
+    renderRadios();
+  }, (error) => {
+    console.error("Erro realtime radios:", error);
+    const listaNode = document.getElementById("listaRadios");
+    if (listaNode) listaNode.innerHTML = `<div class="reference-empty">Erro ao carregar rádios da Firestore.</div>`;
+  });
+
+
+  if (unsubscribeRadioUsers) unsubscribeRadioUsers();
+  unsubscribeRadioUsers = dbRef.collection("users").onSnapshot((snapshot) => {
+    radioUsersData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    radioUsersData.sort((a, b) => radioUserLabel(a).localeCompare(radioUserLabel(b), "pt", { numeric: true, sensitivity: "base" }));
+    window.usersData = radioUsersData;
+    renderRadioWeeklyForm();
+  }, (error) => console.error("Erro realtime users para radios:", error));
+
+  if (unsubscribeRadioWeekly) unsubscribeRadioWeekly();
+  unsubscribeRadioWeekly = dbRef.collection("radioWeeklyRecords").onSnapshot((snapshot) => {
+    radioWeeklyRecords = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    renderRadios();
+    renderRadioWeeklyForm();
+  }, (error) => console.error("Erro realtime radioWeeklyRecords:", error));
 }
 
 function adicionarRadio() {
-  const nextNumber = radiosData.length ? Math.max(...radiosData.map(item => Number(item.radio) || 0)) + 1 : 1;
-  radiosData.push({
-    id: `radio-${Date.now()}`,
-    radio: String(nextNumber),
-    users: "",
-    obs: "",
-    updated: nowPt()
-  });
-  saveRadiosData();
-  renderRadios();
+  abrirModalRadio();
 }
 
-function atualizarRadioCampo(id, field, value) {
-  const item = radiosData.find(radio => radio.id === id);
-  if (!item) return;
-  item[field] = value;
-  item.updated = nowPt();
-  saveRadiosData();
-  renderRadios();
+function abrirModalRadio(id = null) {
+  radioEditId = id;
+  const item = id ? radiosData.find((radio) => radio.id === id) : null;
+  const title = document.getElementById("radioModalTitle");
+  const nome = document.getElementById("radioNome");
+  const mac = document.getElementById("radioMac");
+  const serial = document.getElementById("radioSerial");
+  if (title) title.textContent = id ? "Editar Rádio" : "Novo Rádio";
+  if (nome) nome.value = item?.nome || "";
+  if (mac) mac.value = item?.mac || "";
+  if (serial) serial.value = item?.serial || "";
+  const modal = document.getElementById("radioModal");
+  if (modal) modal.style.display = "flex";
 }
 
-function apagarRadio(id) {
-  radiosData = radiosData.filter(item => item.id !== id);
-  if (!radiosData.length) radiosData = defaultRadiosData();
-  saveRadiosData();
-  renderRadios();
+function fecharModalRadio() {
+  radioEditId = null;
+  const modal = document.getElementById("radioModal");
+  if (modal) modal.style.display = "none";
 }
 
-function verRadio(id) {
-  const item = radiosData.find(radio => radio.id === id);
-  if (!item) return;
-  alert(`Radio: ${item.radio}\nUsers: ${item.users || "-"}\nObservacoes: ${item.obs || "-"}`);
+async function guardarRadio() {
+  const nome = document.getElementById("radioNome")?.value.trim() || "";
+  const mac = document.getElementById("radioMac")?.value.trim() || "";
+  const serial = document.getElementById("radioSerial")?.value.trim() || "";
+  if (!nome) {
+    mostrarMensagem("Preenche o nome do rádio.", "erro");
+    return;
+  }
+
+  const payload = { nome, mac, serial, updatedAt: Date.now() };
+
+  try {
+    if (radioEditId) {
+      await window.db.collection("radios").doc(radioEditId).update(payload);
+      mostrarMensagem("Rádio atualizado.");
+    } else {
+      await window.db.collection("radios").add({ ...payload, createdAt: Date.now() });
+      mostrarMensagem("Rádio criado.");
+    }
+    fecharModalRadio();
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar rádio.", "erro");
+  }
+}
+
+function editarRadio(id) {
+  abrirModalRadio(id);
+}
+
+async function apagarRadio(id) {
+  try {
+    await window.db.collection("radios").doc(id).delete();
+    mostrarMensagem("Rádio apagado.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao apagar rádio.", "erro");
+  }
 }
 
 function filtrarRadios() {
   renderRadios();
 }
 
-function loadInformacoesData() {
+function renderRadioWeeklyRecordDetails(recordId) {
+  const detalheNode = document.getElementById("radioDetalhesLista");
+  if (!detalheNode) return;
+  const record = radioWeeklyRecords.find(item => item.id === recordId || item.recordId === recordId);
+  if (!record) {
+    detalheNode.innerHTML = `<div class="reference-empty">Registo não encontrado.</div>`;
+    return;
+  }
+
+  const assignments = Array.isArray(record.assignments) ? record.assignments : [];
+  detalheNode.innerHTML = `
+    <div class="weekly-radio-row compact radio-record-row">
+      <div>
+        <strong>${safeRefHtml(getRadioWeeklyRecordId(record))}</strong>
+        <span>${safeRefHtml(record.label || "Semana sem intervalo")}</span>
+        <small>Registo criado em ${safeRefHtml(record.createdLabel || record.updatedLabel || "-")}</small>
+      </div>
+    </div>
+    ${assignments.length ? assignments.map((item) => `
+      <div class="weekly-radio-row">
+        <strong>${safeRefHtml(item.radioNome || "Rádio")}</strong>
+        <span>User associado: ${safeRefHtml(item.userNome || "Sem user selecionado")}</span>
+        <small>MAC ${safeRefHtml(item.radioMac || "-")} | Serial ${safeRefHtml(item.radioSerial || "-")}</small>
+      </div>
+    `).join("") : `<div class="reference-empty">Este registo não tem rádios associados.</div>`}
+  `;
+}
+
+function abrirRelatorioRadios(recordId = null) {
+  if (recordId) renderRadioWeeklyRecordDetails(recordId);
+  const modal = document.getElementById("radioWeeklyModal");
+  if (modal) modal.style.display = "flex";
+}
+
+function fecharRelatorioRadios() {
+  const modal = document.getElementById("radioWeeklyModal");
+  if (modal) modal.style.display = "none";
+}
+
+function setRadioWeeklyDateDefault() {
+  const input = document.getElementById("radioWeeklyDate");
+  if (!input || input.value) return;
+  input.valueAsDate = new Date();
+}
+
+function setRadioWeeklyDateFromTimestamp(timestamp) {
+  const input = document.getElementById("radioWeeklyDate");
+  if (!input || !timestamp) return;
+  const date = new Date(Number(timestamp));
+  if (Number.isNaN(date.getTime())) return;
+  input.value = date.toISOString().slice(0, 10);
+}
+
+function getRadioWeeklySelectedInfo() {
+  const input = document.getElementById("radioWeeklyDate");
+  const date = input?.value ? new Date(`${input.value}T12:00:00`) : new Date();
+  return getRadioWeekInfo(date);
+}
+
+function renderRadioWeeklyForm() {
+  const rows = document.getElementById("radioWeeklyRows");
+  if (!rows) return;
+  const label = document.getElementById("radioWeeklyRecordLabel");
+  const editRecord = radioWeeklyEditId ? radioWeeklyRecords.find(item => item.id === radioWeeklyEditId || item.recordId === radioWeeklyEditId) : null;
+  const weekInfo = editRecord ? getRadioWeekInfo(new Date(Number(editRecord.startAt || Date.now()))) : getRadioWeeklySelectedInfo();
+  const record = editRecord || getRadioWeeklyRecord(weekInfo.key);
+  const saved = Array.isArray(record?.assignments) ? record.assignments : [];
+  if (label) label.textContent = editRecord ? `${getRadioWeeklyRecordId(editRecord)} · ${weekInfo.label}` : weekInfo.label;
+
+  const users = (radioUsersData.length ? radioUsersData : window.usersData || [])
+    .slice()
+    .sort((a, b) => radioUserLabel(a).localeCompare(radioUserLabel(b), "pt", { sensitivity: "base" }));
+
+  rows.innerHTML = radiosData.length ? radiosData.map((radio) => {
+    const current = saved.find(item => item.radioId === radio.id);
+    const options = [
+      `<option value="">Sem user</option>`,
+      ...users.map(user => {
+        const userId = radioUserId(user);
+        const selected = current?.userId === userId ? " selected" : "";
+        return `<option value="${safeRefHtml(userId)}"${selected}>${safeRefHtml(radioUserLabel(user))}</option>`;
+      })
+    ].join("");
+    return `
+      <div class="radio-week-row" data-radio-id="${safeRefHtml(radio.id)}">
+        <div>
+          <strong>${safeRefHtml(radio.nome || "Sem nome")}</strong>
+          <span>MAC ${safeRefHtml(radio.mac || "-")} | Serial ${safeRefHtml(radio.serial || "-")}</span>
+        </div>
+        <select data-radio-user="${safeRefHtml(radio.id)}">${options}</select>
+      </div>
+    `;
+  }).join("") : `<div class="reference-empty">Cria rádios primeiro para conseguires fazer o registo semanal.</div>`;
+}
+
+function abrirRegistoSemanalRadios() {
+  radioWeeklyEditId = null;
+  const title = document.getElementById("radioWeeklyModalTitle");
+  if (title) title.textContent = "Novo registo semanal";
+  const input = document.getElementById("radioWeeklyDate");
+  if (input) input.valueAsDate = new Date();
+  setRadioWeeklyDateDefault();
+  renderRadioWeeklyForm();
+  const modal = document.getElementById("radioWeeklyRecordModal");
+  if (modal) modal.style.display = "flex";
+}
+
+function abrirEditarRegistoSemanalRadios(recordId) {
+  const record = radioWeeklyRecords.find(item => item.id === recordId || item.recordId === recordId);
+  if (!record) return mostrarMensagem("Registo semanal não encontrado.", "erro");
+  radioWeeklyEditId = record.id;
+  const title = document.getElementById("radioWeeklyModalTitle");
+  if (title) title.textContent = `Editar ${getRadioWeeklyRecordId(record)}`;
+  setRadioWeeklyDateFromTimestamp(record.startAt);
+  renderRadioWeeklyForm();
+  const modal = document.getElementById("radioWeeklyRecordModal");
+  if (modal) modal.style.display = "flex";
+}
+
+function fecharRegistoSemanalRadios() {
+  radioWeeklyEditId = null;
+  const modal = document.getElementById("radioWeeklyRecordModal");
+  if (modal) modal.style.display = "none";
+}
+
+async function guardarRegistoSemanalRadios() {
+  if (!window.db) return mostrarMensagem("Firebase indisponível.", "erro");
+  const weekInfo = getRadioWeeklySelectedInfo();
+  const users = radioUsersData.length ? radioUsersData : window.usersData || [];
+  const assignments = radiosData.map((radio) => {
+    const select = document.querySelector(`[data-radio-user="${radioCssEscape(radio.id)}"]`);
+    const userId = select?.value || "";
+    const user = users.find(item => radioUserId(item) === userId);
+    return {
+      radioId: radio.id,
+      radioNome: radio.nome || "",
+      radioMac: radio.mac || "",
+      radioSerial: radio.serial || "",
+      userId,
+      userNome: user ? radioUserLabel(user) : ""
+    };
+  });
+
   try {
-    const raw = localStorage.getItem(INFORMACOES_STORAGE_KEY);
-    informacoesData = raw ? JSON.parse(raw) : [];
-  } catch (e) {
-    console.warn("Não foi possivel carregar informacoes.", e);
-    informacoesData = [];
+    const docRef = radioWeeklyEditId
+      ? window.db.collection("radioWeeklyRecords").doc(radioWeeklyEditId)
+      : window.db.collection("radioWeeklyRecords").doc();
+    const existing = radioWeeklyEditId ? radioWeeklyRecords.find(item => item.id === radioWeeklyEditId) : null;
+    const recordId = existing?.recordId || `REG-${weekInfo.key}-${docRef.id.slice(-5).toUpperCase()}`;
+    const payload = {
+      recordId,
+      weekKey: weekInfo.key,
+      week: weekInfo.week,
+      year: weekInfo.year,
+      label: weekInfo.label,
+      startAt: weekInfo.start.getTime(),
+      endAt: weekInfo.end.getTime(),
+      assignments,
+      updatedAt: Date.now()
+    };
+    if (!existing) {
+      payload.createdAt = Date.now();
+      payload.createdLabel = nowPt();
+    }
+    await docRef.set(payload, { merge: true });
+    mostrarMensagem(existing ? "Registo semanal atualizado." : "Registo semanal guardado.");
+    fecharRegistoSemanalRadios();
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar registo semanal.", "erro");
   }
 }
 
-function saveInformacoesData() {
-  localStorage.setItem(INFORMACOES_STORAGE_KEY, JSON.stringify(informacoesData));
+async function apagarRegistoSemanalRadios(recordId) {
+  if (!window.db) return mostrarMensagem("Firebase indisponível.", "erro");
+  const record = radioWeeklyRecords.find(item => item.id === recordId || item.recordId === recordId);
+  if (!record) return mostrarMensagem("Registo semanal não encontrado.", "erro");
+  if (!window.confirm(`Apagar ${getRadioWeeklyRecordId(record)}?`)) return;
   try {
-    if (window.db) {
-      window.db.collection("appInformacoes").doc("lista").set({
-        items: informacoesData,
-        updated: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-    }
-  } catch (e) {
-    console.warn("Não foi possivel sincronizar informacoes.", e);
+    await window.db.collection("radioWeeklyRecords").doc(record.id).delete();
+    mostrarMensagem("Registo semanal apagado.");
+    renderRadios();
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao apagar registo semanal.", "erro");
   }
+}
+
+function getInformacoesFiltradas() {
+  const pesquisa = normalizarTexto(document.getElementById("pesquisaInfo")?.value || "");
+  if (!pesquisa) return informacoesData;
+  return informacoesData.filter((item) => {
+    const texto = `${item.titulo || ""} ${item.obs || ""}`;
+    return normalizarTexto(texto).includes(pesquisa);
+  });
 }
 
 function renderInformacoes() {
   const lista = document.getElementById("informacoesLista");
   if (!lista) return;
-  lista.innerHTML = informacoesData.length ? informacoesData.map(item => `
-    <button class="info-list-item ${informacaoSelecionada === item.id ? "active" : ""}" type="button" onclick="selecionarInformacao('${item.id}')">
+  const listaFiltrada = getInformacoesFiltradas();
+  lista.innerHTML = listaFiltrada.length ? listaFiltrada.map(item => `
+    <article class="info-list-item ${informacaoSelecionada === item.id ? "active" : ""}">
       <strong>${safeRefHtml(item.titulo || "Sem título")}</strong>
       <span>${safeRefHtml(item.obs || "Sem observações")}</span>
-    </button>
-  `).join("") : `<div class="info-empty">Ainda sem informações guardadas.</div>`;
+      <div class="meta-line">${safeRefHtml(item.updatedLabel || item.createdLabel || "")}</div>
+      <div class="info-card-actions">
+        <button class="secondary-btn reference-outline" type="button" onclick="verInformacao('${item.id}')">Ver mais</button>
+        <button class="secondary-btn" type="button" onclick="editarInformacao('${item.id}')">Editar</button>
+        <button class="secondary-btn danger" type="button" onclick="apagarInformacao('${item.id}')">Apagar</button>
+      </div>
+    </article>
+  `).join("") : `<div class="info-empty">Ainda sem informações guardadas na Firebase.</div>`;
 }
 
 function initInformacoesPage() {
   if (!document.getElementById("informacoesLista")) return;
-  loadInformacoesData();
-  renderInformacoes();
+  const pesquisa = document.getElementById("pesquisaInfo");
+  if (pesquisa) pesquisa.addEventListener("input", renderInformacoes);
+
+  if (!window.db || typeof window.db.collection !== "function") {
+    const lista = document.getElementById("informacoesLista");
+    if (lista) lista.innerHTML = `<div class="info-empty">Firebase indisponível. Confirma a ligação da app.</div>`;
+    return;
+  }
+
+  if (unsubscribeInformacoes) unsubscribeInformacoes();
+  unsubscribeInformacoes = window.db.collection("informacoes").onSnapshot((snapshot) => {
+    informacoesData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    informacoesData.sort((a, b) => {
+      const ad = Number(a.updatedAt || a.createdAt || 0);
+      const bd = Number(b.updatedAt || b.createdAt || 0);
+      if (ad !== bd) return bd - ad;
+      return String(a.titulo || "").localeCompare(String(b.titulo || ""), "pt", { numeric: true, sensitivity: "base" });
+    });
+    renderInformacoes();
+  }, (error) => {
+    console.error("Erro realtime informacoes:", error);
+    const lista = document.getElementById("informacoesLista");
+    if (lista) lista.innerHTML = `<div class="info-empty">Erro ao carregar informações da Firebase.</div>`;
+  });
 }
 
-function adicionarInformacao() {
+async function adicionarInformacao() {
   const titulo = document.getElementById("infoTitulo")?.value || "";
   const obs = document.getElementById("infoObs")?.value || "";
   if (!normalizarTexto(titulo) && !normalizarTexto(obs)) {
     mostrarMensagem("Preenche pelo menos um título ou observação.", "erro");
     return;
   }
-  if (informacaoSelecionada) {
-    const item = informacoesData.find(info => info.id === informacaoSelecionada);
-    if (item) {
-      item.titulo = titulo;
-      item.obs = obs;
-      item.updated = nowPt();
-    }
-  } else {
-    informacoesData.unshift({
-      id: `info-${Date.now()}`,
-      titulo,
-      obs,
-      updated: nowPt()
-    });
+
+  if (!window.db || typeof window.db.collection !== "function") {
+    mostrarMensagem("Firebase indisponível.", "erro");
+    return;
   }
-  document.getElementById("infoTitulo").value = "";
-  document.getElementById("infoObs").value = "";
-  informacaoSelecionada = null;
-  saveInformacoesData();
-  renderInformacoes();
+
+  const payload = {
+    titulo,
+    obs,
+    updatedAt: Date.now(),
+    updatedLabel: nowPt()
+  };
+
+  try {
+    if (informacaoSelecionada) {
+      await window.db.collection("informacoes").doc(informacaoSelecionada).set(payload, { merge: true });
+      mostrarMensagem("Informação atualizada.");
+    } else {
+      await window.db.collection("informacoes").add({
+        ...payload,
+        createdAt: Date.now(),
+        createdLabel: nowPt()
+      });
+      mostrarMensagem("Informação criada.");
+    }
+    document.getElementById("infoTitulo").value = "";
+    document.getElementById("infoObs").value = "";
+    informacaoSelecionada = null;
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar informação.", "erro");
+  }
 }
 
 function selecionarInformacao(id) {
+  editarInformacao(id);
+}
+
+function verInformacao(id) {
+  const item = informacoesData.find(info => info.id === id);
+  if (!item) return mostrarMensagem("Informação não encontrada.", "erro");
+  const modal = document.getElementById("infoModal");
+  const titulo = document.getElementById("modalInfoTitulo");
+  const descricao = document.getElementById("modalInfoDescricao");
+  if (titulo) titulo.textContent = item.titulo || "Informação";
+  if (descricao) descricao.textContent = item.obs || "Sem observações";
+  if (modal) modal.classList.remove("hidden");
+}
+
+function fecharInfoModal() {
+  const modal = document.getElementById("infoModal");
+  if (modal) modal.classList.add("hidden");
+}
+
+function editarInformacao(id) {
+  const item = informacoesData.find(info => info.id === id);
+  if (!item) return mostrarMensagem("Informação não encontrada.", "erro");
   informacaoSelecionada = id;
+  document.getElementById("infoTitulo").value = item.titulo || "";
+  document.getElementById("infoObs").value = item.obs || "";
   renderInformacoes();
 }
 
+async function apagarInformacao(id) {
+  const item = informacoesData.find(info => info.id === id);
+  if (!item) return mostrarMensagem("Informação não encontrada.", "erro");
+  if (!window.confirm(`Apagar "${item.titulo || "esta informação"}"?`)) return;
+  try {
+    await window.db.collection("informacoes").doc(id).delete();
+    if (informacaoSelecionada === id) {
+      informacaoSelecionada = null;
+      const titulo = document.getElementById("infoTitulo");
+      const obs = document.getElementById("infoObs");
+      if (titulo) titulo.value = "";
+      if (obs) obs.value = "";
+    }
+    mostrarMensagem("Informação apagada.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao apagar informação.", "erro");
+  }
+}
+
 function verInformacaoSelecionada() {
-  const item = informacoesData.find(info => info.id === informacaoSelecionada);
-  if (!item) return mostrarMensagem("Seleciona uma informação primeiro.", "erro");
-  alert(`${item.titulo || "Informação"}\n\n${item.obs || "Sem observacoes"}`);
+  if (!informacaoSelecionada) return mostrarMensagem("Seleciona uma informação primeiro.", "erro");
+  verInformacao(informacaoSelecionada);
 }
 
 function editarInformacaoSelecionada() {
-  const item = informacoesData.find(info => info.id === informacaoSelecionada);
-  if (!item) return mostrarMensagem("Seleciona uma informação primeiro.", "erro");
-  document.getElementById("infoTitulo").value = item.titulo || "";
-  document.getElementById("infoObs").value = item.obs || "";
+  if (!informacaoSelecionada) return mostrarMensagem("Seleciona uma informação primeiro.", "erro");
+  editarInformacao(informacaoSelecionada);
 }
 
 function apagarInformacaoSelecionada() {
   if (!informacaoSelecionada) return mostrarMensagem("Seleciona uma informação primeiro.", "erro");
-  informacoesData = informacoesData.filter(info => info.id !== informacaoSelecionada);
-  informacaoSelecionada = null;
-  saveInformacoesData();
-  renderInformacoes();
+  apagarInformacao(informacaoSelecionada);
 }
 
 function guardarInformacoes() {
-  const titulo = document.getElementById("infoTitulo")?.value || "";
-  const obs = document.getElementById("infoObs")?.value || "";
-  if (normalizarTexto(titulo) || normalizarTexto(obs)) {
-    adicionarInformacao();
-    return;
-  }
-  saveInformacoesData();
-  mostrarMensagem("Informações guardadas.");
+  adicionarInformacao();
 }
-
 document.addEventListener("DOMContentLoaded", initRadiosPage);
 document.addEventListener("DOMContentLoaded", initInformacoesPage);
+document.addEventListener("DOMContentLoaded", initResolucaoApp);
+document.addEventListener("DOMContentLoaded", initFullscreenPreferidoApp);
 window.adicionarRadio = adicionarRadio;
-window.atualizarRadioCampo = atualizarRadioCampo;
+window.editarRadio = editarRadio;
+window.guardarRadio = guardarRadio;
+window.fecharModalRadio = fecharModalRadio;
 window.apagarRadio = apagarRadio;
-window.verRadio = verRadio;
 window.filtrarRadios = filtrarRadios;
+window.abrirRelatorioRadios = abrirRelatorioRadios;
+window.fecharRelatorioRadios = fecharRelatorioRadios;
+window.abrirRegistoSemanalRadios = abrirRegistoSemanalRadios;
+window.abrirEditarRegistoSemanalRadios = abrirEditarRegistoSemanalRadios;
+window.fecharRegistoSemanalRadios = fecharRegistoSemanalRadios;
+window.renderRadioWeeklyForm = renderRadioWeeklyForm;
+window.guardarRegistoSemanalRadios = guardarRegistoSemanalRadios;
+window.apagarRegistoSemanalRadios = apagarRegistoSemanalRadios;
+window.guardarResolucaoApp = guardarResolucaoApp;
+window.guardarCorApp = guardarCorApp;
+window.guardarPinApp = guardarPinApp;
+window.guardarTempoBloqueioApp = guardarTempoBloqueioApp;
+window.guardarMetodoEntradaApp = guardarMetodoEntradaApp;
+window.removerPinApp = removerPinApp;
+window.ativarBiometriaApp = ativarBiometriaApp;
+window.removerBiometriaApp = removerBiometriaApp;
+window.bloquearAppAgora = bloquearAppAgora;
+window.desbloquearAppComPin = desbloquearAppComPin;
+window.desbloquearAppComBiometria = desbloquearAppComBiometria;
+window.entrarFullscreenApp = entrarFullscreenApp;
+window.carregarDispositivosNotificacoesApp = carregarDispositivosNotificacoesApp;
+window.registarDispositivoPushApp = registarDispositivoPushApp;
+window.guardarConfigNotificacoesApp = guardarConfigNotificacoesApp;
+window.verificarAlertasNotificacoesApp = verificarAlertasNotificacoesApp;
+window.testarNotificacaoApp = testarNotificacaoApp;
+window.pedirPermissaoNotificacoesApp = pedirPermissaoNotificacoesApp;
+window.verificarSistemasApp = verificarSistemasApp;
 window.adicionarInformacao = adicionarInformacao;
 window.selecionarInformacao = selecionarInformacao;
+window.verInformacao = verInformacao;
+window.editarInformacao = editarInformacao;
+window.apagarInformacao = apagarInformacao;
+window.fecharInfoModal = fecharInfoModal;
 window.verInformacaoSelecionada = verInformacaoSelecionada;
 window.editarInformacaoSelecionada = editarInformacaoSelecionada;
 window.apagarInformacaoSelecionada = apagarInformacaoSelecionada;
@@ -2460,6 +4240,7 @@ function bindPrintersFirebaseRealtime() {
   if (!db || !db.collection) return;
 
   db.collection("printers").onSnapshot((snap) => {
+    notificarAlteracaoRealtimeApp("printers", snap);
     snap.forEach((doc) => {
       const data = ({ firebaseId: doc.id, ...doc.data() }) || {};
       const ip = normalizePrinterIp(data.ip || doc.id);
@@ -3346,25 +5127,23 @@ window.addEventListener("DOMContentLoaded", () => {
 const APP_REMOTE_BASE = "https://picafern-commits.github.io/App-Tablet/";
 const APP_VERSION_URL = APP_REMOTE_BASE + "version.json?t=" + Date.now();
 
-async function limparServiceWorkersAntigosAppBraga() {
+async function registarServiceWorkerAppBraga() {
   try {
     if (!("serviceWorker" in navigator)) return;
-    const regs = await navigator.serviceWorker.getRegistrations();
-    for (const reg of regs) {
-      await reg.unregister();
-    }
-    if ("caches" in window) {
-      const keys = await caches.keys();
-      await Promise.all(keys.map(k => caches.delete(k)));
-    }
+    const swUrl = location.pathname.includes("/html/") ? "../sw.js" : "sw.js";
+    await navigator.serviceWorker.register(swUrl);
   } catch (e) {
-    console.error("Erro a limpar service workers/cache", e);
+    console.error("Erro a registar service worker", e);
   }
 }
 
 async function verificarAtualizacao() {
   try {
-    await limparServiceWorkersAntigosAppBraga();
+    atualizarVersaoUI(APP_VERSION);
+    const isGithubPages = location.hostname === "picafern-commits.github.io";
+    if (!isGithubPages) return;
+
+    await registarServiceWorkerAppBraga();
 
     const res = await fetch(APP_VERSION_URL, {
       cache: "no-store",
@@ -3375,10 +5154,9 @@ async function verificarAtualizacao() {
     });
 
     const data = await res.json();
-    atualizarVersaoUI((data && data.version) ? data.version : APP_VERSION);
 
     if (data && data.version && data.version !== APP_VERSION) {
-      mostrarAvisoUpdateObrigatorio(data.version);
+      mostrarAvisoAtualizacaoDisponivel(data.version);
     }
   } catch (e) {
     console.error("Erro a verificar updates", e);
@@ -3395,58 +5173,83 @@ function atualizarVersaoUI(versionValue = APP_VERSION) {
   });
 }
 
-function mostrarAvisoUpdateObrigatorio(novaVersao) {
-  let overlay = document.getElementById("updateOverlayAppBraga");
+function mostrarAvisoAtualizacaoDisponivel(novaVersao) {
+  if (getCookieAppBraga("appUpdateDismissedVersion") === String(novaVersao)) return;
   let box = document.getElementById("updateBoxAppBraga");
-
-  if (!overlay) {
-    overlay = document.createElement("div");
-    overlay.id = "updateOverlayAppBraga";
-    overlay.className = "update-overlay-appbraga";
-    document.body.appendChild(overlay);
-  }
 
   if (!box) {
     box = document.createElement("div");
     box.id = "updateBoxAppBraga";
-    box.className = "update-box-appbraga mandatory";
+    box.className = "update-box-appbraga";
     document.body.appendChild(box);
   }
+  box.dataset.version = novaVersao;
 
   box.innerHTML = `
-    <div class="update-title">🚀 Atualização obrigatória</div>
+    <div class="update-title">Atualização disponível</div>
     <div class="update-subtitle">
-      Esta app está desatualizada e precisa de ser atualizada para continuar.<br><br>
+      Existe uma versão nova. Podes atualizar agora ou continuar a trabalhar.<br><br>
       Atual: v${APP_VERSION} Premium<br>
       Nova: v${novaVersao} Premium
     </div>
     <div class="update-actions">
-      <button class="primary-btn" onclick="atualizarAppObrigatorio()">Descarregar atualização</button>
+      <button class="ghost-btn" onclick="fecharAvisoAtualizacao()">Continuar</button>
+      <button class="primary-btn" onclick="atualizarAppObrigatorio()">Atualizar agora</button>
     </div>
   `;
-
-  document.body.style.overflow = "hidden";
 }
 
-function atualizarAppObrigatorio() {
+function fecharAvisoAtualizacao() {
+  const overlay = document.getElementById("updateOverlayAppBraga");
+  const box = document.getElementById("updateBoxAppBraga");
+  if (box?.dataset.version) setCookieAppBraga("appUpdateDismissedVersion", box.dataset.version, 86400);
+  if (overlay) overlay.remove();
+  if (box) box.remove();
+  document.body.style.overflow = "";
+}
+
+async function limparCacheAtualizacaoAppBraga() {
+  try {
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((reg) => {
+        if (reg.waiting) reg.waiting.postMessage({ type: "SKIP_WAITING" });
+        return reg.unregister();
+      }));
+    }
+  } catch (error) {
+    console.error("Erro a limpar service worker:", error);
+  }
+
+  try {
+    if (window.caches?.keys) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((key) => caches.delete(key)));
+    }
+  } catch (error) {
+    console.error("Erro a limpar cache:", error);
+  }
+}
+
+async function atualizarAppObrigatorio() {
   const box = document.getElementById("updateBoxAppBraga");
   if (box) {
     box.innerHTML = `
-      <div class="update-title">⏳ A atualizar...</div>
-      <div class="update-subtitle">A abrir a versão mais recente da app.</div>
+      <div class="update-title">A atualizar...</div>
+      <div class="update-subtitle">A limpar cache e a carregar a versao mais recente da app.</div>
     `;
   }
 
-  const target = APP_REMOTE_BASE + "index.html?update=" + Date.now();
+  deleteCookieAppBraga("appUpdateDismissedVersion");
+  const targetUrl = new URL(window.location.href);
+  targetUrl.searchParams.set("v", APP_VERSION);
+  targetUrl.searchParams.set("update", String(Date.now()));
+  const target = targetUrl.toString();
   const currentBefore = window.location.href;
 
-  setTimeout(async () => {
-    try {
-      await limparServiceWorkersAntigosAppBraga();
-    } catch (e) {
-      console.error(e);
-    }
-
+  try {
+    await limparCacheAtualizacaoAppBraga();
+  } finally {
     try {
       window.location.replace(target);
     } catch (e) {
@@ -3478,11 +5281,13 @@ function atualizarAppObrigatorio() {
         }
       }
     }, 2200);
-  }, 400);
+  }
 }
 
 window.addEventListener("load", verificarAtualizacao);
 window.addEventListener("load", () => atualizarVersaoUI(APP_VERSION));
+window.fecharAvisoAtualizacao = fecharAvisoAtualizacao;
+window.atualizarAppObrigatorio = atualizarAppObrigatorio;
 
 
 
@@ -3503,7 +5308,7 @@ function itemPorRef(lista, ref) {
 
 function idxPorRef(lista, ref) {
   if (typeof ref === "string") {
-    return lista.findIndex(i => i.idDoc === ref || i._ref === ref);
+    return lista.findIndex(i => i.idDoc === ref || i._ref === ref || i.firebaseId === ref);
   }
   const idx = Number(ref);
   return Number.isNaN(idx) ? -1 : idx;
@@ -4284,6 +6089,7 @@ window.abrirAdicionarPistola = abrirAdicionarPistola;
 
 /* ===== MODO VISUAL ===== */
 function modoVisualInit() {
+  if (window.matchMedia?.("(pointer: coarse)")?.matches || document.body.classList.contains("device-tablet") || document.body.classList.contains("device-phone")) return;
   document.body.classList.add("modo-visual-on");
   document.querySelectorAll(".panel, .pc-card, .dashboard-card, .stock-card, .history-card").forEach((node, index) => {
     node.style.opacity = "0";
@@ -4337,7 +6143,7 @@ function getPrioridadeMaximaGestor(limit = 4) {
   impressorasData.forEach(item => {
     const info = tonerInfoState[item.ip] || null;
     const colors = Array.isArray(info?.colors) ? info.colors : [];
-    const crit = colors.filter(c => typeof c.percent === "number" && c.percent <= 10);
+    const crit = colors.filter(c => isTonerEmpty(c.percent));
     if (crit.length) {
       rows.push({
         label: `${item.modelo} · ${item.localizacao}`,
@@ -4396,7 +6202,7 @@ function renderModoGestorExtremo() {
   if (prioridade) {
     prioridade.innerHTML = maxRows.length
       ? maxRows.map(item => `<div class="gestor-priority-card"><h4>${item.label}</h4><div class="meta-line">${item.detail}</div></div>`).join("")
-      : `<div class="gestor-priority-card"><h4>Sem prioridade máxima</h4><div class="meta-line">Não existem impressoras abaixo de 10% neste momento.</div></div>`;
+      : `<div class="gestor-priority-card"><h4>Sem prioridade máxima</h4><div class="meta-line">Não existem impressoras com toner a 0% neste momento.</div></div>`;
   }
 
   if (consumo) {
@@ -4706,7 +6512,7 @@ function buildAlertasInteligentes() {
     impressorasData.forEach(item => {
       const info = tonerInfoState[item.ip] || null;
       const colors = Array.isArray(info?.colors) ? info.colors : [];
-      const crit = colors.filter(c => typeof c.percent === "number" && c.percent <= 20);
+      const crit = colors.filter(c => isTonerEmpty(c.percent));
       if (crit.length) rows.push({ tipo: "printer", titulo: `${item.modelo} · ${item.localizacao}`, detalhe: crit.map(c => `${c.label}: ${c.percent}%`).join(" | ") });
     });
   }
@@ -4869,6 +6675,23 @@ async function gerarWordEtiquetaPartilhada(dados, opts = {}) {
 
 window.gerarWordEtiquetaPartilhada = gerarWordEtiquetaPartilhada;
 
+function getEtiquetaDateValue(item = {}) {
+  const candidates = [item.data, item.dataScan, item.dataFolha, item.dataEtiqueta, item.createdAt, item.created];
+  for (const value of candidates) {
+    if (!value) continue;
+    if (typeof value === "number") return value;
+    if (value.seconds) return value.seconds * 1000;
+    const text = String(value);
+    const iso = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (iso) return new Date(`${iso[1]}-${iso[2]}-${iso[3]}T12:00:00`).getTime();
+    const pt = text.match(/^(\d{2})[\/-](\d{2})[\/-](\d{4})/);
+    if (pt) return new Date(`${pt[3]}-${pt[2]}-${pt[1]}T12:00:00`).getTime();
+    const parsed = Date.parse(text);
+    if (!Number.isNaN(parsed)) return parsed;
+  }
+  return 0;
+}
+
 function renderEtiquetasWordCards() {
   const host = el("listaEtiquetasWord");
   if (!host) return;
@@ -4879,6 +6702,7 @@ function renderEtiquetasWordCards() {
   if (texto) {
     items = items.filter(x => [x.serie,x.localCurto,x.localizacao,x.equipamento,x.cor,x.lote,x.dataEtiqueta].some(v => normalizarTexto(v).includes(texto)));
   }
+  items.sort((a, b) => getEtiquetaDateValue(b) - getEtiquetaDateValue(a));
   setText("countEtiquetasTotal", items.length);
   const hoje = new Date();
   const ymd = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-${String(hoje.getDate()).padStart(2,'0')}`;
@@ -5040,13 +6864,14 @@ window.apagarEtiquetaWordPartilhada = apagarEtiquetaWordPartilhada;
 
 function bindEtiquetasWordRealtime() {
   if (!db || !db.collection) return;
-  db.collection("etiquetasWord").orderBy("created", "desc").onSnapshot((snap) => {
+  db.collection("etiquetasWord").onSnapshot((snap) => {
     etiquetasWordGlobal = [];
     snap.forEach((doc) => {
       const t = ({ firebaseId: doc.id, ...doc.data() }) || {};
       t.idDoc = doc.id;
       etiquetasWordGlobal.push(t);
     });
+    sortFirestoreCreatedDesc(etiquetasWordGlobal);
     try { saveBackupAppBraga(BACKUP_KEYS_APP_BRAGA.etiquetas, etiquetasWordGlobal); } catch (e) {}
     renderEtiquetasWordCards();
   }, (error) => {
@@ -6515,3 +8340,300 @@ window.addEventListener(
   window.loadTheme
 );
 
+/* ===== APP BRAGA FINAL PISTOLAS CRUD FIX ===== */
+function getPistolaId(pistola, index = 0) {
+  return pistola?.idDoc || pistola?.firebaseId || pistola?.id || pistola?.docId || pistola?._ref || `local-pistola-${index}`;
+}
+
+function pistolaPayloadFromForm() {
+  return {
+    num: document.querySelector("#editP_num")?.value.trim() || "",
+    nome: document.querySelector("#editP_nome")?.value.trim() || "",
+    password: document.querySelector("#editP_password")?.value.trim() || "",
+    cn: document.querySelector("#editP_cn")?.value.trim() || "",
+    sn: document.querySelector("#editP_sn")?.value.trim() || "",
+    mac: document.querySelector("#editP_mac")?.value.trim() || "",
+    operador: document.querySelector("#editP_operador")?.value.trim() || "",
+    armazem: document.querySelector("#editP_armazem")?.value.trim() || "",
+    prontas: document.querySelector("#editP_prontas")?.value.trim() || "",
+    updatedAt: Date.now()
+  };
+}
+
+function fillPistolaForm(pistola = {}) {
+  const map = {
+    editP_num: pistola.num,
+    editP_nome: pistola.nome,
+    editP_password: pistola.password,
+    editP_cn: pistola.cn,
+    editP_sn: pistola.sn,
+    editP_mac: pistola.mac,
+    editP_operador: pistola.operador,
+    editP_armazem: pistola.armazem,
+    editP_prontas: pistola.prontas
+  };
+  Object.entries(map).forEach(([id, value]) => {
+    const field = document.getElementById(id);
+    if (field) field.value = value || "";
+  });
+}
+
+function openPistolaModal(title) {
+  const titleEl = document.querySelector("#modalEditarPistola h3");
+  if (titleEl) titleEl.textContent = title;
+  const modal = document.querySelector("#modalEditarPistola");
+  if (modal) modal.style.display = "flex";
+}
+
+window.abrirAdicionarPistola = function() {
+  window.pistolaAtual = null;
+  window.pistolaEditRef = "__new__";
+  fillPistolaForm({});
+  openPistolaModal("Adicionar Pistola CK65");
+};
+
+window.editarPistola = function(id) {
+  const lista = getListaPistolas();
+  const pistola = lista.find((item, index) => String(getPistolaId(item, index)) === String(id));
+  if (!pistola) {
+    mostrarMensagem("Pistola não encontrada.", "erro");
+    return;
+  }
+  window.pistolaAtual = pistola;
+  window.pistolaEditRef = getPistolaId(pistola);
+  fillPistolaForm(pistola);
+  openPistolaModal("Editar Pistola CK65");
+};
+
+window.guardarEdicaoPistola = async function() {
+  const dados = pistolaPayloadFromForm();
+  if (!dados.nome && !dados.num) {
+    mostrarMensagem("Preenche pelo menos o número ou o nome da pistola.", "erro");
+    return;
+  }
+
+  try {
+    if (window.pistolaEditRef === "__new__") {
+      const payload = { ...dados, createdAt: Date.now() };
+      if (window.db?.collection) {
+        const docRef = await window.db.collection("pistolas").add(payload);
+        window.pistolasData.unshift({ idDoc: docRef.id, firebaseId: docRef.id, ...payload });
+      } else {
+        window.pistolasData.unshift({ id: Date.now().toString(), ...payload });
+      }
+      mostrarMensagem("Pistola criada.");
+    } else {
+      const id = window.pistolaEditRef;
+      if (window.db?.collection && id && !String(id).startsWith("local-pistola-")) {
+        await window.db.collection("pistolas").doc(String(id)).set(dados, { merge: true });
+      }
+      const index = window.pistolasData.findIndex((item, itemIndex) => String(getPistolaId(item, itemIndex)) === String(id));
+      if (index >= 0) window.pistolasData[index] = { ...window.pistolasData[index], ...dados };
+      mostrarMensagem("Pistola atualizada.");
+    }
+    const modal = document.querySelector("#modalEditarPistola");
+    if (modal) modal.style.display = "none";
+    window.pistolaAtual = null;
+    window.pistolaEditRef = null;
+    window.renderPistolas();
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar pistola.", "erro");
+  }
+};
+
+window.apagarPistola = async function(id) {
+  if (!confirm("Deseja apagar esta pistola?")) return;
+  try {
+    if (window.db?.collection && id && !String(id).startsWith("local-pistola-")) {
+      await window.db.collection("pistolas").doc(String(id)).delete();
+    }
+    window.pistolasData = getListaPistolas().filter((item, index) => String(getPistolaId(item, index)) !== String(id));
+    window.renderPistolas();
+    mostrarMensagem("Pistola apagada.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao apagar pistola.", "erro");
+  }
+};
+
+window.renderPistolas = function(lista) {
+  const container = document.querySelector("#listaPistolas");
+  if (!container) return;
+  let items = (Array.isArray(lista) ? lista : getListaPistolas()).slice();
+  if (typeof sortPistolasNaturally === "function") items = sortPistolasNaturally(items);
+
+  const totalEl = document.querySelector("#countPistolas");
+  if (totalEl) totalEl.textContent = String(items.length);
+
+  container.innerHTML = items.length ? items.map((pistola, index) => {
+    const id = getPistolaId(pistola, index);
+    return `
+      <div class="pc-card pistol-card">
+        <div class="pc-name">${safeRefHtml(pistola.nome || "Pistola CK65")}</div>
+        <div class="meta-line">Nº: <span class="meta-value">${safeRefHtml(pistola.num || "-")}</span></div>
+        <div class="meta-line">Operador: <span class="meta-value">${safeRefHtml(pistola.operador || "-")}</span></div>
+        <div class="meta-line">Armazém: <span class="meta-value">${safeRefHtml(pistola.armazem || "-")}</span></div>
+        <div class="meta-line">CN: <span class="meta-value">${safeRefHtml(pistola.cn || "-")}</span></div>
+        <div class="meta-line">SN: <span class="meta-value">${safeRefHtml(pistola.sn || "-")}</span></div>
+        <div class="item-actions">
+          <button class="secondary-btn" type="button" onclick="editarPistola('${safeRefHtml(id)}')">
+            Editar
+          </button>
+          <button class="secondary-btn" type="button" onclick="verMaisPistola('${safeRefHtml(id)}')">
+            Ver Mais
+          </button>
+          <button class="secondary-btn" type="button" onclick="apagarPistola('${safeRefHtml(id)}')">
+            Apagar
+          </button>
+        </div>
+      </div>
+    `;
+  }).join("") : `<div class="reference-empty">Sem pistolas registadas.</div>`;
+};
+
+
+/* ===== BUTTON TEXT CONTRAST SETTINGS ===== */
+function getButtonTextMode() {
+  return getCookieAppBraga("appButtonTextMode") || "auto";
+}
+
+async function guardarModoTextoBotoes(mode) {
+  const allowed = ["auto", "dark", "light"];
+  const finalMode = allowed.includes(mode) ? mode : "auto";
+  setCookieAppBraga("appButtonTextMode", finalMode, 31536000);
+  aplicarModoTextoBotoes(finalMode);
+  if (!window.db || !window.db.collection) return;
+  try {
+    await window.db.collection("config").doc("layout").set({
+      buttonTextMode: finalMode,
+      updatedAt: Date.now()
+    }, { merge: true });
+    mostrarMensagem("Cor do texto dos botÃµes atualizada.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar a cor do texto.", "erro");
+  }
+}
+
+function aplicarModoTextoBotoes(modeValue = getButtonTextMode()) {
+  const allowed = ["auto", "dark", "light"];
+  const mode = allowed.includes(modeValue) ? modeValue : "auto";
+  const root = document.documentElement;
+
+  root.setAttribute("data-button-text-mode", mode);
+
+  if (mode === "dark") {
+    root.style.setProperty("--app-button-text", "#111827");
+    root.style.setProperty("--app-button-icon", "#111827");
+  } else if (mode === "light") {
+    root.style.setProperty("--app-button-text", "#ffffff");
+    root.style.setProperty("--app-button-icon", "#ffffff");
+  } else {
+    const accent = getComputedStyle(root).getPropertyValue("--app-accent").trim() || APP_DEFAULT_ACCENT;
+    const clean = accent.replace("#", "");
+    let r = 37, g = 99, b = 235;
+
+    if (/^[0-9a-fA-F]{6}$/.test(clean)) {
+      r = parseInt(clean.slice(0, 2), 16);
+      g = parseInt(clean.slice(2, 4), 16);
+      b = parseInt(clean.slice(4, 6), 16);
+    }
+
+    const brightness = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    const text = brightness > 170 ? "#111827" : "#ffffff";
+
+    root.style.setProperty("--app-button-text", text);
+    root.style.setProperty("--app-button-icon", text);
+  }
+
+  const select = document.getElementById("appButtonTextMode");
+  if (select) select.value = mode;
+}
+
+document.addEventListener("DOMContentLoaded", aplicarModoTextoBotoes);
+setTimeout(() => { if (typeof aplicarModoTextoBotoes === "function") aplicarModoTextoBotoes(); }, 300);
+/* ===== END BUTTON TEXT CONTRAST SETTINGS ===== */
+
+
+/* ===== BUTTON TEXT AFTER COLOR CHANGE PATCH ===== */
+document.addEventListener("change", function(e) {
+  if (e.target && e.target.id === "appAccentColor") {
+    setTimeout(() => {
+      if (typeof aplicarModoTextoBotoes === "function") aplicarModoTextoBotoes();
+    }, 100);
+  }
+});
+/* ===== END BUTTON TEXT AFTER COLOR CHANGE PATCH ===== */
+
+
+/* ===== IPHONE SIDEBAR TEXT PATCH ===== */
+(function(){
+  function fixSidebarText(){
+    document.body.classList.toggle("is-iphone-layout", window.innerWidth <= 768);
+
+    var sidebar = document.querySelector(".sidebar");
+    if (!sidebar) return;
+
+    sidebar.querySelectorAll("a").forEach(function(a){
+      var hasElement = Array.from(a.childNodes).some(function(n){ return n.nodeType === 1 && n.tagName !== "BR"; });
+      var text = (a.textContent || "").trim();
+
+      if (!a.querySelector(".sidebar-link-text") && text) {
+        a.innerHTML = '<span class="sidebar-link-text">' + text + '</span>';
+      }
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", fixSidebarText);
+  } else {
+    fixSidebarText();
+  }
+
+  window.addEventListener("resize", fixSidebarText);
+})();
+/* ===== END IPHONE SIDEBAR TEXT PATCH ===== */
+
+
+/* ===== ANDROID TABLET SCALE JS ===== */
+function aplicarEscalaTabletAndroidAppBraga() {
+  const isAndroidTablet = document.body.classList.contains("is-android-tablet");
+  if (!isAndroidTablet) return;
+
+  const width = window.innerWidth || document.documentElement.clientWidth || 0;
+  const height = window.innerHeight || document.documentElement.clientHeight || 0;
+  const minSide = Math.min(width, height);
+
+  let scale = 1.10;
+
+  if (minSide >= 800) scale = 1.16;
+  if (minSide >= 900) scale = 1.22;
+
+  document.documentElement.style.setProperty("--android-tablet-scale", String(scale));
+  document.body.classList.add("android-tablet-scale-ready");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(aplicarEscalaTabletAndroidAppBraga, 100);
+  setTimeout(aplicarEscalaTabletAndroidAppBraga, 600);
+});
+
+window.addEventListener("resize", () => {
+  setTimeout(aplicarEscalaTabletAndroidAppBraga, 100);
+}, { passive: true });
+
+window.addEventListener("orientationchange", () => {
+  setTimeout(aplicarEscalaTabletAndroidAppBraga, 300);
+}, { passive: true });
+/* ===== END ANDROID TABLET SCALE JS ===== */
+
+
+/* ===== FULL PAGE SCROLL PROXY ===== */
+(function(){
+  /*
+    Disabled on purpose: mobile/tablet browsers need native body scrolling.
+    Proxying wheel/touch events caused sticky scrolling on Android tablets and iPhone.
+  */
+})();
+/* ===== END FULL PAGE SCROLL PROXY ===== */

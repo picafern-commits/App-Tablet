@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt">
 <head>
 <script id="APP_BRAGA_THEME_LOADER">
@@ -7,27 +7,76 @@
     const savedTheme = localStorage.getItem("app-theme") || "dark";
     if(savedTheme === "dark"){
       document.documentElement.classList.add("dark");
-      document.body.classList.add("dark");
+      document.addEventListener("DOMContentLoaded", () => document.body?.classList.add("dark"));
     }
+
+    const normalizarCor = (value) => /^#[0-9a-fA-F]{6}$/.test(String(value || "").trim()) ? String(value).trim().toLowerCase() : "";
+    const cookieMatch = document.cookie.match(/(?:^|;\s*)appAccentColor=([^;]+)/);
+    const color = normalizarCor(cookieMatch ? decodeURIComponent(cookieMatch[1]) : "");
+    if(!color) return;
+
+    const rgb = {
+      r: parseInt(color.slice(1, 3), 16),
+      g: parseInt(color.slice(3, 5), 16),
+      b: parseInt(color.slice(5, 7), 16)
+    };
+    const adjust = (amount) => {
+      const next = [rgb.r, rgb.g, rgb.b].map((value) => Math.max(0, Math.min(255, value + amount)));
+      return "#" + next.map((value) => value.toString(16).padStart(2, "0")).join("");
+    };
+
+    const hover = adjust(-28);
+    const light = adjust(34);
+    const soft = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, .16)`;
+    const softer = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, .08)`;
+    const line = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, .22)`;
+    const glow = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, .28)`;
+    const vars = {
+      "--app-accent": color,
+      "--app-accent-hover": hover,
+      "--app-accent-light": light,
+      "--app-accent-rgb": `${rgb.r} ${rgb.g} ${rgb.b}`,
+      "--app-accent-soft": soft,
+      "--app-accent-softer": softer,
+      "--app-accent-line": line,
+      "--app-accent-glow": glow,
+      "--az-orange": color,
+      "--az-orange-2": hover,
+      "--az-orange-soft": soft,
+      "--az-line": line,
+      "--primary": color,
+      "--primary-hover": hover,
+      "--sidebar-hover": color,
+      "--brinka-pink": color,
+      "--brinka-purple": hover,
+      "--brinka-orange": color,
+      "--brinka-orange2": light,
+      "--ent-blue": color,
+      "--ent-purple": hover,
+      "--ent-orange": color,
+      "--app-blue": color,
+      "--app-blue-soft": soft
+    };
+    Object.entries(vars).forEach(([key, val]) => document.documentElement.style.setProperty(key, val));
   }catch(e){ console.log(e); }
 })();
 </script>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Radios</title>
-  <meta name="theme-color" content="#0f172a">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <title>Rádios</title>
+  <meta name="theme-color" content="#101114">
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/autozitania-bragalis.css">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="App Braga">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="format-detection" content="telephone=no">
   <meta name="msapplication-tap-highlight" content="no">
-
-<link rel="stylesheet" href="../css/sidebar-enterprise.css">
+  <link rel="stylesheet" href="../css/iphone-force-final.css?v=v2-final">
 </head>
 <body>
 <aside class="sidebar">
@@ -35,70 +84,116 @@
     <div class="brand-badge">BR</div>
     <div><h2>App Braga</h2></div>
   </div>
-	<a href="index.html">Dashboard</a>
-	<a href="add-toner.html">Adicionar Toner</a>
-	<a href="stock.html">Stock</a>
-	<a href="historico.html">Histórico</a>
-	<a href="etiquetas-word.html">Etiquetas Word</a>
-	<a href="impressoras.html">Impressoras</a>
-	<a href="manutencao-impressoras.html">Manutenção Impressoras</a>
-	<a href="computadores.html">Computadores</a>
-	<a href="users.html">Users</a>
-	<a href="pistolas.html">Pistolas CK65</a>
-	<a href="portas.html">Portas Rede</a>
-	<a href="radios.html" class="active">Rádios</a>
-	<a href="informacoes.html">Informações</a>
-	<a href="config.html">Configurações</a>
+  <a href="index.html">Dashboard</a>
+  <a href="add-toner.html">Adicionar Toner</a>
+  <a href="stock.html">Stock</a>
+  <a href="historico.html">Histórico</a>
+  <a href="etiquetas-word.html">Etiquetas Word</a>
+  <a href="impressoras.html">Impressoras</a>
+  <a href="manutencao-impressoras.html">Manutenção Impressoras</a>
+  <a href="computadores.html">Computadores</a>
+  <a href="users.html">Users</a>
+  <a href="pistolas.html">Pistolas CK65</a>
+  <a href="portas.html">Portas Rede</a>
+  <a href="radios.html" class="active">Rádios</a>
+  <a href="informacoes.html">Informações</a>
+  <a href="config.html">Configurações</a>
 </aside>
 
-<main class="main app-reference-page">
-  <div class="reference-header" data-breadcrumb="Home > RÃ¡dios">
+<main class="main app-reference-page radios-page">
+  <div class="reference-header" data-breadcrumb="Home > Rádios">
     <div>
-      <h1>Radios</h1>
+      <h1>Rádios</h1>
     </div>
     <div class="reference-actions">
       <div class="reference-search">
-        <input id="radioSearch" type="text" placeholder="Pesquisar por radio..." oninput="filtrarRadios()">
+        <span>⌕</span>
       </div>
-      <button class="primary-btn reference-primary" type="button" onclick="adicionarRadio()">Novo Radio</button>
     </div>
   </div>
 
-  <section class="reference-panel radios-panel">
-    <div class="reference-panel-title">Radios</div>
-    <div class="radio-editor-grid radio-editor-head">
-      <span>Radio</span>
-      <span></span>
-      <span>USERS (LISTA users)</span>
-      <span>Observações</span>
-      <span>Ações</span>
+  <section class="reference-panel">
+    <div class="section-header">
+      <div>
+        <h3>Rádios</h3>
+      </div>
+      <span class="status-pill"><strong id="radiosTotal">0</strong> rádios</span>
     </div>
-    <div id="radiosEditorRows" class="radio-editor-rows"></div>
-    <button class="secondary-btn reference-outline" type="button" onclick="adicionarRadio()">Adicionar Radio</button>
+    <button class="primary-btn reference-primary" type="button" onclick="adicionarRadio()">Novo Rádio</button>
+    <div id="listaRadios" class="radio-cards-grid"></div>
   </section>
 
-  <section class="reference-panel">
-    <div class="reference-panel-title">Relatorio Semanal</div>
-    <div class="reference-table-wrap">
-      <table class="reference-table">
-        <thead>
-          <tr>
-            <th>Radio</th>
-            <th>Users (Lista)</th>
-            <th>Última Atualização</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody id="radiosReportRows"></tbody>
-      </table>
+  <section class="reference-panel weekly-panel">
+    <div class="section-header">
+      <div>
+        <h3>Registo semanal</h3>
+      </div>
+      <div class="weekly-actions">
+      </div>
     </div>
+    <button class="primary-btn" type="button" onclick="abrirRegistoSemanalRadios()">Adicionar registo</button>
+    <div id="radioWeeklySummary" class="weekly-radio-list"></div>
   </section>
 </main>
+
+<div id="radioModal" class="modal-overlay" style="display:none;">
+  <div class="modal-card radio-modal-card">
+    <div class="section-header">
+      <div>
+        <h3 id="radioModalTitle">Novo Rádio</h3>
+        <p class="section-subtitle">Dados guardados na coleção Firestore radios.</p>
+      </div>
+    </div>
+    <div class="form-grid">
+      <label><span>Nome</span><input id="radioNome" type="text" placeholder="Ex: Rádio 01"></label>
+      <label><span>MAC</span><input id="radioMac" type="text" placeholder="Ex: AA:BB:CC:DD:EE:FF"></label>
+      <label><span>Numero de Serie</span><input id="radioSerial" type="text" placeholder="Numero de Serie"></label>
+    </div>
+    <div class="card-actions" style="margin-top:18px;">
+      <button class="primary-btn" type="button" onclick="guardarRadio()">Guardar</button>
+      <button class="secondary-btn" type="button" onclick="fecharModalRadio()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="radioWeeklyModal" class="modal-overlay" style="display:none;">
+  <div class="modal-card radio-modal-card">
+    <div class="section-header">
+      <div>
+        <h3>Detalhes do registo semanal</h3>
+        <p class="section-subtitle">Rádios usados e users associados ao registo escolhido.</p>
+      </div>
+      <button class="secondary-btn" type="button" onclick="fecharRelatorioRadios()">Fechar</button>
+    </div>
+    <div id="radioDetalhesLista" class="weekly-radio-list"></div>
+  </div>
+</div>
+
+<div id="radioWeeklyRecordModal" class="modal-overlay" style="display:none;">
+  <div class="modal-card radio-weekly-modal-card">
+    <div class="section-header">
+      <div>
+        <h3 id="radioWeeklyModalTitle">Novo registo semanal</h3>
+        <p id="radioWeeklyRecordLabel" class="section-subtitle">Escolhe quem usou cada rádio nesta semana.</p>
+      </div>
+      <button class="secondary-btn" type="button" onclick="fecharRegistoSemanalRadios()">Fechar</button>
+    </div>
+    <div class="form-grid radio-week-form">
+      <label><span>Data da semana</span><input id="radioWeeklyDate" type="date" onchange="renderRadioWeeklyForm()"></label>
+    </div>
+    <div id="radioWeeklyRows" class="radio-weekly-rows"></div>
+    <div class="card-actions" style="margin-top:18px;">
+      <button class="primary-btn" type="button" onclick="guardarRegistoSemanalRadios()">Guardar registo semanal</button>
+      <button class="secondary-btn" type="button" onclick="fecharRegistoSemanalRadios()">Cancelar</button>
+    </div>
+  </div>
+</div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="../js/app.js"></script>
 <script src="../js/core/helpers.js"></script>
+  <script src="../js/iphone-force-final.js?v=v2-final"></script>
 </body>
 </html>
