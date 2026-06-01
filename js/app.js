@@ -3474,7 +3474,7 @@ function renderRadios() {
     const assigned = !!currentUser;
     const assignedAt = item.atribuidoAt ? new Date(Number(item.atribuidoAt)).toLocaleString("pt-PT") : "";
     return `
-    <article class="radio-card">
+    <article class="radio-card" data-radio-id="${safeRefHtml(item.id)}" onclick="atualizarRadioSelecionado('${safeRefHtml(item.id)}')">
       <div class="radio-card-icon">${radioDeviceImageHtml(item)}</div>
       <div class="radio-card-main">
         <strong>${safeRefHtml(item.nome || "Sem nome")}</strong>
@@ -3483,7 +3483,7 @@ function renderRadios() {
         <div class="radio-card-user">${assigned ? `User: ${safeRefHtml(currentUser)}` : "Sem user atribuído"}</div>
         ${assignedAt ? `<small>Atribuído em ${safeRefHtml(assignedAt)}</small>` : ""}
       </div>
-      <div class="radio-card-actions">
+      <div class="radio-card-actions" onclick="event.stopPropagation()">
         <button class="secondary-btn" type="button" onclick="editarRadio('${safeRefHtml(item.id)}')">Editar</button>
         <button class="secondary-btn reference-outline" type="button" onclick="abrirAtribuirRadio('${safeRefHtml(item.id)}')">Atribuir</button>
         <button class="secondary-btn" type="button" onclick="devolverRadio('${safeRefHtml(item.id)}')">Devolver</button>
@@ -3519,6 +3519,9 @@ function renderRadios() {
   if (detalheNode) {
     detalheNode.innerHTML = `<div class="reference-empty">Escolhe um registo e clica em Ver mais.</div>`;
   }
+
+  atualizarRadioSelectOptions();
+  atualizarRadioSelecionado(radioSelectedId);
 }
 
 function initRadiosPage() {
@@ -4153,6 +4156,80 @@ function fecharHistoricoRadio() {
 }
 
 
+
+let radioSelectedId = "";
+
+function getRadioSelected() {
+  return radiosData.find((radio) => String(radio.id) === String(radioSelectedId));
+}
+
+function atualizarRadioSelectOptions() {
+  const select = document.getElementById("radioSelectedId");
+  if (!select) return;
+
+  const current = select.value || radioSelectedId || "";
+  const lista = radiosData
+    .slice()
+    .sort((a, b) => String(a.nome || a.serial || a.mac || "").localeCompare(String(b.nome || b.serial || b.mac || ""), "pt", { numeric: true, sensitivity: "base" }));
+
+  select.innerHTML = `<option value="">Selecionar rádio...</option>` + lista.map((radio) => {
+    const label = `${radio.nome || "Rádio"}${radio.mac ? " · " + radio.mac : ""}${radio.serial ? " · " + radio.serial : ""}`;
+    return `<option value="${safeRefHtml(radio.id)}"${String(radio.id) === String(current) ? " selected" : ""}>${safeRefHtml(label)}</option>`;
+  }).join("");
+
+  if (current && lista.some((radio) => String(radio.id) === String(current))) {
+    select.value = current;
+    radioSelectedId = current;
+  } else if (radioSelectedId && !lista.some((radio) => String(radio.id) === String(radioSelectedId))) {
+    radioSelectedId = "";
+    select.value = "";
+  }
+}
+
+function atualizarRadioSelecionado(id = null) {
+  const select = document.getElementById("radioSelectedId");
+
+  if (id !== null) {
+    radioSelectedId = String(id || "");
+    if (select) select.value = radioSelectedId;
+  } else {
+    radioSelectedId = select?.value || "";
+  }
+
+  const radio = getRadioSelected();
+  const info = document.getElementById("radioSelectedInfo");
+
+  document.querySelectorAll(".radio-card").forEach((card) => {
+    card.classList.toggle("is-selected", String(card.dataset.radioId || "") === String(radioSelectedId));
+  });
+
+  if (info) {
+    if (!radio) {
+      info.textContent = "Seleciona um rádio para mexer.";
+    } else {
+      const user = radioCurrentUserName(radio);
+      info.textContent = `${radio.nome || "Rádio"} · MAC ${radio.mac || "-"} · Série ${radio.serial || radio.numeroSerie || "-"} · ${user ? "User: " + user : "Disponível"}`;
+    }
+  }
+}
+
+function radioAcaoSelecionada(acao) {
+  const radio = getRadioSelected();
+  if (!radio) {
+    mostrarMensagem("Seleciona primeiro um rádio.", "erro");
+    return;
+  }
+
+  const id = radio.id;
+
+  if (acao === "editar") return editarRadio(id);
+  if (acao === "atribuir") return abrirAtribuirRadio(id);
+  if (acao === "devolver") return devolverRadio(id);
+  if (acao === "historico") return abrirHistoricoRadio(id);
+  if (acao === "apagar") return apagarRadio(id);
+}
+
+
 document.addEventListener("DOMContentLoaded", initRadiosPage);
 document.addEventListener("DOMContentLoaded", initInformacoesPage);
 document.addEventListener("DOMContentLoaded", initResolucaoApp);
@@ -4178,6 +4255,10 @@ window.guardarAtribuirRadio = guardarAtribuirRadio;
 window.devolverRadio = devolverRadio;
 window.abrirHistoricoRadio = abrirHistoricoRadio;
 window.fecharHistoricoRadio = fecharHistoricoRadio;
+
+window.atualizarRadioSelecionado = atualizarRadioSelecionado;
+window.radioAcaoSelecionada = radioAcaoSelecionada;
+
 
 window.guardarResolucaoApp = guardarResolucaoApp;
 window.guardarCorApp = guardarCorApp;

@@ -68,7 +68,7 @@
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/style.css?v=radios-buttons-fix-1">
+  <link rel="stylesheet" href="../css/style.css?v=radios-select-actions-1">
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -123,6 +123,26 @@
       <button class="primary-btn reference-primary" type="button" onclick="adicionarRadio()">Novo Rádio</button>
       <input id="radioSearch" type="text" placeholder="Pesquisar rádio, MAC, série ou user..." oninput="filtrarRadios()">
     </div>
+    
+<div class="radio-selected-actions">
+  <label class="radio-select-label">
+    <span>Rádio selecionado</span>
+    <select id="radioSelectedId" onchange="atualizarRadioSelecionado()">
+      <option value="">Selecionar rádio...</option>
+    </select>
+  </label>
+
+  <div class="radio-selected-buttons">
+    <button class="secondary-btn" type="button" onclick="radioAcaoSelecionada('editar')">Editar</button>
+    <button class="secondary-btn reference-outline" type="button" onclick="radioAcaoSelecionada('atribuir')">Atribuir</button>
+    <button class="secondary-btn" type="button" onclick="radioAcaoSelecionada('devolver')">Devolver</button>
+    <button class="secondary-btn reference-outline" type="button" onclick="radioAcaoSelecionada('historico')">Histórico</button>
+    <button class="secondary-btn danger" type="button" onclick="radioAcaoSelecionada('apagar')">Apagar</button>
+  </div>
+
+  <div id="radioSelectedInfo" class="radio-selected-info">Seleciona um rádio para mexer.</div>
+</div>
+
     <div id="listaRadios" class="radio-cards-grid"></div>
   </section>
 
@@ -229,7 +249,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="../js/app.js?v=radios-integrado-3"></script>
+<script src="../js/app.js?v=radios-select-actions-1"></script>
 <script src="../js/core/helpers.js"></script>
   <script src="../js/iphone-force-final.js?v=v2-final"></script>
 </body>

@@ -4954,3 +4954,90 @@ body.is-android-tablet.tablet-portrait .dashboard-container {
   }
 }
 /* ===== END RADIOS BUTTONS LAYOUT FIX ===== */
+
+
+/* ===== RADIOS SELECT ACTIONS FIX ===== */
+.radio-selected-actions {
+  margin: 14px 0 18px 0;
+  padding: 16px;
+  border-radius: 22px;
+  background: rgba(255,255,255,.055);
+  border: 1px solid rgba(255,255,255,.10);
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) 2fr;
+  gap: 14px;
+  align-items: end;
+}
+
+.radio-select-label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 !important;
+}
+
+.radio-select-label span {
+  color: #cbd5e1 !important;
+  font-weight: 900;
+  font-size: 13px;
+}
+
+#radioSelectedId {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 16px;
+  padding: 0 14px;
+}
+
+.radio-selected-buttons {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.radio-selected-buttons button {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 10px !important;
+  border-radius: 15px !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  white-space: nowrap;
+}
+
+.radio-selected-info {
+  grid-column: 1 / -1;
+  color: #94a3b8 !important;
+  font-size: 13px;
+  font-weight: 800;
+  padding-top: 2px;
+}
+
+.radio-card-actions {
+  display: none !important;
+}
+
+.radio-card.is-selected {
+  border-color: var(--app-accent, #2563eb) !important;
+  box-shadow: 0 0 0 2px var(--app-accent-soft, rgba(37,99,235,.22)),
+              0 18px 46px rgba(0,0,0,.28) !important;
+}
+
+.radio-card {
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .radio-selected-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .radio-selected-buttons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .radio-selected-buttons button:last-child {
+    grid-column: 1 / -1;
+  }
+}
+/* ===== END RADIOS SELECT ACTIONS FIX ===== */
