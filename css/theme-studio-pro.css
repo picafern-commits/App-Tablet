@@ -1,0 +1,403 @@
+
+/* =========================================================
+   APP BRAGA - THEME STUDIO PRO
+   Sistema avançado de cores + presets + customização
+   ========================================================= */
+
+:root {
+  --ts-bg: #020617;
+  --ts-bg2: #0f172a;
+  --ts-surface: rgba(15,23,42,.86);
+  --ts-surface2: rgba(30,41,59,.78);
+  --ts-card: #111827;
+  --ts-card-border: #334155;
+  --ts-text: #cbd5e1;
+  --ts-title: #ffffff;
+  --ts-muted: #94a3b8;
+  --ts-accent: #2563eb;
+  --ts-accent2: #1d4ed8;
+  --ts-accent-soft: rgba(37,99,235,.20);
+
+  --ts-primary-bg: #2563eb;
+  --ts-primary-text: #ffffff;
+  --ts-primary-border: #3b82f6;
+
+  --ts-secondary-bg: #1f2937;
+  --ts-secondary-text: #f8fafc;
+  --ts-secondary-border: #475569;
+
+  --ts-edit-bg: #1e3a8a;
+  --ts-edit-text: #dbeafe;
+  --ts-edit-border: #3b82f6;
+
+  --ts-danger-bg: #7f1d1d;
+  --ts-danger-text: #fecaca;
+  --ts-danger-border: #ef4444;
+
+  --ts-success-bg: #14532d;
+  --ts-success-text: #bbf7d0;
+  --ts-success-border: #22c55e;
+
+  --ts-warning-bg: #713f12;
+  --ts-warning-text: #fde68a;
+  --ts-warning-border: #f59e0b;
+
+  --ts-sidebar-bg: #0f172a;
+  --ts-sidebar-text: #f8fafc;
+  --ts-sidebar-active-bg: #2563eb;
+  --ts-sidebar-active-text: #ffffff;
+
+  --ts-input-bg: #0f172a;
+  --ts-input-text: #ffffff;
+  --ts-input-border: #334155;
+}
+
+/* Aplicação global do tema */
+html,
+body {
+  background:
+    radial-gradient(circle at 12% 10%, color-mix(in srgb, var(--ts-accent) 24%, transparent), transparent 35rem),
+    radial-gradient(circle at 90% 0%, color-mix(in srgb, var(--ts-accent2) 18%, transparent), transparent 34rem),
+    linear-gradient(135deg, var(--ts-bg), var(--ts-bg2)) !important;
+  color: var(--ts-text) !important;
+}
+
+body,
+body .meta-line,
+body .section-subtitle,
+body .subtitle,
+body small,
+body p,
+body span {
+  color: var(--ts-text);
+}
+
+body h1,
+body h2,
+body h3,
+body .page-hero-title,
+body .section-header h3,
+body .card-title,
+body .pc-name,
+body .radio-card-main strong,
+body .info-title,
+body .dashboard-title {
+  color: var(--ts-title) !important;
+}
+
+body .card,
+body .panel,
+body .stat-card,
+body .metric-card,
+body .dashboard-card,
+body .pc-card,
+body .radio-card,
+body .info-card,
+body .config-card,
+body .modal-card,
+body .enterprise-card,
+body .reference-card,
+body .page-hero,
+body .reference-header {
+  background: linear-gradient(145deg, color-mix(in srgb, var(--ts-card) 94%, white 6%), var(--ts-card)) !important;
+  border-color: var(--ts-card-border) !important;
+}
+
+body input,
+body select,
+body textarea {
+  background: var(--ts-input-bg) !important;
+  color: var(--ts-input-text) !important;
+  border-color: var(--ts-input-border) !important;
+}
+
+body input:focus,
+body select:focus,
+body textarea:focus {
+  border-color: var(--ts-accent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ts-accent) 25%, transparent) !important;
+}
+
+/* Botões */
+body button,
+body .btn,
+body .primary-btn,
+body .secondary-btn,
+body .reference-primary,
+body .reference-outline,
+body .enterprise-btn,
+body .btn-primary,
+body .add-btn,
+body .save-btn,
+body .small-btn,
+body .reference-icon {
+  border-style: solid !important;
+  border-width: 1px !important;
+  transition: transform .16s ease, box-shadow .16s ease, filter .16s ease !important;
+}
+
+body .primary-btn,
+body .reference-primary,
+body .btn-primary,
+body .add-btn,
+body .save-btn,
+body button[type="submit"],
+body button.primary,
+body .radio-action-main {
+  background: linear-gradient(135deg, var(--ts-primary-bg), color-mix(in srgb, var(--ts-primary-bg) 78%, white 12%)) !important;
+  color: var(--ts-primary-text) !important;
+  border-color: var(--ts-primary-border) !important;
+  box-shadow: 0 16px 38px color-mix(in srgb, var(--ts-primary-bg) 30%, transparent), 0 10px 24px rgba(0,0,0,.24) !important;
+}
+
+body .secondary-btn,
+body .reference-outline,
+body .btn,
+body .enterprise-btn {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ts-secondary-bg) 88%, white 10%), var(--ts-secondary-bg)) !important;
+  color: var(--ts-secondary-text) !important;
+  border-color: var(--ts-secondary-border) !important;
+}
+
+body .btn-edit,
+body button[onclick*="editar"],
+body button[onclick*="Editar"],
+body button[title*="Editar"] {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ts-edit-bg) 88%, white 10%), var(--ts-edit-bg)) !important;
+  color: var(--ts-edit-text) !important;
+  border-color: var(--ts-edit-border) !important;
+}
+
+body .btn-delete,
+body .danger,
+body button.danger,
+body .reference-icon.danger,
+body button[onclick*="apagar"],
+body button[onclick*="Apagar"],
+body button[title*="Apagar"] {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ts-danger-bg) 88%, white 10%), var(--ts-danger-bg)) !important;
+  color: var(--ts-danger-text) !important;
+  border-color: var(--ts-danger-border) !important;
+}
+
+body .btn-use,
+body button[onclick*="usar"],
+body button[onclick*="resolver"],
+body button[onclick*="confirmar"] {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ts-success-bg) 88%, white 10%), var(--ts-success-bg)) !important;
+  color: var(--ts-success-text) !important;
+  border-color: var(--ts-success-border) !important;
+}
+
+body button:hover,
+body .primary-btn:hover,
+body .secondary-btn:hover,
+body .reference-primary:hover,
+body .reference-outline:hover {
+  transform: translateY(-1px) !important;
+  filter: brightness(1.07) !important;
+  box-shadow: 0 20px 48px rgba(0,0,0,.36) !important;
+}
+
+body button *,
+body .primary-btn *,
+body .secondary-btn *,
+body .reference-primary *,
+body .reference-outline * {
+  color: inherit !important;
+}
+
+/* Sidebar */
+body .sidebar,
+body .enterprise-sidebar {
+  background: var(--ts-sidebar-bg) !important;
+}
+
+body .sidebar a,
+body .enterprise-sidebar a {
+  color: var(--ts-sidebar-text) !important;
+}
+
+body .sidebar a.active,
+body .sidebar .active,
+body .enterprise-sidebar a.active,
+body .nav-link.active,
+body .menu-item.active {
+  background: linear-gradient(135deg, var(--ts-sidebar-active-bg), color-mix(in srgb, var(--ts-sidebar-active-bg) 82%, white 14%)) !important;
+  color: var(--ts-sidebar-active-text) !important;
+}
+
+/* =========================
+   UI DO THEME STUDIO
+   ========================= */
+.theme-studio-pro {
+  border-radius: 26px !important;
+  overflow: hidden;
+}
+
+.theme-studio-hero {
+  padding: 22px;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 10% 0%, color-mix(in srgb, var(--ts-accent) 28%, transparent), transparent 22rem),
+    linear-gradient(145deg, rgba(255,255,255,.08), rgba(255,255,255,.035));
+  border: 1px solid rgba(255,255,255,.12);
+  margin-bottom: 18px;
+}
+
+.theme-studio-hero h3 {
+  margin: 0 0 8px 0;
+  font-size: 26px;
+}
+
+.theme-studio-hero p {
+  margin: 0;
+  color: var(--ts-text) !important;
+}
+
+.theme-preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.theme-preset-card {
+  border: 1px solid rgba(255,255,255,.13) !important;
+  border-radius: 22px !important;
+  padding: 14px !important;
+  background: rgba(255,255,255,.055) !important;
+  min-height: 132px !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  box-shadow: none !important;
+}
+
+.theme-preset-card:hover {
+  border-color: var(--ts-accent) !important;
+}
+
+.theme-preset-card strong {
+  color: #fff !important;
+  font-size: 15px;
+}
+
+.theme-preset-card small {
+  color: #cbd5e1 !important;
+  margin-top: 4px;
+}
+
+.theme-preset-swatches {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.theme-preset-swatches i {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: block;
+  border: 1px solid rgba(255,255,255,.30);
+}
+
+.theme-editor-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0 14px;
+}
+
+.theme-editor-tabs button {
+  min-height: 40px !important;
+  border-radius: 14px !important;
+}
+
+.theme-editor-tabs button.active {
+  background: var(--ts-primary-bg) !important;
+  color: var(--ts-primary-text) !important;
+  border-color: var(--ts-primary-border) !important;
+}
+
+.theme-editor-section {
+  display: none;
+}
+
+.theme-editor-section.active {
+  display: block;
+}
+
+.theme-color-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+  gap: 14px;
+}
+
+.theme-color-field {
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.055);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+.theme-color-field span {
+  display: block;
+  color: #dbeafe !important;
+  font-size: 13px;
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+
+.theme-color-field-row {
+  display: grid;
+  grid-template-columns: 54px 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.theme-color-field input[type="color"] {
+  width: 54px;
+  height: 44px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.theme-color-field input[type="text"] {
+  min-height: 44px !important;
+  border-radius: 14px !important;
+  font-family: monospace;
+  text-transform: uppercase;
+}
+
+.theme-preview {
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 22px;
+  background: var(--ts-card);
+  border: 1px solid var(--ts-card-border);
+}
+
+.theme-preview-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.theme-preview-card {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 18px;
+  background: var(--ts-card);
+  border: 1px solid var(--ts-card-border);
+}
+
+.theme-studio-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+/* ===== END THEME STUDIO PRO ===== */

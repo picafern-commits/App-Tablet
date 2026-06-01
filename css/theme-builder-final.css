@@ -1,0 +1,231 @@
+
+/* =========================================================
+   APP BRAGA - THEME BUILDER FINAL
+   Carregado por último para vencer todos os CSS antigos
+   ========================================================= */
+
+:root {
+  --ui-primary-bg: var(--app-accent, #2563eb);
+  --ui-primary-text: var(--app-button-text, #ffffff);
+  --ui-primary-border: var(--app-accent, #2563eb);
+
+  --ui-secondary-bg: #1f2937;
+  --ui-secondary-text: #f8fafc;
+  --ui-secondary-border: #475569;
+
+  --ui-danger-bg: #7f1d1d;
+  --ui-danger-text: #fecaca;
+  --ui-danger-border: #ef4444;
+
+  --ui-edit-bg: #1e3a8a;
+  --ui-edit-text: #dbeafe;
+  --ui-edit-border: #3b82f6;
+
+  --ui-success-bg: #14532d;
+  --ui-success-text: #bbf7d0;
+  --ui-success-border: #22c55e;
+
+  --ui-card-bg: #111827;
+  --ui-card-border: #334155;
+  --ui-title-color: #ffffff;
+  --ui-text-color: #cbd5e1;
+
+  --ui-sidebar-bg: #0f172a;
+  --ui-sidebar-text: #f8fafc;
+  --ui-sidebar-active-bg: #2563eb;
+  --ui-sidebar-active-text: #ffffff;
+}
+
+/* BASE DOS BOTÕES */
+body button,
+body .btn,
+body .primary-btn,
+body .secondary-btn,
+body .small-btn,
+body .reference-icon,
+body .reference-primary,
+body .reference-outline,
+body .enterprise-btn,
+body .add-btn,
+body .save-btn,
+body .btn-primary,
+body .btn-edit,
+body .btn-delete,
+body .btn-use {
+  border-style: solid !important;
+  border-width: 1px !important;
+}
+
+/* PRINCIPAL */
+body .primary-btn,
+body .reference-primary,
+body .btn-primary,
+body .add-btn,
+body .save-btn,
+body button[type="submit"],
+body button.primary,
+body .radio-action-main {
+  background: var(--ui-primary-bg) !important;
+  color: var(--ui-primary-text) !important;
+  border-color: var(--ui-primary-border) !important;
+}
+
+/* SECUNDÁRIO */
+body .secondary-btn,
+body .reference-outline,
+body .btn,
+body .enterprise-btn {
+  background: var(--ui-secondary-bg) !important;
+  color: var(--ui-secondary-text) !important;
+  border-color: var(--ui-secondary-border) !important;
+}
+
+/* EDITAR */
+body .btn-edit,
+body button[onclick*="editar"],
+body button[onclick*="Editar"],
+body button[title*="Editar"] {
+  background: var(--ui-edit-bg) !important;
+  color: var(--ui-edit-text) !important;
+  border-color: var(--ui-edit-border) !important;
+}
+
+/* APAGAR */
+body .btn-delete,
+body .danger,
+body button.danger,
+body .reference-icon.danger,
+body button[onclick*="apagar"],
+body button[onclick*="Apagar"],
+body button[title*="Apagar"] {
+  background: var(--ui-danger-bg) !important;
+  color: var(--ui-danger-text) !important;
+  border-color: var(--ui-danger-border) !important;
+}
+
+/* CONFIRMAR / USAR */
+body .btn-use,
+body button[onclick*="usar"],
+body button[onclick*="resolver"],
+body button[onclick*="confirmar"] {
+  background: var(--ui-success-bg) !important;
+  color: var(--ui-success-text) !important;
+  border-color: var(--ui-success-border) !important;
+}
+
+/* GUARDAR COM PRIMARY MANTÉM COR PRINCIPAL */
+body .primary-btn[onclick*="guardar"],
+body .primary-btn[onclick*="Guardar"],
+body .save-btn {
+  background: var(--ui-primary-bg) !important;
+  color: var(--ui-primary-text) !important;
+  border-color: var(--ui-primary-border) !important;
+}
+
+/* CARDS / PAINÉIS */
+body .card,
+body .panel,
+body .stat-card,
+body .metric-card,
+body .dashboard-card,
+body .pc-card,
+body .radio-card,
+body .info-card,
+body .config-card,
+body .modal-card,
+body .enterprise-card,
+body .reference-card {
+  background: var(--ui-card-bg) !important;
+  border-color: var(--ui-card-border) !important;
+}
+
+/* TEXTO */
+body h1,
+body h2,
+body h3,
+body .page-hero-title,
+body .section-header h3,
+body .card-title,
+body .pc-name,
+body .radio-card-main strong {
+  color: var(--ui-title-color) !important;
+}
+
+body,
+body .meta-line,
+body .section-subtitle,
+body .card p,
+body .panel p,
+body small,
+body span {
+  color: var(--ui-text-color);
+}
+
+/* SIDEBAR */
+body .sidebar,
+body .enterprise-sidebar {
+  background: var(--ui-sidebar-bg) !important;
+}
+
+body .sidebar a,
+body .enterprise-sidebar a {
+  color: var(--ui-sidebar-text) !important;
+}
+
+body .sidebar a.active,
+body .sidebar .active,
+body .enterprise-sidebar a.active,
+body .nav-link.active,
+body .menu-item.active {
+  background: var(--ui-sidebar-active-bg) !important;
+  color: var(--ui-sidebar-active-text) !important;
+}
+
+/* GARANTE QUE TEXTO DENTRO DOS BOTÕES SEGUE A VARIÁVEL */
+body button *,
+body .primary-btn *,
+body .secondary-btn *,
+body .btn *,
+body .reference-primary *,
+body .reference-outline * {
+  color: inherit !important;
+}
+
+/* UI DO PAINEL DE CONFIGURAÇÕES */
+.theme-builder-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+  gap: 14px !important;
+}
+
+.theme-builder-item {
+  padding: 14px !important;
+  border-radius: 18px !important;
+  background: rgba(255,255,255,.055) !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+}
+
+.theme-builder-item span {
+  display: block !important;
+  color: #cbd5e1 !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  margin-bottom: 8px !important;
+}
+
+.theme-builder-item input[type="color"] {
+  width: 100% !important;
+  height: 44px !important;
+  border: 0 !important;
+  background: transparent !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+}
+
+.theme-builder-actions {
+  display: flex !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+  margin-top: 16px !important;
+}
+/* ===== END THEME BUILDER FINAL ===== */
