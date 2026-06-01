@@ -1,8 +1,9 @@
 
-/* APP BRAGA - THEME PRESETS + SIMPLE CUSTOM */
+/* APP BRAGA - THEME PRESETS + CUSTOM ADVANCED */
 (function(){
   const STORAGE_KEY = "appBragaThemeStudioSimpleV3";
   const CUSTOM_KEY = "appBragaThemeCustomSimple";
+  const CUSTOM_ACTIVE_KEY = "appBragaThemeCustomActive";
 
   const themes = {
     enterpriseBlue:{name:"Enterprise Blue",desc:"Azul profissional e moderno.",bg:"#020617",bg2:"#0f172a",card:"#111827",border:"#334155",text:"#cbd5e1",title:"#ffffff",primary:"#2563eb",primaryText:"#ffffff",secondary:"#1f2937",secondaryText:"#f8fafc",edit:"#1e3a8a",editText:"#dbeafe",danger:"#7f1d1d",dangerText:"#fecaca",success:"#14532d",successText:"#bbf7d0",input:"#0f172a",inputText:"#ffffff",inputBorder:"#334155",sidebar:"#0f172a",sidebarText:"#f8fafc",sidebarIcon:"#f8fafc",sidebarActive:"#2563eb",sidebarActiveText:"#ffffff",sidebarButton:"#111827",sidebarButtonHover:"#1f2937",sidebarGlow:"#2563eb",sidebarDivider:"#334155",sidebarBrand:"#2563eb",sidebarBrandText:"#ffffff",sidebarTitle:"#ffffff",sidebarSubtitle:"#cbd5e1",buttonGlow:"#2563eb",cardGlow:"#2563eb"},
@@ -14,51 +15,44 @@
     iceWhite:{name:"Ice White",desc:"Claro, limpo e elegante.",bg:"#e5e7eb",bg2:"#f8fafc",card:"#ffffff",border:"#cbd5e1",text:"#334155",title:"#0f172a",primary:"#2563eb",primaryText:"#ffffff",secondary:"#e2e8f0",secondaryText:"#0f172a",edit:"#dbeafe",editText:"#1e3a8a",danger:"#fee2e2",dangerText:"#991b1b",success:"#dcfce7",successText:"#166534",input:"#ffffff",inputText:"#0f172a",inputBorder:"#cbd5e1",sidebar:"#f8fafc",sidebarText:"#0f172a",sidebarIcon:"#334155",sidebarActive:"#2563eb",sidebarActiveText:"#ffffff",sidebarButton:"#ffffff",sidebarButtonHover:"#e2e8f0",sidebarGlow:"#2563eb",sidebarDivider:"#cbd5e1",sidebarBrand:"#2563eb",sidebarBrandText:"#ffffff",sidebarTitle:"#0f172a",sidebarSubtitle:"#334155",buttonGlow:"#2563eb",cardGlow:"#94a3b8"}
   };
 
+  const advancedFields = [
+    ["primaryText","Letra botão principal"],["secondary","Botão secundário"],["secondaryText","Letra botão secundário"],
+    ["edit","Botão Editar"],["editText","Letra Editar"],["danger","Botão Apagar"],["dangerText","Letra Apagar"],
+    ["success","Botão Confirmar"],["successText","Letra Confirmar"],["border","Bordas dos cards"],
+    ["input","Inputs fundo"],["inputText","Inputs texto"],["inputBorder","Inputs borda"],
+    ["sidebarText","Sidebar texto"],["sidebarIcon","Sidebar símbolos"],["sidebarActive","Sidebar ativo"],
+    ["sidebarButton","Sidebar botões"],["sidebarButtonHover","Sidebar hover"],["sidebarDivider","Linha sidebar"],
+    ["sidebarBrand","Logo BR"],["sidebarTitle","Título sidebar"],["buttonGlow","Glow botões"],["cardGlow","Glow cards"]
+  ];
+
   function valid(v,f="#2563eb"){v=String(v||"").trim();return /^#[0-9a-fA-F]{6}$/.test(v)?v.toLowerCase():f;}
   function rgba(hex,a){hex=valid(hex).replace("#","");return `rgba(${parseInt(hex.slice(0,2),16)},${parseInt(hex.slice(2,4),16)},${parseInt(hex.slice(4,6),16)},${a})`;}
-  function shade(hex, amount){
-    hex=valid(hex).replace("#","");
-    let r=parseInt(hex.slice(0,2),16), g=parseInt(hex.slice(2,4),16), b=parseInt(hex.slice(4,6),16);
-    r=Math.max(0,Math.min(255,r+amount)); g=Math.max(0,Math.min(255,g+amount)); b=Math.max(0,Math.min(255,b+amount));
-    return "#"+[r,g,b].map(x=>x.toString(16).padStart(2,"0")).join("");
-  }
-  function luminance(hex){
-    hex=valid(hex).replace("#","");
-    const [r,g,b]=[parseInt(hex.slice(0,2),16),parseInt(hex.slice(2,4),16),parseInt(hex.slice(4,6),16)].map(v=>{
-      v/=255; return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);
-    });
-    return 0.2126*r+0.7152*g+0.0722*b;
-  }
+  function shade(hex, amount){hex=valid(hex).replace("#","");let r=parseInt(hex.slice(0,2),16),g=parseInt(hex.slice(2,4),16),b=parseInt(hex.slice(4,6),16);r=Math.max(0,Math.min(255,r+amount));g=Math.max(0,Math.min(255,g+amount));b=Math.max(0,Math.min(255,b+amount));return "#"+[r,g,b].map(x=>x.toString(16).padStart(2,"0")).join("");}
+  function luminance(hex){hex=valid(hex).replace("#","");const [r,g,b]=[parseInt(hex.slice(0,2),16),parseInt(hex.slice(2,4),16),parseInt(hex.slice(4,6),16)].map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*r+.7152*g+.0722*b;}
   function contrastText(hex){return luminance(hex)>0.45?"#0f172a":"#ffffff";}
 
-  function getCustom(){
-    try{return {...defaultCustom(), ...(JSON.parse(localStorage.getItem(CUSTOM_KEY)||"{}"))};}
-    catch(e){return defaultCustom();}
-  }
-  function defaultCustom(){
-    return {name:"O Meu Tema", mode:"dark", primary:"#2563eb", background:"#020617", card:"#111827", text:"#cbd5e1", sidebar:"#0f172a"};
-  }
+  function defaultCustom(){return {name:"O Meu Tema",mode:"dark",primary:"#2563eb",background:"#020617",card:"#111827",text:"#cbd5e1",sidebar:"#0f172a"};}
+  function getCustom(){try{return {...defaultCustom(),...(JSON.parse(localStorage.getItem(CUSTOM_KEY)||"{}"))};}catch(e){return defaultCustom();}}
   function buildCustomTheme(){
-    const c=getCustom();
-    const dark=c.mode!=="light";
+    const c=getCustom(), dark=c.mode!=="light";
     const primary=valid(c.primary), bg=valid(c.background), card=valid(c.card), text=valid(c.text), sidebar=valid(c.sidebar);
-    const title=contrastText(bg)==="#ffffff"?"#ffffff":"#0f172a";
-    const primaryText=contrastText(primary);
-    const border=dark?shade(card,36):shade(card,-42);
-    const secondary=dark?shade(card,18):shade(card,-10);
-    return {
-      name:c.name||"O Meu Tema", desc:"Tema personalizado simples.",
-      bg, bg2:dark?shade(bg,18):shade(bg,-8), card, border, text, title,
-      primary, primaryText, secondary, secondaryText:contrastText(secondary),
-      edit: dark?"#1e3a8a":"#dbeafe", editText: dark?"#dbeafe":"#1e3a8a",
-      danger: dark?"#7f1d1d":"#fee2e2", dangerText: dark?"#fecaca":"#991b1b",
-      success: dark?"#14532d":"#dcfce7", successText: dark?"#bbf7d0":"#166534",
-      input: dark?shade(card,-8):"#ffffff", inputText:title, inputBorder:border,
-      sidebar, sidebarText:contrastText(sidebar), sidebarIcon:contrastText(sidebar), sidebarActive:primary, sidebarActiveText:primaryText,
-      sidebarButton:dark?shade(sidebar,14):shade(sidebar,-8), sidebarButtonHover:dark?shade(sidebar,28):shade(sidebar,-18),
-      sidebarGlow:primary, sidebarDivider:border, sidebarBrand:primary, sidebarBrandText:primaryText, sidebarTitle:contrastText(sidebar), sidebarSubtitle:text,
-      buttonGlow:primary, cardGlow:primary
+    const title=contrastText(bg)==="#ffffff"?"#ffffff":"#0f172a", primaryText=contrastText(primary);
+    const base={
+      name:c.name||"O Meu Tema", desc:"Tema personalizado simples.", bg, bg2:dark?shade(bg,18):shade(bg,-8), card,
+      border:c.border|| (dark?shade(card,36):shade(card,-42)), text, title, primary, primaryText,
+      secondary:c.secondary || (dark?shade(card,18):shade(card,-10)), secondaryText:c.secondaryText || contrastText(c.secondary || (dark?shade(card,18):shade(card,-10))),
+      edit:c.edit || (dark?"#1e3a8a":"#dbeafe"), editText:c.editText || (dark?"#dbeafe":"#1e3a8a"),
+      danger:c.danger || (dark?"#7f1d1d":"#fee2e2"), dangerText:c.dangerText || (dark?"#fecaca":"#991b1b"),
+      success:c.success || (dark?"#14532d":"#dcfce7"), successText:c.successText || (dark?"#bbf7d0":"#166534"),
+      input:c.input || (dark?shade(card,-8):"#ffffff"), inputText:c.inputText || title, inputBorder:c.inputBorder || (dark?shade(card,36):shade(card,-42)),
+      sidebar, sidebarText:c.sidebarText || contrastText(sidebar), sidebarIcon:c.sidebarIcon || contrastText(sidebar),
+      sidebarActive:c.sidebarActive || primary, sidebarActiveText:c.sidebarActiveText || primaryText,
+      sidebarButton:c.sidebarButton || (dark?shade(sidebar,14):shade(sidebar,-8)), sidebarButtonHover:c.sidebarButtonHover || (dark?shade(sidebar,28):shade(sidebar,-18)),
+      sidebarGlow:c.sidebarGlow || primary, sidebarDivider:c.sidebarDivider || (dark?shade(card,36):shade(card,-42)),
+      sidebarBrand:c.sidebarBrand || primary, sidebarBrandText:c.sidebarBrandText || primaryText, sidebarTitle:c.sidebarTitle || contrastText(sidebar), sidebarSubtitle:c.sidebarSubtitle || text,
+      buttonGlow:c.buttonGlow || primary, cardGlow:c.cardGlow || primary
     };
+    return base;
   }
 
   function getTheme(){try{return {...themes.enterpriseBlue,...(JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}"))};}catch(e){return {...themes.enterpriseBlue};}}
@@ -92,38 +86,55 @@
     document.querySelectorAll(".card,.panel,.stat-card,.metric-card,.dashboard-card,.pc-card,.radio-card,.info-card,.user-card,.config-card,.modal-card,.enterprise-card,.reference-card,.page-hero,.reference-header,article[class*='card'],div[class*='card']").forEach(el=>{if(el.matches("button,[class*='btn']"))return;el.style.setProperty("background",t.card,"important");el.style.setProperty("border-color",t.border,"important");el.style.setProperty("color",t.text,"important");});
   }
 
-  function saveTheme(t){localStorage.setItem(STORAGE_KEY,JSON.stringify(t));applyTheme();render();if(typeof window.themeFirebasePushNow==="function"){setTimeout(window.themeFirebasePushNow,150);setTimeout(window.themeFirebasePushNow,800);}}
-  function applyPreset(id){if(themes[id])saveTheme(themes[id]);}
-  function applyCustom(){saveTheme(buildCustomTheme());}
+  function saveTheme(t){
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(t));
+    applyTheme(); render();
+    if(typeof window.themeFirebasePushNow==="function"){setTimeout(window.themeFirebasePushNow,150);setTimeout(window.themeFirebasePushNow,800);}
+  }
+  function applyPreset(id){if(themes[id]){localStorage.removeItem(CUSTOM_ACTIVE_KEY);saveTheme(themes[id]);}}
+  function applyCustom(){localStorage.setItem(CUSTOM_ACTIVE_KEY,"1"); saveTheme(buildCustomTheme());}
   function updateCustom(key,value){const c=getCustom();c[key]=value;localStorage.setItem(CUSTOM_KEY,JSON.stringify(c));render();}
+  function updateCustomAndApply(key,value){updateCustom(key,value); if(localStorage.getItem(CUSTOM_ACTIVE_KEY)==="1") applyCustom();}
+  function toggleAdvanced(){
+    const el=document.getElementById("themeCustomAdvanced");
+    const btn=document.getElementById("themeAdvancedBtn");
+    if(!el)return;
+    const open=el.style.display!=="grid";
+    el.style.display=open?"grid":"none";
+    if(btn) btn.textContent=open?"Esconder avançado":"Mostrar avançado";
+  }
 
   function render(){
     const root=document.getElementById("themeSimpleRoot"); if(!root)return;
-    const current=getTheme().name||"Enterprise Blue";
-    const c=getCustom();
+    const current=getTheme().name||"Enterprise Blue", c=getCustom(), activeCustom=localStorage.getItem(CUSTOM_ACTIVE_KEY)==="1";
+    const currentBuilt=buildCustomTheme();
     root.innerHTML=`<div class="theme-presets-only">
-      <div class="theme-current-box"><strong>Tema atual</strong><span>${current}</span><small>Escolhe um esquema pronto ou cria o teu de forma simples.</small></div>
+      <div class="theme-current-box"><strong>Tema atual</strong><span>${current}</span><small>Escolhe um esquema pronto ou cria o teu. O teu tema já não é substituído passados segundos.</small></div>
       <h3>Esquemas prontos</h3>
-      <div class="theme-preset-simple-grid">${Object.entries(themes).map(([id,t])=>`<button type="button" class="theme-preset-simple-card ${current===t.name?"active":""}" onclick="themePresetOnlyApply('${id}')"><div><strong>${t.name}</strong><small>${t.desc}</small></div><div class="theme-preset-simple-swatches"><i style="background:${t.bg}"></i><i style="background:${t.card}"></i><i style="background:${t.primary}"></i><i style="background:${t.secondary}"></i><i style="background:${t.success}"></i></div></button>`).join("")}</div>
-      <div class="theme-custom-simple">
+      <div class="theme-preset-simple-grid">${Object.entries(themes).map(([id,t])=>`<button type="button" class="theme-preset-simple-card ${!activeCustom&&current===t.name?"active":""}" onclick="themePresetOnlyApply('${id}')"><div><strong>${t.name}</strong><small>${t.desc}</small></div><div class="theme-preset-simple-swatches"><i style="background:${t.bg}"></i><i style="background:${t.card}"></i><i style="background:${t.primary}"></i><i style="background:${t.secondary}"></i><i style="background:${t.success}"></i></div></button>`).join("")}</div>
+      <div class="theme-custom-simple ${activeCustom?"active":""}">
         <h3>Criar o meu esquema</h3>
-        <p>Escolhe só as cores principais. A APP calcula o resto automaticamente.</p>
+        <p>Modo simples: poucas cores e a APP calcula o resto. O avançado fica escondido.</p>
         <div class="theme-custom-grid">
           <label><span>Nome do tema</span><input type="text" value="${c.name||"O Meu Tema"}" oninput="themeCustomUpdate('name',this.value)"></label>
-          <label><span>Modo</span><select onchange="themeCustomUpdate('mode',this.value)"><option value="dark" ${c.mode!=="light"?"selected":""}>Escuro</option><option value="light" ${c.mode==="light"?"selected":""}>Claro</option></select></label>
-          <label><span>Cor principal</span><input type="color" value="${valid(c.primary)}" onchange="themeCustomUpdate('primary',this.value)"></label>
-          <label><span>Fundo</span><input type="color" value="${valid(c.background)}" onchange="themeCustomUpdate('background',this.value)"></label>
-          <label><span>Cards</span><input type="color" value="${valid(c.card)}" onchange="themeCustomUpdate('card',this.value)"></label>
-          <label><span>Texto</span><input type="color" value="${valid(c.text)}" onchange="themeCustomUpdate('text',this.value)"></label>
-          <label><span>Sidebar</span><input type="color" value="${valid(c.sidebar)}" onchange="themeCustomUpdate('sidebar',this.value)"></label>
+          <label><span>Modo</span><select onchange="themeCustomLive('mode',this.value)"><option value="dark" ${c.mode!=="light"?"selected":""}>Escuro</option><option value="light" ${c.mode==="light"?"selected":""}>Claro</option></select></label>
+          <label><span>Cor principal</span><input type="color" value="${valid(c.primary)}" onchange="themeCustomLive('primary',this.value)"></label>
+          <label><span>Fundo</span><input type="color" value="${valid(c.background)}" onchange="themeCustomLive('background',this.value)"></label>
+          <label><span>Cards</span><input type="color" value="${valid(c.card)}" onchange="themeCustomLive('card',this.value)"></label>
+          <label><span>Texto</span><input type="color" value="${valid(c.text)}" onchange="themeCustomLive('text',this.value)"></label>
+          <label><span>Sidebar</span><input type="color" value="${valid(c.sidebar)}" onchange="themeCustomLive('sidebar',this.value)"></label>
         </div>
         <button class="primary-btn" type="button" onclick="themeCustomApply()">Aplicar o meu esquema</button>
+        <button id="themeAdvancedBtn" class="secondary-btn" type="button" onclick="themeCustomToggleAdvanced()">Mostrar avançado</button>
+        <div id="themeCustomAdvanced" class="theme-custom-grid theme-custom-advanced" style="display:none;">
+          ${advancedFields.map(([k,label])=>`<label><span>${label}</span><input type="color" value="${valid(c[k]||currentBuilt[k]||"#2563eb")}" onchange="themeCustomLive('${k}',this.value)"></label>`).join("")}
+        </div>
       </div>
       <div class="theme-preview"><h3>Preview</h3><p>Pré-visualização do esquema selecionado.</p><div class="theme-preview-row"><button class="primary-btn">Principal</button><button class="secondary-btn">Secundário</button><button class="secondary-btn" onclick="editarDemoThemeStudio()">Editar</button><button class="secondary-btn danger">Apagar</button></div><div class="theme-preview-card"><strong>Card exemplo</strong><p>Cards, botões, sidebar, inputs e grids seguem este esquema.</p></div></div>
     </div>`;
   }
 
-  window.themePresetOnlyApply=applyPreset; window.themeCustomUpdate=updateCustom; window.themeCustomApply=applyCustom;
+  window.themePresetOnlyApply=applyPreset; window.themeCustomUpdate=updateCustom; window.themeCustomLive=updateCustomAndApply; window.themeCustomApply=applyCustom; window.themeCustomToggleAdvanced=toggleAdvanced;
   window.themeSimplePreset=applyPreset; window.themeSimpleReset=function(){applyPreset("enterpriseBlue")}; window.themeSimpleUpdate=function(){}; window.themeSimpleImport=function(){};
   window.themeStudioRender=render; window.editarDemoThemeStudio=function(){};
   document.addEventListener("DOMContentLoaded",()=>{applyTheme();render();setTimeout(applyTheme,300);setTimeout(applyTheme,1000);});

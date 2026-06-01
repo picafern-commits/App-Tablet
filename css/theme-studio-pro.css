@@ -925,3 +925,21 @@ body .enterprise-btn:hover {
   padding: 0 12px;
 }
 /* ===== END SIMPLE CUSTOM THEME BUILDER ===== */
+
+/* ===== CUSTOM ADVANCED HIDDEN ===== */
+.theme-custom-simple.active {
+  border-color: var(--ts-primary-bg,#2563eb) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb,var(--ts-primary-bg) 25%,transparent), 0 18px 48px rgba(0,0,0,.24) !important;
+}
+
+.theme-custom-simple > button {
+  margin-right: 10px;
+  margin-top: 8px;
+}
+
+.theme-custom-advanced {
+  margin-top: 14px !important;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,.12);
+}
+/* ===== END CUSTOM ADVANCED HIDDEN ===== */

@@ -87,6 +87,17 @@
   }
 
   function applyRemoteTheme(data) {
+    // Se o utilizador acabou de aplicar "O Meu Tema", não deixar snapshot antigo da Firebase voltar atrás.
+    try {
+      if (localStorage.getItem("appBragaThemeCustomActive") === "1") {
+        const local = localStorage.getItem("appBragaThemeStudioSimpleV3") || "";
+        if (local && JSON.stringify(data || {}) !== local) {
+          setTimeout(pushThemeNow, 250);
+          return;
+        }
+      }
+    } catch(e) {}
+
     const json = JSON.stringify(data || {});
     if (!json || json === "{}") return;
     if (json === lastThemeJson) return;
