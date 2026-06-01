@@ -4854,31 +4854,7 @@ body.is-android-tablet.tablet-portrait .dashboard-container {
 /* ===== END PISTOLAS CK65 CODEX FIX ===== */
 
 
-/* ===== DASHBOARD ENTERPRISE REALTIME CENTER ===== */
-.dashboard-realtime-zone{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin:18px 0}
-.dashboard-live-panel,.dashboard-alerts-panel{background:linear-gradient(145deg,rgba(15,23,42,.82),rgba(30,41,59,.72));border:1px solid rgba(255,255,255,.10);border-radius:24px;padding:20px;box-shadow:0 22px 60px rgba(0,0,0,.28);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
-.dashboard-live-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
-.dashboard-live-title h2,.dashboard-live-title h3{margin:0;color:#fff!important}
-.dashboard-status-pill{display:inline-flex;align-items:center;gap:8px;min-height:34px;padding:0 12px;border-radius:999px;font-size:13px;font-weight:900;color:#fff!important;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12)}
-.dashboard-status-pill.ok{background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.34)}
-.dashboard-status-pill.warn{background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.34)}
-.dashboard-status-pill.bad{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.34)}
-.dashboard-live-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}
-.dashboard-click-card{position:relative;min-height:118px;padding:16px;border-radius:20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);cursor:pointer;transition:.18s ease}
-.dashboard-click-card:hover{transform:translateY(-2px);border-color:var(--app-accent,#2563eb);box-shadow:0 18px 40px var(--app-accent-soft,rgba(37,99,235,.18))}
-.dashboard-click-card span{display:block;color:#94a3b8!important;font-size:13px;font-weight:800;margin-bottom:8px}
-.dashboard-click-card strong{display:block;color:#fff!important;font-size:34px;line-height:1}
-.dashboard-click-card small{display:block;margin-top:8px;color:#cbd5e1!important;font-size:12px}
-.dashboard-alert-list{display:flex;flex-direction:column;gap:10px;max-height:340px;overflow-y:auto;padding-right:4px}
-.dashboard-alert-item{padding:13px 14px;border-radius:18px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
-.dashboard-alert-item.critical{border-color:rgba(239,68,68,.38);background:rgba(239,68,68,.12)}
-.dashboard-alert-item.warn{border-color:rgba(245,158,11,.38);background:rgba(245,158,11,.10)}
-.dashboard-alert-item.info{border-color:rgba(59,130,246,.35);background:rgba(59,130,246,.10)}
-.dashboard-alert-title{color:#fff!important;font-weight:900;margin-bottom:4px}
-.dashboard-alert-desc{color:#cbd5e1!important;font-size:13px}
-.dashboard-health-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:16px}
-.dashboard-health-item{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09)}
-.dashboard-health-item span{color:#94a3b8!important;font-size:12px;font-weight:800}
-.dashboard-health-item strong{display:block;color:#fff!important;margin-top:4px;font-size:15px}
-@media(max-width:980px){.dashboard-realtime-zone{grid-template-columns:1fr}}
-/* ===== END DASHBOARD ENTERPRISE REALTIME CENTER ===== */
+/* ===== USERS PRINT LABEL 100x150 FIX ===== */
+/* A etiqueta dos Users é gerada por js/users-print-label-100x150-fix.js
+   em 100mm x 150mm, sem page-break e com linhas/letras fortes para Zebra. */
+/* ===== END USERS PRINT LABEL 100x150 FIX ===== */
