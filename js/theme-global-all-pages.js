@@ -144,13 +144,29 @@
     });
   }
 
+  let applyQueued = false;
+
+  function scheduleThemeApply(){
+    if(applyQueued) return;
+    applyQueued = true;
+    requestAnimationFrame(()=>{
+      applyQueued = false;
+      applyThemeGlobalAllPages();
+    });
+  }
+
   function init(){
     applyThemeGlobalAllPages();
     setTimeout(applyThemeGlobalAllPages,250);
     setTimeout(applyThemeGlobalAllPages,900);
 
-    const obs = new MutationObserver(()=>applyThemeGlobalAllPages());
-    if(document.body) obs.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:["class","style"]});
+    /*
+      Importante:
+      Não observar atributos/style.
+      Isso criava loop infinito porque o próprio tema altera style inline.
+    */
+    const obs = new MutationObserver(()=>scheduleThemeApply());
+    if(document.body) obs.observe(document.body,{childList:true,subtree:true});
   }
 
   document.addEventListener("DOMContentLoaded", init);

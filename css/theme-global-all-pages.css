@@ -536,3 +536,19 @@ body:has(.theme-studio-pro) main,
   }
 }
 /* ===== END APP BRAGA THEME GLOBAL ALL PAGES ===== */
+
+
+/* ===== CONFIG CRASH GUARD ===== */
+/* Evita que o tema global transforme inputs/preview do Theme Studio de forma instável */
+.theme-studio-pro input[type="color"] {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.theme-studio-pro .theme-simple-field,
+.theme-studio-pro .theme-preview,
+.theme-studio-pro .theme-preview-card {
+  transition: none !important;
+}
+/* ===== END CONFIG CRASH GUARD ===== */
