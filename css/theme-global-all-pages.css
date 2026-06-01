@@ -1,0 +1,538 @@
+
+/* =========================================================
+   APP BRAGA - THEME GLOBAL ALL PAGES
+   Aplica o Theme Studio a todas as páginas/cards/grids/botões
+   ========================================================= */
+
+:root {
+  --ts-bg: #020617;
+  --ts-bg2: #0f172a;
+  --ts-card: #111827;
+  --ts-card2: #0f172a;
+  --ts-card-border: #334155;
+  --ts-title: #ffffff;
+  --ts-text: #cbd5e1;
+  --ts-muted: #94a3b8;
+  --ts-primary-bg: #2563eb;
+  --ts-primary-text: #ffffff;
+  --ts-primary-border: #3b82f6;
+  --ts-secondary-bg: #1f2937;
+  --ts-secondary-text: #f8fafc;
+  --ts-secondary-border: #475569;
+  --ts-edit-bg: #1e3a8a;
+  --ts-edit-text: #dbeafe;
+  --ts-edit-border: #3b82f6;
+  --ts-danger-bg: #7f1d1d;
+  --ts-danger-text: #fecaca;
+  --ts-danger-border: #ef4444;
+  --ts-success-bg: #14532d;
+  --ts-success-text: #bbf7d0;
+  --ts-success-border: #22c55e;
+  --ts-warning-bg: #713f12;
+  --ts-warning-text: #fde68a;
+  --ts-warning-border: #f59e0b;
+  --ts-input-bg: #0f172a;
+  --ts-input-text: #ffffff;
+  --ts-input-border: #334155;
+  --ts-sidebar-bg: #0f172a;
+  --ts-sidebar-text: #f8fafc;
+  --ts-sidebar-icon: #f8fafc;
+  --ts-sidebar-active-bg: #2563eb;
+  --ts-sidebar-active-text: #ffffff;
+  --ts-sidebar-divider: #334155;
+  --ts-sidebar-button-bg: #111827;
+  --ts-sidebar-button-hover-bg: #1f2937;
+  --ts-sidebar-button-glow: rgba(37,99,235,.34);
+  --ts-sidebar-brand-bg: #2563eb;
+  --ts-sidebar-brand-text: #ffffff;
+  --ts-sidebar-brand-border: #3b82f6;
+  --ts-sidebar-title: #ffffff;
+  --ts-sidebar-subtitle: #cbd5e1;
+  --ts-global-button-glow: rgba(37,99,235,.28);
+  --ts-global-card-glow: rgba(37,99,235,.12);
+  --ts-radius-card: 24px;
+  --ts-radius-btn: 16px;
+}
+
+/* Fundo geral */
+html,
+body {
+  background:
+    radial-gradient(circle at 12% 8%, color-mix(in srgb, var(--ts-primary-bg) 24%, transparent), transparent 34rem),
+    radial-gradient(circle at 90% 0%, color-mix(in srgb, var(--ts-primary-bg) 16%, transparent), transparent 32rem),
+    linear-gradient(135deg, var(--ts-bg), var(--ts-bg2)) !important;
+  color: var(--ts-text) !important;
+}
+
+/* Containers principais de todas as páginas */
+main,
+.main,
+.main-content,
+.page-content,
+.content,
+.content-area,
+.dashboard-container,
+.dashboard-shell,
+.app,
+.app-shell,
+.layout,
+.main-layout {
+  color: var(--ts-text) !important;
+}
+
+/* Headers/hero/painéis grandes */
+.page-hero,
+.dashboard-header,
+.reference-header,
+.hero,
+.header-card,
+.top-panel,
+.page-header,
+.section-panel {
+  background:
+    radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--ts-primary-bg) 18%, transparent), transparent 24rem),
+    linear-gradient(145deg, color-mix(in srgb, var(--ts-card) 94%, white 4%), var(--ts-card2)) !important;
+  border: 1px solid var(--ts-card-border) !important;
+  border-radius: var(--ts-radius-card) !important;
+  box-shadow: 0 22px 62px var(--ts-global-card-glow), 0 18px 54px rgba(0,0,0,.24) !important;
+}
+
+/* Cards gerais */
+.card,
+.panel,
+.box,
+.config-card,
+.enterprise-card,
+.reference-card,
+.info-card,
+.pc-card,
+.user-card,
+.radio-card,
+.pistol-card,
+.printer-card,
+.stock-card,
+.history-card,
+.dashboard-card,
+.metric-card,
+.stat-card,
+.summary-card,
+.form-card,
+.login-card,
+.modal-card,
+.modal-content,
+table,
+.table-card,
+.list-card,
+.item-card,
+article[class*="card"],
+div[class*="card"] {
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--ts-card) 95%, white 5%), var(--ts-card)) !important;
+  border-color: var(--ts-card-border) !important;
+  color: var(--ts-text) !important;
+  border-radius: var(--ts-radius-card) !important;
+  box-shadow: 0 18px 48px var(--ts-global-card-glow), 0 14px 40px rgba(0,0,0,.20) !important;
+}
+
+/* Cards com danger nunca ficam vermelhos inteiros */
+.card.danger,
+.panel.danger,
+.stat-card.danger,
+.metric-card.danger,
+.dashboard-card.danger,
+.pc-card.danger,
+.radio-card.danger,
+.info-card.danger,
+.user-card.danger,
+article.danger,
+div.danger[class*="card"] {
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--ts-card) 95%, white 5%), var(--ts-card)) !important;
+  border-color: var(--ts-card-border) !important;
+  color: var(--ts-text) !important;
+}
+
+/* Grids */
+.grid,
+.cards-grid,
+.stats-grid,
+.dashboard-grid,
+.form-grid,
+.reference-grid,
+.radio-cards-grid,
+.info-grid,
+.pc-grid,
+.users-grid,
+.printers-grid,
+.stock-grid,
+.history-grid,
+.config-grid,
+.configs-grid,
+.settings-grid {
+  gap: 18px !important;
+}
+
+/* Textos */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.page-hero-title,
+.dashboard-title,
+.section-header h3,
+.card-title,
+.info-title,
+.pc-name,
+.radio-card-main strong,
+.metric-card strong,
+.stat-card strong,
+.dashboard-card strong,
+strong {
+  color: var(--ts-title) !important;
+}
+
+p,
+small,
+span,
+label,
+.meta-line,
+.section-subtitle,
+.subtitle,
+.card p,
+.panel p,
+.reference-empty,
+.empty-state,
+.description,
+.muted {
+  color: var(--ts-text) !important;
+}
+
+.meta-value,
+.value,
+.count,
+.badge-value {
+  color: var(--ts-title) !important;
+}
+
+/* Inputs/selects/textareas */
+input,
+select,
+textarea,
+.input,
+.form-control {
+  background: var(--ts-input-bg) !important;
+  color: var(--ts-input-text) !important;
+  border-color: var(--ts-input-border) !important;
+  border-radius: 16px !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: color-mix(in srgb, var(--ts-input-text) 58%, transparent) !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--ts-primary-border) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ts-primary-bg) 24%, transparent) !important;
+  outline: none !important;
+}
+
+/* Tabelas */
+table,
+thead,
+tbody,
+tr,
+td,
+th {
+  border-color: var(--ts-card-border) !important;
+}
+
+th {
+  color: var(--ts-title) !important;
+  background: color-mix(in srgb, var(--ts-card) 82%, var(--ts-primary-bg) 18%) !important;
+}
+
+td {
+  color: var(--ts-text) !important;
+}
+
+/* Botões base */
+button,
+.btn,
+.primary-btn,
+.secondary-btn,
+.small-btn,
+.reference-icon,
+.reference-primary,
+.reference-outline,
+.enterprise-btn,
+.add-btn,
+.save-btn,
+.btn-primary,
+.btn-edit,
+.btn-delete,
+.btn-use,
+[class*="btn"] {
+  border-radius: var(--ts-radius-btn) !important;
+  border-style: solid !important;
+  border-width: 1px !important;
+  box-shadow:
+    0 0 30px var(--ts-global-button-glow),
+    0 10px 24px rgba(0,0,0,.22) !important;
+  transition: transform .16s ease, box-shadow .16s ease, filter .16s ease, border-color .16s ease !important;
+}
+
+/* Principal */
+.primary-btn,
+.reference-primary,
+.btn-primary,
+.add-btn,
+.save-btn,
+button[type="submit"],
+button.primary,
+.radio-action-main {
+  background: linear-gradient(135deg, var(--ts-primary-bg), color-mix(in srgb, var(--ts-primary-bg) 78%, white 12%)) !important;
+  color: var(--ts-primary-text) !important;
+  border-color: var(--ts-primary-border) !important;
+}
+
+/* Secundário */
+.secondary-btn,
+.reference-outline,
+.btn,
+.enterprise-btn {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ts-secondary-bg) 88%, white 10%), var(--ts-secondary-bg)) !important;
+  color: var(--ts-secondary-text) !important;
+  border-color: var(--ts-secondary-border) !important;
+}
+
+/* Editar */
+.btn-edit,
+button[onclick*="editar"],
+button[onclick*="Editar"],
+button[title*="Editar"] {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ts-edit-bg) 90%, white 10%), var(--ts-edit-bg)) !important;
+  color: var(--ts-edit-text) !important;
+  border-color: var(--ts-edit-border) !important;
+}
+
+/* Apagar/perigo */
+.btn-delete,
+button.btn-delete,
+.danger,
+button.danger,
+.reference-icon.danger,
+button[onclick*="apagar"],
+button[onclick*="Apagar"],
+button[title*="Apagar"],
+button[onclick*="delete"],
+button[onclick*="Delete"] {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ts-danger-bg) 88%, white 10%), var(--ts-danger-bg)) !important;
+  color: var(--ts-danger-text) !important;
+  border-color: var(--ts-danger-border) !important;
+}
+
+/* Confirmar/usar/guardar especiais */
+.btn-use,
+button[onclick*="usar"],
+button[onclick*="resolver"],
+button[onclick*="confirmar"] {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ts-success-bg) 88%, white 10%), var(--ts-success-bg)) !important;
+  color: var(--ts-success-text) !important;
+  border-color: var(--ts-success-border) !important;
+}
+
+/* Warning */
+.warning,
+.btn-warning,
+button.warning {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ts-warning-bg) 88%, white 10%), var(--ts-warning-bg)) !important;
+  color: var(--ts-warning-text) !important;
+  border-color: var(--ts-warning-border) !important;
+}
+
+/* Hover/active */
+button:hover,
+.btn:hover,
+.primary-btn:hover,
+.secondary-btn:hover,
+.reference-primary:hover,
+.reference-outline:hover,
+.enterprise-btn:hover,
+[class*="btn"]:hover {
+  transform: translateY(-1px) !important;
+  filter: brightness(1.07) !important;
+  box-shadow:
+    0 0 48px var(--ts-global-button-glow),
+    0 22px 52px rgba(0,0,0,.36) !important;
+}
+
+button:active,
+.btn:active,
+.primary-btn:active,
+.secondary-btn:active,
+[class*="btn"]:active {
+  transform: translateY(0) scale(.985) !important;
+}
+
+/* Texto dentro de botões */
+button *,
+.btn *,
+.primary-btn *,
+.secondary-btn *,
+.reference-primary *,
+.reference-outline *,
+[class*="btn"] * {
+  color: inherit !important;
+}
+
+/* Badges/pills/status */
+.badge,
+.pill,
+.status,
+.tag,
+.radio-status-pill,
+.dashboard-status-pill,
+.stat-badge,
+.screen-badge {
+  background: color-mix(in srgb, var(--ts-primary-bg) 22%, transparent) !important;
+  color: var(--ts-title) !important;
+  border-color: color-mix(in srgb, var(--ts-primary-border) 55%, transparent) !important;
+}
+
+/* Sidebar */
+.sidebar,
+.enterprise-sidebar,
+aside.sidebar {
+  background: var(--ts-sidebar-bg) !important;
+  border-right: 1px solid var(--ts-sidebar-divider) !important;
+  box-shadow: 12px 0 42px rgba(0,0,0,.22) !important;
+}
+
+.sidebar a,
+.enterprise-sidebar a,
+.sidebar button,
+.enterprise-sidebar button,
+.sidebar .nav-link,
+.enterprise-sidebar .nav-link,
+.sidebar .menu-item,
+.enterprise-sidebar .menu-item {
+  background: var(--ts-sidebar-button-bg) !important;
+  color: var(--ts-sidebar-text) !important;
+  border-color: transparent !important;
+}
+
+.sidebar a:hover,
+.enterprise-sidebar a:hover,
+.sidebar button:hover,
+.enterprise-sidebar button:hover,
+.sidebar .nav-link:hover,
+.enterprise-sidebar .nav-link:hover,
+.sidebar .menu-item:hover,
+.enterprise-sidebar .menu-item:hover {
+  background: var(--ts-sidebar-button-hover-bg) !important;
+  color: var(--ts-sidebar-text) !important;
+  box-shadow: 0 0 34px var(--ts-sidebar-button-glow) !important;
+}
+
+.sidebar a.active,
+.sidebar .active,
+.enterprise-sidebar a.active,
+.nav-link.active,
+.menu-item.active {
+  background: linear-gradient(135deg, var(--ts-sidebar-active-bg), color-mix(in srgb, var(--ts-sidebar-active-bg) 78%, white 12%)) !important;
+  color: var(--ts-sidebar-active-text) !important;
+  box-shadow: 0 0 38px var(--ts-sidebar-button-glow) !important;
+}
+
+.sidebar a::before,
+.enterprise-sidebar a::before,
+.sidebar svg,
+.enterprise-sidebar svg,
+.sidebar .nav-icon,
+.enterprise-sidebar .nav-icon,
+.sidebar .menu-icon,
+.enterprise-sidebar .menu-icon {
+  color: var(--ts-sidebar-icon) !important;
+  fill: var(--ts-sidebar-icon) !important;
+  stroke: var(--ts-sidebar-icon) !important;
+}
+
+.brand,
+.premium-brand,
+.sidebar .brand,
+.enterprise-sidebar .brand {
+  background: color-mix(in srgb, var(--ts-sidebar-brand-bg) 22%, transparent) !important;
+  border-color: var(--ts-sidebar-brand-border) !important;
+}
+
+.brand-badge,
+.brand-logo,
+.sidebar-logo,
+.premium-brand-icon {
+  background: var(--ts-sidebar-brand-bg) !important;
+  color: var(--ts-sidebar-brand-text) !important;
+  border-color: var(--ts-sidebar-brand-border) !important;
+}
+
+.sidebar h1,
+.sidebar h2,
+.enterprise-sidebar h1,
+.enterprise-sidebar h2,
+.brand-title,
+.premium-brand h2 {
+  color: var(--ts-sidebar-title) !important;
+}
+
+.sidebar .brand p,
+.sidebar .brand small,
+.enterprise-sidebar .brand p,
+.enterprise-sidebar .brand small,
+.premium-brand p {
+  color: var(--ts-sidebar-subtitle) !important;
+}
+
+/* Linha de separação sidebar/app */
+.sidebar::after,
+.enterprise-sidebar::after {
+  background: var(--ts-sidebar-divider) !important;
+}
+
+hr,
+.divider {
+  border-color: var(--ts-card-border) !important;
+}
+
+/* Modais */
+.modal-overlay {
+  background: rgba(0,0,0,.72) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+/* Configs organização */
+body:has(.theme-studio-pro) main,
+.config-page main {
+  max-width: 1480px !important;
+}
+
+.theme-studio-pro {
+  grid-column: 1 / -1 !important;
+  padding: 20px !important;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .card,
+  .panel,
+  .config-card,
+  .modal-card,
+  .page-hero,
+  .reference-header {
+    border-radius: 20px !important;
+  }
+}
+/* ===== END APP BRAGA THEME GLOBAL ALL PAGES ===== */
