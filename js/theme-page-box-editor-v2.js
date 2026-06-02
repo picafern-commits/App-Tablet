@@ -45,13 +45,41 @@
   function applyAll(){const s=store(),p=cur();if(!s[p])return;Object.entries(s[p]).forEach(([b,d])=>{targets(p,b).forEach(e=>applyBox(e,d));buttons(p,b).forEach(x=>applyBtn(x,d))})}
 
   function field(k,l,v){return `<label class="theme-page-box-field"><span>${l}</span><input type="color" value="${valid(v,def[k])}" onchange="themePageBoxUpdate('${k}',this.value)"></label>`}
+  function renderDetectedThings(){
+    const els = targets(page, box).filter(el => {
+      if(!el || !el.tagName) return false;
+      if(el.matches && el.matches("script,style,link")) return false;
+      return true;
+    });
+
+    const btns = buttons(page, box);
+
+    const elementItems = els.slice(0, 18).map((el, i) => {
+      const tag = (el.tagName || "div").toLowerCase();
+      const cls = (el.className || "").toString().split(/\s+/).filter(Boolean).slice(0,3).join(".");
+      const text = (el.textContent || "").replace(/\s+/g," ").trim().slice(0,55);
+      const label = text || (cls ? "." + cls : tag);
+      return `<span title="${label}">${tag}${cls ? "." + cls : ""}</span>`;
+    }).join("");
+
+    const buttonItems = btns.slice(0, 18).map((b, i) => `<span>${btnLabel(b,i)}</span>`).join("");
+
+    return `<div class="theme-page-box-detected-wrap">
+      <div class="theme-page-box-detected-title">Elementos encontrados nesta box</div>
+      <div class="theme-page-box-detected">${elementItems || "<span>Nenhum elemento encontrado nesta página aberta</span>"}</div>
+      <div class="theme-page-box-detected-title">Botões encontrados nesta box</div>
+      <div class="theme-page-box-detected">${buttonItems || "<span>Nenhum botão encontrado nesta box</span>"}</div>
+      <small class="theme-page-box-note">Nota: para detetar tudo, abre primeiro a página que queres personalizar e depois volta às Configurações. Mesmo assim podes guardar estilos para qualquer página.</small>
+    </div>`;
+  }
+
   function render(){
     const root=document.getElementById("themePageBoxEditorRoot"); if(!root)return; ensure(); const pc=pageCfg(), bc=boxCfg(), d=data();
-    const btns=buttons(page,box);
     root.innerHTML=`<div class="theme-page-box-selects"><label><span>Página</span><select onchange="themePageBoxSetPage(this.value)">${Object.entries(pages).map(([k,v])=>`<option value="${k}" ${k===page?"selected":""}>${v[0]}</option>`).join("")}</select></label><label><span>Box / Zona</span><select onchange="themePageBoxSetBox(this.value)">${boxes(page).map(b=>`<option value="${b.id}" ${b.id===box?"selected":""}>${b.label}</option>`).join("")}</select></label></div>
-    <div class="theme-page-box-current"><strong>${pc[0]} → ${bc.label}</strong><small>Personaliza a zona escolhida. Fica guardado na Firebase.</small></div>
-    <div class="theme-page-box-tabs"><button type="button" class="secondary-btn ${mode==="box"?"active":""}" onclick="themePageBoxSetMode('box')">Box</button><button type="button" class="secondary-btn ${mode==="buttons"?"active":""}" onclick="themePageBoxSetMode('buttons')">Botões da Box</button></div>
-    ${mode==="box"?`<div class="theme-page-box-grid">${field("boxBg","Fundo da box",d.boxBg)}${field("boxBorder","Borda da box",d.boxBorder)}${field("boxText","Texto da box",d.boxText)}${field("boxTitle","Títulos da box",d.boxTitle)}${field("boxGlow","Glow da box",d.boxGlow)}${field("radius","Arredondamento",d.radius)}</div>`:`<div class="theme-page-box-detected">${btns.length?btns.slice(0,14).map((b,i)=>`<span>${btnLabel(b,i)}</span>`).join(""):"<span>Não encontrei botões nesta box</span>"}</div><div class="theme-page-box-grid">${field("btnBg","Cor dos botões",d.btnBg)}${field("btnText","Letra dos botões",d.btnText)}${field("btnBorder","Borda dos botões",d.btnBorder)}${field("btnGlow","Glow dos botões",d.btnGlow)}</div>`}
+    <div class="theme-page-box-current"><strong>${pc[0]} → ${bc.label}</strong><small>Personaliza a zona escolhida. Se estiveres noutra página, a lista pode aparecer vazia, mas o estilo fica guardado e aplica quando abrires essa página.</small></div>
+    ${renderDetectedThings()}
+    <div class="theme-page-box-tabs"><button type="button" class="secondary-btn ${mode==="box"?"active":""}" onclick="themePageBoxSetMode('box')">Cores da Box</button><button type="button" class="secondary-btn ${mode==="buttons"?"active":""}" onclick="themePageBoxSetMode('buttons')">Botões da Box</button></div>
+    ${mode==="box"?`<div class="theme-page-box-grid">${field("boxBg","Fundo da box",d.boxBg)}${field("boxBorder","Borda da box",d.boxBorder)}${field("boxText","Texto da box",d.boxText)}${field("boxTitle","Títulos da box",d.boxTitle)}${field("boxGlow","Glow da box",d.boxGlow)}${field("radius","Arredondamento",d.radius)}</div>`:`<div class="theme-page-box-grid">${field("btnBg","Cor dos botões",d.btnBg)}${field("btnText","Letra dos botões",d.btnText)}${field("btnBorder","Borda dos botões",d.btnBorder)}${field("btnGlow","Glow dos botões",d.btnGlow)}</div>`}
     <div class="theme-page-box-actions"><button type="button" class="primary-btn" onclick="themePageBoxApplyNow()">Aplicar agora</button><button type="button" class="secondary-btn" onclick="themePageBoxResetCurrent()">Repor esta box</button></div>`;
   }
 
@@ -60,8 +88,8 @@
   async function pushFb(){if(remote)return;const x=db();if(!x||!x.collection)return;try{await x.collection(C).doc(D).set({data:store(),updatedAt:Date.now()},{merge:true})}catch(e){}}
   function listen(){const x=db();if(!x||!x.collection){setTimeout(listen,1000);return}if(unsub)return;unsub=x.collection(C).doc(D).onSnapshot(doc=>{if(!doc.exists){pushSoon();return}const payload=doc.data()||{};if(!payload.data)return;const active=document.activeElement;if(active&&active.matches&&active.matches("input,select,textarea"))return;remote=true;localStorage.setItem(STORE,JSON.stringify(payload.data));remote=false;applyAll();if(document.getElementById("themePageBoxEditorRoot"))render()})}
 
-  function init(){ensure();render();applyAll();listen();setTimeout(applyAll,500);setTimeout(applyAll,1500);const obs=new MutationObserver(()=>applyAll());if(document.body)obs.observe(document.body,{childList:true,subtree:true})}
-  window.themePageBoxSetPage=p=>{page=p;box=boxes(page)[0].id;render()};
+  function init(){ensure(); if(cur()==="config.html" && !sessionStorage.getItem("themePageBoxManualPage")){ page="index.html"; box=boxes(page)[0].id; } render();applyAll();listen();setTimeout(applyAll,500);setTimeout(applyAll,1500);const obs=new MutationObserver(()=>applyAll());if(document.body)obs.observe(document.body,{childList:true,subtree:true})}
+  window.themePageBoxSetPage=p=>{sessionStorage.setItem("themePageBoxManualPage","1");page=p;box=boxes(page)[0].id;render()};
   window.themePageBoxSetBox=b=>{box=b;render()};
   window.themePageBoxSetMode=m=>{mode=m;render()};
   window.themePageBoxUpdate=(k,v)=>setData({[k]:v});
