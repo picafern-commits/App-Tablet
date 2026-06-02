@@ -40,6 +40,38 @@
     Object.entries(compat).forEach(([k,v])=>document.documentElement.style.setProperty(k,valid(v),"important"));
     document.documentElement.style.setProperty("--ts-global-button-glow",rgba(t.btnGlow,.28),"important");
     document.documentElement.style.setProperty("--ts-global-card-glow",rgba(t.cardGlow,.14),"important");
+    applyHardOverrides();
+  }
+
+
+  function applyHardOverrides(){
+    const t=get();
+    const style=(selector,bg,txt,border)=>{
+      document.querySelectorAll(selector).forEach(el=>{
+        el.style.setProperty("background", valid(bg), "important");
+        el.style.setProperty("color", valid(txt), "important");
+        el.style.setProperty("border-color", valid(border), "important");
+      });
+    };
+
+    style("button,.btn,.secondary-btn,.reference-outline,.enterprise-btn", t.btnSecondaryBg, t.btnSecondaryText, t.cardBorder);
+    style(".primary-btn,.reference-primary,.btn-primary,.add-btn,.save-btn,button[type='submit'],button.primary,button[onclick*='guardar'],button[onclick*='Guardar'],button[onclick*='adicionar'],button[onclick*='Adicionar'],button[onclick*='export'],button[onclick*='Export'],button[onclick*='verificar'],button[onclick*='Verificar']", t.btnPrimaryBg, t.btnPrimaryText, t.btnPrimaryBg);
+    style(".btn-edit,.edit-btn,button[onclick*='editar'],button[onclick*='Editar'],button[title*='Editar']", t.btnEditBg, t.btnEditText, t.btnEditBg);
+    style(".danger,.btn-delete,.delete-btn,button.danger,button[onclick*='apagar'],button[onclick*='Apagar'],button[title*='Apagar']", t.btnDeleteBg, t.btnDeleteText, t.btnDeleteBg);
+    style(".btn-use,.success,button[onclick*='confirmar'],button[onclick*='Confirmar'],button[onclick*='usar'],button[onclick*='Usar']", t.btnSuccessBg, t.btnSuccessText, t.btnSuccessBg);
+
+    document.querySelectorAll("h1,h2,h3,h4,h5,h6,strong,b,.card-title,.section-title,.reference-header h1,.reference-panel h3,.config-card h3").forEach(el=>{
+      el.style.setProperty("color", valid(t.title), "important");
+    });
+
+    document.querySelectorAll("p,span,small,label,td,option,.section-subtitle,.meta-line,.radio-card-user,.reference-empty").forEach(el=>{
+      if(el.closest("button")) return;
+      el.style.setProperty("color", valid(t.text), "important");
+    });
+
+    document.querySelectorAll(".sidebar a,.enterprise-sidebar a,.nav-link,.menu-item").forEach(el=>{
+      el.style.setProperty("color", valid(t.sidebarText), "important");
+    });
   }
 
   function groupLabel(g){return {geral:"Geral",sidebar:"Sidebar",cards:"Cards",botoes:"Botões",inputs:"Inputs",tabelas:"Tabelas",toner:"Toner",configs:"Configs"}[g]||g;}

@@ -1,0 +1,339 @@
+
+/* APP BRAGA - COLOR CENTER FINAL OVERRIDES
+   Remove restos de sistemas antigos e força textos/botões a obedecerem ao Centro de Cores.
+*/
+
+/* Texto geral */
+body,
+main,
+section,
+article,
+div,
+p,
+span,
+small,
+label,
+li,
+td,
+th,
+option {
+  color: var(--cc-text) !important;
+}
+
+h1,h2,h3,h4,h5,h6,
+strong,
+b,
+.page-title,
+.section-title,
+.card-title,
+.reference-header h1,
+.reference-panel h3,
+.config-card h3,
+.enterprise-config-card h3,
+.radio-card-main strong,
+.pc-name,
+.info-list-item strong {
+  color: var(--cc-title) !important;
+}
+
+/* Textos secundários */
+.section-subtitle,
+.meta-line,
+.reference-empty,
+.info-empty,
+.card-subtitle,
+.radio-card-user,
+.radio-card-main span,
+.pc-meta,
+small {
+  color: var(--cc-text) !important;
+}
+
+/* Links e itens da sidebar */
+.sidebar,
+.enterprise-sidebar,
+.app-sidebar {
+  background: var(--cc-sidebar-bg) !important;
+  border-right-color: var(--cc-sidebar-divider) !important;
+}
+
+.sidebar a,
+.enterprise-sidebar a,
+.app-sidebar a,
+.nav-link,
+.menu-item {
+  color: var(--cc-sidebar-text) !important;
+  background: transparent !important;
+}
+
+.sidebar a span,
+.enterprise-sidebar a span,
+.nav-link span,
+.menu-item span {
+  color: inherit !important;
+}
+
+.sidebar a::before,
+.enterprise-sidebar a::before,
+.app-sidebar a::before,
+.nav-link::before,
+.menu-item::before,
+.sidebar svg,
+.enterprise-sidebar svg,
+.app-sidebar svg,
+.nav-link svg,
+.menu-item svg {
+  color: var(--cc-sidebar-icon) !important;
+  fill: var(--cc-sidebar-icon) !important;
+  stroke: var(--cc-sidebar-icon) !important;
+}
+
+.sidebar a.active,
+.enterprise-sidebar a.active,
+.app-sidebar a.active,
+.nav-link.active,
+.menu-item.active {
+  color: #fff !important;
+  background: var(--cc-sidebar-active) !important;
+  box-shadow: 0 0 36px color-mix(in srgb, var(--cc-sidebar-glow) 42%, transparent) !important;
+}
+
+/* Logo / título topo sidebar */
+.brand,
+.app-brand,
+.sidebar-brand,
+.logo-card,
+.brand-card,
+.premium-brand,
+.brand-badge,
+.brand-logo,
+.sidebar-logo,
+.premium-brand-icon {
+  background: var(--cc-brand-bg) !important;
+  color: var(--cc-brand-text) !important;
+  border-color: var(--cc-brand-bg) !important;
+}
+
+.brand *,
+.app-brand *,
+.sidebar-brand *,
+.logo-card *,
+.brand-card *,
+.premium-brand * {
+  color: var(--cc-brand-text) !important;
+}
+
+/* Cards e painéis */
+.card,
+.panel,
+.reference-panel,
+.reference-card,
+.config-card,
+.enterprise-config-card,
+.dashboard-card,
+.stat-card,
+.metric-card,
+.pc-card,
+.radio-card,
+.info-card,
+.info-list-item,
+.user-card,
+.printer-card,
+.stock-card,
+.history-card,
+.modal-card,
+.table-card,
+.form-card,
+[class*="card"]:not(button):not(.btn),
+[class*="panel"]:not(button):not(.btn) {
+  background: var(--cc-card-bg) !important;
+  border-color: var(--cc-card-border) !important;
+  color: var(--cc-card-text) !important;
+  box-shadow: 0 18px 48px color-mix(in srgb, var(--cc-card-glow) 18%, transparent), 0 14px 40px rgba(0,0,0,.22) !important;
+}
+
+/* Botões: regra geral antes dos específicos */
+button,
+.btn,
+.secondary-btn,
+.reference-outline,
+.enterprise-btn,
+[class*="btn"] {
+  background: var(--cc-btn-secondary-bg) !important;
+  color: var(--cc-btn-secondary-text) !important;
+  border-color: var(--cc-card-border) !important;
+  box-shadow: 0 0 30px color-mix(in srgb, var(--cc-btn-glow) 34%, transparent), 0 12px 28px rgba(0,0,0,.24) !important;
+}
+
+button *,
+.btn *,
+.secondary-btn *,
+.reference-outline *,
+.enterprise-btn * {
+  color: inherit !important;
+}
+
+/* Botões principais */
+.primary-btn,
+.reference-primary,
+.btn-primary,
+.add-btn,
+.save-btn,
+button[type="submit"],
+button.primary,
+.radio-action-main,
+button[onclick*="guardar"],
+button[onclick*="Guardar"],
+button[onclick*="adicionar"],
+button[onclick*="Adicionar"],
+button[onclick*="export"],
+button[onclick*="Export"],
+button[onclick*="verificar"],
+button[onclick*="Verificar"],
+button[onclick*="ativar"],
+button[onclick*="Ativar"],
+button[onclick*="registrar"],
+button[onclick*="Registar"] {
+  background: var(--cc-btn-primary-bg) !important;
+  color: var(--cc-btn-primary-text) !important;
+  border-color: var(--cc-btn-primary-bg) !important;
+}
+
+/* Botões editar */
+.btn-edit,
+.edit-btn,
+button[onclick*="editar"],
+button[onclick*="Editar"],
+button[title*="Editar"] {
+  background: var(--cc-btn-edit-bg) !important;
+  color: var(--cc-btn-edit-text) !important;
+  border-color: var(--cc-btn-edit-bg) !important;
+}
+
+/* Botões apagar/perigo */
+.danger,
+.btn-delete,
+.delete-btn,
+button.danger,
+button[onclick*="apagar"],
+button[onclick*="Apagar"],
+button[onclick*="delete"],
+button[title*="Apagar"] {
+  background: var(--cc-btn-delete-bg) !important;
+  color: var(--cc-btn-delete-text) !important;
+  border-color: var(--cc-btn-delete-bg) !important;
+}
+
+/* Botões confirmar/sucesso */
+.btn-use,
+.success,
+button[onclick*="confirmar"],
+button[onclick*="Confirmar"],
+button[onclick*="usar"],
+button[onclick*="Usar"],
+button[onclick*="resolver"],
+button[onclick*="Resolver"] {
+  background: var(--cc-btn-success-bg) !important;
+  color: var(--cc-btn-success-text) !important;
+  border-color: var(--cc-btn-success-bg) !important;
+}
+
+/* Inputs */
+input,
+select,
+textarea,
+.input,
+.form-control {
+  background: var(--cc-input-bg) !important;
+  color: var(--cc-input-text) !important;
+  border-color: var(--cc-input-border) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: color-mix(in srgb, var(--cc-input-text) 55%, transparent) !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--cc-input-focus) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cc-input-focus) 26%, transparent) !important;
+}
+
+/* Tabelas */
+table,
+thead,
+tbody,
+tr,
+td,
+th {
+  border-color: var(--cc-table-border) !important;
+}
+
+th,
+thead td {
+  background: var(--cc-table-head-bg) !important;
+  color: var(--cc-table-head-text) !important;
+}
+
+td {
+  background: var(--cc-table-row-bg) !important;
+  color: var(--cc-table-row-text) !important;
+}
+
+tr:hover td {
+  background: var(--cc-table-hover) !important;
+}
+
+/* Status pills / badges que ainda ficavam laranja/vermelho */
+.status-pill,
+.badge,
+.pill,
+.tag,
+.screen-badge,
+.radio-status-pill,
+.printer-toner-status {
+  background: var(--cc-btn-secondary-bg) !important;
+  color: var(--cc-btn-secondary-text) !important;
+  border-color: var(--cc-card-border) !important;
+}
+
+/* Config colapsável */
+.config-collapse-header {
+  background: var(--cc-config-header-bg) !important;
+  color: var(--cc-config-header-text) !important;
+  border-color: var(--cc-card-border) !important;
+}
+
+.config-collapse-title,
+.config-collapse-header span {
+  color: var(--cc-config-header-text) !important;
+}
+
+.config-collapse-body {
+  background: var(--cc-config-body-bg) !important;
+}
+
+/* Barras toner */
+.printer-toner-box.toner-good .printer-toner-bar,
+.printer-toner-bar.toner-good { background: var(--cc-toner-good) !important; }
+
+.printer-toner-box.toner-medium .printer-toner-bar,
+.printer-toner-bar.toner-medium { background: var(--cc-toner-medium) !important; }
+
+.printer-toner-box.toner-low .printer-toner-bar,
+.printer-toner-bar.toner-low { background: var(--cc-toner-low) !important; }
+
+.printer-toner-box.toner-critical .printer-toner-bar,
+.printer-toner-bar.toner-critical { background: var(--cc-toner-critical) !important; }
+
+/* Neutralizar inline hardcoded antigo em cards/botões comuns */
+[style*="color: orange"],
+[style*="color: #ff"],
+[style*="color:#ff"],
+[style*="background: orange"],
+[style*="background:#ff"],
+[style*="background: #ff"] {
+  color: inherit !important;
+}

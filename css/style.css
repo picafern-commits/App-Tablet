@@ -5691,3 +5691,19 @@ div:has(> #primaryColor) {
   display: none !important;
 }
 /* ===== END REMOVE OLD APP PRIMARY COLOR UI ===== */
+
+
+/* ===== OLD COLOR VARIABLE ALIASES TO COLOR CENTER ===== */
+:root {
+  --orange: var(--cc-accent) !important;
+  --pink: var(--cc-accent) !important;
+  --red: var(--cc-btn-delete-bg) !important;
+  --primary: var(--cc-btn-primary-bg) !important;
+  --brand: var(--cc-accent) !important;
+  --accent: var(--cc-accent) !important;
+  --app-primary: var(--cc-btn-primary-bg) !important;
+  --app-accent: var(--cc-accent) !important;
+  --button-bg: var(--cc-btn-primary-bg) !important;
+  --button-text: var(--cc-btn-primary-text) !important;
+}
+/* ===== END OLD COLOR VARIABLE ALIASES TO COLOR CENTER ===== */
