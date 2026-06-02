@@ -5610,3 +5610,59 @@ small {
   grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
   gap:14px;
 }
+
+
+/* ===== CONFIG FINAL FIX WIDTH + COLOR CENTER ===== */
+.config-full-width-card,
+.color-center-unified,
+.config-card:has(.config-notificacoes-title),
+.enterprise-config-card:has(.config-notificacoes-title),
+.config-card:has(#notifyRadios),
+.enterprise-config-card:has(#notifyRadios),
+.config-card:has(#notifyTonerZero),
+.enterprise-config-card:has(#notifyTonerZero) {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+}
+
+.config-card:has(.config-notificacoes-title),
+.enterprise-config-card:has(.config-notificacoes-title) {
+  display: block !important;
+}
+
+.config-card:has(.config-notificacoes-title) .config-collapse-body,
+.enterprise-config-card:has(.config-notificacoes-title) .config-collapse-body,
+.config-card:has(#notifyRadios) .config-collapse-body,
+.enterprise-config-card:has(#notifyRadios) .config-collapse-body {
+  width: 100% !important;
+}
+
+.config-card:has(.config-notificacoes-title) .config-options,
+.enterprise-config-card:has(.config-notificacoes-title) .config-options,
+.config-card:has(#notifyRadios) .config-options,
+.enterprise-config-card:has(#notifyRadios) .config-options,
+.config-card:has(.config-notificacoes-title) .form-grid,
+.enterprise-config-card:has(.config-notificacoes-title) .form-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important;
+  gap: 14px !important;
+  width: 100% !important;
+}
+
+.color-center-root {
+  min-height: 260px !important;
+  display: block !important;
+}
+
+.color-center-root:empty::before {
+  content: "A carregar Centro de Cores...";
+  display: block;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.06);
+  color: #cbd5e1;
+  font-weight: 900;
+}
+/* ===== END CONFIG FINAL FIX WIDTH + COLOR CENTER ===== */

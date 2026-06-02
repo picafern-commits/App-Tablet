@@ -70,7 +70,7 @@
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/style.css?v=unified-colors-1">
+  <link rel="stylesheet" href="../css/style.css?v=unified-fix-2">
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -81,7 +81,7 @@
   <link rel="stylesheet" href="../css/iphone-force-final.css?v=v2-final">
   <link rel="stylesheet" href="../css/theme-zone-editor.css?v=disabled-2">
   <link rel="stylesheet" href="../css/theme-firebase-sync.css?v=firebase-sync-1">
-  <link rel="stylesheet" href="../css/color-center-unified.css?v=unified-1">
+  <link rel="stylesheet" href="../css/color-center-unified.css?v=unified-fix-2">
 </head>
 <body>
 <aside class="sidebar">
@@ -322,18 +322,6 @@
 
 
 
-<div class="theme-sync-status warn" id="themeFirebaseSyncStatus">Tema: a ligar Firebase...</div>
-<div class="theme-sync-actions">
-  <button class="secondary-btn" type="button" onclick="themeFirebasePushNow()">Guardar tema na Firebase</button>
-  <button class="secondary-btn" type="button" onclick="themeFirebaseReloadNow()">Recarregar tema da Firebase</button>
-</div>
-
-  <label class="theme-system-toggle">
-  <span><strong>Ativar Esquemas de Cores</strong><small>Liga/desliga os esquemas predefinidos e “Meu esquema”.</small></span>
-  <input type="checkbox" id="toggleThemePresetsSystem" checked onchange="setThemePresetsEnabled(this.checked)">
-</label>
-<div id="themePresetsDisabledNote" class="theme-system-disabled-note" style="display:none;">Esquemas de Cores desligado.</div>
-<div id="themeSimpleRoot" class="theme-simple-layout"></div>
 </div>
 
 
@@ -341,10 +329,13 @@
 </div>
 
 
-<div class="config-card enterprise-config-card color-center-unified">
+</div>
+
+
+<div class="config-card enterprise-config-card color-center-unified config-full-width-card">
   <h3>Centro de Cores</h3>
   <p class="section-subtitle">Tudo num único sistema, dividido por grupos. Escolhe um esquema pronto ou personaliza por áreas.</p>
-  <div id="colorCenterRoot"></div>
+  <div id="colorCenterRoot" class="color-center-root"></div>
 </div>
 
 </main>
@@ -359,6 +350,6 @@
   <script src="../js/theme-zone-editor.js?v=disabled-2"></script>
   <script src="../js/theme-firebase-sync.js?v=no-refresh-2"></script>
   <script src="../js/config-collapsible.js?v=collapse-final-1"></script>
-  <script src="../js/color-center-unified.js?v=unified-1"></script>
+  <script src="../js/color-center-unified.js?v=unified-fix-2"></script>
 </body>
 </html>
