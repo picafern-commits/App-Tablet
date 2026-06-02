@@ -1,0 +1,319 @@
+
+/* APP BRAGA - MODERN ENTERPRISE BUTTON STYLE
+   Estilo moderno aplicado a todos os botões da APP.
+   Controlado pelo Centro de Cores.
+*/
+
+:root {
+  --btn-radius-modern: 16px;
+  --btn-height-modern: 44px;
+  --btn-border-modern: var(--cc-btn-border, color-mix(in srgb, var(--cc-btn-primary-bg) 42%, #ffffff 18%));
+  --btn-glow-soft-modern: color-mix(in srgb, var(--cc-btn-glow) 24%, transparent);
+  --btn-glow-strong-modern: color-mix(in srgb, var(--cc-btn-glow) 38%, transparent);
+}
+
+/* Base global */
+button,
+.btn,
+.primary-btn,
+.secondary-btn,
+.reference-primary,
+.reference-outline,
+.enterprise-btn,
+.btn-primary,
+.btn-edit,
+.btn-delete,
+.danger,
+.success,
+.small-btn,
+.action-btn,
+.add-btn,
+.save-btn,
+.delete-btn,
+.edit-btn,
+[class*="btn"] {
+  min-height: var(--btn-height-modern) !important;
+  border-radius: var(--btn-radius-modern) !important;
+  border: 1.4px solid var(--btn-border-modern) !important;
+  padding: 0 18px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 9px !important;
+  font-weight: 950 !important;
+  letter-spacing: .01em !important;
+  line-height: 1 !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  text-shadow: none !important;
+  transform: translateZ(0) !important;
+  transition:
+    transform .16s ease,
+    filter .16s ease,
+    background .16s ease,
+    border-color .16s ease,
+    box-shadow .16s ease !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.14),
+    0 0 0 1px rgba(255,255,255,.03),
+    0 14px 30px rgba(0,0,0,.22),
+    0 0 22px var(--btn-glow-soft-modern) !important;
+}
+
+/* Texto dentro dos botões */
+button *,
+.btn *,
+.primary-btn *,
+.secondary-btn *,
+.reference-primary *,
+.reference-outline *,
+.enterprise-btn *,
+[class*="btn"] * {
+  color: inherit !important;
+  text-shadow: none !important;
+}
+
+/* Hover/active moderno */
+button:hover,
+.btn:hover,
+.primary-btn:hover,
+.secondary-btn:hover,
+.reference-primary:hover,
+.reference-outline:hover,
+.enterprise-btn:hover,
+[class*="btn"]:hover {
+  transform: translateY(-1px) !important;
+  filter: brightness(1.07) saturate(1.04) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    0 0 0 1px rgba(255,255,255,.06),
+    0 18px 38px rgba(0,0,0,.28),
+    0 0 32px var(--btn-glow-strong-modern) !important;
+}
+
+button:active,
+.btn:active,
+.primary-btn:active,
+.secondary-btn:active,
+.reference-primary:active,
+.reference-outline:active,
+.enterprise-btn:active,
+[class*="btn"]:active {
+  transform: translateY(0) scale(.985) !important;
+  filter: brightness(.96) !important;
+}
+
+/* Botão principal */
+.primary-btn,
+.reference-primary,
+.btn-primary,
+.add-btn,
+.save-btn,
+button[type="submit"],
+button.primary,
+button[onclick*="guardar"],
+button[onclick*="Guardar"],
+button[onclick*="adicionar"],
+button[onclick*="Adicionar"],
+button[onclick*="export"],
+button[onclick*="Export"],
+button[onclick*="verificar"],
+button[onclick*="Verificar"],
+button[onclick*="ativar"],
+button[onclick*="Ativar"],
+button[onclick*="registrar"],
+button[onclick*="Registar"],
+button[onclick*="aplicar"],
+button[onclick*="Aplicar"] {
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--cc-btn-primary-bg) 88%, #ffffff 12%),
+      var(--cc-btn-primary-bg)
+    ) !important;
+  color: var(--cc-btn-primary-text) !important;
+  border-color: var(--cc-btn-border, color-mix(in srgb, var(--cc-btn-primary-bg) 70%, #ffffff 20%)) !important;
+}
+
+/* Botão secundário */
+.secondary-btn,
+.reference-outline,
+.btn,
+.enterprise-btn,
+.small-btn,
+.action-btn {
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--cc-btn-secondary-bg) 82%, #ffffff 10%),
+      var(--cc-btn-secondary-bg)
+    ) !important;
+  color: var(--cc-btn-secondary-text) !important;
+  border-color: var(--cc-btn-border, var(--cc-card-border)) !important;
+}
+
+/* Editar */
+.btn-edit,
+.edit-btn,
+button[onclick*="editar"],
+button[onclick*="Editar"],
+button[title*="Editar"] {
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--cc-btn-edit-bg) 82%, #ffffff 12%),
+      var(--cc-btn-edit-bg)
+    ) !important;
+  color: var(--cc-btn-edit-text) !important;
+  border-color: var(--cc-btn-border, color-mix(in srgb, var(--cc-btn-edit-bg) 70%, #ffffff 20%)) !important;
+}
+
+/* Apagar/perigo */
+.danger,
+.btn-delete,
+.delete-btn,
+button.danger,
+button[onclick*="apagar"],
+button[onclick*="Apagar"],
+button[onclick*="delete"],
+button[title*="Apagar"] {
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--cc-btn-delete-bg) 82%, #ffffff 10%),
+      var(--cc-btn-delete-bg)
+    ) !important;
+  color: var(--cc-btn-delete-text) !important;
+  border-color: var(--cc-btn-border, color-mix(in srgb, var(--cc-btn-delete-bg) 72%, #ffffff 18%)) !important;
+}
+
+/* Sucesso/confirmar */
+.success,
+.btn-use,
+button[onclick*="confirmar"],
+button[onclick*="Confirmar"],
+button[onclick*="usar"],
+button[onclick*="Usar"],
+button[onclick*="resolver"],
+button[onclick*="Resolver"] {
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--cc-btn-success-bg) 82%, #ffffff 12%),
+      var(--cc-btn-success-bg)
+    ) !important;
+  color: var(--cc-btn-success-text) !important;
+  border-color: var(--cc-btn-border, color-mix(in srgb, var(--cc-btn-success-bg) 72%, #ffffff 18%)) !important;
+}
+
+/* Botões full width dentro de painéis/configs */
+.config-card button,
+.enterprise-config-card button,
+.reference-panel button,
+.panel button,
+.card button {
+  min-height: 44px !important;
+}
+
+/* Botões pequenos ficam modernos mas compactos */
+.small-btn,
+.btn-sm,
+button.small {
+  min-height: 38px !important;
+  border-radius: 14px !important;
+  padding: 0 14px !important;
+  font-size: 12px !important;
+}
+
+/* Grupo de botões */
+.card-actions,
+.item-actions,
+.modal-actions,
+.form-actions,
+.toolbar,
+.reference-actions,
+.radio-selected-buttons,
+.weekly-record-actions,
+.acs-actions,
+.cc-actions {
+  gap: 10px !important;
+}
+
+/* Botão Aplicar Centro de Cores / preview */
+.cc-actions .primary-btn,
+.acs-actions .primary-btn,
+#colorCenterRoot .primary-btn,
+.color-center-unified .primary-btn {
+  width: 100% !important;
+  min-height: 50px !important;
+  border-radius: 18px !important;
+  font-size: 14px !important;
+}
+
+/* Separadores do Centro de Cores */
+.cc-tabs button,
+.acs-tabs button {
+  min-height: 42px !important;
+  border-radius: 15px !important;
+  padding: 0 16px !important;
+}
+
+.cc-tabs button.active,
+.acs-tabs button.active {
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--cc-btn-primary-bg) 88%, #ffffff 12%),
+      var(--cc-btn-primary-bg)
+    ) !important;
+  color: var(--cc-btn-primary-text) !important;
+  border-color: var(--cc-btn-border, var(--cc-btn-primary-bg)) !important;
+}
+
+/* Cards dos esquemas de cor */
+.cc-preset,
+.acs-preset {
+  border-radius: 20px !important;
+  border: 1.4px solid var(--cc-btn-border, var(--cc-card-border)) !important;
+  background:
+    linear-gradient(145deg,
+      color-mix(in srgb, var(--cc-card-bg) 88%, #ffffff 9%),
+      var(--cc-card-bg)
+    ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 18px 38px rgba(0,0,0,.22),
+    0 0 26px color-mix(in srgb, var(--cc-card-glow) 18%, transparent) !important;
+}
+
+.cc-preset:hover,
+.acs-preset:hover {
+  transform: translateY(-1px) !important;
+  filter: brightness(1.06) !important;
+}
+
+/* Foco acessível */
+button:focus-visible,
+.btn:focus-visible,
+.primary-btn:focus-visible,
+.secondary-btn:focus-visible,
+.reference-primary:focus-visible,
+.reference-outline:focus-visible,
+.enterprise-btn:focus-visible,
+[class*="btn"]:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--cc-btn-border, var(--cc-btn-glow)) 80%, #ffffff 10%) !important;
+  outline-offset: 2px !important;
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  button,
+  .btn,
+  .primary-btn,
+  .secondary-btn,
+  .reference-primary,
+  .reference-outline,
+  .enterprise-btn,
+  [class*="btn"] {
+    min-height: 44px !important;
+    border-radius: 15px !important;
+    padding: 0 14px !important;
+  }
+}
