@@ -290,6 +290,18 @@ ipcMain.handle("app:set-fullscreen", async (_event, value) => {
   return { ok: true, fullscreen: active };
 });
 
+ipcMain.handle("app:hide", async () => {
+  if (!win) return { ok: false };
+  win.hide();
+  return { ok: true };
+});
+
+ipcMain.handle("app:close", async () => {
+  app.isQuitting = true;
+  app.quit();
+  return { ok: true };
+});
+
 ipcMain.handle("app:open-external", async (_event, url) => {
   if (!url) return { ok: false };
   await shell.openExternal(String(url));

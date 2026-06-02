@@ -263,6 +263,26 @@
     main.insertBefore(topbar, main.firstElementChild);
     const action = topbar.querySelector("[data-enterprise-main-action]");
     action.addEventListener("click", triggerPrimaryAction);
+    setupElectronWindowActions(topbar, action);
+  }
+
+  function setupElectronWindowActions(topbar, beforeNode) {
+    if (!window.electronAPI?.closeApp || topbar.querySelector(".enterprise-window-actions")) return;
+    const actions = document.createElement("div");
+    actions.className = "enterprise-window-actions";
+    actions.innerHTML = `
+      <button class="secondary-btn enterprise-window-btn" type="button" data-enterprise-hide>Segundo plano</button>
+      <button class="secondary-btn enterprise-window-btn enterprise-window-close" type="button" data-enterprise-close>Fechar App</button>
+    `;
+    topbar.insertBefore(actions, beforeNode);
+    actions.querySelector("[data-enterprise-hide]")?.addEventListener("click", async () => {
+      await window.electronAPI.hideApp();
+    });
+    actions.querySelector("[data-enterprise-close]")?.addEventListener("click", async () => {
+      const ok = window.confirm("Queres fechar completamente a App Braga?");
+      if (!ok) return;
+      await window.electronAPI.closeApp();
+    });
   }
 
   function triggerPrimaryAction() {

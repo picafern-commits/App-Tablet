@@ -405,6 +405,27 @@ body.enterprise-search-ready .enterprise-search-shell {
   min-width: 150px;
 }
 
+.enterprise-window-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.enterprise-window-btn {
+  min-height: 42px;
+  border-color: color-mix(in srgb, var(--theme-accent, #ef4444) 30%, var(--border, #2b3444)) !important;
+  background: color-mix(in srgb, var(--panel, #17191d) 88%, var(--theme-accent, #ef4444) 12%) !important;
+  color: var(--text, #f8fafc) !important;
+  white-space: nowrap;
+}
+
+.enterprise-window-close {
+  border-color: color-mix(in srgb, #ef4444 70%, var(--border, #2b3444)) !important;
+  color: #fecaca !important;
+}
+
 .pc-card,
 .printer-card,
 .network-card,
@@ -603,5 +624,15 @@ body.enterprise-search-ready .enterprise-search-shell {
 
   .enterprise-page-action {
     width: 100%;
+  }
+
+  .enterprise-window-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .enterprise-window-btn {
+    flex: 1;
+    min-width: 0;
   }
 }
