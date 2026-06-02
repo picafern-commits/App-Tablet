@@ -70,7 +70,7 @@
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/style.css?v=radios-buttons-advanced-fix-1">
+  <link rel="stylesheet" href="../css/style.css?v=unified-colors-1">
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -79,11 +79,9 @@
   <meta name="format-detection" content="telephone=no">
   <meta name="msapplication-tap-highlight" content="no">
   <link rel="stylesheet" href="../css/iphone-force-final.css?v=v2-final">
-  <link rel="stylesheet" href="../css/theme-studio-pro.css?v=config-notify-theme-copy-1">
-  <link rel="stylesheet" href="../css/theme-global-all-pages.css?v=clean-old-colors-1">
   <link rel="stylesheet" href="../css/theme-zone-editor.css?v=disabled-2">
   <link rel="stylesheet" href="../css/theme-firebase-sync.css?v=firebase-sync-1">
-  <link rel="stylesheet" href="../css/advanced-color-system.css?v=advanced-clean-1">
+  <link rel="stylesheet" href="../css/color-center-unified.css?v=unified-1">
 </head>
 <body>
 <aside class="sidebar">
@@ -324,13 +322,6 @@
 
 
 
-<div class="config-card enterprise-config-card theme-studio-pro">
-  <div class="theme-studio-hero">
-    <h3>Esquemas de Cores</h3>
-    <p>Escolhe apenas um esquema predefinido. O tema sincroniza automaticamente pela Firebase para todos os dispositivos.</p>
-  </div>
-
-  
 <div class="theme-sync-status warn" id="themeFirebaseSyncStatus">Tema: a ligar Firebase...</div>
 <div class="theme-sync-actions">
   <button class="secondary-btn" type="button" onclick="themeFirebasePushNow()">Guardar tema na Firebase</button>
@@ -346,15 +337,14 @@
 </div>
 
 
-<div class="config-card enterprise-config-card advanced-color-system">
-  <h3>Sistema Avançado de Cores</h3>
-  <p class="section-subtitle">Editor completo, mas organizado por grupos. Escolhe o grupo e altera só o que precisas.</p>
-  <label class="theme-system-toggle">
-  <span><strong>Ativar Sistema Avançado</strong><small>Liga/desliga o editor avançado por grupos.</small></span>
-  <input type="checkbox" id="toggleAdvancedColorSystem" checked onchange="setAdvancedColorSystemEnabled(this.checked)">
-</label>
-<div id="advancedColorDisabledNote" class="theme-system-disabled-note" style="display:none;">Sistema Avançado desligado.</div>
 <div id="advancedColorSystemRoot"></div>
+</div>
+
+
+<div class="config-card enterprise-config-card color-center-unified">
+  <h3>Centro de Cores</h3>
+  <p class="section-subtitle">Tudo num único sistema, dividido por grupos. Escolhe um esquema pronto ou personaliza por áreas.</p>
+  <div id="colorCenterRoot"></div>
 </div>
 
 </main>
@@ -366,11 +356,9 @@
 <script src="../js/app.js?v=radios-buttons-advanced-fix-1"></script>
   <script src="../js/core/helpers.js"></script>
   <script src="../js/iphone-force-final.js?v=v2-final"></script>
-  <script src="../js/theme-studio-pro.js?v=theme-toggles-1"></script>
-  <script src="../js/theme-global-all-pages.js?v=no-refresh-2"></script>
   <script src="../js/theme-zone-editor.js?v=disabled-2"></script>
   <script src="../js/theme-firebase-sync.js?v=no-refresh-2"></script>
   <script src="../js/config-collapsible.js?v=collapse-final-1"></script>
-  <script src="../js/advanced-color-system.js?v=radios-buttons-advanced-fix-1"></script>
+  <script src="../js/color-center-unified.js?v=unified-1"></script>
 </body>
 </html>
