@@ -3686,13 +3686,20 @@ function renderRadioWeeklyRecordDetails(recordId) {
         <small>Registo criado em ${safeRefHtml(record.createdLabel || record.updatedLabel || "-")}</small>
       </div>
     </div>
-    ${assignments.length ? assignments.map((item) => `
+    ${assignments.length ? assignments.map((item) => {
+      const user1 = item.user1Nome || item.userNome || "";
+      const user2 = item.user2Nome || "";
+      const piso = item.piso || "Nenhum";
+      return `
       <div class="weekly-radio-row">
         <strong>${safeRefHtml(item.radioNome || "Rádio")}</strong>
-        <span>User associado: ${safeRefHtml(item.userNome || "Sem user selecionado")}</span>
+        <span>User 1: ${safeRefHtml(user1 || "Sem user selecionado")}</span>
+        <span>User 2: ${safeRefHtml(user2 || "Sem user selecionado")}</span>
+        <span>Piso: ${safeRefHtml(piso)}</span>
         <small>MAC ${safeRefHtml(item.radioMac || "-")} | Serial ${safeRefHtml(item.radioSerial || "-")}</small>
       </div>
-    `).join("") : `<div class="reference-empty">Este registo não tem rádios associados.</div>`}
+    `;
+    }).join("") : `<div class="reference-empty">Este registo não tem rádios associados.</div>`}
   `;
 }
 
@@ -3741,23 +3748,38 @@ function renderRadioWeeklyForm() {
     .slice()
     .sort((a, b) => radioUserLabel(a).localeCompare(radioUserLabel(b), "pt", { sensitivity: "base" }));
 
-  rows.innerHTML = radiosData.length ? radiosData.map((radio) => {
-    const current = saved.find(item => item.radioId === radio.id);
-    const options = [
+  const pisoOptions = ["Nenhum", "Piso 0", "Piso 1", "Piso 2"];
+
+  function buildUserOptions(selectedId = "") {
+    return [
       `<option value="">Sem user</option>`,
       ...users.map(user => {
         const userId = radioUserId(user);
-        const selected = current?.userId === userId ? " selected" : "";
+        const selected = String(selectedId || "") === String(userId) ? " selected" : "";
         return `<option value="${safeRefHtml(userId)}"${selected}>${safeRefHtml(radioUserLabel(user))}</option>`;
       })
     ].join("");
+  }
+
+  rows.innerHTML = radiosData.length ? radiosData.map((radio) => {
+    const current = saved.find(item => item.radioId === radio.id) || {};
+    const user1Id = current.user1Id || current.userId || "";
+    const user2Id = current.user2Id || "";
+    const pisoAtual = current.piso || "Nenhum";
+    const pisoSelect = pisoOptions.map((piso) => {
+      const selected = pisoAtual === piso ? " selected" : "";
+      return `<option value="${safeRefHtml(piso)}"${selected}>${safeRefHtml(piso)}</option>`;
+    }).join("");
+
     return `
-      <div class="radio-week-row" data-radio-id="${safeRefHtml(radio.id)}">
-        <div>
+      <div class="radio-week-row radio-week-row-v2" data-radio-id="${safeRefHtml(radio.id)}">
+        <div class="radio-week-device">
           <strong>${safeRefHtml(radio.nome || "Sem nome")}</strong>
           <span>MAC ${safeRefHtml(radio.mac || "-")} | Serial ${safeRefHtml(radio.serial || "-")}</span>
         </div>
-        <select data-radio-user="${safeRefHtml(radio.id)}">${options}</select>
+        <label><span>User 1</span><select data-radio-user1="${safeRefHtml(radio.id)}">${buildUserOptions(user1Id)}</select></label>
+        <label><span>User 2</span><select data-radio-user2="${safeRefHtml(radio.id)}">${buildUserOptions(user2Id)}</select></label>
+        <label><span>Piso</span><select data-radio-piso="${safeRefHtml(radio.id)}">${pisoSelect}</select></label>
       </div>
     `;
   }).join("") : `<div class="reference-empty">Cria rádios primeiro para conseguires fazer o registo semanal.</div>`;
@@ -3798,16 +3820,32 @@ async function guardarRegistoSemanalRadios() {
   const weekInfo = getRadioWeeklySelectedInfo();
   const users = radioUsersData.length ? radioUsersData : window.usersData || [];
   const assignments = radiosData.map((radio) => {
-    const select = document.querySelector(`[data-radio-user="${radioCssEscape(radio.id)}"]`);
-    const userId = select?.value || "";
-    const user = users.find(item => radioUserId(item) === userId);
+    const user1Select = document.querySelector(`[data-radio-user1="${radioCssEscape(radio.id)}"]`);
+    const user2Select = document.querySelector(`[data-radio-user2="${radioCssEscape(radio.id)}"]`);
+    const pisoSelect = document.querySelector(`[data-radio-piso="${radioCssEscape(radio.id)}"]`);
+
+    const user1Id = user1Select?.value || "";
+    const user2Id = user2Select?.value || "";
+    const user1 = users.find(item => radioUserId(item) === user1Id);
+    const user2 = users.find(item => radioUserId(item) === user2Id);
+    const piso = pisoSelect?.value || "Nenhum";
+
     return {
       radioId: radio.id,
       radioNome: radio.nome || "",
       radioMac: radio.mac || "",
       radioSerial: radio.serial || "",
-      userId,
-      userNome: user ? radioUserLabel(user) : ""
+
+      // Compatibilidade com registos antigos
+      userId: user1Id,
+      userNome: user1 ? radioUserLabel(user1) : "",
+
+      // Novo sistema semanal
+      user1Id,
+      user1Nome: user1 ? radioUserLabel(user1) : "",
+      user2Id,
+      user2Nome: user2 ? radioUserLabel(user2) : "",
+      piso
     };
   });
 

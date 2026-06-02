@@ -2,6 +2,7 @@
 /* APP BRAGA - THEME PRESETS + CUSTOM ADVANCED */
 (function(){
   const STORAGE_KEY = "appBragaThemeStudioSimpleV3";
+  const PRESETS_ENABLED_KEY = "appBragaThemePresetsEnabled";
   const CUSTOM_KEY = "appBragaThemeCustomSimple";
   const CUSTOM_ACTIVE_KEY = "appBragaThemeCustomActive";
 
@@ -95,7 +96,25 @@
   function getTheme(){try{return {...themes.enterpriseBlue,...(JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}"))};}catch(e){return {...themes.enterpriseBlue};}}
   function setVar(n,v){document.documentElement.style.setProperty(n,v,"important");}
 
+  function isThemePresetsEnabled(){
+    return localStorage.getItem(PRESETS_ENABLED_KEY) !== "0";
+  }
+
+  function updateThemePresetsToggleUI(){
+    const input=document.getElementById("toggleThemePresetsSystem");
+    const note=document.getElementById("themePresetsDisabledNote");
+    const root=document.getElementById("themeSimpleRoot");
+    const enabled=isThemePresetsEnabled();
+    if(input) input.checked=enabled;
+    if(note) note.style.display=enabled?"none":"block";
+    if(root) root.style.display=enabled?"":"none";
+  }
+
   function applyTheme(){
+    if(!isThemePresetsEnabled()){
+      updateThemePresetsToggleUI();
+      return;
+    }
     const t=getTheme();
     setVar("--ts-bg",valid(t.bg)); setVar("--ts-bg2",valid(t.bg2)); setVar("--ts-card",valid(t.card)); setVar("--ts-card2",valid(t.card)); setVar("--ts-card-border",valid(t.border));
     setVar("--ts-title",valid(t.title)); setVar("--ts-text",valid(t.text)); setVar("--ts-muted",valid(t.text));
@@ -152,7 +171,8 @@
   }
 
   function render(){
-    const root=document.getElementById("themeSimpleRoot"); if(!root)return;
+    updateThemePresetsToggleUI();
+    const root=document.getElementById("themeSimpleRoot"); if(!root || !isThemePresetsEnabled())return;
     const current=getTheme().name||"Enterprise Blue", c=getCustom(), activeCustom=localStorage.getItem(CUSTOM_ACTIVE_KEY)==="1";
     const currentBuilt=buildCustomTheme();
     root.innerHTML=`<div class="theme-presets-only">
@@ -181,6 +201,12 @@
     </div>`;
   }
 
+  window.setThemePresetsEnabled=function(enabled){
+    localStorage.setItem(PRESETS_ENABLED_KEY, enabled ? "1" : "0");
+    updateThemePresetsToggleUI();
+    if(enabled){ applyTheme(); render(); if(typeof window.themeFirebasePushNow==="function") setTimeout(window.themeFirebasePushNow,300); }
+    else if(typeof window.themeFirebasePushNow==="function") setTimeout(window.themeFirebasePushNow,300);
+  };
   window.themePresetOnlyApply=applyPreset; window.themeCustomUpdate=updateCustom; window.themeCustomLive=updateCustomAndApply; window.themeCustomApply=applyCustom; window.themeCustomToggleAdvanced=toggleAdvanced;
   window.themeSimplePreset=applyPreset; window.themeSimpleReset=function(){applyPreset("enterpriseBlue")}; window.themeSimpleUpdate=function(){}; window.themeSimpleImport=function(){};
   window.themeStudioRender=function(){

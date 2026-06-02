@@ -2,6 +2,7 @@
 /* APP BRAGA - ADVANCED COLOR SYSTEM CLEAN */
 (function(){
   const KEY = "appBragaAdvancedColorsV1";
+  const ADVANCED_ENABLED_KEY = "appBragaAdvancedColorsEnabled";
   const FIREBASE_COLLECTION = "appSettings";
   const FIREBASE_DOC = "advancedColorSystemV1";
   let activeGroup = "geral";
@@ -72,7 +73,25 @@
   function save(t,push=true){localStorage.setItem(KEY,JSON.stringify(t));apply();render(false);if(push)pushSoon();}
   function setVar(k,v){document.documentElement.style.setProperty("--acs-"+k.replace(/[A-Z]/g,m=>"-"+m.toLowerCase()),v,"important");}
 
+  function isAdvancedEnabled(){
+    return localStorage.getItem(ADVANCED_ENABLED_KEY) !== "0";
+  }
+
+  function updateAdvancedToggleUI(){
+    const input=document.getElementById("toggleAdvancedColorSystem");
+    const note=document.getElementById("advancedColorDisabledNote");
+    const root=document.getElementById("advancedColorSystemRoot");
+    const enabled=isAdvancedEnabled();
+    if(input) input.checked=enabled;
+    if(note) note.style.display=enabled?"none":"block";
+    if(root) root.style.display=enabled?"":"none";
+  }
+
   function apply(){
+    if(!isAdvancedEnabled()){
+      updateAdvancedToggleUI();
+      return;
+    }
     const t=get();
     Object.keys(presets.enterprise).forEach(k=>{
       if(k==="name")return;
@@ -115,7 +134,9 @@
   }
 
   function render(doApply=true){
+    updateAdvancedToggleUI();
     const root=document.getElementById("advancedColorSystemRoot");
+    if(!isAdvancedEnabled()) return;
     if(!root)return;
     if(doApply)apply();
     const t=get();
@@ -146,6 +167,12 @@
   async function pushFb(){if(remote)return;const x=db();if(!x||!x.collection)return;try{await x.collection("appSettings").doc("advancedColorSystemV1").set({data:get(),updatedAt:Date.now()},{merge:true});}catch(e){}}
   function listen(){const x=db();if(!x||!x.collection){setTimeout(listen,1000);return}if(window.__acsUnsub)return;window.__acsUnsub=x.collection("appSettings").doc("advancedColorSystemV1").onSnapshot(doc=>{if(!doc.exists){pushSoon();return}const p=doc.data()||{};if(!p.data)return;const a=document.activeElement;if(a&&a.matches&&a.matches("input,select,textarea"))return;remote=true;localStorage.setItem(KEY,JSON.stringify(p.data));remote=false;apply();render(false);});}
 
+  window.setAdvancedColorSystemEnabled=function(enabled){
+    localStorage.setItem(ADVANCED_ENABLED_KEY, enabled ? "1" : "0");
+    updateAdvancedToggleUI();
+    if(enabled){ apply(); render(false); pushSoon(); }
+    else { pushSoon(); }
+  };
   window.advancedColorPreset=preset;
   window.advancedColorUpdate=update;
   window.advancedColorGroup=g=>{activeGroup=g;render(false);};

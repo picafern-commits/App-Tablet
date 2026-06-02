@@ -5434,3 +5434,82 @@ small {
 .config-collapsible-card.is-collapsed,.config-card.is-collapsed,.enterprise-config-card.is-collapsed{padding-bottom:14px!important}
 .config-collapse-body{animation:configFade .16s ease both}
 @keyframes configFade{from{opacity:.55;transform:translateY(-2px)}to{opacity:1;transform:translateY(0)}}
+
+
+/* ===== THEME SYSTEM CHECKBOX TOGGLES ===== */
+.theme-system-toggle {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+  padding: 14px 16px !important;
+  margin: 12px 0 16px 0 !important;
+  border-radius: 18px !important;
+  background: rgba(255,255,255,.065) !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+}
+
+.theme-system-toggle strong {
+  color: var(--acs-title, var(--ts-title, #fff)) !important;
+  font-size: 14px !important;
+}
+
+.theme-system-toggle small {
+  display: block !important;
+  color: var(--acs-text, var(--ts-text, #cbd5e1)) !important;
+  margin-top: 3px !important;
+}
+
+.theme-system-toggle input {
+  width: 22px !important;
+  height: 22px !important;
+  accent-color: var(--acs-accent, var(--ts-primary-bg, #2563eb)) !important;
+}
+
+.theme-system-disabled-note {
+  padding: 14px !important;
+  border-radius: 18px !important;
+  background: rgba(245,158,11,.12) !important;
+  border: 1px solid rgba(245,158,11,.32) !important;
+  color: #fde68a !important;
+  font-weight: 900 !important;
+  margin: 12px 0 !important;
+}
+/* ===== END THEME SYSTEM CHECKBOX TOGGLES ===== */
+
+
+/* ===== RADIO WEEKLY RECORD USERS/PISO ===== */
+.radio-week-row-v2 {
+  grid-template-columns: minmax(190px, 1.2fr) repeat(3, minmax(160px, 1fr)) !important;
+  align-items: end !important;
+}
+
+.radio-week-row-v2 label {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 7px !important;
+}
+
+.radio-week-row-v2 label span {
+  color: var(--ts-text, #cbd5e1) !important;
+  font-size: 12px !important;
+  font-weight: 950 !important;
+}
+
+.radio-week-row-v2 select {
+  width: 100% !important;
+  min-height: 42px !important;
+}
+
+.radio-week-device {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+}
+
+@media (max-width: 900px) {
+  .radio-week-row-v2 {
+    grid-template-columns: 1fr !important;
+  }
+}
+/* ===== END RADIO WEEKLY RECORD USERS/PISO ===== */
