@@ -426,6 +426,75 @@ body.enterprise-search-ready .enterprise-search-shell {
   color: #fecaca !important;
 }
 
+.featured-panel {
+  overflow: hidden;
+}
+
+#listaDashboardStock.equipment-grid {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+  gap: 18px !important;
+  align-items: stretch !important;
+}
+
+#listaDashboardStock .dashboard-critical-card {
+  display: grid !important;
+  grid-template-rows: 150px auto;
+  gap: 12px;
+  min-height: 360px;
+  padding: 16px !important;
+  overflow: hidden;
+}
+
+#listaDashboardStock .equipment-photo,
+#listaDashboardStock .equipment-art {
+  height: 150px !important;
+  margin: 0 !important;
+  padding: 14px !important;
+  border-radius: 16px !important;
+  background:
+    radial-gradient(circle at 50% 20%, color-mix(in srgb, var(--theme-accent, #ef4444) 20%, transparent), transparent 56%),
+    color-mix(in srgb, var(--panel-2, #202227) 86%, #ffffff 14%) !important;
+}
+
+#listaDashboardStock .equipment-real-image {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 122px !important;
+  object-fit: contain !important;
+}
+
+#listaDashboardStock .stock-id {
+  margin-top: 2px;
+  font-size: clamp(16px, 1vw, 19px);
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+#listaDashboardStock .meta-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 7px;
+  line-height: 1.35;
+}
+
+#listaDashboardStock .meta-value {
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+#listaDashboardStock .printer-toners-grid {
+  display: grid !important;
+  gap: 8px !important;
+  margin-top: 12px !important;
+}
+
+#listaDashboardStock .toner-bar,
+#listaDashboardStock .toner-fill,
+#listaDashboardStock .printer-toner-box {
+  max-width: 100%;
+}
+
 .pc-card,
 .printer-card,
 .network-card,

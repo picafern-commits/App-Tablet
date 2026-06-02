@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   "use strict";
 
   const COLLECTIONS = [
@@ -258,12 +258,9 @@
         <div class="enterprise-page-title">${escapeHtml(title)}</div>
         <div class="enterprise-page-subtitle">${escapeHtml(subtitle)}</div>
       </div>
-      <button class="primary-btn enterprise-page-action" type="button" data-enterprise-main-action>+ Novo Registo</button>
     `;
     main.insertBefore(topbar, main.firstElementChild);
-    const action = topbar.querySelector("[data-enterprise-main-action]");
-    action.addEventListener("click", triggerPrimaryAction);
-    setupElectronWindowActions(topbar, action);
+    setupElectronWindowActions(topbar, null);
   }
 
   function setupElectronWindowActions(topbar, beforeNode) {
@@ -356,7 +353,7 @@
   function itemSubtitle(data) {
     return [data.ip, data.serie || data.serial || data.sn, data.localizacao || data.location, data.armazem, data.estado]
       .filter(Boolean)
-      .join(" · ");
+      .join(" Â· ");
   }
 
   function setupRealtimeSearchAndNotifications() {
@@ -416,7 +413,7 @@
     target.innerHTML = hits.length ? hits.map((item) => `
       <div class="enterprise-search-result" data-page="${escapeHtml(prefix + item.page)}">
         <strong>${escapeHtml(item.title)}</strong>
-        <span>${escapeHtml(item.label)}${item.subtitle ? " · " + escapeHtml(item.subtitle) : ""}</span>
+        <span>${escapeHtml(item.label)}${item.subtitle ? " Â· " + escapeHtml(item.subtitle) : ""}</span>
       </div>
     `).join("") : `<div class="enterprise-search-result"><strong>Sem resultados</strong><span>Tenta outro termo.</span></div>`;
     target.querySelectorAll("[data-page]").forEach((node) => {
@@ -477,77 +474,16 @@
   }
 
   function ensureDashboardOps() {
-    const main = document.querySelector(".dashboard-shell, .main, main");
-    if (!main || document.querySelector("#dashboardOpsPanel")) return;
-    const metrics = document.querySelector(".enterprise-metrics");
-    if (!metrics) return;
-    const panel = document.createElement("section");
-    panel.id = "dashboardOpsPanel";
-    panel.className = "dashboard-ops-panel dashboard-panel panel";
-    panel.innerHTML = `
-      <div class="panel-title-row">
-        <h2>Operacao da APP</h2>
-        <button class="secondary-btn" type="button" id="dashboardOpsRefresh">Atualizar</button>
-      </div>
-      <div class="dashboard-ops-grid">
-        <div class="dashboard-ops-card"><span>Impressoras abaixo de 25%</span><strong id="opsLowTonerCount">0</strong></div>
-        <div class="dashboard-ops-card"><span>Manutencoes pendentes</span><strong id="opsMaintenanceCount">0</strong></div>
-        <div class="dashboard-ops-card"><span>Radios sem registo</span><strong id="opsRadiosCount">0</strong></div>
-        <div class="dashboard-ops-card"><span>Dispositivos push</span><strong id="opsDevicesCount">0</strong></div>
-      </div>
-      <div class="panel-title-row" style="margin-top:16px">
-        <h2>Toner critico</h2>
-      </div>
-      <div id="dashboardLowTonerList" class="dashboard-low-toner-list"></div>
-    `;
-    metrics.insertAdjacentElement("afterend", panel);
-    panel.querySelector("#dashboardOpsRefresh")?.addEventListener("click", () => {
-      updateLowTonerFromPrinters();
-      updateDashboardOps();
-      toast("Dashboard atualizado", "Dados recalculados com base na Firebase.");
-    });
+    document.querySelector("#dashboardOpsPanel")?.remove();
   }
 
   function renderLowTonerDashboard() {
     ensureDashboardOps();
-    const list = document.querySelector("#dashboardLowTonerList");
-    const count = document.querySelector("#opsLowTonerCount");
-    if (count) count.textContent = String(state.lowToner.length);
-    if (!list) return;
-    list.innerHTML = state.lowToner.length ? state.lowToner.map((item) => `
-      <div class="dashboard-low-toner-item">
-        <div>
-          <strong>${escapeHtml(item.title)}</strong>
-          <div class="meta-line">${escapeHtml(item.subtitle || item.ip)} · ${escapeHtml(item.ip)}</div>
-        </div>
-        <div>
-          <div class="dashboard-low-toner-meter">
-            <div class="dashboard-low-toner-fill" style="width:${item.percent}%;--toner-level-color:${tonerColor(item.percent)}"></div>
-          </div>
-          <div class="meta-line">${item.percent}%</div>
-        </div>
-      </div>
-    `).join("") : `<div class="empty-state">Sem impressoras abaixo de 25%.</div>`;
   }
 
   function updateDashboardOps() {
     ensureDashboardOps();
-    const maint = Object.values(state.collectionCache.manutencoes || {})
-      .filter((item) => ["pendente", "em reparacao", "em reparação"].includes(cleanText(item.estado))).length;
-    const radios = Object.values(state.collectionCache.radios || {}).length;
-    const weekly = Object.values(state.collectionCache.radioWeeklyRecords || {}).length;
-    const devices = Object.values(state.collectionCache.notificationTokens || state.collectionCache.notificationDevices || state.collectionCache.pushDevices || {}).length;
-    const map = {
-      opsMaintenanceCount: maint,
-      opsRadiosCount: Math.max(0, radios - weekly),
-      opsDevicesCount: devices
-    };
-    Object.keys(map).forEach((id) => {
-      const node = document.getElementById(id);
-      if (node) node.textContent = String(map[id]);
-    });
   }
-
   function updateSystemHealthExtra() {
     const grid = document.getElementById("systemHealthGrid");
     if (!grid || grid.dataset.enterpriseExpanded) return;

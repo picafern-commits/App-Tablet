@@ -1,6 +1,5 @@
 (() => {
   const pages = [
-    { type: "section", label: "Operação" },
     { href: "index.html", label: "Dashboard" },
     { href: "add-toner.html", label: "Adicionar Toner" },
     { href: "stock.html", label: "Stock" },
