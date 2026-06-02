@@ -150,6 +150,9 @@
       <div class="acs-grid">
         ${groups[activeGroup].map(([k,l])=>`<label class="acs-field"><span>${l}</span><input type="color" value="${valid(t[k],presets.enterprise[k])}" onchange="advancedColorUpdate('${k}',this.value)"></label>`).join("")}
       </div>
+      <div class="acs-actions">
+        <button type="button" class="primary-btn" onclick="advancedColorApplyNow()">Aplicar Sistema Avançado</button>
+      </div>
       <div class="acs-preview">
         <strong>Preview</strong>
         <div><button class="primary-btn">Principal</button><button class="secondary-btn">Secundário</button><button class="secondary-btn btn-edit">Editar</button><button class="secondary-btn danger">Apagar</button></div>
@@ -172,6 +175,11 @@
     updateAdvancedToggleUI();
     if(enabled){ apply(); render(false); pushSoon(); }
     else { pushSoon(); }
+  };
+  window.advancedColorApplyNow=function(){
+    apply();
+    pushFb();
+    render(false);
   };
   window.advancedColorPreset=preset;
   window.advancedColorUpdate=update;

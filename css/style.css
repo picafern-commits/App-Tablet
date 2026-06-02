@@ -5513,3 +5513,61 @@ small {
   }
 }
 /* ===== END RADIO WEEKLY RECORD USERS/PISO ===== */
+
+
+/* ===== RADIOS PAGE BUTTONS CLEANUP ===== */
+.radios-page .radio-card-actions {
+  display: none !important;
+}
+
+.radios-page .radio-selected-buttons,
+.radios-page .weekly-record-actions,
+.radios-page .weekly-actions,
+.radios-page .modal-actions,
+.radios-page .toolbar {
+  gap: 10px !important;
+}
+
+.radios-page .radio-selected-buttons button,
+.radios-page .weekly-record-actions button,
+.radios-page .weekly-actions button,
+.radios-page .modal-actions button,
+.radios-page .toolbar button {
+  min-width: 132px !important;
+  height: 44px !important;
+  padding: 0 14px !important;
+  justify-content: center !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+}
+
+.radios-page .weekly-record-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+}
+
+@media (max-width: 700px) {
+  .radios-page .radio-selected-buttons button,
+  .radios-page .weekly-record-actions button,
+  .radios-page .weekly-actions button,
+  .radios-page .modal-actions button,
+  .radios-page .toolbar button {
+    min-width: 118px !important;
+    flex: 1 1 118px !important;
+  }
+}
+/* ===== END RADIOS PAGE BUTTONS CLEANUP ===== */
+
+
+/* ===== ADVANCED COLORS APPLY BUTTON ===== */
+.acs-actions {
+  display: flex !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+  margin: 16px 0 0 0 !important;
+}
+
+.advanced-color-system #advancedColorSystemRoot {
+  width: 100% !important;
+}
+/* ===== END ADVANCED COLORS APPLY BUTTON ===== */
