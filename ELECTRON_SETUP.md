@@ -2,6 +2,14 @@
 
 ## Criar instalador Windows
 
+O Electron funciona como wrapper da app principal publicada no GitHub Pages:
+
+```text
+https://picafern-commits.github.io/App-Tablet/html/index.html
+```
+
+Os ficheiros locais ficam no setup apenas como fallback de emergencia se o GitHub Pages estiver indisponivel.
+
 1. Instalar dependencias:
 
 ```powershell

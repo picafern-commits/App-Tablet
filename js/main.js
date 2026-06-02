@@ -9,6 +9,9 @@ let win;
 let tray;
 app.isQuitting = false;
 
+const APP_REMOTE_URL = "https://picafern-commits.github.io/App-Tablet/html/index.html";
+const APP_LOCAL_FALLBACK = path.join(__dirname, "..", "html", "index.html");
+
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) app.quit();
 
@@ -76,11 +79,24 @@ function createWindow() {
     }
   });
 
-  win.loadFile(path.join(__dirname, "..", "html", "index.html"));
+  win.loadURL(APP_REMOTE_URL);
+
+  win.webContents.on("did-fail-load", (_event, _errorCode, _errorDescription, validatedUrl) => {
+    if (String(validatedUrl || "").startsWith("file://")) return;
+    win.loadFile(APP_LOCAL_FALLBACK);
+  });
 
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: "deny" };
+  });
+
+  win.webContents.on("will-navigate", (event, url) => {
+    const target = String(url || "");
+    if (target.startsWith("https://picafern-commits.github.io/App-Tablet/")) return;
+    if (target.startsWith("file://")) return;
+    event.preventDefault();
+    shell.openExternal(target);
   });
 
   win.on("close", (event) => {
