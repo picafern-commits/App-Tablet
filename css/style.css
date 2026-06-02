@@ -5666,3 +5666,28 @@ small {
   font-weight: 900;
 }
 /* ===== END CONFIG FINAL FIX WIDTH + COLOR CENTER ===== */
+
+
+/* ===== REMOVE OLD APP PRIMARY COLOR UI ===== */
+.app-color-picker,
+.color-picker-row,
+.accent-color-picker,
+.theme-color-picker,
+.primary-color-picker,
+.appearance-color-picker,
+[data-setting="accent-color"],
+[data-setting="app-accent"],
+[data-config="cor-principal-app"],
+.config-accent-colors {
+  display: none !important;
+}
+
+label:has(#appAccentColor),
+label:has(#accentColor),
+label:has(#primaryColor),
+div:has(> #appAccentColor),
+div:has(> #accentColor),
+div:has(> #primaryColor) {
+  display: none !important;
+}
+/* ===== END REMOVE OLD APP PRIMARY COLOR UI ===== */

@@ -70,7 +70,7 @@
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/style.css?v=unified-fix-2">
+  <link rel="stylesheet" href="../css/style.css?v=remove-old-accent-1">
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -81,7 +81,7 @@
   <link rel="stylesheet" href="../css/iphone-force-final.css?v=v2-final">
   <link rel="stylesheet" href="../css/theme-zone-editor.css?v=disabled-2">
   <link rel="stylesheet" href="../css/theme-firebase-sync.css?v=firebase-sync-1">
-  <link rel="stylesheet" href="../css/color-center-unified.css?v=unified-fix-2">
+  <link rel="stylesheet" href="../css/color-center-unified.css?v=remove-old-accent-1">
 </head>
 <body>
 <aside class="sidebar">
@@ -115,54 +115,7 @@
   </div>
 
   
-<div class="config-collapse-global-actions">
-  <button class="secondary-btn" type="button" onclick="configExpandAll()">Abrir todas</button>
-  <button class="secondary-btn" type="button" onclick="configCollapseAll()">Fechar todas</button>
-</div>
-<section class="config-layout">
-    <div class="panel config-section config-section-appearance">
-      <div class="section-header">
-        <div>
-          <h3>Aparencia</h3>
-          <p class="section-subtitle">Tema, cor principal, densidade e legibilidade dos botoes.</p>
-        </div>
-      </div>
-
-      <div class="config-form-grid">
-        <label class="switch-row config-field-inline"><input type="checkbox" id="darkSwitch"> <span>Modo escuro</span></label>
-        <label class="config-resolution-field">
-          <span>Resolucao / densidade</span>
-          <select id="appResolution" onchange="guardarResolucaoApp(this.value)">
-            <option value="comfortable">Normal</option>
-            <option value="compact">Compacta</option>
-            <option value="wide">Larga</option>
-          </select>
-        </label>
-        <label class="config-color-field">
-          <span>Cor principal da APP</span>
-          <div class="color-config-row">
-            <input id="appAccentColor" type="color" value="#ef4444" onchange="guardarCorApp(this.value)">
-            <div class="color-swatches" aria-label="Cores rapidas">
-              <button type="button" style="--swatch:#ef4444" onclick="guardarCorApp('#ef4444')" title="Vermelho"></button>
-              <button type="button" style="--swatch:#f97316" onclick="guardarCorApp('#f97316')" title="Laranja"></button>
-              <button type="button" style="--swatch:#eab308" onclick="guardarCorApp('#eab308')" title="Dourado"></button>
-              <button type="button" style="--swatch:#22c55e" onclick="guardarCorApp('#22c55e')" title="Verde"></button>
-              <button type="button" style="--swatch:#a855f7" onclick="guardarCorApp('#a855f7')" title="Roxo"></button>
-            </div>
-          </div>
-        </label>
-        <label class="config-color-field">
-          <span>Texto dos botoes</span>
-          <select id="appButtonTextMode" class="enterprise-input" onchange="guardarModoTextoBotoes(this.value)">
-            <option value="auto">Automatico</option>
-            <option value="dark">Texto escuro</option>
-            <option value="light">Texto claro</option>
-          </select>
-        </label>
-      </div>
-    </div>
-
-    <div class="panel config-section config-section-security">
+<div class="panel config-section config-section-security">
       <div class="section-header">
         <div>
           <h3>Seguranca</h3>
@@ -344,12 +297,12 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<script src="../js/app.js?v=radios-buttons-advanced-fix-1"></script>
+<script src="../js/app.js?v=remove-old-accent-1"></script>
   <script src="../js/core/helpers.js"></script>
   <script src="../js/iphone-force-final.js?v=v2-final"></script>
   <script src="../js/theme-zone-editor.js?v=disabled-2"></script>
   <script src="../js/theme-firebase-sync.js?v=no-refresh-2"></script>
   <script src="../js/config-collapsible.js?v=collapse-final-1"></script>
-  <script src="../js/color-center-unified.js?v=unified-fix-2"></script>
+  <script src="../js/color-center-unified.js?v=remove-old-accent-1"></script>
 </body>
 </html>

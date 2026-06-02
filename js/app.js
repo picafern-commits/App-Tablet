@@ -9010,3 +9010,26 @@ window.addEventListener("orientationchange", () => {
 
 /* Sistema antigo de cores removido para evitar conflito com Theme Studio. */
 
+
+
+/* ===== OLD APPEARANCE ACCENT DISABLED ===== */
+(function(){
+  const oldKeys = [
+    "appAccentColor",
+    "appBragaAccent",
+    "appBragaPrimaryColor",
+    "selectedAccentColor",
+    "themeAccent",
+    "corPrincipalApp",
+    "appPrimaryColor"
+  ];
+  try { oldKeys.forEach(k => localStorage.removeItem(k)); } catch(e) {}
+
+  window.setAppAccentColor = function(){ 
+    console.warn("Cor principal da App foi removida. Usa o Centro de Cores.");
+  };
+  window.changeAppAccentColor = window.setAppAccentColor;
+  window.aplicarCorPrincipalApp = window.setAppAccentColor;
+  window.guardarCorPrincipalApp = window.setAppAccentColor;
+})();
+/* ===== END OLD APPEARANCE ACCENT DISABLED ===== */
