@@ -1,1 +1,1 @@
-/* Sistema antigo de cores desativado. Centro de Cores é a única fonte. */
+/* Sistema antigo de glow/cores desativado. */

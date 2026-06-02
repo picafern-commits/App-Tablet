@@ -42,6 +42,7 @@
     document.documentElement.style.setProperty("--ts-global-card-glow",rgba(t.cardGlow,.14),"important");
     applyLegacyAliases();
     applyHardOverrides();
+    applyGlowKill();
   }
 
 
@@ -147,6 +148,35 @@
       el.style.setProperty("color", valid(t.sidebarText), "important");
     });
   }
+
+
+  function applyGlowKill(){
+    const t = get();
+    const btnShadow = `0 0 30px ${rgba(t.btnGlow,.34)}, 0 12px 28px rgba(0,0,0,.24)`;
+    const cardShadow = `0 18px 48px ${rgba(t.cardGlow,.18)}, 0 14px 40px rgba(0,0,0,.22)`;
+    const sideShadow = `0 0 36px ${rgba(t.sidebarGlow,.42)}`;
+
+    document.querySelectorAll("button,.btn,.primary-btn,.secondary-btn,.reference-primary,.reference-outline,.enterprise-btn,[class*='btn']").forEach(el=>{
+      el.style.setProperty("box-shadow", btnShadow, "important");
+      el.style.setProperty("border-color", valid(t.btnBorder || t.cardBorder), "important");
+      el.style.setProperty("text-shadow", "none", "important");
+    });
+
+    document.querySelectorAll(".card,.panel,.reference-panel,.reference-card,.config-card,.enterprise-config-card,.dashboard-card,.stat-card,.metric-card,.pc-card,.radio-card,.info-card,.info-list-item,.user-card,.printer-card,.stock-card,.history-card,.modal-card,.table-card,.form-card").forEach(el=>{
+      el.style.setProperty("box-shadow", cardShadow, "important");
+      el.style.setProperty("text-shadow", "none", "important");
+    });
+
+    document.querySelectorAll(".sidebar a.active,.enterprise-sidebar a.active,.app-sidebar a.active,.nav-link.active,.menu-item.active").forEach(el=>{
+      el.style.setProperty("box-shadow", sideShadow, "important");
+      el.style.setProperty("text-shadow", "none", "important");
+    });
+
+    document.querySelectorAll(".printer-toner-bar,.toner-fill,.toner-bar-fill,.progress-fill,.stock-progress-fill").forEach(el=>{
+      el.style.setProperty("box-shadow", "none", "important");
+    });
+  }
+
 
   function groupLabel(g){return {geral:"Geral",sidebar:"Sidebar",cards:"Cards",botoes:"Botões",inputs:"Inputs",tabelas:"Tabelas",toner:"Toner",configs:"Configs"}[g]||g;}
 

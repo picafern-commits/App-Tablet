@@ -1,0 +1,118 @@
+
+/* APP BRAGA - GLOW ANTIGO ELIMINADO
+   Tudo o que for glow/sombra passa a obedecer só ao Centro de Cores.
+*/
+:root {
+  --old-glow: transparent !important;
+  --orange-glow: transparent !important;
+  --pink-glow: transparent !important;
+  --legacy-glow: transparent !important;
+  --ts-global-button-glow: color-mix(in srgb, var(--cc-btn-glow) 34%, transparent) !important;
+  --ts-global-card-glow: color-mix(in srgb, var(--cc-card-glow) 18%, transparent) !important;
+  --button-glow: color-mix(in srgb, var(--cc-btn-glow) 34%, transparent) !important;
+  --card-glow: color-mix(in srgb, var(--cc-card-glow) 18%, transparent) !important;
+}
+
+/* Remover sombras antigas em massa */
+* {
+  text-shadow: none !important;
+}
+
+/* Cards só com glow do Centro de Cores */
+.card,
+.panel,
+.reference-panel,
+.reference-card,
+.config-card,
+.enterprise-config-card,
+.dashboard-card,
+.stat-card,
+.metric-card,
+.pc-card,
+.radio-card,
+.info-card,
+.info-list-item,
+.user-card,
+.printer-card,
+.stock-card,
+.history-card,
+.modal-card,
+.table-card,
+.form-card,
+[class*="card"]:not(button):not(.btn),
+[class*="panel"]:not(button):not(.btn) {
+  box-shadow:
+    0 18px 48px color-mix(in srgb, var(--cc-card-glow) 18%, transparent),
+    0 14px 40px rgba(0,0,0,.22) !important;
+}
+
+/* Botões só com glow do Centro de Cores */
+button,
+.btn,
+.primary-btn,
+.secondary-btn,
+.reference-primary,
+.reference-outline,
+.enterprise-btn,
+.btn-primary,
+.btn-edit,
+.btn-delete,
+.danger,
+.success,
+button[type="submit"],
+[class*="btn"] {
+  box-shadow:
+    0 0 30px color-mix(in srgb, var(--cc-btn-glow) 34%, transparent),
+    0 12px 28px rgba(0,0,0,.24) !important;
+  border-color: var(--cc-btn-border, var(--cc-card-border)) !important;
+}
+
+/* Sidebar só com glow do Centro de Cores */
+.sidebar a.active,
+.enterprise-sidebar a.active,
+.app-sidebar a.active,
+.nav-link.active,
+.menu-item.active {
+  box-shadow: 0 0 36px color-mix(in srgb, var(--cc-sidebar-glow) 42%, transparent) !important;
+}
+
+/* Desativar glows hardcoded antigos quando vêm em classes específicas */
+[class*="glow"],
+[class*="neon"],
+[class*="orange"],
+[class*="pink"] {
+  text-shadow: none !important;
+}
+
+/* Toner mantém a cor definida no Centro de Cores, sem glow antigo */
+.printer-toner-bar,
+.toner-fill,
+.toner-bar-fill,
+.progress-fill,
+.stock-progress-fill {
+  box-shadow: none !important;
+}
+
+.printer-toner-box.toner-good .printer-toner-bar,
+.printer-toner-bar.toner-good {
+  background: var(--cc-toner-good) !important;
+}
+.printer-toner-box.toner-medium .printer-toner-bar,
+.printer-toner-bar.toner-medium {
+  background: var(--cc-toner-medium) !important;
+}
+.printer-toner-box.toner-low .printer-toner-bar,
+.printer-toner-bar.toner-low {
+  background: var(--cc-toner-low) !important;
+}
+.printer-toner-box.toner-critical .printer-toner-bar,
+.printer-toner-bar.toner-critical {
+  background: var(--cc-toner-critical) !important;
+}
+
+/* Anular inline shadows antigas comuns */
+[style*="box-shadow"] {
+  box-shadow:
+    0 0 30px color-mix(in srgb, var(--cc-btn-glow) 20%, transparent),
+    0 12px 28px rgba(0,0,0,.18) !important;
+}

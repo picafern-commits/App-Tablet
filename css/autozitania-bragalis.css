@@ -1,3 +1,26 @@
+
+/* ===== CENTRO DE CORES OVERRIDE AUTOZITANIA/BRAGALIS ===== */
+:root{
+  --app-accent-glow: color-mix(in srgb, var(--cc-btn-glow) 28%, transparent) !important;
+  --app-accent-rgb: 37 99 235 !important;
+  --az-orange: var(--cc-accent) !important;
+  --az-orange-2: var(--cc-btn-primary-bg) !important;
+  --az-orange-soft: color-mix(in srgb, var(--cc-accent) 18%, transparent) !important;
+  --primary: var(--cc-btn-primary-bg) !important;
+  --primary-hover: var(--cc-accent) !important;
+  --sidebar-hover: var(--cc-sidebar-active) !important;
+  --brinka-pink: var(--cc-accent) !important;
+  --brinka-purple: var(--cc-accent) !important;
+  --brinka-orange: var(--cc-accent) !important;
+  --brinka-orange2: var(--cc-btn-primary-bg) !important;
+  --ent-blue: var(--cc-btn-primary-bg) !important;
+  --ent-purple: var(--cc-accent) !important;
+  --ent-orange: var(--cc-accent) !important;
+  --app-blue: var(--cc-btn-primary-bg) !important;
+  --app-blue-soft: color-mix(in srgb, var(--cc-btn-primary-bg) 18%, transparent) !important;
+}
+/* ===== END CENTRO DE CORES OVERRIDE AUTOZITANIA/BRAGALIS ===== */
+
 /* App Braga brand layer: Autozitania / Bragalis */
 :root {
   --az-bg: #101114;
@@ -11,10 +34,10 @@
   --app-accent-hover: #f05a00;
   --app-accent-light: #ff9d3d;
   --app-accent-rgb: 255 122 0;
-  --app-accent-soft: rgba(255, 122, 0, .16);
-  --app-accent-softer: rgba(255, 122, 0, .08);
-  --app-accent-line: rgba(255, 122, 0, .22);
-  --app-accent-glow: rgba(255, 122, 0, .28);
+  --app-accent-soft: color-mix(in srgb, var(--cc-accent) 16%, transparent);
+  --app-accent-softer: color-mix(in srgb, var(--cc-accent) 8%, transparent);
+  --app-accent-line: color-mix(in srgb, var(--cc-accent) 22%, transparent);
+  --app-accent-glow: color-mix(in srgb, var(--cc-btn-glow) 28%, transparent);
   --az-orange: var(--app-accent);
   --az-orange-2: var(--app-accent-hover);
   --az-orange-soft: var(--app-accent-soft);
