@@ -214,6 +214,6 @@
   window.colorCenterApply=forceApply;
   window.initColorCenterUnified=function(){apply();render(false);listen();};
 
-  document.addEventListener("DOMContentLoaded",window.initColorCenterUnified);
-  window.addEventListener("pageshow",()=>setTimeout(window.initColorCenterUnified,150));
+  document.addEventListener("DOMContentLoaded",()=>{ try{ apply(); }catch(e){}; if(document.getElementById("colorCenterRoot")) window.initColorCenterUnified(); });
+  window.addEventListener("pageshow",()=>setTimeout(()=>{ try{ apply(); }catch(e){}; if(document.getElementById("colorCenterRoot")) window.initColorCenterUnified(); },120));
 })();
