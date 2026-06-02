@@ -337,3 +337,9 @@ tr:hover td {
 [style*="background: #ff"] {
   color: inherit !important;
 }
+
+/* BUTTON BORDER COLOR FROM COLOR CENTER */
+button,.btn,.primary-btn,.secondary-btn,[class*="btn"]{
+ border-color:var(--cc-btn-border,var(--cc-card-border)) !important;
+ border-width:1.5px !important;
+}

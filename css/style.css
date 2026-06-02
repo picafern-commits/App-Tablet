@@ -5707,3 +5707,18 @@ div:has(> #primaryColor) {
   --button-text: var(--cc-btn-primary-text) !important;
 }
 /* ===== END OLD COLOR VARIABLE ALIASES TO COLOR CENTER ===== */
+
+/* ETIQUETAS WORD STRONG PRINT */
+@media print{
+  .label,.etiqueta,.word-label,.print-label,.etiqueta-word{
+    color:#000 !important;
+    background:#fff !important;
+    border:2px solid #000 !important;
+    font-weight:900 !important;
+  }
+  .label *,.etiqueta *,.word-label *,.print-label *,.etiqueta-word *{
+    color:#000 !important;
+    font-weight:900 !important;
+    opacity:1 !important;
+  }
+}
