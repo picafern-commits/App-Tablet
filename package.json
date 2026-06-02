@@ -1,13 +1,17 @@
 {
   "name": "app-braga",
-  "version": "1.3.2",
+  "version": "1.4.0",
   "description": "App Braga - gestão de toners e computadores",
   "main": "js/main.js",
   "author": "Ricardo Fernandes",
   "license": "MIT",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --win nsis"
+    "electron:dev": "electron .",
+    "pack": "electron-builder --dir",
+    "setup": "electron-builder --win nsis",
+    "dist": "electron-builder --win nsis",
+    "push:watch": "node tools/web-push-watch.js"
   },
   "devDependencies": {
     "electron": "41.2.0",
@@ -24,9 +28,11 @@
       "html/**/*",
       "css/**/*",
       "js/**/*",
+      "tools/**/*",
       "img/**/*",
       "assets/**/*",
       "manifest.json",
+      "ELECTRON_SETUP.md",
       "sw.js",
       "icon.ico",
       "icon-192.png",
@@ -40,6 +46,8 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "perMachine": false,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "App Braga"

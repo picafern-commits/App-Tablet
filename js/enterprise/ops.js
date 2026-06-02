@@ -15,25 +15,26 @@
     { name: "manutencoes", label: "Manutencao", page: "manutencao-impressoras.html", fields: ["modelo", "serie", "ip", "estado", "motivo", "user"] },
     { name: "informacoes", label: "Informacao", page: "informacoes.html", fields: ["titulo", "obs", "texto"] },
     { name: "etiquetasWord", label: "Etiqueta Word", page: "etiquetas-word.html", fields: ["titulo", "data", "user", "descricao"] },
+    { name: "notificationTokens", label: "Dispositivo push", page: "config.html", fields: ["deviceName", "deviceType", "source", "permission", "token"] },
     { name: "notificationDevices", label: "Dispositivo push", page: "config.html", fields: ["name", "deviceName", "platform", "token", "lastSeenAt"] },
     { name: "pushDevices", label: "Dispositivo push", page: "config.html", fields: ["name", "deviceName", "platform", "token", "lastSeenAt"] }
   ];
 
   const ICONS = {
-    "index.html": "⌂",
+    "index.html": "\u2302",
     "add-toner.html": "+",
-    "stock.html": "▣",
-    "historico.html": "↗",
-    "etiquetas-word.html": "▤",
-    "impressoras.html": "▦",
-    "manutencao-impressoras.html": "◇",
-    "computadores.html": "▭",
-    "users.html": "◎",
-    "pistolas.html": "⌁",
-    "portas.html": "▧",
-    "radios.html": "◌",
-    "informacoes.html": "ⓘ",
-    "config.html": "⚙"
+    "stock.html": "\u25A3",
+    "historico.html": "\u2197",
+    "etiquetas-word.html": "\u25A4",
+    "impressoras.html": "\u25A6",
+    "manutencao-impressoras.html": "\u25C7",
+    "computadores.html": "\u25AD",
+    "users.html": "\u25CE",
+    "pistolas.html": "\u2301",
+    "portas.html": "\u25A7",
+    "radios.html": "\u25CC",
+    "informacoes.html": "\u24D8",
+    "config.html": "\u2699"
   };
 
   const state = {
@@ -140,7 +141,7 @@
 
     sidebar.querySelectorAll("a").forEach((link) => {
       const href = (link.getAttribute("href") || "").split("/").pop();
-      link.dataset.icon = ICONS[href] || "•";
+      link.dataset.icon = ICONS[href] || "\u2022";
       const text = (link.textContent || "").trim();
       if (!link.querySelector(".sidebar-link-text")) {
         link.innerHTML = `<span class="sidebar-link-text">${escapeHtml(text)}</span>`;
@@ -152,7 +153,7 @@
       button.type = "button";
       button.className = "app-menu-toggle";
       button.setAttribute("aria-label", "Abrir menu");
-      button.textContent = "☰";
+      button.textContent = "\u2630";
       document.body.appendChild(button);
     }
     if (!document.querySelector(".app-sidebar-overlay")) {
@@ -167,13 +168,13 @@
       sidebar.classList.remove("app-open", "open", "active");
       document.body.classList.remove("sidebar-open");
       overlay?.classList.remove("show");
-      if (button) button.textContent = "☰";
+      if (button) button.textContent = "\u2630";
     };
     const open = () => {
       sidebar.classList.add("app-open", "open", "active");
       document.body.classList.add("sidebar-open");
       overlay?.classList.add("show");
-      if (button) button.textContent = "×";
+      if (button) button.textContent = "\u00d7";
     };
 
     if (button && !button.dataset.enterpriseBound) {
@@ -219,6 +220,109 @@
       results.innerHTML = "";
     });
     input.addEventListener("input", () => renderSearchResults(input.value, results));
+  }
+
+  function pageInfo() {
+    const path = (location.pathname.split("/").pop() || "index.html").toLowerCase();
+    const map = {
+      "index.html": ["Dashboard", "Resumo operacional da App Braga."],
+      "add-toner.html": ["Adicionar Toner", "Registo rapido de entradas e movimentos de toner."],
+      "stock.html": ["Stock", "Consulta e controlo de toners disponiveis."],
+      "historico.html": ["Historico", "Movimentos e utilizacao ao longo do tempo."],
+      "etiquetas-word.html": ["Etiquetas Word", "Etiquetas ordenadas e prontas para impressao."],
+      "impressoras.html": ["Impressoras", "Estado, toner e manutencao das impressoras."],
+      "manutencao-impressoras.html": ["Manutencao Impressoras", "Pedidos, resolucoes e acompanhamento tecnico."],
+      "computadores.html": ["Computadores", "Inventario de computadores e atribuicoes."],
+      "users.html": ["Users", "Utilizadores e dados operacionais."],
+      "pistolas.html": ["Pistolas CK65", "Equipamentos moveis, operadores e estado."],
+      "portas.html": ["Portas Rede", "Portas, IPs e localizacoes de rede."],
+      "radios.html": ["Radios", "Radios, users e registos semanais."],
+      "informacoes.html": ["Informacoes", "Informacoes gerais sincronizadas na Firebase."],
+      "config.html": ["Configuracoes", "Tema, seguranca, notificacoes e saude da app."]
+    };
+    return map[path] || [document.title || "App Braga", "Area operacional da App Braga."];
+  }
+
+  function setupTopbar() {
+    if (!isHtmlPage()) return;
+    const main = document.querySelector(".main, main");
+    if (!main || main.querySelector(".enterprise-page-topbar")) return;
+    const [title, subtitle] = pageInfo();
+    const existingHero = main.querySelector(".page-hero, .dashboard-header");
+    if (existingHero) existingHero.style.display = "none";
+    const topbar = document.createElement("div");
+    topbar.className = "enterprise-page-topbar";
+    topbar.innerHTML = `
+      <div>
+        <div class="enterprise-breadcrumb"><span>Home</span><span>/</span><span>${escapeHtml(title)}</span></div>
+        <div class="enterprise-page-title">${escapeHtml(title)}</div>
+        <div class="enterprise-page-subtitle">${escapeHtml(subtitle)}</div>
+      </div>
+      <button class="primary-btn enterprise-page-action" type="button" data-enterprise-main-action>+ Novo Registo</button>
+    `;
+    main.insertBefore(topbar, main.firstElementChild);
+    const action = topbar.querySelector("[data-enterprise-main-action]");
+    action.addEventListener("click", triggerPrimaryAction);
+  }
+
+  function triggerPrimaryAction() {
+    const path = (location.pathname.split("/").pop() || "").toLowerCase();
+    const actions = {
+      "radios.html": ["adicionarRadio", "abrirModalRadio"],
+      "pistolas.html": ["abrirAdicionarPistola", "novaPistola"],
+      "portas.html": ["abrirAdicionarPorta", "novaPorta"],
+      "users.html": ["abrirAdicionarUser", "novoUser"],
+      "impressoras.html": ["abrirAdicionarImpressora", "novaImpressora"],
+      "computadores.html": ["abrirAdicionarPC", "novoComputador"],
+      "stock.html": ["abrirAdicionarStock", "novoStock"],
+      "informacoes.html": ["adicionarInformacao"]
+    };
+    const candidates = actions[path] || [];
+    for (const name of candidates) {
+      if (typeof window[name] === "function") {
+        window[name]();
+        return;
+      }
+    }
+    const button = document.querySelector(".add-btn, .primary-btn[onclick], button[onclick*='adicionar'], button[onclick*='Adicionar'], button[onclick*='novo'], button[onclick*='Novo']");
+    if (button && !button.matches("[data-enterprise-main-action]")) button.click();
+    else toast("App Braga", "Nao encontrei uma acao principal nesta pagina.");
+  }
+
+  function setupDensityControls() {
+    const themeCard = document.querySelector(".theme-pro-card");
+    if (!themeCard || document.getElementById("appResolution")) return;
+    const row = document.createElement("div");
+    row.className = "theme-pro-grid";
+    row.innerHTML = `
+      <label class="theme-pro-field">
+        <span>Densidade visual</span>
+        <select id="appResolution" onchange="guardarResolucaoApp(this.value)">
+          <option value="compact">Compacto PC</option>
+          <option value="comfortable">Confortavel</option>
+          <option value="wide">Grande Tablet/iPhone</option>
+        </select>
+      </label>
+    `;
+    const actions = themeCard.querySelector(".theme-pro-actions");
+    themeCard.insertBefore(row, actions || null);
+  }
+
+  function polishModalsAndEmptyStates() {
+    document.querySelectorAll(".modal-content, .app-modal-content").forEach((modal) => {
+      if (modal.dataset.enterprisePolished) return;
+      modal.dataset.enterprisePolished = "1";
+      const buttons = modal.querySelectorAll("button");
+      if (buttons.length && !modal.querySelector(".enterprise-modal-actions")) {
+        const actions = document.createElement("div");
+        actions.className = "enterprise-modal-actions";
+        buttons.forEach((button) => actions.appendChild(button));
+        modal.appendChild(actions);
+      }
+    });
+    document.querySelectorAll(".reference-empty, .empty-state").forEach((node) => {
+      node.setAttribute("role", "status");
+    });
   }
 
   function itemTitle(collection, data) {
@@ -273,7 +377,7 @@
           subtitle,
           label: collection.label,
           page: collection.page,
-          haystack: cleanText([collection.label, title, subtitle, ...collection.fields.map((field) => data[field])].join(" "))
+          haystack: cleanText([collection.label, title, subtitle, ...collection.fields.map((field) => data[field])].join(" \u00b7 "))
         });
       });
     });
@@ -412,7 +516,7 @@
       .filter((item) => ["pendente", "em reparacao", "em reparação"].includes(cleanText(item.estado))).length;
     const radios = Object.values(state.collectionCache.radios || {}).length;
     const weekly = Object.values(state.collectionCache.radioWeeklyRecords || {}).length;
-    const devices = Object.values(state.collectionCache.notificationDevices || state.collectionCache.pushDevices || {}).length;
+    const devices = Object.values(state.collectionCache.notificationTokens || state.collectionCache.notificationDevices || state.collectionCache.pushDevices || {}).length;
     const map = {
       opsMaintenanceCount: maint,
       opsRadiosCount: Math.max(0, radios - weekly),
@@ -458,10 +562,11 @@
   }
 
   function setupAuditPatch() {
-    if (!window.firebase?.firestore || state.auditReady) return;
-    const firestore = window.firebase.firestore;
-    const docProto = firestore.DocumentReference?.prototype;
-    const colProto = firestore.CollectionReference?.prototype;
+    if (!window.db || state.auditReady) return;
+    const probeCollection = window.db.collection("_appBragaAuditProbe");
+    const probeDocument = probeCollection.doc("_probe");
+    const docProto = Object.getPrototypeOf(probeDocument);
+    const colProto = Object.getPrototypeOf(probeCollection);
     if (!docProto || !colProto || docProto.__appBragaAuditPatched) return;
     state.auditReady = true;
     docProto.__appBragaAuditPatched = true;
@@ -519,7 +624,10 @@
   function init() {
     setupDeviceClasses();
     setupSidebar();
+    setupTopbar();
     setupSearchShell();
+    setupDensityControls();
+    polishModalsAndEmptyStates();
     ensureDashboardOps();
     updateSystemHealthExtra();
     setTimeout(() => {

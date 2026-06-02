@@ -359,3 +359,249 @@ body.enterprise-search-ready .enterprise-search-shell {
     top: calc(68px + env(safe-area-inset-top));
   }
 }
+
+/* Visual upgrade pack: shared topbar, typed cards, modals and density modes */
+.enterprise-page-topbar {
+  margin: 0 0 18px;
+  padding: 18px 20px;
+  border: 1px solid var(--app-border);
+  border-radius: 20px;
+  background:
+    linear-gradient(135deg, rgb(var(--app-primary-rgb) / .13), rgb(var(--app-secondary-rgb) / .07)),
+    rgba(20, 20, 22, .82);
+  box-shadow: 0 18px 48px rgba(0,0,0,.26);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.enterprise-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--app-muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.enterprise-page-title {
+  margin: 4px 0 0;
+  color: var(--app-text);
+  font-size: clamp(28px, 3.2vw, 44px);
+  line-height: 1;
+  letter-spacing: 0;
+  font-weight: 950;
+}
+
+.enterprise-page-subtitle {
+  margin: 8px 0 0;
+  color: var(--app-muted);
+  font-size: 14px;
+}
+
+.enterprise-page-action {
+  min-width: 150px;
+}
+
+.pc-card,
+.printer-card,
+.network-card,
+.pistol-card,
+.radio-card,
+.user-card,
+.stock-card,
+.history-card,
+.info-card,
+.config-backup-card,
+.health-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+.pc-card:hover,
+.printer-card:hover,
+.network-card:hover,
+.pistol-card:hover,
+.radio-card:hover,
+.user-card:hover,
+.stock-card:hover,
+.history-card:hover,
+.info-card:hover,
+.config-backup-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--app-primary-line) !important;
+  box-shadow: 0 22px 60px rgba(0,0,0,.34), 0 0 0 1px var(--app-primary-line) !important;
+}
+
+.pc-card::before,
+.printer-card::before,
+.network-card::before,
+.pistol-card::before,
+.radio-card::before,
+.user-card::before,
+.stock-card::before,
+.history-card::before,
+.info-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--app-gradient);
+  opacity: .92;
+}
+
+.printer-card::after,
+.radio-card::after,
+.pistol-card::after,
+.network-card::after,
+.user-card::after,
+.pc-card::after {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: var(--app-button-text);
+  background: var(--app-gradient);
+  box-shadow: 0 12px 28px var(--app-primary-glow);
+  font-size: 15px;
+  font-weight: 950;
+}
+
+.printer-card::after { content: "\25A6"; }
+.radio-card::after { content: "\25CC"; }
+.pistol-card::after { content: "\2301"; }
+.network-card::after { content: "\25A7"; }
+.user-card::after { content: "\25CE"; }
+.pc-card::after { content: "\25AD"; }
+
+.modal,
+.modal-overlay,
+[id^="modal"],
+.app-modal {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.modal-content,
+.app-modal-content,
+[class*="modal"] .panel {
+  border-radius: 22px !important;
+  border: 1px solid var(--app-primary-line) !important;
+  background:
+    linear-gradient(135deg, rgb(var(--app-primary-rgb) / .12), transparent 56%),
+    rgba(22,22,24,.96) !important;
+  box-shadow: 0 30px 80px rgba(0,0,0,.48) !important;
+}
+
+.empty-state,
+.reference-empty {
+  min-height: 124px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 22px;
+  border: 1px dashed var(--app-primary-line);
+  border-radius: 18px;
+  color: var(--app-muted);
+  background: rgba(255,255,255,.035);
+}
+
+.empty-state::before,
+.reference-empty::before {
+  content: "\24D8";
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: var(--app-primary-soft);
+  color: var(--app-text);
+  font-weight: 950;
+}
+
+.skeleton-line {
+  min-height: 14px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255,255,255,.05), rgba(255,255,255,.14), rgba(255,255,255,.05));
+  background-size: 220% 100%;
+  animation: appSkeleton 1.4s ease infinite;
+}
+
+@keyframes appSkeleton {
+  to { background-position: -220% 0; }
+}
+
+.resolution-compact {
+  --enterprise-sidebar-width: 232px;
+  --app-radius: 14px;
+}
+
+.resolution-compact .main,
+.resolution-compact main {
+  padding: 18px !important;
+}
+
+.resolution-compact .panel,
+.resolution-compact .card,
+.resolution-compact .pc-card,
+.resolution-compact .printer-card,
+.resolution-compact .network-card,
+.resolution-compact .pistol-card {
+  padding: 14px !important;
+}
+
+.resolution-compact .enterprise-metrics,
+.resolution-compact .stats-grid,
+.resolution-compact .cards-grid,
+.resolution-compact .equipment-grid {
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)) !important;
+  gap: 12px !important;
+}
+
+.resolution-comfortable {
+  --enterprise-sidebar-width: 252px;
+}
+
+.resolution-wide {
+  --enterprise-sidebar-width: 276px;
+  --app-radius: 22px;
+}
+
+.resolution-wide .main,
+.resolution-wide main {
+  padding: clamp(28px, 3vw, 44px) !important;
+}
+
+.resolution-wide .enterprise-metrics,
+.resolution-wide .stats-grid,
+.resolution-wide .cards-grid,
+.resolution-wide .equipment-grid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+  gap: 20px !important;
+}
+
+.enterprise-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+@media (max-width: 768px) {
+  .enterprise-page-topbar {
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .enterprise-page-action {
+    width: 100%;
+  }
+}

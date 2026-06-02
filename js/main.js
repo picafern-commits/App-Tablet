@@ -1,5 +1,6 @@
 const { app, BrowserWindow, shell, ipcMain, Tray, Menu, Notification } = require("electron");
 const path = require("path");
+const fs = require("fs");
 const http = require("http");
 const https = require("https");
 const snmp = require("net-snmp");
@@ -7,6 +8,28 @@ const snmp = require("net-snmp");
 let win;
 let tray;
 app.isQuitting = false;
+
+const gotLock = app.requestSingleInstanceLock();
+if (!gotLock) app.quit();
+
+function settingsPath() {
+  return path.join(app.getPath("userData"), "desktop-settings.json");
+}
+
+function readDesktopSettings() {
+  try {
+    return JSON.parse(fs.readFileSync(settingsPath(), "utf8"));
+  } catch {
+    return { fullscreen: true };
+  }
+}
+
+function writeDesktopSettings(settings) {
+  try {
+    fs.mkdirSync(app.getPath("userData"), { recursive: true });
+    fs.writeFileSync(settingsPath(), JSON.stringify(settings, null, 2), "utf8");
+  } catch {}
+}
 
 function mostrarJanelaPrincipal() {
   if (!win) {
@@ -36,12 +59,13 @@ function createTray() {
 }
 
 function createWindow() {
+  const desktopSettings = readDesktopSettings();
   win = new BrowserWindow({
-    width: 1600,
-    height: 1000,
+    width: desktopSettings.width || 1600,
+    height: desktopSettings.height || 1000,
     minWidth: 1100,
     minHeight: 700,
-    fullscreen: true,
+    fullscreen: desktopSettings.fullscreen !== false,
     autoHideMenuBar: true,
     icon: path.join(__dirname, "..", "icon.ico"),
     backgroundColor: "#101114",
@@ -52,7 +76,7 @@ function createWindow() {
     }
   });
 
-  win.loadFile(path.join(__dirname, "..", "index.html"));
+  win.loadFile(path.join(__dirname, "..", "html", "index.html"));
 
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
@@ -65,6 +89,15 @@ function createWindow() {
       win.hide();
     }
   });
+
+  win.on("resize", () => {
+    if (!win || win.isDestroyed()) return;
+    const [width, height] = win.getSize();
+    writeDesktopSettings({ ...readDesktopSettings(), width, height, fullscreen: win.isFullScreen() });
+  });
+
+  win.on("enter-full-screen", () => writeDesktopSettings({ ...readDesktopSettings(), fullscreen: true }));
+  win.on("leave-full-screen", () => writeDesktopSettings({ ...readDesktopSettings(), fullscreen: false }));
 }
 
 function requestUrl(url) {
@@ -220,6 +253,10 @@ app.whenReady().then(() => {
   });
 });
 
+app.on("second-instance", () => {
+  mostrarJanelaPrincipal();
+});
+
 ipcMain.handle("app:notify", async (_event, payload = {}) => {
   try {
     const title = String(payload.title || "App Braga");
@@ -235,6 +272,28 @@ ipcMain.handle("app:notify", async (_event, payload = {}) => {
   } catch (error) {
     return { ok: false, error: error.message };
   }
+});
+
+ipcMain.handle("app:get-info", async () => ({
+  ok: true,
+  version: app.getVersion(),
+  platform: process.platform,
+  userData: app.getPath("userData"),
+  settings: readDesktopSettings()
+}));
+
+ipcMain.handle("app:set-fullscreen", async (_event, value) => {
+  if (!win) return { ok: false };
+  const active = typeof value === "boolean" ? value : !win.isFullScreen();
+  win.setFullScreen(active);
+  writeDesktopSettings({ ...readDesktopSettings(), fullscreen: active });
+  return { ok: true, fullscreen: active };
+});
+
+ipcMain.handle("app:open-external", async (_event, url) => {
+  if (!url) return { ok: false };
+  await shell.openExternal(String(url));
+  return { ok: true };
 });
 
 app.on("before-quit", () => {
