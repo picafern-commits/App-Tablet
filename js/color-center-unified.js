@@ -40,7 +40,81 @@
     Object.entries(compat).forEach(([k,v])=>document.documentElement.style.setProperty(k,valid(v),"important"));
     document.documentElement.style.setProperty("--ts-global-button-glow",rgba(t.btnGlow,.28),"important");
     document.documentElement.style.setProperty("--ts-global-card-glow",rgba(t.cardGlow,.14),"important");
+    applyLegacyAliases();
     applyHardOverrides();
+  }
+
+
+
+  function applyLegacyAliases(){
+    const t=get();
+    const aliases = {
+      "--orange": t.accent,
+      "--pink": t.accent,
+      "--red": t.btnDeleteBg,
+      "--green": t.btnSuccessBg,
+      "--blue": t.btnPrimaryBg,
+      "--primary": t.btnPrimaryBg,
+      "--primary-color": t.btnPrimaryBg,
+      "--secondary": t.btnSecondaryBg,
+      "--accent": t.accent,
+      "--brand": t.accent,
+      "--app-primary": t.btnPrimaryBg,
+      "--app-accent": t.accent,
+      "--app-accent-hover": t.accent,
+      "--app-button-text": t.btnPrimaryText,
+      "--button-bg": t.btnPrimaryBg,
+      "--button-text": t.btnPrimaryText,
+      "--button-border": t.btnBorder || t.cardBorder,
+      "--text": t.text,
+      "--muted": t.text,
+      "--title": t.title,
+      "--bg": t.bg,
+      "--bg2": t.bg2,
+      "--card": t.cardBg,
+      "--line": t.cardBorder,
+      "--border": t.cardBorder,
+
+      "--ts-bg": t.bg,
+      "--ts-bg2": t.bg2,
+      "--ts-card": t.cardBg,
+      "--ts-card2": t.cardBg,
+      "--ts-card-border": t.cardBorder,
+      "--ts-text": t.text,
+      "--ts-muted": t.text,
+      "--ts-title": t.title,
+      "--ts-primary-bg": t.btnPrimaryBg,
+      "--ts-primary-text": t.btnPrimaryText,
+      "--ts-primary-border": t.btnBorder || t.btnPrimaryBg,
+      "--ts-secondary-bg": t.btnSecondaryBg,
+      "--ts-secondary-text": t.btnSecondaryText,
+      "--ts-secondary-border": t.btnBorder || t.cardBorder,
+      "--ts-edit-bg": t.btnEditBg,
+      "--ts-edit-text": t.btnEditText,
+      "--ts-edit-border": t.btnBorder || t.btnEditBg,
+      "--ts-danger-bg": t.btnDeleteBg,
+      "--ts-danger-text": t.btnDeleteText,
+      "--ts-danger-border": t.btnBorder || t.btnDeleteBg,
+      "--ts-success-bg": t.btnSuccessBg,
+      "--ts-success-text": t.btnSuccessText,
+      "--ts-success-border": t.btnBorder || t.btnSuccessBg,
+      "--ts-input-bg": t.inputBg,
+      "--ts-input-text": t.inputText,
+      "--ts-input-border": t.inputBorder,
+      "--ts-sidebar-bg": t.sidebarBg,
+      "--ts-sidebar-text": t.sidebarText,
+      "--ts-sidebar-icon": t.sidebarIcon,
+      "--ts-sidebar-active-bg": t.sidebarActive,
+      "--ts-sidebar-active-text": "#ffffff",
+      "--ts-sidebar-divider": t.sidebarDivider,
+      "--ts-sidebar-brand-bg": t.brandBg,
+      "--ts-sidebar-brand-text": t.brandText
+    };
+    Object.entries(aliases).forEach(([k,v])=>{
+      document.documentElement.style.setProperty(k, valid(v), "important");
+    });
+    document.documentElement.style.setProperty("--ts-global-button-glow", rgba(t.btnGlow,.28), "important");
+    document.documentElement.style.setProperty("--ts-global-card-glow", rgba(t.cardGlow,.14), "important");
   }
 
 

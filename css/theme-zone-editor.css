@@ -1,1 +1,1 @@
-/* Zone editor disabled: using preset-only themes. */
+/* Sistema antigo de cores desativado. Centro de Cores é a única fonte. */

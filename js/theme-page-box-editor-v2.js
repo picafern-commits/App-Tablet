@@ -1,1 +1,1 @@
-/* Sistema antigo por elemento desativado. Usar advanced-color-system.js */
+/* Sistema antigo de cores desativado. Centro de Cores é a única fonte. */

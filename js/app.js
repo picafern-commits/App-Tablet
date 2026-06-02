@@ -9033,3 +9033,17 @@ window.addEventListener("orientationchange", () => {
   window.guardarCorPrincipalApp = window.setAppAccentColor;
 })();
 /* ===== END OLD APPEARANCE ACCENT DISABLED ===== */
+
+
+/* ===== OLD COLOR SYSTEM HARD DISABLED ===== */
+(function(){
+  const oldKeys=["appAccentColor","appBragaAccent","appBragaPrimaryColor","selectedAccentColor","themeAccent","corPrincipalApp","appPrimaryColor","appBragaThemeStudioSimpleV3","appBragaThemePresetsEnabled","appBragaAdvancedColorsV1","appBragaAdvancedColorsEnabled"];
+  try{oldKeys.forEach(k=>localStorage.removeItem(k));}catch(e){}
+  window.setAppAccentColor=function(){console.warn("Sistema antigo removido. Usa Centro de Cores.");};
+  window.changeAppAccentColor=window.setAppAccentColor;
+  window.aplicarCorPrincipalApp=window.setAppAccentColor;
+  window.guardarCorPrincipalApp=window.setAppAccentColor;
+  window.themeFirebasePushNow=function(){};
+  window.themeFirebaseReloadNow=function(){};
+})();
+/* ===== END OLD COLOR SYSTEM HARD DISABLED ===== */

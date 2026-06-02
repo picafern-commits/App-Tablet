@@ -343,3 +343,166 @@ button,.btn,.primary-btn,.secondary-btn,[class*="btn"]{
  border-color:var(--cc-btn-border,var(--cc-card-border)) !important;
  border-width:1.5px !important;
 }
+
+
+/* ===== CENTRO DE CORES ÚNICO - LIMPEZA RADICAL ===== */
+:root {
+  --orange: var(--cc-accent) !important;
+  --pink: var(--cc-accent) !important;
+  --red: var(--cc-btn-delete-bg) !important;
+  --green: var(--cc-btn-success-bg) !important;
+  --blue: var(--cc-btn-primary-bg) !important;
+  --primary: var(--cc-btn-primary-bg) !important;
+  --primary-color: var(--cc-btn-primary-bg) !important;
+  --secondary: var(--cc-btn-secondary-bg) !important;
+  --accent: var(--cc-accent) !important;
+  --brand: var(--cc-accent) !important;
+  --app-primary: var(--cc-btn-primary-bg) !important;
+  --app-accent: var(--cc-accent) !important;
+  --app-accent-hover: var(--cc-accent) !important;
+  --app-button-text: var(--cc-btn-primary-text) !important;
+  --button-bg: var(--cc-btn-primary-bg) !important;
+  --button-text: var(--cc-btn-primary-text) !important;
+  --button-border: var(--cc-btn-border, var(--cc-card-border)) !important;
+  --text: var(--cc-text) !important;
+  --muted: var(--cc-text) !important;
+  --title: var(--cc-title) !important;
+  --bg: var(--cc-bg) !important;
+  --bg2: var(--cc-bg2) !important;
+  --card: var(--cc-card-bg) !important;
+  --line: var(--cc-card-border) !important;
+  --border: var(--cc-card-border) !important;
+}
+
+html, body {
+  background:
+    radial-gradient(circle at 12% 8%, color-mix(in srgb, var(--cc-accent) 22%, transparent), transparent 34rem),
+    linear-gradient(135deg, var(--cc-bg), var(--cc-bg2)) !important;
+  color: var(--cc-text) !important;
+}
+
+body, main, section, article, div, p, span, small, label, li, td, th, option {
+  color: var(--cc-text) !important;
+}
+
+h1,h2,h3,h4,h5,h6,strong,b,
+.page-title,.section-title,.card-title,.reference-header h1,.reference-panel h3,
+.config-card h3,.enterprise-config-card h3,.radio-card-main strong,.pc-name,.info-list-item strong {
+  color: var(--cc-title) !important;
+}
+
+.card,.panel,.reference-panel,.reference-card,.config-card,.enterprise-config-card,
+.dashboard-card,.stat-card,.metric-card,.pc-card,.radio-card,.info-card,.info-list-item,
+.user-card,.printer-card,.stock-card,.history-card,.modal-card,.table-card,.form-card,
+[class*="card"]:not(button):not(.btn),[class*="panel"]:not(button):not(.btn) {
+  background: var(--cc-card-bg) !important;
+  border-color: var(--cc-card-border) !important;
+  color: var(--cc-card-text) !important;
+  box-shadow: 0 18px 48px color-mix(in srgb, var(--cc-card-glow) 18%, transparent), 0 14px 40px rgba(0,0,0,.22) !important;
+}
+
+button,.btn,.secondary-btn,.reference-outline,.enterprise-btn,[class*="btn"] {
+  background: var(--cc-btn-secondary-bg) !important;
+  color: var(--cc-btn-secondary-text) !important;
+  border-color: var(--cc-btn-border, var(--cc-card-border)) !important;
+  border-width: 1.5px !important;
+  box-shadow: 0 0 30px color-mix(in srgb, var(--cc-btn-glow) 34%, transparent), 0 12px 28px rgba(0,0,0,.24) !important;
+}
+
+button *, .btn *, .secondary-btn *, .reference-outline *, .enterprise-btn * {
+  color: inherit !important;
+}
+
+.primary-btn,.reference-primary,.btn-primary,.add-btn,.save-btn,button[type="submit"],button.primary,
+.radio-action-main,button[onclick*="guardar"],button[onclick*="Guardar"],button[onclick*="adicionar"],
+button[onclick*="Adicionar"],button[onclick*="export"],button[onclick*="Export"],button[onclick*="verificar"],
+button[onclick*="Verificar"],button[onclick*="ativar"],button[onclick*="Ativar"],button[onclick*="registrar"],
+button[onclick*="Registar"] {
+  background: var(--cc-btn-primary-bg) !important;
+  color: var(--cc-btn-primary-text) !important;
+  border-color: var(--cc-btn-border, var(--cc-btn-primary-bg)) !important;
+}
+
+.btn-edit,.edit-btn,button[onclick*="editar"],button[onclick*="Editar"],button[title*="Editar"] {
+  background: var(--cc-btn-edit-bg) !important;
+  color: var(--cc-btn-edit-text) !important;
+  border-color: var(--cc-btn-border, var(--cc-btn-edit-bg)) !important;
+}
+
+.danger,.btn-delete,.delete-btn,button.danger,button[onclick*="apagar"],button[onclick*="Apagar"],
+button[onclick*="delete"],button[title*="Apagar"] {
+  background: var(--cc-btn-delete-bg) !important;
+  color: var(--cc-btn-delete-text) !important;
+  border-color: var(--cc-btn-border, var(--cc-btn-delete-bg)) !important;
+}
+
+.btn-use,.success,button[onclick*="confirmar"],button[onclick*="Confirmar"],button[onclick*="usar"],
+button[onclick*="Usar"],button[onclick*="resolver"],button[onclick*="Resolver"] {
+  background: var(--cc-btn-success-bg) !important;
+  color: var(--cc-btn-success-text) !important;
+  border-color: var(--cc-btn-border, var(--cc-btn-success-bg)) !important;
+}
+
+input,select,textarea,.input,.form-control {
+  background: var(--cc-input-bg) !important;
+  color: var(--cc-input-text) !important;
+  border-color: var(--cc-input-border) !important;
+}
+
+input:focus,select:focus,textarea:focus {
+  border-color: var(--cc-input-focus) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cc-input-focus) 26%, transparent) !important;
+}
+
+.sidebar,.enterprise-sidebar,.app-sidebar {
+  background: var(--cc-sidebar-bg) !important;
+  border-right-color: var(--cc-sidebar-divider) !important;
+}
+
+.sidebar a,.enterprise-sidebar a,.app-sidebar a,.nav-link,.menu-item {
+  color: var(--cc-sidebar-text) !important;
+  background: transparent !important;
+}
+
+.sidebar a.active,.enterprise-sidebar a.active,.app-sidebar a.active,.nav-link.active,.menu-item.active {
+  color: #fff !important;
+  background: var(--cc-sidebar-active) !important;
+  box-shadow: 0 0 36px color-mix(in srgb, var(--cc-sidebar-glow) 42%, transparent) !important;
+}
+
+.brand,.app-brand,.sidebar-brand,.logo-card,.brand-card,.premium-brand,.brand-badge,.brand-logo,.sidebar-logo,.premium-brand-icon {
+  background: var(--cc-brand-bg) !important;
+  color: var(--cc-brand-text) !important;
+  border-color: var(--cc-brand-bg) !important;
+}
+
+table,thead,tbody,tr,td,th { border-color: var(--cc-table-border) !important; }
+th,thead td { background: var(--cc-table-head-bg) !important; color: var(--cc-table-head-text) !important; }
+td { background: var(--cc-table-row-bg) !important; color: var(--cc-table-row-text) !important; }
+tr:hover td { background: var(--cc-table-hover) !important; }
+
+.status-pill,.badge,.pill,.tag,.screen-badge,.radio-status-pill,.printer-toner-status {
+  background: var(--cc-btn-secondary-bg) !important;
+  color: var(--cc-btn-secondary-text) !important;
+  border-color: var(--cc-card-border) !important;
+}
+
+.config-collapse-header {
+  background: var(--cc-config-header-bg) !important;
+  color: var(--cc-config-header-text) !important;
+  border-color: var(--cc-card-border) !important;
+}
+.config-collapse-title,.config-collapse-header span { color: var(--cc-config-header-text) !important; }
+.config-collapse-body { background: var(--cc-config-body-bg) !important; }
+
+.printer-toner-box.toner-good .printer-toner-bar,.printer-toner-bar.toner-good { background: var(--cc-toner-good) !important; }
+.printer-toner-box.toner-medium .printer-toner-bar,.printer-toner-bar.toner-medium { background: var(--cc-toner-medium) !important; }
+.printer-toner-box.toner-low .printer-toner-bar,.printer-toner-bar.toner-low { background: var(--cc-toner-low) !important; }
+.printer-toner-box.toner-critical .printer-toner-bar,.printer-toner-bar.toner-critical { background: var(--cc-toner-critical) !important; }
+
+.app-color-picker,.color-picker-row,.accent-color-picker,.theme-color-picker,.primary-color-picker,
+.appearance-color-picker,[data-setting="accent-color"],[data-setting="app-accent"],
+[data-config="cor-principal-app"],.config-accent-colors {
+  display: none !important;
+}
+/* ===== END CENTRO DE CORES ÚNICO ===== */

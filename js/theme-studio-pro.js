@@ -1,1 +1,1 @@
-/* Sistema de cores antigo desativado. Usar color-center-unified.js */
+/* Sistema antigo de cores desativado. Centro de Cores é a única fonte. */
