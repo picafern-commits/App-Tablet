@@ -2592,14 +2592,13 @@ function filtrarUsersComFiltros() {
 }
 
 function applyAppTheme(mode) {
-  const isDark = mode === "dark";
+  const isDark = mode !== "light";
   document.documentElement.classList.toggle("dark", isDark);
   document.documentElement.classList.toggle("app-dark", isDark);
   document.documentElement.classList.toggle("app-light", !isDark);
   document.body.classList.toggle("dark", isDark);
   document.body.classList.toggle("app-dark", isDark);
   document.body.classList.toggle("app-light", !isDark);
-  localStorage.setItem("modo", isDark ? "dark" : "light");
 
   document.querySelectorAll(".theme-toggle").forEach((button) => {
     button.textContent = isDark ? "Modo claro" : "Modo escuro";
@@ -2611,8 +2610,12 @@ function applyAppTheme(mode) {
 }
 
 function initGlobalTheme() {
-  const savedMode = localStorage.getItem("modo") === "light" ? "light" : "dark";
-  applyAppTheme(savedMode);
+  applyAppTheme("dark");
+  if (window.AppThemePro) {
+    window.AppThemePro.apply(window.AppThemePro.getCachedTheme(), { persist: false });
+    window.AppThemePro.bindControls?.();
+    window.AppThemePro.connectFirestore?.();
+  }
 
   const sidebar = document.querySelector(".sidebar");
   if (sidebar && !document.querySelector(".theme-toggle")) {
@@ -2620,8 +2623,7 @@ function initGlobalTheme() {
     button.type = "button";
     button.className = "theme-toggle";
     button.addEventListener("click", () => {
-      const nextMode = document.body.classList.contains("app-dark") ? "light" : "dark";
-      applyAppTheme(nextMode);
+      applyAppTheme("dark");
     });
 
     const brand = sidebar.querySelector(".brand, .premium-brand, .brand-block");
@@ -2649,11 +2651,11 @@ function initGlobalTheme() {
   if (sw && !sw.dataset.themeBound) {
     sw.dataset.themeBound = "1";
     sw.addEventListener("change", () => {
-      applyAppTheme(sw.checked ? "dark" : "light");
+      applyAppTheme("dark");
     });
   }
 
-  applyAppTheme(localStorage.getItem("modo") === "light" ? "light" : "dark");
+  applyAppTheme("dark");
 }
 
 function aplicarResolucaoApp(mode = "comfortable") {
@@ -2701,6 +2703,7 @@ function ajustarCorAppBraga(hex, amount = -28) {
 }
 
 function getCachedCorApp() {
+  if (window.AppThemePro) return window.AppThemePro.getCachedTheme().primary;
   const match = document.cookie.match(/(?:^|;\s*)appAccentColor=([^;]+)/);
   return match ? normalizarCorApp(decodeURIComponent(match[1])) : "";
 }
@@ -2761,6 +2764,10 @@ function deleteSessionAppBraga(name) {
 }
 
 function aplicarCorApp(value = APP_DEFAULT_ACCENT) {
+  if (window.AppThemePro) {
+    window.AppThemePro.apply({ ...window.AppThemePro.getCachedTheme(), primary: value });
+    return;
+  }
   const color = normalizarCorApp(value);
   const hover = ajustarCorAppBraga(color, -28);
   const light = ajustarCorAppBraga(color, 34);
@@ -2802,14 +2809,30 @@ function aplicarCorApp(value = APP_DEFAULT_ACCENT) {
 
 function initResolucaoApp() {
   aplicarResolucaoApp("comfortable");
-  aplicarCorApp(getCachedCorApp() || APP_DEFAULT_ACCENT);
+  if (window.AppThemePro) {
+    window.AppThemePro.apply(window.AppThemePro.getCachedTheme(), { persist: false });
+    window.AppThemePro.bindControls?.();
+    window.AppThemePro.connectFirestore?.();
+  } else {
+    aplicarCorApp(getCachedCorApp() || APP_DEFAULT_ACCENT);
+  }
   if (!window.db || !window.db.collection) return;
   window.db.collection("config").doc("layout").onSnapshot((doc) => {
     const data = doc.exists ? doc.data() : {};
     aplicarResolucaoApp(data.resolution || "comfortable");
-    const accentColor = data.accentColor || getCachedCorApp() || APP_DEFAULT_ACCENT;
-    aplicarCorApp(accentColor);
-    cacheCorApp(accentColor);
+    if (window.AppThemePro) {
+      window.AppThemePro.apply({
+        ...window.AppThemePro.getCachedTheme(),
+        ...(data.themePro || {}),
+        primary: data.themePro?.primary || data.accentColor || window.AppThemePro.getCachedTheme().primary,
+        secondary: data.themePro?.secondary || data.accentColor2 || window.AppThemePro.getCachedTheme().secondary,
+        buttonTextMode: data.buttonTextMode || data.themePro?.buttonTextMode || window.AppThemePro.getCachedTheme().buttonTextMode
+      });
+    } else {
+      const accentColor = data.accentColor || getCachedCorApp() || APP_DEFAULT_ACCENT;
+      aplicarCorApp(accentColor);
+      cacheCorApp(accentColor);
+    }
     setCookieAppBraga("appButtonTextMode", data.buttonTextMode || getButtonTextMode(), 31536000);
     if (typeof aplicarModoTextoBotoes === "function") aplicarModoTextoBotoes(data.buttonTextMode || getButtonTextMode());
     aplicarConfigNotificacoesApp(data);
@@ -2833,6 +2856,10 @@ async function guardarResolucaoApp(value) {
 }
 
 async function guardarCorApp(value) {
+  if (window.AppThemePro) {
+    await window.AppThemePro.save({ ...window.AppThemePro.getCachedTheme(), primary: value });
+    return;
+  }
   const accentColor = normalizarCorApp(value);
   aplicarCorApp(accentColor);
   cacheCorApp(accentColor);
@@ -2846,6 +2873,26 @@ async function guardarCorApp(value) {
   } catch (error) {
     console.error(error);
     mostrarMensagem("Erro ao guardar cor da APP.", "erro");
+  }
+}
+
+async function guardarTemaApp() {
+  if (!window.AppThemePro) return guardarCorApp(getCachedCorApp() || APP_DEFAULT_ACCENT);
+  try {
+    await window.AppThemePro.save(window.AppThemePro.readControls());
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar tema da APP.", "erro");
+  }
+}
+
+async function reporTemaApp() {
+  if (!window.AppThemePro) return guardarCorApp(APP_DEFAULT_ACCENT);
+  try {
+    await window.AppThemePro.save(window.AppThemePro.PRESETS.autozitania);
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao repor tema da APP.", "erro");
   }
 }
 
@@ -4332,6 +4379,8 @@ window.radioAcaoSelecionada = radioAcaoSelecionada;
 
 window.guardarResolucaoApp = guardarResolucaoApp;
 window.guardarCorApp = guardarCorApp;
+window.guardarTemaApp = guardarTemaApp;
+window.reporTemaApp = reporTemaApp;
 window.guardarPinApp = guardarPinApp;
 window.guardarTempoBloqueioApp = guardarTempoBloqueioApp;
 window.guardarMetodoEntradaApp = guardarMetodoEntradaApp;
@@ -8656,16 +8705,10 @@ console.log("PISTOLAS VIEW/DELETE/SEARCH FIX OK");
 window.loadTheme = function(){
 
   try{
-
-    const savedTheme =
-      localStorage.getItem("app-theme") || "dark";
-
-    document.documentElement.classList.remove("dark");
-    document.body.classList.remove("dark");
-
-    if(savedTheme === "dark"){
-      document.documentElement.classList.add("dark");
-      document.body.classList.add("dark");
+    document.documentElement.classList.add("dark", "app-dark");
+    document.body.classList.add("dark", "app-dark");
+    if (window.AppThemePro) {
+      window.AppThemePro.apply(window.AppThemePro.getCachedTheme(), { persist: false });
     }
 
   }catch(e){
@@ -8677,7 +8720,8 @@ window.loadTheme = function(){
 window.saveTheme = function(theme){
 
   try{
-    localStorage.setItem("app-theme", theme);
+    document.documentElement.classList.add("dark", "app-dark");
+    document.body.classList.add("dark", "app-dark");
   }catch(e){
     console.log(e);
   }
@@ -8685,14 +8729,6 @@ window.saveTheme = function(theme){
 };
 
 window.toggleTheme = function(){
-
-  const isDark =
-    document.body.classList.contains("dark");
-
-  const newTheme =
-    isDark ? "light" : "dark";
-
-  window.saveTheme(newTheme);
   window.loadTheme();
 
 };
@@ -8876,7 +8912,7 @@ async function guardarModoTextoBotoes(mode) {
       buttonTextMode: finalMode,
       updatedAt: Date.now()
     }, { merge: true });
-    mostrarMensagem("Cor do texto dos botÃµes atualizada.");
+    mostrarMensagem("Cor do texto dos bot?es atualizada.");
   } catch (error) {
     console.error(error);
     mostrarMensagem("Erro ao guardar a cor do texto.", "erro");

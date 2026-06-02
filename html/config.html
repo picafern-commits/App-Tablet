@@ -1,77 +1,17 @@
 ﻿<!DOCTYPE html>
 <html lang="pt">
 <head>
-
-<script id="APP_BRAGA_THEME_LOADER">
-(function(){
-  try{
-    const savedTheme = localStorage.getItem("app-theme") || "dark";
-    if(savedTheme === "dark"){
-      document.documentElement.classList.add("dark");
-      document.addEventListener("DOMContentLoaded", () => document.body?.classList.add("dark"));
-    }
-
-    const normalizarCor = (value) => /^#[0-9a-fA-F]{6}$/.test(String(value || "").trim()) ? String(value).trim().toLowerCase() : "";
-    const cookieMatch = document.cookie.match(/(?:^|;\s*)appAccentColor=([^;]+)/);
-    const color = normalizarCor(cookieMatch ? decodeURIComponent(cookieMatch[1]) : "");
-    if(!color) return;
-
-    const rgb = {
-      r: parseInt(color.slice(1, 3), 16),
-      g: parseInt(color.slice(3, 5), 16),
-      b: parseInt(color.slice(5, 7), 16)
-    };
-    const adjust = (amount) => {
-      const next = [rgb.r, rgb.g, rgb.b].map((value) => Math.max(0, Math.min(255, value + amount)));
-      return "#" + next.map((value) => value.toString(16).padStart(2, "0")).join("");
-    };
-
-    const hover = adjust(-28);
-    const light = adjust(34);
-    const soft = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, .16)`;
-    const softer = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, .08)`;
-    const line = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, .22)`;
-    const glow = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, .28)`;
-    const vars = {
-      "--app-accent": color,
-      "--app-accent-hover": hover,
-      "--app-accent-light": light,
-      "--app-accent-rgb": `${rgb.r} ${rgb.g} ${rgb.b}`,
-      "--app-accent-soft": soft,
-      "--app-accent-softer": softer,
-      "--app-accent-line": line,
-      "--app-accent-glow": glow,
-      "--az-orange": color,
-      "--az-orange-2": hover,
-      "--az-orange-soft": soft,
-      "--az-line": line,
-      "--primary": color,
-      "--primary-hover": hover,
-      "--sidebar-hover": color,
-      "--brinka-pink": color,
-      "--brinka-purple": hover,
-      "--brinka-orange": color,
-      "--brinka-orange2": light,
-      "--ent-blue": color,
-      "--ent-purple": hover,
-      "--ent-orange": color,
-      "--app-blue": color,
-      "--app-blue-soft": soft
-    };
-    Object.entries(vars).forEach(([key, val]) => document.documentElement.style.setProperty(key, val));
-  }catch(e){ console.log(e); }
-})();
-</script>
-
-  <meta charset="UTF-8">
+<script src="../js/app-theme-pro.js?v=theme-pro-1"></script>
+<meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-  <title>ConfiguraÃ§Ãµes</title>
+  <title>Configuracoes</title>
   <meta name="theme-color" content="#101114">
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
   <link rel="stylesheet" href="../css/style.css?v=labels-printers-fix-1">
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
+  <link rel="stylesheet" href="../css/app-theme-pro.css?v=theme-pro-1">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="App Braga">
@@ -79,11 +19,7 @@
   <meta name="format-detection" content="telephone=no">
   <meta name="msapplication-tap-highlight" content="no">
   <link rel="stylesheet" href="../css/iphone-force-final.css?v=v2-final">
-  <link rel="stylesheet" href="../css/theme-firebase-sync.css?v=firebase-sync-1">
-  <link rel="stylesheet" href="../css/color-center-unified.css?v=glow-kill-1">
-  <link rel="stylesheet" href="../css/color-center-final-overrides.css?v=modern-buttons-1">
-  <link rel="stylesheet" href="../css/color-center-glow-kill.css?v=modern-buttons-1">
-  <link rel="stylesheet" href="../css/modern-buttons-enterprise.css?v=modern-buttons-1">
+
 </head>
 <body>
 <aside class="sidebar">
@@ -100,23 +36,52 @@
 <a href="historico.html">Historico</a>
 <a href="etiquetas-word.html">Etiquetas Word</a>
 <a href="impressoras.html">Impressoras</a>
-<a href="manutencao-impressoras.html">ManutenÃ§Ã£o Impressoras</a>
+<a href="manutencao-impressoras.html">Manutencao Impressoras</a>
 <a href="computadores.html">Computadores</a>
 <a href="users.html">Users</a>
 <a href="pistolas.html">Pistolas CK65</a>
 <a href="portas.html">Portas Rede</a>
-<a href="radios.html">RÃ¡dios</a>
-<a href="informacoes.html">InformaÃ§Ãµes</a>
-<a href="config.html" class="active">ConfiguraÃ§Ãµes</a>
+<a href="radios.html">Radios</a>
+<a href="informacoes.html">Informacoes</a>
+<a href="config.html" class="active">Configuracoes</a>
 </aside>
 <main class="main">
 
   <div class="page-hero">
-    <div class="page-hero-title">ConfiguraÃ§Ãµes</div>
-	<span class="status-pill">Sistema Online</span>
+    <div class="page-hero-title">Configuracoes</div>
+    <span class="status-pill">Sistema Online</span>
   </div>
 
-  
+  <div class="panel config-section theme-pro-card">
+    <div class="section-header">
+      <div>
+        <h3>Aparencia</h3>
+        <p class="section-subtitle">Tema enterprise unico para a APP toda, sincronizado pela Firestore.</p>
+      </div>
+    </div>
+    <div class="theme-pro-presets">
+      <button class="theme-pro-preset" type="button" data-theme-preset="autozitania">Autozitania</button>
+      <button class="theme-pro-preset" type="button" data-theme-preset="graphite">Grafite</button>
+      <button class="theme-pro-preset" type="button" data-theme-preset="ocean">Oceano</button>
+      <button class="theme-pro-preset" type="button" data-theme-preset="violet">Violeta</button>
+    </div>
+    <div class="theme-pro-grid">
+      <label class="theme-pro-field"><span>Cor principal</span><input id="appThemePrimary" data-theme-live type="color" value="#ef4444"></label>
+      <label class="theme-pro-field"><span>Cor secundaria</span><input id="appThemeSecondary" data-theme-live type="color" value="#f97316"></label>
+      <label class="theme-pro-field"><span>Fundo</span><input id="appThemeBackground" data-theme-live type="color" value="#151515"></label>
+      <label class="theme-pro-field"><span>Fundo profundo</span><input id="appThemeBackground2" data-theme-live type="color" value="#101114"></label>
+      <label class="theme-pro-field"><span>Cards</span><input id="appThemeSurface" data-theme-live type="color" value="#1c1c1e"></label>
+      <label class="theme-pro-field"><span>Cards secundarios</span><input id="appThemeSurface2" data-theme-live type="color" value="#242428"></label>
+      <label class="theme-pro-field"><span>Texto</span><input id="appThemeText" data-theme-live type="color" value="#f8fafc"></label>
+      <label class="theme-pro-field"><span>Texto secundario</span><input id="appThemeMuted" data-theme-live type="color" value="#a8b0bd"></label>
+      <label class="theme-pro-field"><span>Texto dos botoes</span><select id="appButtonTextMode" data-theme-live><option value="auto">Automatico</option><option value="light">Branco</option><option value="dark">Escuro</option></select></label>
+    </div>
+    <div class="theme-pro-actions">
+      <button class="primary-btn" type="button" onclick="guardarTemaApp()">Guardar tema</button>
+      <button class="secondary-btn" type="button" onclick="reporTemaApp()">Repor Autozitania</button>
+    </div>
+  </div>
+
 <div class="panel config-section config-section-security">
       <div class="section-header">
         <div>
@@ -194,7 +159,7 @@
         <label class="switch-row config-field-inline"><input type="checkbox" id="notifyTonerZero" onchange="guardarConfigNotificacoesApp()"> <span>Toner a 0%</span></label>
         <label class="switch-row config-field-inline"><input type="checkbox" id="notifyStockMin" onchange="guardarConfigNotificacoesApp()"> <span>Stock abaixo do mínimo</span></label>
         <label class="switch-row config-field-inline"><input type="checkbox" id="notifyMaintenance" onchange="guardarConfigNotificacoesApp()"> <span>Manutenções pendentes</span></label>
-        <label class="switch-row config-field-inline"><input type="checkbox" id="notifyRadios" onchange="guardarConfigNotificacoesApp()"> <span>Rádios e registos semanais</span></label>
+        <label class="switch-row config-field-inline"><input type="checkbox" id="notifyRadios" onchange="guardarConfigNotificacoesApp()"> <span>Radios e registos semanais</span></label>
         <label class="config-auth-field">
           <span>Verificar alertas</span>
           <select id="notifyIntervalMinutes" onchange="guardarConfigNotificacoesApp()">
@@ -270,29 +235,6 @@
         </div>
       </div>
     </div>
-  </section>
-
-
-
-
-
-
-</div>
-
-
-<div id="advancedColorSystemRoot"></div>
-</div>
-
-
-</div>
-
-
-<div class="config-card enterprise-config-card color-center-unified config-full-width-card">
-  <h3>Centro de Cores</h3>
-  <p class="section-subtitle">Tudo num único sistema, dividido por grupos. Escolhe um esquema pronto ou personaliza por áreas.</p>
-  <div id="colorCenterRoot" class="color-center-root"></div>
-</div>
-
 </main>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -302,8 +244,6 @@
 <script src="../js/app.js?v=labels-printers-fix-1"></script>
   <script src="../js/core/helpers.js"></script>
   <script src="../js/iphone-force-final.js?v=v2-final"></script>
-  <script src="../js/theme-firebase-sync.js?v=no-refresh-2"></script>
-  <script src="../js/config-collapsible.js?v=collapse-final-1"></script>
-  <script src="../js/color-center-unified.js?v=modern-buttons-1"></script>
+<script src="../js/config-collapsible.js?v=collapse-final-1"></script>
 </body>
 </html>

@@ -1857,32 +1857,6 @@ body.dashboard-clean .panel.is-dashboard-removed{display:none!important;}
 @media(max-width:1024px){.app-menu-toggle{display:grid!important;place-items:center!important}.sidebar{width:min(310px,86vw)!important;transform:translateX(-110%)!important;left:0!important;top:0!important;padding-top:calc(76px + env(safe-area-inset-top))!important}.sidebar.app-open{transform:translateX(0)!important}.main{margin-left:0!important;width:100%!important;padding:calc(78px + env(safe-area-inset-top)) 16px calc(34px + env(safe-area-inset-bottom))!important}.topbar,.premium-topbar{padding:18px!important}.topbar-status{flex-wrap:wrap!important;justify-content:flex-start!important}.stats-grid,.form-grid,.cards-grid,}
 @media(max-width:680px){.main{padding-left:12px!important;padding-right:12px!important}.topbar,.premium-topbar{border-radius:24px!important}.stats-grid,.form-grid,.cards-grid,.stat-card,.panel,.stock-card,.history-card,.pc-card,.dashboard-card,.card,.box,.user-card{padding:16px!important;border-radius:22px!important}.topbar h1,.main h1{font-size:30px!important}.subtitle{font-size:14px!important}.table-wrap{overflow:auto!important}}
 
-/* === COR ORIGINAL APP BRAGA RESTAURADA - FIX FINAL === */
-:root{
-  --brinka-bg:#020617!important;
-  --brinka-bg2:#0f172a!important;
-  --brinka-panel:rgba(15,23,42,.72)!important;
-  --brinka-panel2:rgba(30,41,59,.82)!important;
-  --brinka-line:rgba(148,163,184,.18)!important;
-  --brinka-text:#f8fafc!important;
-  --brinka-muted:#94a3b8!important;
-  --brinka-pink:#2563eb!important;
-  --brinka-purple:#1d4ed8!important;
-  --brinka-orange:#2563eb!important;
-  --brinka-orange2:#3b82f6!important;
-}
-html,body{
-  background:radial-gradient(circle at 12% 8%,rgba(59,130,246,.16),transparent 34rem),radial-gradient(circle at 86% 12%,rgba(37,99,235,.10),transparent 28rem),linear-gradient(135deg,#020617,#0f172a)!important;
-  color:#f8fafc!important;
-}
-body::before{background:radial-gradient(circle at 70% 92%,rgba(30,64,175,.16),transparent 30rem),radial-gradient(circle at 15% 84%,rgba(59,130,246,.10),transparent 28rem)!important;}
-.brand-badge,.brand-logo{background:linear-gradient(135deg,#2563eb,#1d4ed8)!important;box-shadow:0 14px 30px rgba(37,99,235,.24)!important;}
-.sidebar a:hover,.sidebar a.active,.sidebar .menu-btn:hover,.sidebar .menu-btn.active{background:linear-gradient(135deg,#2563eb,#1d4ed8)!important;box-shadow:0 14px 34px rgba(37,99,235,.24)!important;}
-.primary-btn,.add-btn,.save-btn,button.btn-primary,.btn-primary{background:linear-gradient(135deg,#3b82f6,#2563eb)!important;color:#fff!important;box-shadow:0 14px 30px rgba(37,99,235,.22)!important;}
-.btn,.action-btn,button:not(.danger):not(.delete-btn):not(.btn-danger){border-color:rgba(59,130,246,.24)!important;}
-a{color:#93c5fd!important;}
-
-
 /* FULLSCREEN PWA - igual lógica da App Brinka (iPhone/Tablet) */
 :root {
   --safe-top: env(safe-area-inset-top, 0px);
@@ -5559,37 +5533,10 @@ small {
 /* ===== END RADIOS PAGE BUTTONS CLEANUP ===== */
 
 
-/* ===== ADVANCED COLORS APPLY BUTTON ===== */
-.acs-actions {
-  display: flex !important;
-  gap: 10px !important;
-  flex-wrap: wrap !important;
-  margin: 16px 0 0 0 !important;
-}
-
-.advanced-color-system #advancedColorSystemRoot {
-  width: 100% !important;
-}
-/* ===== END ADVANCED COLORS APPLY BUTTON ===== */
 
 
-/* ===== ADVANCED APPLY STATUS ===== */
-.acs-apply-status {
-  display: inline-flex !important;
-  align-items: center !important;
-  min-height: 38px !important;
-  padding: 0 12px !important;
-  color: var(--acs-text, #cbd5e1) !important;
-  font-weight: 900 !important;
-}
 
-.acs-apply-status.ok {
-  color: #bbf7d0 !important;
-  background: rgba(34,197,94,.14) !important;
-  border: 1px solid rgba(34,197,94,.32) !important;
-  border-radius: 999px !important;
-}
-/* ===== END ADVANCED APPLY STATUS ===== */
+
 
 /* NOTIFICAÇÕES FULL WIDTH FINAL */
 .config-notificacoes-full,
@@ -5612,60 +5559,7 @@ small {
 }
 
 
-/* ===== CONFIG FINAL FIX WIDTH + COLOR CENTER ===== */
-.config-full-width-card,
-.color-center-unified,
-.config-card:has(.config-notificacoes-title),
-.enterprise-config-card:has(.config-notificacoes-title),
-.config-card:has(#notifyRadios),
-.enterprise-config-card:has(#notifyRadios),
-.config-card:has(#notifyTonerZero),
-.enterprise-config-card:has(#notifyTonerZero) {
-  grid-column: 1 / -1 !important;
-  width: 100% !important;
-  max-width: none !important;
-  min-width: 0 !important;
-}
 
-.config-card:has(.config-notificacoes-title),
-.enterprise-config-card:has(.config-notificacoes-title) {
-  display: block !important;
-}
-
-.config-card:has(.config-notificacoes-title) .config-collapse-body,
-.enterprise-config-card:has(.config-notificacoes-title) .config-collapse-body,
-.config-card:has(#notifyRadios) .config-collapse-body,
-.enterprise-config-card:has(#notifyRadios) .config-collapse-body {
-  width: 100% !important;
-}
-
-.config-card:has(.config-notificacoes-title) .config-options,
-.enterprise-config-card:has(.config-notificacoes-title) .config-options,
-.config-card:has(#notifyRadios) .config-options,
-.enterprise-config-card:has(#notifyRadios) .config-options,
-.config-card:has(.config-notificacoes-title) .form-grid,
-.enterprise-config-card:has(.config-notificacoes-title) .form-grid {
-  display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important;
-  gap: 14px !important;
-  width: 100% !important;
-}
-
-.color-center-root {
-  min-height: 260px !important;
-  display: block !important;
-}
-
-.color-center-root:empty::before {
-  content: "A carregar Centro de Cores...";
-  display: block;
-  padding: 16px;
-  border-radius: 16px;
-  background: rgba(255,255,255,.06);
-  color: #cbd5e1;
-  font-weight: 900;
-}
-/* ===== END CONFIG FINAL FIX WIDTH + COLOR CENTER ===== */
 
 
 /* ===== REMOVE OLD APP PRIMARY COLOR UI ===== */
@@ -5693,20 +5587,7 @@ div:has(> #primaryColor) {
 /* ===== END REMOVE OLD APP PRIMARY COLOR UI ===== */
 
 
-/* ===== OLD COLOR VARIABLE ALIASES TO COLOR CENTER ===== */
-:root {
-  --orange: var(--cc-accent) !important;
-  --pink: var(--cc-accent) !important;
-  --red: var(--cc-btn-delete-bg) !important;
-  --primary: var(--cc-btn-primary-bg) !important;
-  --brand: var(--cc-accent) !important;
-  --accent: var(--cc-accent) !important;
-  --app-primary: var(--cc-btn-primary-bg) !important;
-  --app-accent: var(--cc-accent) !important;
-  --button-bg: var(--cc-btn-primary-bg) !important;
-  --button-text: var(--cc-btn-primary-text) !important;
-}
-/* ===== END OLD COLOR VARIABLE ALIASES TO COLOR CENTER ===== */
+
 
 /* ETIQUETAS WORD STRONG PRINT */
 @media print{
@@ -5773,35 +5654,4 @@ div:has(> #primaryColor) {
 }
 /* ===== END ETIQUETA TONER / WORD MAIS FORTE FINAL ===== */
 
-/* ===== IMPRESSORAS NÃO USAM COR DESTAQUE ===== */
-body.impressoras-page,
-.impressoras-page {
-  --cc-accent: var(--cc-card-border) !important;
-  --app-accent: var(--cc-card-border) !important;
-  --primary: var(--cc-btn-secondary-bg) !important;
-  --orange: var(--cc-card-border) !important;
-}
 
-.impressoras-page .page-hero,
-.impressoras-page .reference-header,
-.impressoras-page .printer-card,
-.impressoras-page .pc-card,
-.impressoras-page .table-card,
-.impressoras-page .printer-toner-box,
-.impressoras-page .toner-diagnostics-panel {
-  border-color: var(--cc-card-border) !important;
-  box-shadow: 0 18px 48px color-mix(in srgb, var(--cc-card-glow) 12%, transparent), 0 14px 40px rgba(0,0,0,.20) !important;
-}
-
-.impressoras-page .primary-btn,
-.impressoras-page .reference-primary,
-.impressoras-page button.primary,
-.impressoras-page button[onclick*="atualizar"],
-.impressoras-page button[onclick*="Atualizar"],
-.impressoras-page button[onclick*="diagnostico"],
-.impressoras-page button[onclick*="Diagnostico"] {
-  background: var(--cc-btn-secondary-bg) !important;
-  color: var(--cc-btn-secondary-text) !important;
-  border-color: var(--cc-btn-border, var(--cc-card-border)) !important;
-}
-/* ===== END IMPRESSORAS NÃO USAM COR DESTAQUE ===== */
