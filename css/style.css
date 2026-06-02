@@ -5722,3 +5722,86 @@ div:has(> #primaryColor) {
     opacity:1 !important;
   }
 }
+
+
+/* ===== ETIQUETA TONER / WORD MAIS FORTE FINAL ===== */
+#printAreaEtiquetaAppBraga,
+#printAreaEtiquetaAppBraga *,
+.etiquetas-page .print-label,
+.etiquetas-page .print-label *,
+.etiquetas-page .etiqueta-word,
+.etiquetas-page .etiqueta-word *,
+.etiquetas-page .word-label,
+.etiquetas-page .word-label * {
+  color: #000 !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+  filter: none !important;
+  font-family: "Arial Black", Arial, Helvetica, sans-serif !important;
+  font-weight: 950 !important;
+  -webkit-font-smoothing: none !important;
+  text-rendering: geometricPrecision !important;
+}
+
+#printAreaEtiquetaAppBraga .etq-sheet,
+.etiquetas-page .print-label,
+.etiquetas-page .etiqueta-word,
+.etiquetas-page .word-label {
+  background: #fff !important;
+  color: #000 !important;
+  border: 2.6px solid #000 !important;
+}
+
+#printAreaEtiquetaAppBraga .etq-title {
+  font-size: 23px !important;
+  font-weight: 1000 !important;
+}
+
+@media print {
+  #printAreaEtiquetaAppBraga,
+  #printAreaEtiquetaAppBraga * {
+    color: #000 !important;
+    opacity: 1 !important;
+    font-family: "Arial Black", Arial, Helvetica, sans-serif !important;
+    font-weight: 950 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  #printAreaEtiquetaAppBraga .etq-sheet {
+    border: 2.6px solid #000 !important;
+  }
+}
+/* ===== END ETIQUETA TONER / WORD MAIS FORTE FINAL ===== */
+
+/* ===== IMPRESSORAS NÃO USAM COR DESTAQUE ===== */
+body.impressoras-page,
+.impressoras-page {
+  --cc-accent: var(--cc-card-border) !important;
+  --app-accent: var(--cc-card-border) !important;
+  --primary: var(--cc-btn-secondary-bg) !important;
+  --orange: var(--cc-card-border) !important;
+}
+
+.impressoras-page .page-hero,
+.impressoras-page .reference-header,
+.impressoras-page .printer-card,
+.impressoras-page .pc-card,
+.impressoras-page .table-card,
+.impressoras-page .printer-toner-box,
+.impressoras-page .toner-diagnostics-panel {
+  border-color: var(--cc-card-border) !important;
+  box-shadow: 0 18px 48px color-mix(in srgb, var(--cc-card-glow) 12%, transparent), 0 14px 40px rgba(0,0,0,.20) !important;
+}
+
+.impressoras-page .primary-btn,
+.impressoras-page .reference-primary,
+.impressoras-page button.primary,
+.impressoras-page button[onclick*="atualizar"],
+.impressoras-page button[onclick*="Atualizar"],
+.impressoras-page button[onclick*="diagnostico"],
+.impressoras-page button[onclick*="Diagnostico"] {
+  background: var(--cc-btn-secondary-bg) !important;
+  color: var(--cc-btn-secondary-text) !important;
+  border-color: var(--cc-btn-border, var(--cc-card-border)) !important;
+}
+/* ===== END IMPRESSORAS NÃO USAM COR DESTAQUE ===== */

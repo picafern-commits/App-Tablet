@@ -6105,7 +6105,7 @@ body {
   padding: 0;
 
   background: #ffffff;
-  color: #111827;
+  color: #000827;
 
   font-family:
     Arial,
@@ -7121,11 +7121,11 @@ function montarHtmlEtiquetaImpressao(item) {
 <style>
   @page { size: 100mm 150mm; margin: 0; }
   html, body { margin:0; padding:0; width:100mm; height:150mm; font-family: Arial, sans-serif; }
-  body { box-sizing:border-box; padding:8mm; color:#111; }
+  body { box-sizing:border-box; padding:8mm; color:#000; }
   .etq-wrap { width:100%; height:100%; display:flex; flex-direction:column; justify-content:flex-start; }
-  .etq-title { font-size:20px; font-weight:700; margin:0 0 6mm; }
+  .etq-title { font-size:22px; font-weight:1000; margin:0 0 6mm; }
   .etq-row { display:flex; flex-direction:column; margin:0 0 3.5mm; }
-  .etq-key { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+  .etq-key { font-size:11px; font-weight:1000; text-transform:uppercase; letter-spacing:.4px; }
   .etq-val { font-size:16px; line-height:1.25; word-break:break-word; }
 </style>
 </head>
@@ -7161,7 +7161,7 @@ async function regerarEtiquetaWordPartilhada(id) {
 
     setTimeout(() => {
       try {
-        window.print();
+        try{ if(window.reforcarEtiquetaTonerPrint) window.reforcarEtiquetaTonerPrint(); }catch(e){} window.print();
         mostrarMensagem('Etiqueta pronta a imprimir.');
       } catch (e) {
         console.error(e);
@@ -7203,10 +7203,10 @@ function montarHtmlEtiquetaOverlay(item) {
         #printAreaEtiquetaAppBraga, #printAreaEtiquetaAppBraga * { visibility: visible !important; }
         #printAreaEtiquetaAppBraga { position: fixed !important; inset: 0 !important; width: 100mm !important; height: 150mm !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; background: #fff !important; }
       }
-      #printAreaEtiquetaAppBraga .etq-sheet { width:100mm; height:150mm; max-width:100mm; max-height:150mm; overflow:hidden; box-sizing:border-box; padding:8mm; color:#111; font-family:Arial, sans-serif; background:#fff; display:flex; flex-direction:column; justify-content:flex-start; break-inside: avoid; page-break-inside: avoid; break-after: avoid-page; page-break-after: avoid; }
-      #printAreaEtiquetaAppBraga .etq-title { font-size:20px; font-weight:700; margin:0 0 6mm; }
+      #printAreaEtiquetaAppBraga .etq-sheet { width:100mm; height:150mm; max-width:100mm; max-height:150mm; overflow:hidden; box-sizing:border-box; padding:8mm; color:#000; font-family:'Arial Black', Arial, Helvetica, sans-serif; font-weight:950; background:#fff; display:flex; flex-direction:column; justify-content:flex-start; break-inside: avoid; page-break-inside: avoid; break-after: avoid-page; page-break-after: avoid; }
+      #printAreaEtiquetaAppBraga .etq-title { font-size:22px; font-weight:1000; margin:0 0 6mm; }
       #printAreaEtiquetaAppBraga .etq-row { display:flex; flex-direction:column; margin:0 0 3.5mm; }
-      #printAreaEtiquetaAppBraga .etq-key { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+      #printAreaEtiquetaAppBraga .etq-key { font-size:11px; font-weight:1000; text-transform:uppercase; letter-spacing:.4px; }
       #printAreaEtiquetaAppBraga .etq-val { font-size:16px; line-height:1.25; word-break:break-word; }
     </style>
     <div class="etq-sheet">
@@ -8891,8 +8891,8 @@ function aplicarModoTextoBotoes(modeValue = getButtonTextMode()) {
   root.setAttribute("data-button-text-mode", mode);
 
   if (mode === "dark") {
-    root.style.setProperty("--app-button-text", "#111827");
-    root.style.setProperty("--app-button-icon", "#111827");
+    root.style.setProperty("--app-button-text", "#000827");
+    root.style.setProperty("--app-button-icon", "#000827");
   } else if (mode === "light") {
     root.style.setProperty("--app-button-text", "#ffffff");
     root.style.setProperty("--app-button-icon", "#ffffff");
@@ -8908,7 +8908,7 @@ function aplicarModoTextoBotoes(modeValue = getButtonTextMode()) {
     }
 
     const brightness = ((r * 299) + (g * 587) + (b * 114)) / 1000;
-    const text = brightness > 170 ? "#111827" : "#ffffff";
+    const text = brightness > 170 ? "#000827" : "#ffffff";
 
     root.style.setProperty("--app-button-text", text);
     root.style.setProperty("--app-button-icon", text);
@@ -9047,3 +9047,63 @@ window.addEventListener("orientationchange", () => {
   window.themeFirebaseReloadNow=function(){};
 })();
 /* ===== END OLD COLOR SYSTEM HARD DISABLED ===== */
+
+
+/* ===== ETIQUETA TONER HARD PRINT CSS ===== */
+(function(){
+  window.reforcarEtiquetaTonerPrint = function(){
+    const styleId = "etiqueta-toner-hard-print-css";
+    let style = document.getElementById(styleId);
+    if(!style){
+      style = document.createElement("style");
+      style.id = styleId;
+      document.head.appendChild(style);
+    }
+    style.textContent = `
+      @page { size: 100mm 150mm; margin: 0; }
+      #printAreaEtiquetaAppBraga,
+      #printAreaEtiquetaAppBraga * {
+        color: #000 !important;
+        opacity: 1 !important;
+        text-shadow: none !important;
+        filter: none !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        font-family: "Arial Black", Arial, Helvetica, sans-serif !important;
+        font-weight: 950 !important;
+        -webkit-font-smoothing: none !important;
+        text-rendering: geometricPrecision !important;
+      }
+      #printAreaEtiquetaAppBraga .etq-sheet {
+        background: #fff !important;
+        color: #000 !important;
+        border: 2.6px solid #000 !important;
+        padding: 7mm !important;
+      }
+      #printAreaEtiquetaAppBraga .etq-title {
+        color: #000 !important;
+        font-size: 23px !important;
+        font-weight: 1000 !important;
+        line-height: 1.05 !important;
+        letter-spacing: .01em !important;
+      }
+      #printAreaEtiquetaAppBraga .etq-row,
+      #printAreaEtiquetaAppBraga .etq-line,
+      #printAreaEtiquetaAppBraga td,
+      #printAreaEtiquetaAppBraga th {
+        color: #000 !important;
+        border-color: #000 !important;
+        border-width: 2px !important;
+        font-size: 15px !important;
+        font-weight: 950 !important;
+      }
+      #printAreaEtiquetaAppBraga small,
+      #printAreaEtiquetaAppBraga .muted {
+        color: #000 !important;
+        font-size: 13px !important;
+        font-weight: 900 !important;
+      }
+    `;
+  };
+  document.addEventListener("DOMContentLoaded", window.reforcarEtiquetaTonerPrint);
+})();

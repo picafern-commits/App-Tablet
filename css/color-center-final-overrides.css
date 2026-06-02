@@ -506,3 +506,23 @@ tr:hover td { background: var(--cc-table-hover) !important; }
   display: none !important;
 }
 /* ===== END CENTRO DE CORES ÚNICO ===== */
+
+
+/* ===== IMPRESSORAS DESLIGADAS DO ACCENT FINAL ===== */
+.impressoras-page .page-hero,
+.impressoras-page .reference-header,
+.impressoras-page .printer-card,
+.impressoras-page .pc-card,
+.impressoras-page .table-card,
+.impressoras-page .printer-toner-box,
+.impressoras-page .toner-diagnostics-panel {
+  border-color: var(--cc-card-border) !important;
+}
+
+.impressoras-page button,
+.impressoras-page .btn,
+.impressoras-page .primary-btn,
+.impressoras-page .secondary-btn {
+  border-color: var(--cc-btn-border, var(--cc-card-border)) !important;
+}
+/* ===== END IMPRESSORAS DESLIGADAS DO ACCENT FINAL ===== */
