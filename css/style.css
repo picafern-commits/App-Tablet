@@ -5425,3 +5425,12 @@ small {
   to { opacity: 1; transform: translateY(0); }
 }
 /* ===== END CONFIG COLLAPSIBLE SECTIONS ===== */
+
+/* CONFIG COLLAPSIBLE FINAL */
+.config-collapse-global-actions{grid-column:1/-1!important;display:flex!important;gap:10px!important;flex-wrap:wrap!important;margin:12px 0 18px!important}
+.config-collapse-header{width:100%!important;min-height:54px!important;margin:-4px 0 12px!important;padding:0 14px!important;border-radius:18px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;text-align:left!important;background:var(--acs-config-header-bg,var(--ts-primary-bg,#1f2937))!important;border:1px solid rgba(255,255,255,.12)!important;color:var(--acs-config-header-text,#fff)!important}
+.config-collapse-title{color:inherit!important;font-weight:950!important;font-size:15px!important}
+.config-collapse-icon{width:34px!important;height:34px!important;min-width:34px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;border-radius:999px!important;background:var(--acs-btn-primary-bg,var(--ts-primary-bg,#2563eb))!important;color:var(--acs-btn-primary-text,#fff)!important;font-size:22px!important;font-weight:950!important}
+.config-collapsible-card.is-collapsed,.config-card.is-collapsed,.enterprise-config-card.is-collapsed{padding-bottom:14px!important}
+.config-collapse-body{animation:configFade .16s ease both}
+@keyframes configFade{from{opacity:.55;transform:translateY(-2px)}to{opacity:1;transform:translateY(0)}}
