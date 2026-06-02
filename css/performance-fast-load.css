@@ -1,0 +1,49 @@
+
+/* APP BRAGA - FAST LOAD CSS */
+.cards-grid,
+.grid,
+.config-grid,
+.settings-grid,
+.reference-grid,
+.dashboard-grid,
+.stock-grid,
+.users-grid,
+.radio-cards-grid,
+.table-card,
+.panel,
+.card,
+.config-card,
+.enterprise-config-card {
+  contain: layout paint style;
+}
+
+@supports (content-visibility: auto) {
+  .card,
+  .panel,
+  .config-card,
+  .enterprise-config-card,
+  .table-card,
+  .reference-card,
+  .pc-card,
+  .radio-card,
+  .printer-card,
+  .stock-card,
+  .history-card,
+  .user-card,
+  .info-card {
+    content-visibility: auto;
+    contain-intrinsic-size: 260px;
+  }
+}
+
+.page-is-navigating *,
+body.is-loading * {
+  transition: none !important;
+  animation: none !important;
+}
+
+main,
+.content,
+.app-content {
+  will-change: scroll-position;
+}
