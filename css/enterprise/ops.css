@@ -1,0 +1,361 @@
+/* App Braga enterprise operations layer */
+:root {
+  --enterprise-sidebar-width: 252px;
+  --enterprise-content-max: 1920px;
+}
+
+html,
+body {
+  min-height: 100%;
+  height: auto !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  scroll-behavior: smooth;
+}
+
+body {
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.main,
+main {
+  min-height: 100svh !important;
+  overflow: visible !important;
+  max-width: var(--enterprise-content-max);
+}
+
+.sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--app-primary-line) transparent;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: var(--app-primary-line);
+  border-radius: 999px;
+}
+
+.sidebar a {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  min-width: 0 !important;
+  white-space: normal !important;
+  line-height: 1.16 !important;
+}
+
+.sidebar a::before {
+  content: attr(data-icon) !important;
+  width: 24px !important;
+  min-width: 24px !important;
+  height: 24px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  border-radius: 9px !important;
+  background: rgba(255,255,255,.055) !important;
+  color: currentColor !important;
+  font-size: 14px !important;
+  line-height: 1 !important;
+  position: static !important;
+  transform: none !important;
+}
+
+.sidebar a .sidebar-link-text {
+  min-width: 0 !important;
+  display: block !important;
+}
+
+.page-hero,
+.dashboard-header,
+.panel-title-row,
+.section-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  flex-wrap: wrap !important;
+}
+
+.enterprise-metrics,
+.stats-grid,
+.cards-grid,
+.equipment-grid,
+.config-form-grid,
+.config-backup-grid,
+.system-health-grid,
+.dashboard-ops-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
+  gap: 16px !important;
+}
+
+.panel,
+.card,
+.pc-card,
+.printer-card,
+.network-card,
+.pistol-card,
+.stock-card,
+.history-card,
+.dashboard-panel,
+.metric-card {
+  border-radius: var(--app-radius, 18px) !important;
+}
+
+.item-actions,
+.card-actions,
+.config-actions-row,
+.toolbar,
+.dashboard-actions {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+}
+
+.item-actions button,
+.card-actions button,
+.config-actions-row button,
+.toolbar button {
+  min-width: 118px;
+}
+
+.enterprise-search-shell {
+  position: sticky;
+  top: 12px;
+  z-index: 1200;
+  margin: 0 0 16px;
+  display: none;
+}
+
+body.enterprise-search-ready .enterprise-search-shell {
+  display: block;
+}
+
+.enterprise-search-box {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 18px;
+  border: 1px solid var(--app-border);
+  background: rgba(18, 18, 20, .86);
+  box-shadow: 0 16px 40px rgba(0,0,0,.28);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.enterprise-search-box input {
+  min-height: 46px !important;
+}
+
+.enterprise-search-results {
+  margin-top: 8px;
+  border: 1px solid var(--app-border);
+  border-radius: 18px;
+  background: rgba(18, 18, 20, .96);
+  box-shadow: 0 20px 50px rgba(0,0,0,.30);
+  max-height: 50vh;
+  overflow: auto;
+  display: none;
+}
+
+.enterprise-search-results.is-open {
+  display: block;
+}
+
+.enterprise-search-result {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  cursor: pointer;
+}
+
+.enterprise-search-result:last-child {
+  border-bottom: 0;
+}
+
+.enterprise-search-result strong {
+  color: var(--app-text);
+}
+
+.enterprise-search-result span {
+  color: var(--app-muted);
+  font-size: 13px;
+}
+
+.dashboard-ops-panel {
+  margin-top: 16px;
+}
+
+.dashboard-ops-card {
+  padding: 16px;
+  min-height: 128px;
+}
+
+.dashboard-ops-card strong {
+  display: block;
+  font-size: 28px;
+  line-height: 1;
+  margin-top: 8px;
+}
+
+.dashboard-low-toner-list {
+  display: grid;
+  gap: 12px;
+}
+
+.dashboard-low-toner-item {
+  display: grid;
+  grid-template-columns: 1fr minmax(160px, 260px);
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid var(--app-border);
+  border-radius: 16px;
+  background: rgba(255,255,255,.045);
+}
+
+.dashboard-low-toner-meter {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255,255,255,.10);
+}
+
+.dashboard-low-toner-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--toner-level-color, #ef4444);
+}
+
+.health-card {
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid var(--app-border);
+  background: rgba(255,255,255,.045);
+}
+
+.health-card strong.ok,
+.health-card strong.is-ok {
+  color: #22c55e;
+}
+
+.health-card strong.warn,
+.health-card strong.is-warn {
+  color: #f59e0b;
+}
+
+.health-card strong.error,
+.health-card strong.is-error {
+  color: #ef4444;
+}
+
+.app-toast-stack {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 10000;
+  display: grid;
+  gap: 10px;
+  width: min(360px, calc(100vw - 28px));
+}
+
+.app-toast {
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--app-primary-line);
+  background: rgba(18,18,20,.96);
+  color: var(--app-text);
+  box-shadow: 0 18px 45px rgba(0,0,0,.34);
+}
+
+@media (min-width: 1025px) {
+  .sidebar {
+    width: var(--enterprise-sidebar-width) !important;
+  }
+
+  .main,
+  main {
+    margin-left: var(--enterprise-sidebar-width) !important;
+    width: calc(100% - var(--enterprise-sidebar-width)) !important;
+    padding: clamp(22px, 2.2vw, 34px) !important;
+  }
+}
+
+@media (max-width: 1180px) {
+  body.enterprise-device-tablet {
+    font-size: 17px;
+  }
+
+  body.enterprise-device-tablet .main,
+  body.enterprise-device-tablet main {
+    padding: calc(76px + env(safe-area-inset-top)) 18px calc(28px + env(safe-area-inset-bottom)) !important;
+  }
+
+  body.enterprise-device-tablet .panel,
+  body.enterprise-device-tablet .card,
+  body.enterprise-device-tablet .pc-card,
+  body.enterprise-device-tablet .printer-card,
+  body.enterprise-device-tablet .network-card,
+  body.enterprise-device-tablet .pistol-card {
+    padding: 18px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-menu-toggle {
+    display: grid !important;
+    place-items: center !important;
+  }
+
+  .sidebar {
+    width: min(330px, 88vw) !important;
+    max-width: 88vw !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .sidebar a {
+    min-height: 52px !important;
+    padding: 10px 12px !important;
+  }
+
+  .main,
+  main {
+    width: 100% !important;
+    margin-left: 0 !important;
+    padding: calc(78px + env(safe-area-inset-top)) 12px calc(28px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .enterprise-metrics,
+  .stats-grid,
+  .cards-grid,
+  .equipment-grid,
+  .config-form-grid,
+  .config-backup-grid,
+  .system-health-grid,
+  .dashboard-ops-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dashboard-low-toner-item {
+    grid-template-columns: 1fr;
+  }
+
+  .item-actions button,
+  .card-actions button,
+  .config-actions-row button,
+  .toolbar button {
+    flex: 1 1 100%;
+  }
+
+  .enterprise-search-shell {
+    top: calc(68px + env(safe-area-inset-top));
+  }
+}
