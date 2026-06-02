@@ -260,18 +260,18 @@
       </div>
     `;
     main.insertBefore(topbar, main.firstElementChild);
-    setupElectronWindowActions(topbar, null);
   }
 
-  function setupElectronWindowActions(topbar, beforeNode) {
-    if (!window.electronAPI?.closeApp || topbar.querySelector(".enterprise-window-actions")) return;
+  function setupElectronSidebarActions() {
+    const sidebar = document.querySelector(".sidebar");
+    if (!sidebar || !window.electronAPI?.closeApp || sidebar.querySelector(".enterprise-window-actions")) return;
     const actions = document.createElement("div");
     actions.className = "enterprise-window-actions";
     actions.innerHTML = `
       <button class="secondary-btn enterprise-window-btn" type="button" data-enterprise-hide>Segundo plano</button>
       <button class="secondary-btn enterprise-window-btn enterprise-window-close" type="button" data-enterprise-close>Fechar App</button>
     `;
-    topbar.insertBefore(actions, beforeNode);
+    sidebar.appendChild(actions);
     actions.querySelector("[data-enterprise-hide]")?.addEventListener("click", async () => {
       await window.electronAPI.hideApp();
     });
@@ -280,30 +280,6 @@
       if (!ok) return;
       await window.electronAPI.closeApp();
     });
-  }
-
-  function triggerPrimaryAction() {
-    const path = (location.pathname.split("/").pop() || "").toLowerCase();
-    const actions = {
-      "radios.html": ["adicionarRadio", "abrirModalRadio"],
-      "pistolas.html": ["abrirAdicionarPistola", "novaPistola"],
-      "portas.html": ["abrirAdicionarPorta", "novaPorta"],
-      "users.html": ["abrirAdicionarUser", "novoUser"],
-      "impressoras.html": ["abrirAdicionarImpressora", "novaImpressora"],
-      "computadores.html": ["abrirAdicionarPC", "novoComputador"],
-      "stock.html": ["abrirAdicionarStock", "novoStock"],
-      "informacoes.html": ["adicionarInformacao"]
-    };
-    const candidates = actions[path] || [];
-    for (const name of candidates) {
-      if (typeof window[name] === "function") {
-        window[name]();
-        return;
-      }
-    }
-    const button = document.querySelector(".add-btn, .primary-btn[onclick], button[onclick*='adicionar'], button[onclick*='Adicionar'], button[onclick*='novo'], button[onclick*='Novo']");
-    if (button && !button.matches("[data-enterprise-main-action]")) button.click();
-    else toast("App Braga", "Nao encontrei uma acao principal nesta pagina.");
   }
 
   function setupDensityControls() {
@@ -580,6 +556,7 @@
   function init() {
     setupDeviceClasses();
     setupSidebar();
+    setupElectronSidebarActions();
     setupTopbar();
     setupSearchShell();
     setupDensityControls();
@@ -597,6 +574,7 @@
   window.addEventListener("resize", () => {
     setupDeviceClasses();
     setupSidebar();
+    setupElectronSidebarActions();
   }, { passive: true });
   window.AppBragaEnterpriseOps = {
     refresh: init,
