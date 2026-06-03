@@ -77,6 +77,7 @@ function serviceAccountCandidates() {
     path.join(app.getPath("userData"), "service-account.json"),
     path.join(appRoot, "service-account.json"),
     path.join(parentRoot, "service-account.json"),
+    "C:\\Minhas Apps\\AppBragaDesktop\\AppBragaTeste-main\\service-account.json",
     "C:\\Minhas Apps\\AppBragaDesktop\\service-account.json",
     "C:\\Minhas Apps\\AppBragaDesktop\\firebase-service-account.json"
   ].filter(Boolean);
