@@ -81,14 +81,14 @@
   </label>
 
   <div class="radio-selected-buttons">
-    <button class="secondary-btn" type="button" onclick="radioAcaoSelecionada('editar')">Editar</button>
+    <button class="secondary-btn reference-outline" type="button" onclick="radioAcaoSelecionada('editar')">Editar</button>
     <button class="secondary-btn reference-outline" type="button" onclick="radioAcaoSelecionada('atribuir')">Atribuir</button>
-    <button class="secondary-btn" type="button" onclick="radioAcaoSelecionada('devolver')">Devolver</button>
+    <button class="secondary-btn reference-outline" type="button" onclick="radioAcaoSelecionada('devolver')">Devolver</button>
     <button class="secondary-btn reference-outline" type="button" onclick="radioAcaoSelecionada('historico')">Histórico</button>
     <button class="secondary-btn danger" type="button" onclick="radioAcaoSelecionada('apagar')">Apagar</button>
   </div>
 
-  <div id="radioSelectedInfo" class="radio-selected-info">Seleciona um rádio para mexer.</div>
+  <div id="radioSelectedInfo" class="radio-selected-info"></div>
 </div>
 
     <div id="listaRadios" class="radio-cards-grid"></div>
@@ -111,7 +111,6 @@
     <div class="section-header">
       <div>
         <h3 id="radioAssignTitle">Atribuir Rádio</h3>
-        <p class="section-subtitle">Escolhe o user que vai ficar com este rádio.</p>
       </div>
       <button class="secondary-btn" type="button" onclick="fecharAtribuirRadio()">Fechar</button>
     </div>
@@ -131,7 +130,6 @@
     <div class="section-header">
       <div>
         <h3 id="radioHistoryTitle">Histórico do Rádio</h3>
-        <p class="section-subtitle">Entregas, devoluções e alterações deste rádio.</p>
       </div>
       <button class="secondary-btn" type="button" onclick="fecharHistoricoRadio()">Fechar</button>
     </div>
@@ -146,7 +144,6 @@
     <div class="section-header">
       <div>
         <h3 id="radioModalTitle">Novo Rádio</h3>
-        <p class="section-subtitle">Dados guardados na coleção Firestore radios.</p>
       </div>
     </div>
     <div class="form-grid">
@@ -166,7 +163,6 @@
     <div class="section-header">
       <div>
         <h3>Detalhes do registo semanal</h3>
-        <p class="section-subtitle">Rádios usados e users associados ao registo escolhido.</p>
       </div>
       <button class="secondary-btn" type="button" onclick="fecharRelatorioRadios()">Fechar</button>
     </div>
@@ -179,7 +175,6 @@
     <div class="section-header">
       <div>
         <h3 id="radioWeeklyModalTitle">Novo registo semanal</h3>
-        <p id="radioWeeklyRecordLabel" class="section-subtitle">Escolhe quem usou cada rádio nesta semana.</p>
       </div>
       <button class="secondary-btn" type="button" onclick="fecharRegistoSemanalRadios()">Fechar</button>
     </div>
