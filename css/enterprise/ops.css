@@ -417,6 +417,17 @@ body.enterprise-search-ready .enterprise-search-shell {
   white-space: nowrap;
 }
 
+.enterprise-window-select {
+  width: 100% !important;
+  min-height: 40px !important;
+  border-radius: 12px !important;
+  border: 1px solid color-mix(in srgb, var(--theme-accent, #ef4444) 30%, var(--border, #2b3444)) !important;
+  background: color-mix(in srgb, var(--panel, #17191d) 92%, var(--theme-accent, #ef4444) 8%) !important;
+  color: var(--text, #f8fafc) !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+}
+
 .enterprise-window-close {
   border-color: color-mix(in srgb, #ef4444 70%, var(--border, #2b3444)) !important;
   color: #fecaca !important;

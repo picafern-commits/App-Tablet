@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.14.0";
+const APP_VERSION = "1.15.0";
 
 
 
@@ -8912,7 +8912,7 @@ async function guardarModoTextoBotoes(mode) {
       buttonTextMode: finalMode,
       updatedAt: Date.now()
     }, { merge: true });
-    mostrarMensagem("Cor do texto dos bot?es atualizada.");
+    mostrarMensagem("Cor do texto dos botões atualizada.");
   } catch (error) {
     console.error(error);
     mostrarMensagem("Erro ao guardar a cor do texto.", "erro");

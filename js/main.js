@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell, ipcMain, Tray, Menu, Notification } = require("electron");
+const { app, BrowserWindow, shell, ipcMain, Tray, Menu, Notification, screen } = require("electron");
 const path = require("path");
 const fs = require("fs");
 const http = require("http");
@@ -325,6 +325,38 @@ ipcMain.handle("app:set-fullscreen", async (_event, value) => {
   win.setFullScreen(active);
   writeDesktopSettings({ ...readDesktopSettings(), fullscreen: active });
   return { ok: true, fullscreen: active };
+});
+
+ipcMain.handle("app:list-displays", async () => {
+  const displays = screen.getAllDisplays().map((display, index) => ({
+    id: display.id,
+    index: index + 1,
+    label: `Monitor ${index + 1}`,
+    bounds: display.bounds,
+    workArea: display.workArea,
+    scaleFactor: display.scaleFactor,
+    primary: display.id === screen.getPrimaryDisplay().id
+  }));
+  return { ok: true, displays };
+});
+
+ipcMain.handle("app:move-to-display", async (_event, displayId) => {
+  if (!win) return { ok: false, error: "Janela indisponivel" };
+  const displays = screen.getAllDisplays();
+  const target = displays.find((display) => String(display.id) === String(displayId)) || displays[0];
+  if (!target) return { ok: false, error: "Monitor indisponivel" };
+  const wasFullscreen = win.isFullScreen();
+  if (wasFullscreen) win.setFullScreen(false);
+  const area = target.workArea || target.bounds;
+  const width = Math.min(Math.max(1200, Math.round(area.width * 0.92)), area.width);
+  const height = Math.min(Math.max(760, Math.round(area.height * 0.92)), area.height);
+  const x = area.x + Math.round((area.width - width) / 2);
+  const y = area.y + Math.round((area.height - height) / 2);
+  win.setBounds({ x, y, width, height }, true);
+  win.focus();
+  if (wasFullscreen) setTimeout(() => win && !win.isDestroyed() && win.setFullScreen(true), 120);
+  writeDesktopSettings({ ...readDesktopSettings(), width, height, fullscreen: wasFullscreen });
+  return { ok: true, display: target.id };
 });
 
 ipcMain.handle("app:hide", async () => {

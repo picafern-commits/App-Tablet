@@ -10,6 +10,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   showNotification: (payload) => ipcRenderer.invoke("app:notify", payload),
   getAppInfo: () => ipcRenderer.invoke("app:get-info"),
   setFullscreen: (value) => ipcRenderer.invoke("app:set-fullscreen", value),
+  listDisplays: () => ipcRenderer.invoke("app:list-displays"),
+  moveToDisplay: (displayId) => ipcRenderer.invoke("app:move-to-display", displayId),
   hideApp: () => ipcRenderer.invoke("app:hide"),
   closeApp: () => ipcRenderer.invoke("app:close"),
   openExternal: (url) => ipcRenderer.invoke("app:open-external", url),

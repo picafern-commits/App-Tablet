@@ -26,6 +26,8 @@
   let running = false;
   let lastStatus = null;
   let panelReady = false;
+  let panelTimer = null;
+  let scheduleTimer = null;
 
   function isElectronBackupAvailable() {
     return !!window.electronAPI?.writeLocalBackup;
@@ -220,12 +222,15 @@
   }
 
   function start() {
+    if (!isElectronBackupAvailable() && !document.querySelector(".config-section-backups")) return;
     ensureBackupPanel();
     refreshBackupStatus();
-    setInterval(() => {
-      renderBackupPanel();
-      maybeRunScheduledBackup();
-    }, 1000);
+    if (document.querySelector(".local-backup-panel") && !panelTimer) {
+      panelTimer = setInterval(() => renderBackupPanel(), 1000);
+    }
+    if (isElectronBackupAvailable() && !scheduleTimer) {
+      scheduleTimer = setInterval(maybeRunScheduledBackup, 30000);
+    }
   }
 
   if (document.readyState === "loading") {

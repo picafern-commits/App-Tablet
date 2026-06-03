@@ -219,6 +219,7 @@
       results.classList.remove("is-open");
       results.innerHTML = "";
     });
+    input.addEventListener("focus", setupRealtimeSearchAndNotifications, { once: true });
     input.addEventListener("input", () => renderSearchResults(input.value, results));
   }
 
@@ -228,10 +229,26 @@
     const actions = document.createElement("div");
     actions.className = "enterprise-window-actions";
     actions.innerHTML = `
+      <button class="secondary-btn enterprise-window-btn" type="button" data-enterprise-displays>Detectar monitores</button>
+      <select class="enterprise-window-select" data-enterprise-display-select aria-label="Escolher monitor"></select>
       <button class="secondary-btn enterprise-window-btn" type="button" data-enterprise-hide>Segundo plano</button>
       <button class="secondary-btn enterprise-window-btn enterprise-window-close" type="button" data-enterprise-close>Fechar App</button>
     `;
     sidebar.appendChild(actions);
+    const select = actions.querySelector("[data-enterprise-display-select]");
+    const loadDisplays = async () => {
+      if (!window.electronAPI?.listDisplays || !select) return;
+      const result = await window.electronAPI.listDisplays();
+      const displays = result?.displays || [];
+      select.innerHTML = displays.map((display) => `
+        <option value="${escapeHtml(display.id)}">${escapeHtml(display.label)}${display.primary ? " · Principal" : ""} · ${display.bounds.width}x${display.bounds.height}</option>
+      `).join("");
+    };
+    actions.querySelector("[data-enterprise-displays]")?.addEventListener("click", loadDisplays);
+    select?.addEventListener("change", async () => {
+      if (select.value && window.electronAPI?.moveToDisplay) await window.electronAPI.moveToDisplay(select.value);
+    });
+    loadDisplays();
     actions.querySelector("[data-enterprise-hide]")?.addEventListener("click", async () => {
       await window.electronAPI.hideApp();
     });
@@ -289,7 +306,7 @@
   function itemSubtitle(data) {
     return [data.ip, data.serie || data.serial || data.sn, data.localizacao || data.location, data.armazem, data.estado]
       .filter(Boolean)
-      .join(" Â· ");
+      .join(" - ");
   }
 
   function setupRealtimeSearchAndNotifications() {
@@ -349,7 +366,7 @@
     target.innerHTML = hits.length ? hits.map((item) => `
       <div class="enterprise-search-result" data-page="${escapeHtml(prefix + item.page)}">
         <strong>${escapeHtml(item.title)}</strong>
-        <span>${escapeHtml(item.label)}${item.subtitle ? " Â· " + escapeHtml(item.subtitle) : ""}</span>
+        <span>${escapeHtml(item.label)}${item.subtitle ? " - " + escapeHtml(item.subtitle) : ""}</span>
       </div>
     `).join("") : `<div class="enterprise-search-result"><strong>Sem resultados</strong><span>Tenta outro termo.</span></div>`;
     target.querySelectorAll("[data-page]").forEach((node) => {
@@ -524,7 +541,6 @@
     updateSystemHealthExtra();
     setTimeout(() => {
       setupAuditPatch();
-      setupRealtimeSearchAndNotifications();
       refreshSystemHealthExtra();
     }, 900);
   }
