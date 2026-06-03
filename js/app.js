@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.20.0";
+const APP_VERSION = "1.20.1";
 
 
 
@@ -7028,43 +7028,59 @@ function extractLoteFromText(text) {
 function extractSdsRefFromText(text) {
   const original = String(text || "");
 
-  // Junta linhas mas preserva o suficiente para apanhar "SDS Ref. S340120677"
-  const normalized = original
-    .replace(/[\r\n]+/g, " ")
-    .replace(/[|]/g, "I")
-    .replace(/[•·]/g, ".")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  function cleanSdsCandidate(value) {
-    const v = String(value || "")
+  function cleanSdsCandidate(value, allowOcrFive = false) {
+    let v = String(value || "")
       .replace(/\s+/g, "")
       .replace(/[;,.)]+$/g, "")
       .toUpperCase();
 
-    // SDS verdadeiro tem de ser S + números. Nunca aceitar REF.
-    if (/^S\d{7,12}$/.test(v)) return v;
+    if (allowOcrFive && /^5\d{7,12}$/.test(v)) v = `S${v.slice(1)}`;
+    if (/^S[-:]?\d{7,12}$/.test(v)) return `S${v.replace(/^S[-:]?/i, "")}`;
     return "";
   }
 
-  // Caso principal Kyocera:
-  // "SDS Ref. S340120677"
-  // "SDS Ref: S340120677"
-  // "SDS REF S340120677"
-  const kyocera = normalized.match(/\bSDS\s*REF\.?\s*[:#\-]?\s*(S\s*\d(?:\s*\d){7,12})\b/i);
+  const lines = original
+    .split(/\r?\n/)
+    .map(line => line.replace(/[|]/g, "I").replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+
+  for (let i = 0; i < lines.length; i += 1) {
+    if (!/\bSDS\b/i.test(lines[i])) continue;
+
+    const joined = [lines[i], lines[i + 1] || "", lines[i + 2] || ""].join(" ");
+    const afterLabel = joined.replace(/^.*?\bSDS\b\s*(?:REF|REFERENCE|REFERENCIA|REFER.NCIA)?\.?\s*[:#\-]?\s*/i, "");
+    const candidates = [
+      afterLabel.match(/\b([S5]\s*[-:]?\s*\d(?:[\s.-]*\d){7,12})\b/i),
+      joined.match(/\b([S5]\s*[-:]?\s*\d(?:[\s.-]*\d){7,12})\b/i),
+      afterLabel.match(/\b(\d{8,12})\b/)
+    ];
+
+    for (const candidate of candidates) {
+      if (!candidate || !candidate[1]) continue;
+      const raw = String(candidate[1]);
+      const fixed = cleanSdsCandidate(/^[s5]/i.test(raw) ? raw : `S${raw}`, true);
+      if (fixed) return fixed;
+    }
+  }
+
+  const normalized = original
+    .replace(/[\r\n]+/g, " ")
+    .replace(/[|]/g, "I")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const kyocera = normalized.match(/\bSDS\s*REF\.?\s*[:#\-]?\s*([S5]\s*[-:]?\s*\d(?:[\s.-]*\d){7,12})\b/i);
   if (kyocera && kyocera[1]) {
-    const fixed = cleanSdsCandidate(kyocera[1]);
+    const fixed = cleanSdsCandidate(kyocera[1], true);
     if (fixed) return fixed;
   }
 
-  // Variações OCR com espaços no REF ou texto entre SDS e o código
-  const nearSds = normalized.match(/\bSDS\b.{0,60}?\b(S\s*\d(?:\s*\d){7,12})\b/i);
+  const nearSds = normalized.match(/\bSDS\b.{0,80}?\b([S5]\s*[-:]?\s*\d(?:[\s.-]*\d){7,12})\b/i);
   if (nearSds && nearSds[1]) {
-    const fixed = cleanSdsCandidate(nearSds[1]);
+    const fixed = cleanSdsCandidate(nearSds[1], true);
     if (fixed) return fixed;
   }
 
-  // Procura linha/código isolado no formato SDS, mas nunca palavras como REF
   const fallback = normalized.match(/\b(S\d{7,12})\b/i);
   if (fallback && fallback[1]) {
     const fixed = cleanSdsCandidate(fallback[1]);
@@ -7073,7 +7089,6 @@ function extractSdsRefFromText(text) {
 
   return "";
 }
-
 function enhanceScannerStatus(extra = "") {
   const box = el("scannerSmartStatus");
   if (!box) return;
