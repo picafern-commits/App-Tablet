@@ -5668,7 +5668,7 @@ div:has(> #primaryColor) {
 
 
 
-/* ===== ETIQUETA REMOVE LOCALIZACAO FINAL ===== */
+/* ===== ETIQUETA_SAFE_FINAL_LAYOUT ===== */
 #printAreaEtiquetaAppBraga .etq-sheet,
 .print-label,
 .etiqueta-word,
@@ -5705,4 +5705,4 @@ div:has(> #primaryColor) {
     box-sizing: border-box !important;
   }
 }
-/* ===== END ETIQUETA REMOVE LOCALIZACAO FINAL ===== */
+/* ===== END ETIQUETA_SAFE_FINAL_LAYOUT ===== */
