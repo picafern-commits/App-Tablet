@@ -12,7 +12,7 @@
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/style.css?v=toner-change-push-1">
+  <link rel="stylesheet" href="../css/style.css?v=ops-dashboard-backup-1">
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
   <link rel="stylesheet" href="../css/app-theme-pro.css?v=theme-pro-1">
   <link rel="stylesheet" href="../css/enterprise/ops.css?v=ops-7">
@@ -77,6 +77,31 @@
     </div>
   </section>
 
+  <section class="dashboard-grid-main app-ops-dashboard">
+    <div class="dashboard-panel">
+      <div class="panel-title-row">
+        <h2>Operação rápida</h2>
+      </div>
+      <div class="quick-actions-grid">
+        <a class="quick-action-card" href="add-toner.html"><strong>Adicionar toner</strong><span>Scan ou manual</span></a>
+        <a class="quick-action-card" href="stock.html"><strong>Usar toner</strong><span>Scan QR do stock</span></a>
+        <a class="quick-action-card" href="etiquetas-word.html"><strong>Imprimir etiquetas</strong><span>Individual ou em lote</span></a>
+        <a class="quick-action-card" href="impressoras.html"><strong>Ver impressoras</strong><span>Toner e estado</span></a>
+      </div>
+    </div>
+
+    <div class="dashboard-panel">
+      <div class="panel-title-row">
+        <h2>Resumo de stock</h2>
+      </div>
+      <div class="ops-kpi-grid">
+        <div class="ops-kpi"><span>Toners hoje</span><strong id="dashTonersHoje">0</strong></div>
+        <div class="ops-kpi"><span>Usados esta semana</span><strong id="dashTonersSemana">0</strong></div>
+        <div class="ops-kpi"><span>Alertas stock</span><strong id="dashAlertasStock">0</strong></div>
+      </div>
+    </div>
+  </section>
+
   <section class="dashboard-fullwidth">
     <div class="dashboard-panel featured-panel">
       <div class="panel-title-row">
@@ -86,11 +111,22 @@
     </div>
 </section>
 
+  <section class="dashboard-fullwidth">
+    <div class="dashboard-panel">
+      <div class="panel-title-row">
+        <h2>Atividade recente</h2>
+      </div>
+      <div id="dashboardActivityLog" class="activity-list">
+        <div class="empty-state mini">A carregar atividade...</div>
+      </div>
+    </div>
+  </section>
+
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<script src="../js/app.js?v=toner-change-push-1"></script>
+<script src="../js/app.js?v=ops-dashboard-backup-1"></script>
 
 <!-- FIREBASE -->
 

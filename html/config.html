@@ -9,7 +9,7 @@
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/style.css?v=toner-change-push-1">
+  <link rel="stylesheet" href="../css/style.css?v=ops-dashboard-backup-1">
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
   <link rel="stylesheet" href="../css/app-theme-pro.css?v=theme-pro-1">
   <link rel="stylesheet" href="../css/enterprise/ops.css?v=ops-7">
@@ -149,6 +149,32 @@
     <div class="panel config-section">
       <div class="section-header">
         <div>
+          <h3>Permissões</h3>
+          <p class="section-subtitle">Perfil operacional aplicado à APP neste momento.</p>
+        </div>
+        <button class="secondary-btn" type="button" onclick="carregarPermissoesApp()">Atualizar</button>
+      </div>
+      <div class="config-form-grid">
+        <label class="config-auth-field">
+          <span>Perfil ativo</span>
+          <select id="appRoleSelect" onchange="guardarPerfilApp(this.value)">
+            <option value="admin">Admin</option>
+            <option value="tecnico">Técnico</option>
+            <option value="armazem">Armazém</option>
+            <option value="consulta">Consulta</option>
+          </select>
+        </label>
+        <div class="health-card">
+          <span>Estado</span>
+          <strong id="appRoleStatus">A carregar</strong>
+          <p class="section-subtitle">Consulta bloqueia ações destrutivas. Técnico/Armazém mantêm operação diária.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel config-section">
+      <div class="section-header">
+        <div>
           <h3>IDs dos toners</h3>
           <p class="section-subtitle">Controlo do contador usado para gerar IDs como TON-0001.</p>
         </div>
@@ -268,6 +294,16 @@
 
       <div class="config-backup-grid">
         <div class="config-backup-card">
+          <div><h4>Backup completo</h4><p>Exporta ou importa dados principais da APP.</p></div>
+          <div class="card-actions">
+            <button class="primary-btn" onclick="exportBackupCompletoApp()">Export completo</button>
+            <button class="secondary-btn" onclick="document.getElementById('backupCompletoInput').click()">Import completo</button>
+            <input id="backupCompletoInput" type="file" accept="application/json" style="display:none" onchange="importBackupCompletoApp(event)">
+          </div>
+          <p id="backupCompletoStatus" class="section-subtitle">Pronto.</p>
+        </div>
+
+        <div class="config-backup-card">
           <div><h4>Users</h4><p>Utilizadores e credenciais operacionais.</p></div>
           <div class="card-actions">
             <button class="primary-btn" onclick="exportUsersJSON()">Export JSON</button>
@@ -298,7 +334,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<script src="../js/app.js?v=toner-change-push-1"></script>
+<script src="../js/app.js?v=ops-dashboard-backup-1"></script>
   <script src="../js/core/helpers.js"></script>
   <script src="../js/iphone-force-final.js?v=v3-final"></script>
 <script src="../js/enterprise/ops.js?v=ops-7"></script>

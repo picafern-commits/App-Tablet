@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.21.0";
+const APP_VERSION = "1.22.0";
 
 
 
@@ -79,6 +79,7 @@ let stockGlobal = [];
 let historicoGlobal = [];
 let pcsGlobal = [];
 let manutencoesGlobal = [];
+let activityLogGlobal = [];
 let appNotificationTimer = null;
 
 const appNotificationState = {
@@ -98,6 +99,14 @@ const appNotificationState = {
   restoreRunning: false,
   restoredTokenDocId: ""
 };
+
+const APP_ROLE_LABELS = {
+  admin: "Admin",
+  tecnico: "Técnico",
+  armazem: "Armazém",
+  consulta: "Consulta"
+};
+let appRoleAtual = "admin";
 
 function el(id) {
   return document.getElementById(id);
@@ -225,6 +234,103 @@ function mostrarMensagem(texto, tipo = "sucesso") {
     toast.style.display = "none";
   }, 2200);
 }
+
+async function logActivityApp(type, title, detail = "", extra = {}) {
+  try {
+    if (!db || !db.collection) return false;
+    await db.collection("activityLog").add({
+      type,
+      title,
+      detail,
+      ...extra,
+      role: appRoleAtual,
+      createdAt: new Date(),
+      createdAtMs: Date.now()
+    });
+    return true;
+  } catch (error) {
+    console.warn("Erro ao gravar atividade:", error);
+    return false;
+  }
+}
+
+function renderActivityLogApp() {
+  const host = el("dashboardActivityLog");
+  if (!host) return;
+  const items = Array.isArray(activityLogGlobal) ? activityLogGlobal.slice(0, 12) : [];
+  if (!items.length) {
+    host.innerHTML = `<div class="empty-state mini">Sem atividade recente.</div>`;
+    return;
+  }
+  host.innerHTML = items.map((item) => {
+    const when = formatTimestampApp(item.createdAtMs || item.createdAt);
+    return `
+      <div class="activity-item">
+        <div>
+          <strong>${escapeHtmlAppBraga(item.title || item.type || "Atividade")}</strong>
+          <span>${escapeHtmlAppBraga(item.detail || "")}</span>
+        </div>
+        <small>${escapeHtmlAppBraga(when)}</small>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderDashboardOpsResumoApp() {
+  if (!el("dashTonersHoje") && !el("dashTonersSemana") && !el("dashAlertasStock")) return;
+  const now = new Date();
+  const startDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const startWeek = startDay - (((now.getDay() + 6) % 7) * 86400000);
+  const stockToday = stockGlobal.filter((item) => getFirestoreSortValue(item.created || item.createdAt || item.data) >= startDay).length;
+  const usedWeek = historicoGlobal.filter((item) => getFirestoreSortValue(item.usadoAt || item.created || item.createdAt || item.data) >= startWeek).length;
+  const alertCount = typeof buildAlertasInteligentes === "function" ? buildAlertasInteligentes().length : 0;
+  setText("dashTonersHoje", stockToday);
+  setText("dashTonersSemana", usedWeek);
+  setText("dashAlertasStock", alertCount);
+}
+
+function aplicarPerfilApp(role = appRoleAtual) {
+  appRoleAtual = APP_ROLE_LABELS[role] ? role : "admin";
+  const status = el("appRoleStatus");
+  const select = el("appRoleSelect");
+  if (select) select.value = appRoleAtual;
+  if (status) status.textContent = APP_ROLE_LABELS[appRoleAtual] || appRoleAtual;
+
+  const readOnly = appRoleAtual === "consulta";
+  document.body.classList.toggle("app-role-consulta", readOnly);
+  document.querySelectorAll(".btn-delete, .danger, [onclick*='apagar'], [onclick*='delete'], [onclick*='reiniciarContador']").forEach((node) => {
+    if (!node.dataset.roleOriginalDisplay) node.dataset.roleOriginalDisplay = node.style.display || "__default__";
+    node.style.display = readOnly ? "none" : (node.dataset.roleOriginalDisplay === "__default__" ? "" : node.dataset.roleOriginalDisplay);
+  });
+}
+
+async function carregarPermissoesApp() {
+  try {
+    if (!db || !db.collection) return aplicarPerfilApp("admin");
+    const snap = await db.collection("config").doc("layout").get();
+    const role = snap.exists ? String((snap.data() || {}).appRole || "admin") : "admin";
+    aplicarPerfilApp(role);
+  } catch (error) {
+    console.warn("Erro ao carregar permissões:", error);
+    aplicarPerfilApp(appRoleAtual || "admin");
+  }
+}
+
+async function guardarPerfilApp(role) {
+  const nextRole = APP_ROLE_LABELS[role] ? role : "admin";
+  aplicarPerfilApp(nextRole);
+  try {
+    await db.collection("config").doc("layout").set({ appRole: nextRole, updatedAt: Date.now() }, { merge: true });
+    await logActivityApp("settings", "Perfil alterado", `Perfil ativo: ${APP_ROLE_LABELS[nextRole]}`);
+    mostrarMensagem("Perfil guardado.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar perfil.", "erro");
+  }
+}
+
+window.carregarPermissoesApp = carregarPermissoesApp;
+window.guardarPerfilApp = guardarPerfilApp;
 
 /* =========================
    DADOS IMPRESSORAS
@@ -520,6 +626,15 @@ async function disponivel() {
       created: new Date()
     });
 
+    await logActivityApp("stock-add", "Toner adicionado", `${id} - ${eq} - ${corValue}`, {
+      idInterno: id,
+      equipamento: eq,
+      cor: corValue,
+      localizacao: loc || "Sem Localização",
+      sdsRef: sdsRefValue || "",
+      codigoEtiqueta
+    });
+
     const etiquetaGerada = await gerarWordEtiquetaFromForm(true);
 
     equipamento.value = "";
@@ -563,6 +678,7 @@ db.collection("stock").onSnapshot(snap => {
   renderAlertasInteligentes();
   renderDashboardResumoInteligente();
   renderModoGestorExtremo();
+  renderDashboardOpsResumoApp();
 }, error => {
   console.error(error);
   stockGlobal = loadBackupAppBraga(BACKUP_KEYS_APP_BRAGA.stock);
@@ -574,6 +690,7 @@ db.collection("stock").onSnapshot(snap => {
   renderAlertasInteligentes();
   renderDashboardResumoInteligente();
   renderModoGestorExtremo();
+  renderDashboardOpsResumoApp();
 });
 
 db.collection("historico").onSnapshot(snap => {
@@ -593,6 +710,7 @@ db.collection("historico").onSnapshot(snap => {
   renderAlertasInteligentes();
   renderModoGestorExtremo();
   renderDashboardResumoInteligente();
+  renderDashboardOpsResumoApp();
 }, error => {
   console.error(error);
   historicoGlobal = loadBackupAppBraga(BACKUP_KEYS_APP_BRAGA.historico);
@@ -602,7 +720,18 @@ db.collection("historico").onSnapshot(snap => {
   renderAlertasInteligentes();
   renderModoGestorExtremo();
   renderDashboardResumoInteligente();
+  renderDashboardOpsResumoApp();
 });
+
+if (window.db && window.db.collection) {
+  window.db.collection("activityLog").orderBy("createdAtMs", "desc").limit(30).onSnapshot((snap) => {
+    activityLogGlobal = [];
+    snap.forEach((doc) => activityLogGlobal.push({ idDoc: doc.id, ...doc.data() }));
+    renderActivityLogApp();
+  }, (error) => {
+    console.warn("Erro ao carregar activityLog:", error);
+  });
+}
 
 db.collection("pcs").onSnapshot(snap => {
   pcsGlobal = [];
@@ -836,6 +965,7 @@ function renderStockCards(items) {
       </div>
     </div>
   `).join("");
+  aplicarPerfilApp(appRoleAtual);
 }
 
 function renderHistoricoCards(items) {
@@ -864,6 +994,7 @@ function renderHistoricoCards(items) {
       </div>
     </div>
   `).join("");
+  aplicarPerfilApp(appRoleAtual);
 }
 
 async function usar(id) {
@@ -885,6 +1016,13 @@ async function usar(id) {
     });
 
     await ref.delete();
+    await logActivityApp("stock-used", "Toner usado", `${snap.data().idInterno || id} movido para historico`, {
+      stockDocId: id,
+      idInterno: snap.data().idInterno || "",
+      equipamento: snap.data().equipamento || "",
+      cor: snap.data().cor || "",
+      codigoEtiqueta: snap.data().codigoEtiqueta || ""
+    });
     mostrarMensagem("Toner movido para histórico.");
   } catch (error) {
     console.error(error);
@@ -4758,6 +4896,7 @@ window.addEventListener("DOMContentLoaded", () => {
   renderPortas();
   carregarUsersLocal();
   renderUsers();
+  carregarPermissoesApp();
 
   if (el("manutencaoSerie")) {
     el("manutencaoSerie").addEventListener("change", sincronizarCamposImpressora);
@@ -7240,6 +7379,83 @@ function exportarExcelTudo() {
   exportCsvFile("dados_completos_app_braga.csv", ["origem","idInterno","codigoEtiqueta","sdsRef","equipamento","localizacao","cor","lote","data","dataFolha"], rows);
 }
 
+function downloadJsonAppBraga(filename, payload) {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    URL.revokeObjectURL(a.href);
+    a.remove();
+  }, 1000);
+}
+
+async function exportBackupCompletoApp() {
+  const payload = {
+    app: "App Braga",
+    version: APP_VERSION,
+    exportedAt: new Date().toISOString(),
+    data: {
+      stock: stockGlobal,
+      historico: historicoGlobal,
+      pcs: pcsGlobal,
+      manutencoes: manutencoesGlobal,
+      users: window.usersData || [],
+      pistolas: window.pistolasData || [],
+      portas: window.portasData || [],
+      activityLog: activityLogGlobal
+    }
+  };
+  const date = new Date().toISOString().slice(0, 10);
+  downloadJsonAppBraga(`app_braga_backup_completo_${date}.json`, payload);
+  setText("backupCompletoStatus", `Exportado em ${new Date().toLocaleTimeString("pt-PT")}`);
+  await logActivityApp("backup-export", "Backup completo exportado", `${Object.keys(payload.data).length} grupos de dados`);
+}
+
+async function importBackupCompletoApp(event) {
+  const file = event?.target?.files?.[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const parsed = JSON.parse(text);
+    const data = parsed.data || parsed;
+    const collections = {
+      stock: data.stock,
+      historico: data.historico,
+      pcs: data.pcs,
+      manutencoes: data.manutencoes,
+      users: data.users,
+      pistolas: data.pistolas,
+      portas: data.portas
+    };
+    const selected = Object.entries(collections).filter(([, rows]) => Array.isArray(rows) && rows.length);
+    if (!selected.length) return mostrarMensagem("Backup sem dados importáveis.", "erro");
+    if (!confirm(`Importar backup completo? Isto vai adicionar ${selected.reduce((sum, [, rows]) => sum + rows.length, 0)} registos às coleções.`)) return;
+
+    for (const [collection, rows] of selected) {
+      for (const row of rows) {
+        const clean = { ...row };
+        delete clean.idDoc;
+        delete clean.firebaseId;
+        delete clean._ref;
+        clean.importedAt = new Date();
+        clean.importedFromBackup = true;
+        await db.collection(collection).add(clean);
+      }
+    }
+    setText("backupCompletoStatus", `Importado em ${new Date().toLocaleTimeString("pt-PT")}`);
+    await logActivityApp("backup-import", "Backup completo importado", selected.map(([name, rows]) => `${name}: ${rows.length}`).join(" | "));
+    mostrarMensagem("Backup importado.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao importar backup.", "erro");
+  } finally {
+    if (event?.target) event.target.value = "";
+  }
+}
+
 function filtrarHistoricoAvancado() {
   const texto = normalizarTexto(el("searchHistorico")?.value || "");
   const dFrom = el("filterHistoricoFrom")?.value || "";
@@ -7407,6 +7623,8 @@ const filtrarDashDebounced = debounceAppBraga(function() {
 window.exportarExcelStock = exportarExcelStock;
 window.exportarExcelHistorico = exportarExcelHistorico;
 window.exportarExcelTudo = exportarExcelTudo;
+window.exportBackupCompletoApp = exportBackupCompletoApp;
+window.importBackupCompletoApp = importBackupCompletoApp;
 window.guardarStockMinimoConfig = guardarStockMinimoConfig;
 window.resetStockMinimoConfig = resetStockMinimoConfig;
 window.filtrarHistoricoAvancado = filtrarHistoricoAvancado;
@@ -7629,6 +7847,7 @@ function renderEtiquetasWordCards() {
       </div>
     </div>`).join("");
   atualizarContadorEtiquetasSelecionadas();
+  aplicarPerfilApp(appRoleAtual);
 }
 
 
