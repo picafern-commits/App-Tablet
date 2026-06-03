@@ -5973,3 +5973,57 @@ div:has(> #primaryColor) {
   }
 }
 /* ===== END STOCK QR PREVIEW ALWAYS VISIBLE FINAL ===== */
+
+/* ===== ETIQUETAS WORD SELECAO EM LOTE ===== */
+.etiquetas-bulk-toolbar {
+  display: grid !important;
+  grid-template-columns: minmax(220px, 1fr) auto;
+  gap: 12px !important;
+  align-items: center !important;
+  margin-bottom: 18px !important;
+}
+
+.etiquetas-bulk-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  justify-content: flex-end !important;
+}
+
+.etiqueta-select-row {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: fit-content !important;
+  margin-bottom: 12px !important;
+  padding: 8px 10px !important;
+  border-radius: 12px !important;
+  border: 1px solid var(--border) !important;
+  background: rgba(255,255,255,.06) !important;
+  color: var(--text) !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+}
+
+.etiqueta-select-row input {
+  width: 18px !important;
+  height: 18px !important;
+  accent-color: var(--app-accent, var(--primary)) !important;
+}
+
+.etiqueta-word-card:has(.etiqueta-select-row input:checked) {
+  border-color: var(--app-accent, var(--primary)) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--app-accent, var(--primary)) 35%, transparent), var(--shadow) !important;
+}
+
+@media (max-width: 760px) {
+  .etiquetas-bulk-toolbar {
+    grid-template-columns: 1fr !important;
+  }
+  .etiquetas-bulk-actions {
+    justify-content: stretch !important;
+  }
+  .etiquetas-bulk-actions button {
+    flex: 1 1 100% !important;
+  }
+}

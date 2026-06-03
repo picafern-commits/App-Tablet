@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.20.4";
+const APP_VERSION = "1.20.5";
 
 
 
@@ -7470,6 +7470,37 @@ async function gerarWordEtiquetaPartilhada(dados, opts = {}) {
 
 window.gerarWordEtiquetaPartilhada = gerarWordEtiquetaPartilhada;
 
+const etiquetasWordSelecionadas = new Set();
+
+function atualizarContadorEtiquetasSelecionadas() {
+  setText("etiquetasSelecionadasCount", etiquetasWordSelecionadas.size);
+}
+
+function toggleEtiquetaWordSelecionada(id, checked) {
+  if (!id) return;
+  if (checked) etiquetasWordSelecionadas.add(id);
+  else etiquetasWordSelecionadas.delete(id);
+  atualizarContadorEtiquetasSelecionadas();
+}
+
+function selecionarEtiquetasWordVisiveis() {
+  document.querySelectorAll("[data-etiqueta-word-id]").forEach((input) => {
+    const id = input.getAttribute("data-etiqueta-word-id");
+    if (!id) return;
+    etiquetasWordSelecionadas.add(id);
+    input.checked = true;
+  });
+  atualizarContadorEtiquetasSelecionadas();
+}
+
+function limparSelecaoEtiquetasWord() {
+  etiquetasWordSelecionadas.clear();
+  document.querySelectorAll("[data-etiqueta-word-id]").forEach((input) => {
+    input.checked = false;
+  });
+  atualizarContadorEtiquetasSelecionadas();
+}
+
 function getEtiquetaDateValue(item = {}) {
   const candidates = [item.data, item.dataScan, item.dataFolha, item.dataEtiqueta, item.createdAt, item.created];
   for (const value of candidates) {
@@ -7508,7 +7539,11 @@ function renderEtiquetasWordCards() {
     return;
   }
   host.innerHTML = items.map(t => `
-    <div class="stock-card">
+    <div class="stock-card etiqueta-word-card">
+      <label class="etiqueta-select-row">
+        <input type="checkbox" data-etiqueta-word-id="${safeRefHtml(t.idDoc)}" ${etiquetasWordSelecionadas.has(t.idDoc) ? "checked" : ""} onchange="toggleEtiquetaWordSelecionada('${safeRefHtml(t.idDoc)}', this.checked)">
+        <span>Selecionar para impressão</span>
+      </label>
       <div class="stock-id">${t.localCurto || t.localizacao || 'Etiqueta'}</div>
       <div class="meta-line">Série: <span class="meta-value">${t.serie || '-'}</span></div>
       <div class="meta-line">Armazém: <span class="meta-value">${t.armazem || '-'}</span></div>
@@ -7525,6 +7560,7 @@ function renderEtiquetasWordCards() {
         <button class="small-btn btn-delete" onclick="apagarEtiquetaWordPartilhada('${t.idDoc}')">Apagar</button>
       </div>
     </div>`).join("");
+  atualizarContadorEtiquetasSelecionadas();
 }
 
 
@@ -7657,6 +7693,96 @@ function montarHtmlEtiquetaOverlay(item) {
     </div>`;
 }
 
+function montarHtmlEtiquetasOverlay(items) {
+  const escapeHtml = (v) => String(v ?? '').replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c] || c));
+  const sheets = items.map((item) => {
+    const linhas = [
+      ["Local", item.localCurto || item.localizacao],
+      ["Série", item.serie],
+      ["Armazém", item.armazem],
+      ["Equipamento", item.equipamento],
+      ["Cor", item.cor],
+      ["Lote", item.lote],
+      ["SDS Ref", item.sdsRef],
+      ["Data", item.dataScan || item.dataEtiqueta || item.data || item.dataFolha],
+      ["Origem", item.origem]
+    ].filter(([,v]) => String(v || '').trim());
+    const rows = linhas.map(([k,v]) => `<div class="etq-row"><div class="etq-key">${escapeHtml(k)}</div><div class="etq-val">${escapeHtml(v)}</div></div>`).join('');
+    const codigoScan = item.codigoScan || (item.codigoEtiqueta ? buildPayloadQrTonerAppBraga(item.codigoEtiqueta) : "");
+    return `
+      <section class="etq-sheet">
+        <div class="etq-title">${escapeHtml(item.localCurto || item.localizacao || 'Etiqueta')}</div>
+        ${rows}
+        ${codigoScan ? `<div class="etq-qr" data-etq-qr="${escapeHtml(codigoScan)}"></div>` : ""}
+      </section>`;
+  }).join("");
+
+  return `
+    <style>
+      @media print {
+        @page { size: 100mm 150mm; margin: 0; }
+        html, body { margin: 0 !important; padding: 0 !important; background: #fff !important; overflow: visible !important; }
+        body * { visibility: hidden !important; }
+        #printAreaEtiquetaAppBraga, #printAreaEtiquetaAppBraga * { visibility: visible !important; }
+        #printAreaEtiquetaAppBraga { position: static !important; width: auto !important; height: auto !important; margin: 0 !important; padding: 0 !important; overflow: visible !important; background: #fff !important; display: block !important; }
+      }
+      #printAreaEtiquetaAppBraga { background:#fff; color:#000; display:block; }
+      #printAreaEtiquetaAppBraga .etq-sheet { position:relative; width:96mm; height:146mm; max-width:96mm; max-height:146mm; overflow:hidden; box-sizing:border-box; margin:2mm; padding:6mm; color:#000; font-family:'Arial Black', Arial, Helvetica, sans-serif; font-weight:950; background:#fff; display:flex; flex-direction:column; justify-content:flex-start; break-inside: page; page-break-inside: avoid; page-break-after: always; }
+      #printAreaEtiquetaAppBraga .etq-sheet:last-child { page-break-after: auto; break-after: auto; }
+      #printAreaEtiquetaAppBraga .etq-title { font-size:21px; font-weight:1000; margin:0 28mm 5mm 0; line-height:1.05; color:#000; }
+      #printAreaEtiquetaAppBraga .etq-row { display:flex; flex-direction:column; margin:0 0 3mm; color:#000; }
+      #printAreaEtiquetaAppBraga .etq-key { font-size:10px; font-weight:1000; text-transform:uppercase; letter-spacing:.3px; color:#000; }
+      #printAreaEtiquetaAppBraga .etq-val { font-size:15px; line-height:1.18; word-break:break-word; color:#000; }
+      #printAreaEtiquetaAppBraga .etq-qr { position:absolute; top:6mm; right:6mm; width:20mm; height:20mm; }
+      #printAreaEtiquetaAppBraga .etq-qr img,
+      #printAreaEtiquetaAppBraga .etq-qr canvas { width:20mm !important; height:20mm !important; }
+    </style>
+    ${sheets}`;
+}
+
+async function imprimirEtiquetasWordSelecionadas() {
+  const ids = Array.from(etiquetasWordSelecionadas);
+  if (!ids.length) return mostrarMensagem("Seleciona pelo menos uma etiqueta.", "erro");
+  const items = ids.map((id) => etiquetasWordGlobal.find((item) => item.idDoc === id)).filter(Boolean);
+  if (!items.length) return mostrarMensagem("As etiquetas selecionadas já não existem.", "erro");
+
+  try {
+    const existente = document.getElementById('printAreaEtiquetaAppBraga');
+    if (existente) existente.remove();
+    const overlay = document.createElement('div');
+    overlay.id = 'printAreaEtiquetaAppBraga';
+    overlay.style.position = 'fixed';
+    overlay.style.inset = '0';
+    overlay.style.background = '#fff';
+    overlay.style.zIndex = '999999';
+    overlay.style.overflow = 'auto';
+    overlay.innerHTML = montarHtmlEtiquetasOverlay(items);
+    document.body.appendChild(overlay);
+    renderQrCodesAppBraga(overlay);
+
+    const oldTitle = document.title;
+    document.title = `Etiquetas-${items.length}`;
+    setTimeout(() => {
+      try {
+        try { if (window.reforcarEtiquetaTonerPrint) window.reforcarEtiquetaTonerPrint(); } catch (e) {}
+        window.print();
+        mostrarMensagem(`${items.length} etiquetas prontas para imprimir.`);
+      } catch (e) {
+        console.error(e);
+        mostrarMensagem("Erro ao abrir a impressão.", "erro");
+      } finally {
+        setTimeout(() => {
+          try { overlay.remove(); } catch (e) {}
+          document.title = oldTitle;
+        }, 700);
+      }
+    }, 180);
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao preparar etiquetas.", "erro");
+  }
+}
+
 
 async function apagarEtiquetaWordPartilhada(id) {
   if (!confirm("Queres apagar esta etiqueta?")) return;
@@ -7670,6 +7796,10 @@ async function apagarEtiquetaWordPartilhada(id) {
 }
 window.regerarEtiquetaWordPartilhada = regerarEtiquetaWordPartilhada;
 window.apagarEtiquetaWordPartilhada = apagarEtiquetaWordPartilhada;
+window.toggleEtiquetaWordSelecionada = toggleEtiquetaWordSelecionada;
+window.selecionarEtiquetasWordVisiveis = selecionarEtiquetasWordVisiveis;
+window.limparSelecaoEtiquetasWord = limparSelecaoEtiquetasWord;
+window.imprimirEtiquetasWordSelecionadas = imprimirEtiquetasWordSelecionadas;
 
 function bindEtiquetasWordRealtime() {
   if (!db || !db.collection) return;
