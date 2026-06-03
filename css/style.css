@@ -6125,6 +6125,50 @@ body.app-role-consulta .danger {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--app-accent, var(--primary)) 35%, transparent), var(--shadow) !important;
 }
 
+.notification-service-panel {
+  display: grid !important;
+  gap: 14px !important;
+  margin-top: 16px !important;
+  padding: 16px !important;
+  border: 1px solid var(--border, var(--app-border)) !important;
+  border-radius: 16px !important;
+  background: rgba(255,255,255,.035) !important;
+}
+
+.notification-service-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)) !important;
+  gap: 12px !important;
+}
+
+.notification-service-card {
+  min-height: 104px !important;
+  padding: 14px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  border-radius: 14px !important;
+  background: rgba(16,17,20,.72) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+}
+
+.notification-service-card span,
+.notification-service-card small {
+  color: var(--muted, var(--app-muted)) !important;
+  font-size: 12px !important;
+}
+
+.notification-service-card strong {
+  color: var(--text, #f8fafc) !important;
+  font-size: 18px !important;
+}
+
+.config-actions-row.compact {
+  width: auto !important;
+  margin: 0 !important;
+  gap: 8px !important;
+}
+
 @media (max-width: 760px) {
   .etiquetas-bulk-toolbar {
     grid-template-columns: 1fr !important;

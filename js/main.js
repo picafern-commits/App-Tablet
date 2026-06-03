@@ -91,21 +91,34 @@ function buildPushWatcherEnv() {
   return env;
 }
 
+function getPushWatcherReadiness() {
+  const env = buildPushWatcherEnv();
+  return {
+    serviceAccountReady: !!(env.GOOGLE_APPLICATION_CREDENTIALS && fs.existsSync(env.GOOGLE_APPLICATION_CREDENTIALS)),
+    serviceAccountPath: env.GOOGLE_APPLICATION_CREDENTIALS || "",
+    vapidReady: !!(env.APP_BRAGA_VAPID_PUBLIC_KEY && env.APP_BRAGA_VAPID_PRIVATE_KEY),
+    vapidPublicReady: !!env.APP_BRAGA_VAPID_PUBLIC_KEY,
+    vapidPrivateReady: !!env.APP_BRAGA_VAPID_PRIVATE_KEY,
+    logFile: pushWatcherLogPath()
+  };
+}
+
 function startPushWatcherAuto() {
   if (pushWatcherProcess && !pushWatcherProcess.killed) return pushWatcherStatus;
   const watcherPath = path.join(__dirname, "..", "tools", "web-push-watch.js");
   const env = buildPushWatcherEnv();
+  const readiness = getPushWatcherReadiness();
 
   if (!fs.existsSync(watcherPath)) {
-    pushWatcherStatus = { ok: false, running: false, mode: "erro", error: "Watcher indisponivel", startedAt: null, logFile: pushWatcherLogPath() };
+    pushWatcherStatus = { ok: false, running: false, mode: "erro", error: "Watcher indisponivel", startedAt: null, ...readiness };
     return pushWatcherStatus;
   }
   if (!env.GOOGLE_APPLICATION_CREDENTIALS || !fs.existsSync(env.GOOGLE_APPLICATION_CREDENTIALS)) {
-    pushWatcherStatus = { ok: false, running: false, mode: "sem-service-account", error: "Falta service-account.json", startedAt: null, logFile: pushWatcherLogPath() };
+    pushWatcherStatus = { ok: false, running: false, mode: "sem-service-account", error: "Falta service-account.json", startedAt: null, ...readiness };
     return pushWatcherStatus;
   }
   if (!env.APP_BRAGA_VAPID_PUBLIC_KEY || !env.APP_BRAGA_VAPID_PRIVATE_KEY) {
-    pushWatcherStatus = { ok: false, running: false, mode: "sem-vapid", error: "Faltam VAPID keys locais", startedAt: null, logFile: pushWatcherLogPath() };
+    pushWatcherStatus = { ok: false, running: false, mode: "sem-vapid", error: "Faltam VAPID keys locais", startedAt: null, ...readiness };
     return pushWatcherStatus;
   }
 
@@ -116,7 +129,7 @@ function startPushWatcherAuto() {
     stdio: ["ignore", "pipe", "pipe"]
   });
 
-  pushWatcherStatus = { ok: true, running: true, mode: "electron-auto", error: "", startedAt: new Date().toISOString(), logFile: pushWatcherLogPath() };
+  pushWatcherStatus = { ok: true, running: true, mode: "electron-auto", error: "", startedAt: new Date().toISOString(), pid: pushWatcherProcess.pid, ...readiness };
   appendPushWatcherLog("Watcher iniciado pelo Electron.");
   pushWatcherProcess.stdout.on("data", (chunk) => appendPushWatcherLog(chunk.toString("utf8").trim()));
   pushWatcherProcess.stderr.on("data", (chunk) => appendPushWatcherLog(`ERRO: ${chunk.toString("utf8").trim()}`));
@@ -473,6 +486,7 @@ ipcMain.handle("app:push-watcher-start", async () => startPushWatcherAuto());
 
 ipcMain.handle("app:push-watcher-status", async () => ({
   ...pushWatcherStatus,
+  ...getPushWatcherReadiness(),
   running: !!(pushWatcherProcess && !pushWatcherProcess.killed)
 }));
 

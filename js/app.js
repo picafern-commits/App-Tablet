@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.23.5";
+const APP_VERSION = "1.23.6";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BFm5qjGZUqbqNuTADly_22pPnPGH04CtTJkaiTdlneZw7BRNmgjngqL5Ru4WCE1DD83vrZTuOkW_I7WvMOBaOFk";
 
 
@@ -1977,6 +1977,9 @@ function iniciarMonitorNotificacoesApp() {
 
 async function testarNotificacaoApp() {
   const ok = await enviarNotificacaoApp("App Braga", "Teste de notificacao concluido.", "app-braga-test", { force: true, url: "html/config.html" });
+  setNotificationServiceText("notifyLastTestStatus", ok ? "Enviado" : "Falhou", ok ? "ok" : "bad");
+  setNotificationServiceText("notifyLastTestDetail", new Date().toLocaleString("pt-PT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }));
+  await atualizarEstadoNotificacoesApp(false);
   if (window.electronAPI?.getNotificationStatus) {
     const status = await window.electronAPI.getNotificationStatus().catch(() => null);
     if (status?.ok && !status.supported) {
@@ -2230,6 +2233,67 @@ function labelMetodoNotificacaoApp(item = {}) {
   return item.source || "Registo local";
 }
 
+function setNotificationServiceText(id, value, state = "") {
+  const node = document.getElementById(id);
+  if (!node) return;
+  node.textContent = value;
+  if (state) node.className = `health-status ${state}`;
+}
+
+function formatStartedAtApp(value) {
+  const time = normalizeTimestampApp(value);
+  if (!time) return "-";
+  return new Date(time).toLocaleString("pt-PT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+}
+
+function renderResumoDispositivosNotificacoesApp(items = []) {
+  const activeItems = items.filter((item) => item.active !== false);
+  const remoteItems = activeItems.filter((item) => item.token || item.pushSubscription?.endpoint);
+  setNotificationServiceText("notifyActiveDevicesCount", String(activeItems.length), activeItems.length ? "ok" : "warn");
+  const remoteText = `${remoteItems.length} com push remoto`;
+  setNotificationServiceText("notifyActiveDevicesDetail", activeItems.length ? remoteText : "Sem dispositivos registados");
+}
+
+async function atualizarEstadoNotificacoesApp(showMessage = false) {
+  const service = document.getElementById("notifyServiceStatus");
+  if (!service) return;
+
+  if (window.electronAPI?.getPushWatcherStatus) {
+    const status = await window.electronAPI.getPushWatcherStatus().catch((error) => ({ ok: false, error: error.message }));
+    const running = !!status?.running;
+    setNotificationServiceText("notifyServiceStatus", running ? "Ativo" : "Parado", running ? "ok" : "warn");
+    setNotificationServiceText("notifyServiceDetail", running ? `Ligado desde ${formatStartedAtApp(status.startedAt)}` : (status.error || "Pode ser ligado pelo botão"));
+    const credentialsOk = !!(status?.serviceAccountReady && status?.vapidReady);
+    setNotificationServiceText("notifyCredentialsStatus", credentialsOk ? "OK" : "Incompletas", credentialsOk ? "ok" : "warn");
+    const parts = [
+      status?.serviceAccountReady ? "Service account OK" : "Falta service-account",
+      status?.vapidReady ? "VAPID OK" : "Falta VAPID"
+    ];
+    setNotificationServiceText("notifyCredentialsDetail", parts.join(" - "));
+    if (showMessage) mostrarMensagem(running ? "Serviço de notificações ativo." : (status.error || "Serviço de notificações parado."), running ? "sucesso" : "erro");
+    return;
+  }
+
+  const permission = notificationPermissionApp();
+  const ok = permission === "granted";
+  setNotificationServiceText("notifyServiceStatus", ok ? "Web pronta" : "Permissão pendente", ok ? "ok" : "warn");
+  setNotificationServiceText("notifyServiceDetail", ok ? "Push depende do watcher externo" : "Ativa as notificações neste dispositivo");
+  setNotificationServiceText("notifyCredentialsStatus", appNotificationState.vapidKey ? "VAPID OK" : "Falta VAPID", appNotificationState.vapidKey ? "ok" : "warn");
+  setNotificationServiceText("notifyCredentialsDetail", "GitHub Pages não corre watcher sozinho");
+  if (showMessage) mostrarMensagem(ok ? "Notificações web prontas." : "Ativa permissões e regista o dispositivo.", ok ? "sucesso" : "erro");
+}
+
+async function ligarServicoNotificacoesApp() {
+  if (!window.electronAPI?.startPushWatcher) {
+    mostrarMensagem("No iPhone/Android o serviço é externo. Usa o PC/Electron para ligar o watcher.", "erro");
+    await atualizarEstadoNotificacoesApp(false);
+    return;
+  }
+  const status = await window.electronAPI.startPushWatcher().catch((error) => ({ ok: false, error: error.message }));
+  await atualizarEstadoNotificacoesApp(false);
+  mostrarMensagem(status?.running || status?.ok ? "Serviço de notificações ligado." : (status?.error || "Não foi possível ligar o serviço."), status?.running || status?.ok ? "sucesso" : "erro");
+}
+
 function renderDispositivosNotificacoesApp(items = []) {
   const host = document.getElementById("notifyDevicesList");
   if (!host) return;
@@ -2237,6 +2301,8 @@ function renderDispositivosNotificacoesApp(items = []) {
   const activeItems = items
     .filter((item) => item.active !== false)
     .sort((a, b) => normalizeTimestampApp(b.updatedAt || b.createdAt) - normalizeTimestampApp(a.updatedAt || a.createdAt));
+  renderResumoDispositivosNotificacoesApp(items);
+  atualizarEstadoNotificacoesApp(false);
 
   if (!activeItems.length) {
     host.innerHTML = `<div class="empty-state mini">Ainda nao ha dispositivos ativos.</div>`;
@@ -4933,6 +4999,8 @@ window.removerPinApp = removerPinApp;
 window.ativarBiometriaApp = ativarBiometriaApp;
 window.removerBiometriaApp = removerBiometriaApp;
 window.bloquearAppAgora = bloquearAppAgora;
+window.atualizarEstadoNotificacoesApp = atualizarEstadoNotificacoesApp;
+window.ligarServicoNotificacoesApp = ligarServicoNotificacoesApp;
 window.desbloquearAppComPin = desbloquearAppComPin;
 window.desbloquearAppComBiometria = desbloquearAppComBiometria;
 window.entrarFullscreenApp = entrarFullscreenApp;
