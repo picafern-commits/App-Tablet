@@ -123,7 +123,7 @@ async function listTokens() {
   const docs = await listCollection("notificationTokens");
   return docs
     .map((doc) => doc.fields)
-    .filter((item) => item.token && String(item.source || "").includes("web-push"));
+    .filter((item) => item.active !== false && item.token && String(item.source || "").includes("web-push"));
 }
 
 async function sendFcm(token, title, body, data = {}) {
@@ -161,9 +161,115 @@ async function broadcast(title, body, data) {
 }
 
 const seen = new Map();
+const printerState = new Map();
 let boot = true;
 
+function normalizePercentValue(value) {
+  if (typeof value === "number" && Number.isFinite(value)) return Math.max(0, Math.min(100, Math.round(value)));
+  if (typeof value === "string") {
+    const match = value.replace(",", ".").match(/\d{1,3}(?:\.\d+)?/);
+    if (match) {
+      const parsed = Number(match[0]);
+      if (Number.isFinite(parsed)) return Math.max(0, Math.min(100, Math.round(parsed)));
+    }
+  }
+  return null;
+}
+
+function getDocId(docName) {
+  return String(docName || "").split("/").pop() || "";
+}
+
+function getPrinterTonerItems(fields = {}) {
+  const items = [];
+  const toner = fields.toner && typeof fields.toner === "object" ? fields.toner : {};
+  const colorMap = [
+    ["black", "Preto"],
+    ["cyan", "Ciano"],
+    ["magenta", "Magenta"],
+    ["yellow", "Amarelo"]
+  ];
+
+  colorMap.forEach(([key, label]) => {
+    const percent = normalizePercentValue(
+      toner[key] ??
+      fields[key] ??
+      fields[`${key}Percent`] ??
+      fields[`${key}_percent`]
+    );
+    if (percent !== null) items.push({ key, label, percent });
+  });
+
+  if (!items.length) {
+    const percent = normalizePercentValue(fields.percent ?? fields.tonerPercent ?? fields.toner_percent ?? fields.nivelToner ?? fields.nivel ?? fields.percentage);
+    if (percent !== null) items.push({ key: "black", label: "Preto", percent });
+  }
+
+  if (Array.isArray(fields.colors)) {
+    fields.colors.forEach((item) => {
+      if (!item) return;
+      const key = String(item.key || item.color || item.cor || "toner").toLowerCase();
+      if (items.some((existing) => existing.key === key)) return;
+      const percent = normalizePercentValue(item.percent ?? item.value ?? item.valor ?? item.nivel);
+      if (percent !== null) items.push({ key, label: item.label || item.cor || key, percent });
+    });
+  }
+
+  return items;
+}
+
+function getTonerReplacementEvents(previousFields, nextFields) {
+  const previous = getPrinterTonerItems(previousFields);
+  const next = getPrinterTonerItems(nextFields);
+  const previousMap = new Map(previous.map((item) => [item.key, item]));
+  return next
+    .map((item) => ({ before: previousMap.get(item.key), after: item }))
+    .filter(({ before, after }) => before && before.percent <= 0 && after.percent >= 95);
+}
+
+async function getNotificationConfig() {
+  try {
+    const configDocs = await listCollection("config");
+    const layout = configDocs.find((doc) => getDocId(doc.name) === "layout");
+    return layout ? layout.fields : {};
+  } catch (error) {
+    console.warn(`Nao foi possivel ler config/layout: ${error.message}`);
+    return {};
+  }
+}
+
+function getPrinterLabel(fields, id) {
+  const model = fields.modelo || fields.model || fields.name || "Impressora";
+  const loc = fields.localizacao || fields.location || fields.armazem || id;
+  return `${model} ${loc}`.trim();
+}
+
+async function handlePrinterReplacementPush(doc, config) {
+  if (config.notificationEnabled === false || config.notifyTonerChange === false) return;
+  const id = getDocId(doc.name);
+  const previous = printerState.get(id);
+  printerState.set(id, doc.fields);
+  if (boot || !previous) return;
+
+  const events = getTonerReplacementEvents(previous, doc.fields);
+  if (!events.length) return;
+
+  const label = getPrinterLabel(doc.fields, id);
+  for (const event of events) {
+    await broadcast("Toner trocado", `${label}: ${event.after.label} passou de ${event.before.percent}% para ${event.after.percent}%.`, {
+      collection: "printers",
+      event: "toner-replaced",
+      printerId: id,
+      color: event.after.key,
+      beforePercent: event.before.percent,
+      afterPercent: event.after.percent,
+      url: "https://picafern-commits.github.io/App-Tablet/html/impressoras.html"
+    });
+  }
+}
+
 async function pollOnce() {
+  const notificationConfig = await getNotificationConfig();
   for (const collection of WATCH_COLLECTIONS) {
     const docs = await listCollection(collection);
     let changed = 0;
@@ -172,8 +278,9 @@ async function pollOnce() {
       const previous = seen.get(key);
       if (previous && previous !== doc.updateTime) changed += 1;
       seen.set(key, doc.updateTime);
+      if (collection === "printers") await handlePrinterReplacementPush(doc, notificationConfig);
     }
-    if (!boot && changed) {
+    if (!boot && changed && collection !== "printers") {
       await broadcast("App Braga", `${collection}: ${changed} alteracao${changed === 1 ? "" : "es"}.`, {
         collection,
         changed,

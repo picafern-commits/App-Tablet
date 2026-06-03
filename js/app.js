@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.20.5";
+const APP_VERSION = "1.21.0";
 
 
 
@@ -84,6 +84,7 @@ let appNotificationTimer = null;
 const appNotificationState = {
   enabled: false,
   tonerZero: true,
+  tonerChange: true,
   stockMin: true,
   maintenance: true,
   radios: true,
@@ -1318,6 +1319,7 @@ function extrairPercentagemTonerDoHTML(html) {
 }
 
 const tonerAlertState = {};
+const tonerReplacementAlertState = {};
 const tonerInfoState = {};
 const TONER_EMPTY_THRESHOLD = 0;
 const DASHBOARD_TONER_LOW_THRESHOLD = 25;
@@ -1494,9 +1496,70 @@ function maybeNotifyCriticalSupply(ip, info) {
   enviarNotificacaoApp("Toner vazio", message, `toner-${ip}-${key}`, { url: "html/impressoras.html" });
 }
 
+function getTonerReplacementCandidatesApp(info) {
+  if (!info) return [];
+  const items = Array.isArray(info.colors) && info.colors.length
+    ? info.colors
+    : (typeof info.percent === "number" ? [{ key: "black", label: "Preto", percent: info.percent }] : []);
+
+  return items
+    .filter((item) => item && typeof item.percent === "number")
+    .map((item) => ({
+      key: String(item.key || item.label || "toner").toLowerCase(),
+      label: item.label || "Toner",
+      percent: Math.max(0, Math.min(100, Math.round(item.percent)))
+    }));
+}
+
+function getTonerReplacementEventsApp(previousInfo, nextInfo) {
+  const previous = getTonerReplacementCandidatesApp(previousInfo);
+  const next = getTonerReplacementCandidatesApp(nextInfo);
+  const previousMap = {};
+  previous.forEach((item) => { previousMap[item.key] = item; });
+
+  return next
+    .map((item) => ({ before: previousMap[item.key], after: item }))
+    .filter(({ before, after }) => before && before.percent <= 0 && after.percent >= 95);
+}
+
+async function maybeNotifyTonerReplacement(ip, previousInfo, nextInfo) {
+  if (!appNotificationState.tonerChange) return;
+  const events = getTonerReplacementEventsApp(previousInfo, nextInfo);
+  if (!events.length) return;
+
+  const printer = impressorasData.find(i => i.ip === ip);
+  const printerLabel = printer ? `${printer.modelo} - ${printer.localizacao}` : ip;
+
+  for (const event of events) {
+    const key = `toner-change-${ip}-${event.after.key}-${event.before.percent}-${event.after.percent}`;
+    if (tonerReplacementAlertState[key]) continue;
+    tonerReplacementAlertState[key] = Date.now();
+
+    const body = `${printerLabel}: ${event.after.label} passou de ${event.before.percent}% para ${event.after.percent}%.`;
+    await enviarNotificacaoApp("Toner trocado", body, key, { url: "html/impressoras.html" });
+    mostrarMensagem(`Toner trocado: ${event.after.label} ${event.after.percent}%`);
+    try {
+      await db.collection("activityLog").add({
+        type: "toner-replaced",
+        ip,
+        printer: printerLabel,
+        colorKey: event.after.key,
+        colorLabel: event.after.label,
+        beforePercent: event.before.percent,
+        afterPercent: event.after.percent,
+        createdAt: new Date(),
+        createdAtMs: Date.now()
+      });
+    } catch (error) {
+      console.warn("Nao foi possivel gravar atividade de toner trocado:", error);
+    }
+  }
+}
+
 function aplicarConfigNotificacoesApp(config = {}) {
   appNotificationState.enabled = config.notificationEnabled === true;
   appNotificationState.tonerZero = config.notifyTonerZero !== false;
+  appNotificationState.tonerChange = config.notifyTonerChange !== false;
   appNotificationState.stockMin = config.notifyStockMin !== false;
   appNotificationState.maintenance = config.notifyMaintenance !== false;
   appNotificationState.radios = config.notifyRadios === true;
@@ -1509,6 +1572,7 @@ function aplicarConfigNotificacoesApp(config = {}) {
   };
   setChecked("notifyEnabled", appNotificationState.enabled);
   setChecked("notifyTonerZero", appNotificationState.tonerZero);
+  setChecked("notifyTonerChange", appNotificationState.tonerChange);
   setChecked("notifyStockMin", appNotificationState.stockMin);
   setChecked("notifyMaintenance", appNotificationState.maintenance);
   setChecked("notifyRadios", appNotificationState.radios);
@@ -1559,6 +1623,7 @@ async function guardarConfigNotificacoesApp(overrides = null) {
   const data = overrides || {
     notificationEnabled: !!document.getElementById("notifyEnabled")?.checked,
     notifyTonerZero: !!document.getElementById("notifyTonerZero")?.checked,
+    notifyTonerChange: !!document.getElementById("notifyTonerChange")?.checked,
     notifyStockMin: !!document.getElementById("notifyStockMin")?.checked,
     notifyMaintenance: !!document.getElementById("notifyMaintenance")?.checked,
     notifyRadios: !!document.getElementById("notifyRadios")?.checked,
@@ -1568,6 +1633,7 @@ async function guardarConfigNotificacoesApp(overrides = null) {
 
   if (overrides) {
     if (typeof data.notifyTonerZero === "undefined") data.notifyTonerZero = appNotificationState.tonerZero;
+    if (typeof data.notifyTonerChange === "undefined") data.notifyTonerChange = appNotificationState.tonerChange;
     if (typeof data.notifyStockMin === "undefined") data.notifyStockMin = appNotificationState.stockMin;
     if (typeof data.notifyMaintenance === "undefined") data.notifyMaintenance = appNotificationState.maintenance;
     if (typeof data.notifyRadios === "undefined") data.notifyRadios = appNotificationState.radios;
@@ -1711,7 +1777,7 @@ function canNotifyRealtimeCollectionApp(collectionKey) {
   if (!appNotificationState.enabled) return false;
   if (collectionKey === "stock") return appNotificationState.stockMin;
   if (collectionKey === "manutencoes") return appNotificationState.maintenance;
-  if (collectionKey === "printers") return appNotificationState.tonerZero;
+  if (collectionKey === "printers") return false;
   return false;
 }
 
@@ -4896,8 +4962,10 @@ function bindPrintersFirebaseRealtime() {
       if (!ip) return;
 
       const mapped = mapFirebasePrinterInfo(data);
+      const previousMapped = tonerInfoState[ip] || (printerFirebaseState[ip] ? mapFirebasePrinterInfo(printerFirebaseState[ip]) : null);
       printerFirebaseState[ip] = Object.assign({}, data, { ip });
       tonerInfoState[ip] = mapped;
+      maybeNotifyTonerReplacement(ip, previousMapped, mapped);
       maybeNotifyCriticalSupply(ip, mapped);
     });
 
