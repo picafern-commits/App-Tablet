@@ -362,47 +362,7 @@ body.enterprise-search-ready .enterprise-search-shell {
   }
 }
 
-/* Visual upgrade pack: shared topbar, typed cards, modals and density modes */
-.enterprise-page-topbar {
-  margin: 0 0 18px;
-  padding: 18px 20px;
-  border: 1px solid var(--app-border);
-  border-radius: 20px;
-  background:
-    linear-gradient(135deg, rgb(var(--app-primary-rgb) / .13), rgb(var(--app-secondary-rgb) / .07)),
-    rgba(20, 20, 22, .82);
-  box-shadow: 0 18px 48px rgba(0,0,0,.26);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.enterprise-breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--app-muted);
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.enterprise-page-title {
-  margin: 4px 0 0;
-  color: var(--app-text);
-  font-size: clamp(28px, 3.2vw, 44px);
-  line-height: 1;
-  letter-spacing: 0;
-  font-weight: 950;
-}
-
-.enterprise-page-subtitle {
-  margin: 8px 0 0;
-  color: var(--app-muted);
-  font-size: 14px;
-}
-
+/* Visual upgrade pack: typed cards, modals and density modes */
 .enterprise-window-actions {
   display: flex;
   flex-direction: column;
@@ -686,11 +646,6 @@ body.enterprise-search-ready .enterprise-search-shell {
 }
 
 @media (max-width: 768px) {
-  .enterprise-page-topbar {
-    padding: 16px;
-    border-radius: 18px;
-  }
-
   .enterprise-window-actions {
     margin-top: 18px;
     padding: 14px 0 calc(16px + env(safe-area-inset-bottom));

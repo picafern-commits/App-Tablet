@@ -111,6 +111,8 @@
       document.body.classList.add("sidebar-open");
       overlay.classList.add("show");
       btn.textContent = "×";
+      sidebar.style.setProperty("transform", "translateX(0)", "important");
+      sidebar.style.setProperty("pointer-events", "auto", "important");
     }
 
     function close() {
@@ -118,6 +120,8 @@
       document.body.classList.remove("sidebar-open");
       overlay.classList.remove("show");
       btn.textContent = "☰";
+      sidebar.style.removeProperty("transform");
+      sidebar.style.removeProperty("pointer-events");
     }
 
     btn.onclick = function (e) {

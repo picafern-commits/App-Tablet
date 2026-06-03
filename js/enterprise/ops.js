@@ -222,46 +222,6 @@
     input.addEventListener("input", () => renderSearchResults(input.value, results));
   }
 
-  function pageInfo() {
-    const path = (location.pathname.split("/").pop() || "index.html").toLowerCase();
-    const map = {
-      "index.html": ["Dashboard", "Resumo operacional da App Braga."],
-      "add-toner.html": ["Adicionar Toner", "Registo rapido de entradas e movimentos de toner."],
-      "stock.html": ["Stock", "Consulta e controlo de toners disponiveis."],
-      "historico.html": ["Historico", "Movimentos e utilizacao ao longo do tempo."],
-      "etiquetas-word.html": ["Etiquetas Word", "Etiquetas ordenadas e prontas para impressao."],
-      "impressoras.html": ["Impressoras", "Estado, toner e manutencao das impressoras."],
-      "manutencao-impressoras.html": ["Manutencao Impressoras", "Pedidos, resolucoes e acompanhamento tecnico."],
-      "computadores.html": ["Computadores", "Inventario de computadores e atribuicoes."],
-      "users.html": ["Users", "Utilizadores e dados operacionais."],
-      "pistolas.html": ["Pistolas CK65", "Equipamentos moveis, operadores e estado."],
-      "portas.html": ["Portas Rede", "Portas, IPs e localizacoes de rede."],
-      "radios.html": ["Radios", "Radios, users e registos semanais."],
-      "informacoes.html": ["Informacoes", "Informacoes gerais sincronizadas na Firebase."],
-      "config.html": ["Configuracoes", "Tema, seguranca, notificacoes e saude da app."]
-    };
-    return map[path] || [document.title || "App Braga", "Area operacional da App Braga."];
-  }
-
-  function setupTopbar() {
-    if (!isHtmlPage()) return;
-    const main = document.querySelector(".main, main");
-    if (!main || main.querySelector(".enterprise-page-topbar")) return;
-    const [title, subtitle] = pageInfo();
-    const existingHero = main.querySelector(".page-hero, .dashboard-header");
-    if (existingHero) existingHero.style.display = "none";
-    const topbar = document.createElement("div");
-    topbar.className = "enterprise-page-topbar";
-    topbar.innerHTML = `
-      <div>
-        <div class="enterprise-breadcrumb"><span>Home</span><span>/</span><span>${escapeHtml(title)}</span></div>
-        <div class="enterprise-page-title">${escapeHtml(title)}</div>
-        <div class="enterprise-page-subtitle">${escapeHtml(subtitle)}</div>
-      </div>
-    `;
-    main.insertBefore(topbar, main.firstElementChild);
-  }
-
   function setupElectronSidebarActions() {
     const sidebar = document.querySelector(".sidebar");
     if (!sidebar || !window.electronAPI?.closeApp || sidebar.querySelector(".enterprise-window-actions")) return;
@@ -557,7 +517,6 @@
     setupDeviceClasses();
     setupSidebar();
     setupElectronSidebarActions();
-    setupTopbar();
     setupSearchShell();
     setupDensityControls();
     polishModalsAndEmptyStates();
