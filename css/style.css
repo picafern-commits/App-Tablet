@@ -5680,7 +5680,7 @@ div:has(> #primaryColor) {
 }
 
 .stock-qr-reader:empty {
-  display: none !important;
+  display: block !important;
 }
 
 .stock-qr-status {
@@ -5896,3 +5896,70 @@ div:has(> #primaryColor) {
   background: #020617 !important;
 }
 /* ===== END IPHONE CAMERA ID QR FIX ===== */
+
+
+/* ===== STOCK QR PREVIEW ALWAYS VISIBLE FINAL ===== */
+#stockQrPreviewFrame.stock-qr-preview-frame.active,
+.stock-qr-preview-frame.active {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 100% !important;
+  max-width: 460px !important;
+  height: 360px !important;
+  min-height: 360px !important;
+  margin: 16px 0 !important;
+  background: #020617 !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+#stockQrReader.stock-qr-reader,
+.stock-qr-preview-frame.active #stockQrReader {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 100% !important;
+  height: 360px !important;
+  min-height: 360px !important;
+  background: #020617 !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+#stockQrReader > div,
+#stockQrReader video,
+#stockQrReader canvas {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 100% !important;
+  height: 360px !important;
+  min-height: 360px !important;
+  object-fit: cover !important;
+  background: #020617 !important;
+}
+
+#stockQrReader video {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.stock-qr-preview-frame .stock-qr-aim {
+  z-index: 3 !important;
+}
+
+@media (max-width: 700px) {
+  #stockQrPreviewFrame.stock-qr-preview-frame.active,
+  .stock-qr-preview-frame.active,
+  #stockQrReader.stock-qr-reader,
+  .stock-qr-preview-frame.active #stockQrReader,
+  #stockQrReader > div,
+  #stockQrReader video,
+  #stockQrReader canvas {
+    height: 360px !important;
+    min-height: 360px !important;
+    max-height: 360px !important;
+  }
+}
+/* ===== END STOCK QR PREVIEW ALWAYS VISIBLE FINAL ===== */

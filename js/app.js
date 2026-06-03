@@ -5362,13 +5362,7 @@ async function startScannerStable() {
   }
 
   reader.innerHTML = "";
-  const previewFrame = document.getElementById("stockQrPreviewFrame");
-  if (previewFrame) {
-    previewFrame.classList.add("active", "loading");
-    setTimeout(() => {
-      try { previewFrame.scrollIntoView({ behavior: "smooth", block: "center" }); } catch(e) {}
-    }, 80);
-  }
+  garantirPreviewStockQrVisivel();
   scannerInstanceStable = new Html5Qrcode("reader");
 
   try {
@@ -9577,6 +9571,80 @@ function mensagemErroCameraStockQr(error) {
   return "Erro ao abrir câmera: " + (message || name || "erro desconhecido");
 }
 
+
+function garantirPreviewStockQrVisivel() {
+  let panel = document.getElementById("stockQrScannerPanel");
+  let status = document.getElementById("stockQrStatus");
+  let frame = document.getElementById("stockQrPreviewFrame");
+  let reader = document.getElementById("stockQrReader");
+
+  if (!frame) {
+    frame = document.createElement("div");
+    frame.id = "stockQrPreviewFrame";
+    frame.className = "stock-qr-preview-frame";
+    frame.innerHTML = '<div id="stockQrReader" class="stock-qr-reader"></div><div class="stock-qr-aim"><span></span><span></span><span></span><span></span></div>';
+
+    if (status && status.parentNode) status.parentNode.insertBefore(frame, status);
+    else if (panel) panel.appendChild(frame);
+    else document.body.appendChild(frame);
+
+    reader = document.getElementById("stockQrReader");
+  }
+
+  if (!reader) {
+    reader = document.createElement("div");
+    reader.id = "stockQrReader";
+    reader.className = "stock-qr-reader";
+    frame.prepend(reader);
+  }
+
+  frame.classList.add("active", "loading");
+  frame.style.setProperty("display", "block", "important");
+  frame.style.setProperty("visibility", "visible", "important");
+  frame.style.setProperty("opacity", "1", "important");
+  frame.style.setProperty("height", "360px", "important");
+  frame.style.setProperty("min-height", "360px", "important");
+
+  reader.style.setProperty("display", "block", "important");
+  reader.style.setProperty("visibility", "visible", "important");
+  reader.style.setProperty("opacity", "1", "important");
+  reader.style.setProperty("width", "100%", "important");
+  reader.style.setProperty("height", "100%", "important");
+  reader.style.setProperty("min-height", "360px", "important");
+
+  setTimeout(() => {
+    try { frame.scrollIntoView({ behavior: "smooth", block: "center" }); } catch(e) {}
+  }, 80);
+
+  return reader;
+}
+
+function forcarVideoStockQrVisivel() {
+  const frame = document.getElementById("stockQrPreviewFrame");
+  const reader = garantirPreviewStockQrVisivel();
+  if (frame) {
+    frame.classList.add("active");
+    frame.classList.remove("loading");
+    frame.style.setProperty("display", "block", "important");
+  }
+  if (reader) {
+    reader.style.setProperty("display", "block", "important");
+    reader.style.setProperty("height", "360px", "important");
+    reader.style.setProperty("min-height", "360px", "important");
+  }
+  document.querySelectorAll("#stockQrReader video, #stockQrReader canvas").forEach((el) => {
+    el.setAttribute("playsinline", "true");
+    el.setAttribute("webkit-playsinline", "true");
+    el.muted = true;
+    el.style.setProperty("display", "block", "important");
+    el.style.setProperty("visibility", "visible", "important");
+    el.style.setProperty("opacity", "1", "important");
+    el.style.setProperty("width", "100%", "important");
+    el.style.setProperty("height", "360px", "important");
+    el.style.setProperty("object-fit", "cover", "important");
+  });
+}
+
 async function startStockQrScanner() {
   const reader = document.getElementById("stockQrReader");
 
@@ -9636,6 +9704,9 @@ async function startStockQrScanner() {
     );
 
     stockQrScannerActive = true;
+    forcarVideoStockQrVisivel();
+    setTimeout(forcarVideoStockQrVisivel, 250);
+    setTimeout(forcarVideoStockQrVisivel, 800);
     const previewFrameOk = document.getElementById("stockQrPreviewFrame");
     if (previewFrameOk) previewFrameOk.classList.remove("loading");
     setStockQrStatus("Câmera ligada. Aponta para o QR da etiqueta.");
