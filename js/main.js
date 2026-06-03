@@ -15,6 +15,10 @@ const APP_LOCAL_FALLBACK = path.join(__dirname, "..", "html", "index.html");
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) app.quit();
 
+if (process.platform === "win32") {
+  app.setAppUserModelId("com.appbraga.desktop");
+}
+
 function settingsPath() {
   return path.join(app.getPath("userData"), "desktop-settings.json");
 }
@@ -328,14 +332,26 @@ ipcMain.handle("app:notify", async (_event, payload = {}) => {
   try {
     const title = String(payload.title || "App Braga");
     const body = String(payload.body || "");
-    if (!Notification.isSupported()) return { ok: false, error: "Notificacoes nao suportadas" };
-    new Notification({
+    if (!Notification.isSupported()) {
+      if (tray && process.platform === "win32") {
+        tray.displayBalloon({
+          title,
+          content: body,
+          icon: path.join(__dirname, "..", "icon.ico")
+        });
+        return { ok: true, mode: "tray-balloon" };
+      }
+      return { ok: false, error: "Notificacoes nao suportadas pelo sistema" };
+    }
+
+    const notification = new Notification({
       title,
       body,
       icon: path.join(__dirname, "..", "icon-192.png"),
       silent: false
-    }).show();
-    return { ok: true };
+    });
+    notification.show();
+    return { ok: true, mode: "electron-notification" };
   } catch (error) {
     return { ok: false, error: error.message };
   }

@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.23.0";
+const APP_VERSION = "1.23.1";
 
 
 
@@ -1805,6 +1805,7 @@ async function enviarNotificacaoApp(title, body, tag = "app-braga", options = {}
   try {
     if (window.electronAPI?.showNotification) {
       const result = await window.electronAPI.showNotification({ title, body, tag, data: options });
+      if (!result?.ok && result?.error) console.error("Erro notificacao Electron:", result.error);
       return !!result?.ok;
     }
 
@@ -1971,8 +1972,8 @@ function iniciarMonitorNotificacoesApp() {
 }
 
 async function testarNotificacaoApp() {
-  const ok = await enviarNotificacaoApp("App Braga", "Teste de notificação concluído.", "app-braga-test", { force: true, url: "html/config.html" });
-  mostrarMensagem(ok ? "Notificação de teste enviada." : "Ativa as permissões de notificações primeiro.", ok ? "sucesso" : "erro");
+  const ok = await enviarNotificacaoApp("App Braga", "Teste de notificacao concluido.", "app-braga-test", { force: true, url: "html/config.html" });
+  mostrarMensagem(ok ? "Notificacao de teste enviada." : "Ativa as permissoes de notificacoes primeiro.", ok ? "sucesso" : "erro");
 }
 
 async function entrarFullscreenApp() {
