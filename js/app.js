@@ -841,7 +841,7 @@ async function usar(id) {
 async function usarPorCodigoEtiquetaToner(codigoOuPayload) {
   const codigo = extrairCodigoEtiquetaTonerAppBraga(codigoOuPayload);
   const raw = String(codigoOuPayload || "").trim();
-  const rawUpper = raw.toUpperCase();
+  const rawUpper = extrairABTDoQrStock(raw);
 
   if (!codigo && !rawUpper) return false;
 
@@ -9433,3 +9433,138 @@ window.addEventListener("orientationchange", () => {
 })();
 
 window.usarPorCodigoEtiquetaToner = usarPorCodigoEtiquetaToner;
+
+
+
+/* ===== STOCK QR SCANNER BUTTON ===== */
+
+function tocarBipStockQr() {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.22, ctx.currentTime + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.16);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.18);
+
+    setTimeout(() => {
+      try { ctx.close(); } catch(e) {}
+    }, 260);
+  } catch (e) {
+    // Sem som se o browser bloquear áudio.
+  }
+}
+
+function extrairABTDoQrStock(raw) {
+  const texto = String(raw || "").trim();
+  const match = texto.match(/ABT-[A-Z0-9\-]+/i);
+  return match ? match[0].toUpperCase() : texto.toUpperCase();
+}
+
+let stockQrScannerInstance = null;
+let stockQrScannerActive = false;
+let stockQrLastCode = "";
+let stockQrLastAt = 0;
+
+function setStockQrStatus(text, type = "") {
+  const node = document.getElementById("stockQrStatus");
+  if (!node) return;
+  node.textContent = text || "";
+  node.className = "stock-qr-status" + (type ? " " + type : "");
+}
+
+async function startStockQrScanner() {
+  const reader = document.getElementById("stockQrReader");
+
+  if (!reader) {
+    mostrarMensagem("Área do scanner QR não encontrada.", "erro");
+    return;
+  }
+
+  if (typeof Html5Qrcode === "undefined") {
+    mostrarMensagem("Biblioteca do scanner QR não carregada.", "erro");
+    setStockQrStatus("Biblioteca QR não carregada.", "erro");
+    return;
+  }
+
+  if (stockQrScannerActive) {
+    mostrarMensagem("Scanner QR já está ligado.", "erro");
+    return;
+  }
+
+  reader.innerHTML = "";
+  stockQrScannerInstance = new Html5Qrcode("stockQrReader");
+
+  try {
+    await stockQrScannerInstance.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 260, height: 260 } },
+      async (decodedText) => {
+        const code = extrairABTDoQrStock(decodedText);
+        const now = Date.now();
+
+        if (!code) return;
+        if (code === stockQrLastCode && now - stockQrLastAt < 2500) return;
+
+        stockQrLastCode = code;
+        stockQrLastAt = now;
+
+        setStockQrStatus("QR lido. A procurar toner em Stock...");
+        mostrarMensagem("QR lido. A procurar toner em Stock...");
+
+        const handled = await usarPorCodigoEtiquetaToner(code);
+
+        if (handled) {
+          tocarBipStockQr();
+          setStockQrStatus("Toner marcado como usado e movido para Histórico.", "ok");
+          await stopStockQrScanner();
+        } else {
+          setStockQrStatus("QR lido, mas não é uma etiqueta de toner válida.", "erro");
+          mostrarMensagem("QR não reconhecido como etiqueta de toner.", "erro");
+        }
+      },
+      () => {}
+    );
+
+    stockQrScannerActive = true;
+    setStockQrStatus("Câmera ligada. Aponta para o QR da etiqueta.");
+    mostrarMensagem("Câmera QR ligada.");
+  } catch (error) {
+    console.error("Erro scanner QR Stock:", error);
+    setStockQrStatus("Não foi possível abrir a câmera.", "erro");
+    mostrarMensagem("Não foi possível abrir a câmera.", "erro");
+  }
+}
+
+async function stopStockQrScanner() {
+  const reader = document.getElementById("stockQrReader");
+
+  try {
+    if (stockQrScannerInstance && stockQrScannerActive) {
+      await stockQrScannerInstance.stop();
+      await stockQrScannerInstance.clear();
+    }
+  } catch (error) {
+    console.error("Erro ao fechar scanner QR Stock:", error);
+  } finally {
+    stockQrScannerInstance = null;
+    stockQrScannerActive = false;
+    if (reader) reader.innerHTML = "";
+    setStockQrStatus("Scanner desligado.");
+  }
+}
+
+window.startStockQrScanner = startStockQrScanner;
+window.stopStockQrScanner = stopStockQrScanner;
+/* ===== END STOCK QR SCANNER BUTTON ===== */

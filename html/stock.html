@@ -9,7 +9,7 @@
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/style.css?v=labels-printers-fix-1">
+  <link rel="stylesheet" href="../css/style.css?v=stock-qr-button-1">
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
   <link rel="stylesheet" href="../css/app-theme-pro.css?v=theme-pro-1">
   <link rel="stylesheet" href="../css/enterprise/ops.css?v=ops-6">
@@ -55,7 +55,24 @@
       <button class="secondary-btn" onclick="exportarExcelStock()">Exportar Excel Stock</button>
       <button class="secondary-btn" onclick="exportarExcelTudo()">Exportar Tudo</button>
     </div>
-    <div id="listaStock" class="cards-list"></div>
+    
+<section class="panel stock-qr-scanner-panel" id="stockQrScannerPanel">
+  <div class="section-header">
+    <div>
+      <h3>Scan QR Stock</h3>
+      <p>Lê o QR da etiqueta para marcar automaticamente o toner como usado.</p>
+    </div>
+    <div class="stock-qr-actions">
+      <button class="primary-btn" type="button" onclick="startStockQrScanner()">Ligar câmera QR</button>
+      <button class="secondary-btn" type="button" onclick="stopStockQrScanner()">Fechar câmera</button>
+    </div>
+  </div>
+
+  <div id="stockQrReader" class="stock-qr-reader"></div>
+  <div id="stockQrStatus" class="stock-qr-status">Scanner desligado.</div>
+</section>
+
+<div id="listaStock" class="cards-list"></div>
   </div>
 
   <div id="modalEditarStock" class="modal-overlay" style="display:none;">
@@ -84,11 +101,12 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<script src="../js/app.js?v=scan-stock-historico-1"></script>
+<script src="../js/app.js?v=stock-qr-beep-1"></script>
   <script src="../js/core/helpers.js"></script>
   <script src="../js/iphone-force-final.js?v=v3-final"></script>
 <script src="../js/enterprise/ops.js?v=ops-6"></script>
 <script src="../js/systems/backup/local-backup.js?v=backup-2"></script>
 
+  <script src="https://unpkg.com/html5-qrcode"></script>
 </body>
 </html>
