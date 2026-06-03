@@ -123,6 +123,7 @@
       </select>
     </label>
     <label><span>Lote</span><input type="text" id="lote" placeholder="Lote automatico / opcional"></label>
+    <label><span>Código etiqueta</span><input type="text" id="codigoEtiqueta" readonly placeholder="Gerado automaticamente"></label>
     <label><span>Data da folha</span><input type="text" id="dataFolha" readonly placeholder="Data lida da folha"></label>
     <label><span>Data do scan</span><input type="date" id="data"></label>
     <button class="primary-btn" onclick="disponivel()">Adicionar ao stock</button>
@@ -133,12 +134,13 @@
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<script src="../js/app.js?v=labels-printers-fix-1"></script>
+<script src="../js/app.js?v=toner-scan-1"></script>
   <script src="../js/core/helpers.js"></script>
   <script src="../js/iphone-force-final.js?v=v3-final"></script>
 <script src="../js/enterprise/ops.js?v=ops-6"></script>

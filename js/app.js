@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.18.0";
+const APP_VERSION = "1.19.0";
 
 
 
@@ -109,6 +109,86 @@ function setText(id, value) {
 
 function normalizarTexto(valor) {
   return String(valor || "").toLowerCase().trim();
+}
+
+function gerarCodigoEtiquetaTonerAppBraga() {
+  const stamp = new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 14);
+  const random = Math.random().toString(36).slice(2, 8).toUpperCase();
+  return `ABT-${stamp}-${random}`;
+}
+
+function getCodigoEtiquetaAtualAppBraga() {
+  const input = el("codigoEtiqueta");
+  if (input && !input.value) input.value = gerarCodigoEtiquetaTonerAppBraga();
+  return (input && input.value) || gerarCodigoEtiquetaTonerAppBraga();
+}
+
+function prepararCodigoEtiquetaTonerAppBraga(force = false) {
+  const input = el("codigoEtiqueta");
+  if (!input) return "";
+  if (force || !input.value) input.value = gerarCodigoEtiquetaTonerAppBraga();
+  return input.value;
+}
+
+function extrairCodigoEtiquetaTonerAppBraga(texto) {
+  const raw = String(texto || "").trim();
+  const match = raw.match(/ABT-\d{14}-[A-Z0-9]{6}/i);
+  return match ? match[0].toUpperCase() : "";
+}
+
+function buildPayloadQrTonerAppBraga(codigo) {
+  return `APPBRAGA:TONER:${codigo}`;
+}
+
+function dataUrlToUint8ArrayAppBraga(dataUrl) {
+  const base64 = String(dataUrl || "").split(",")[1] || "";
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+function gerarQrDataUrlAppBraga(texto, size = 180) {
+  return new Promise((resolve) => {
+    if (typeof QRCode === "undefined") return resolve("");
+    const host = document.createElement("div");
+    host.style.position = "fixed";
+    host.style.left = "-9999px";
+    host.style.top = "-9999px";
+    document.body.appendChild(host);
+    try {
+      new QRCode(host, {
+        text: String(texto || ""),
+        width: size,
+        height: size,
+        correctLevel: QRCode.CorrectLevel.M
+      });
+      setTimeout(() => {
+        const img = host.querySelector("img");
+        const canvas = host.querySelector("canvas");
+        const dataUrl = canvas ? canvas.toDataURL("image/png") : (img ? img.src : "");
+        host.remove();
+        resolve(dataUrl);
+      }, 120);
+    } catch (error) {
+      host.remove();
+      resolve("");
+    }
+  });
+}
+
+function renderQrCodesAppBraga(root = document) {
+  if (typeof QRCode === "undefined") return;
+  root.querySelectorAll("[data-etq-qr]").forEach((node) => {
+    if (node.dataset.qrRendered) return;
+    node.dataset.qrRendered = "1";
+    new QRCode(node, {
+      text: node.getAttribute("data-etq-qr") || "",
+      width: 112,
+      height: 112,
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  });
 }
 
 function getFirestoreSortValue(value) {
@@ -358,6 +438,7 @@ async function disponivel() {
   const cor = el("cor");
   const data = el("data");
   const lote = el("lote");
+  const codigoEtiqueta = getCodigoEtiquetaAtualAppBraga();
 
   if (!equipamento || !cor) return;
 
@@ -383,6 +464,9 @@ async function disponivel() {
       data: dataValue || "Sem Data",
       dataFolha: (el("dataFolha") && el("dataFolha").value) || "Sem Data da Folha",
       lote: loteValue || "",
+      codigoEtiqueta,
+      codigoScan: buildPayloadQrTonerAppBraga(codigoEtiqueta),
+      estado: "stock",
       created: new Date()
     });
 
@@ -392,6 +476,7 @@ async function disponivel() {
     if (data) data.value = "";
     if (el("dataFolha")) el("dataFolha").value = "";
     if (lote) lote.value = "";
+    prepararCodigoEtiquetaTonerAppBraga(true);
 
     mostrarMensagem("Toner adicionado com sucesso.");
   } catch (error) {
@@ -682,6 +767,7 @@ function renderStockCards(items) {
       <div class="meta-line">Cor: <span class="meta-value">${t.cor}</span></div>
       <div class="meta-line">Localização: <span class="meta-value">${t.localizacao}</span></div>
       <div class="meta-line">Lote: <span class="meta-value">${t.lote || "-"}</span></div>
+      <div class="meta-line">Código etiqueta: <span class="meta-value">${t.codigoEtiqueta || "-"}</span></div>
       <div class="meta-line">Data Scan: <span class="meta-value">${t.data || "Sem Data"}</span></div>
       <div class="meta-line">Data Folha: <span class="meta-value">${t.dataFolha || "Sem Data da Folha"}</span></div>
       <div class="card-actions">
@@ -709,6 +795,7 @@ function renderHistoricoCards(items) {
       <div class="meta-line">Cor: <span class="meta-value">${t.cor || "-"}</span></div>
       <div class="meta-line">Localização: <span class="meta-value">${t.localizacao || "Sem Localização"}</span></div>
       <div class="meta-line">Lote: <span class="meta-value">${t.lote || "-"}</span></div>
+      <div class="meta-line">Código etiqueta: <span class="meta-value">${t.codigoEtiqueta || "-"}</span></div>
       <div class="meta-line">Data Scan: <span class="meta-value">${t.data || "Sem Data"}</span></div>
       <div class="meta-line">Data Folha: <span class="meta-value">${t.dataFolha || "Sem Data da Folha"}</span></div>
       <div class="card-actions">
@@ -731,6 +818,9 @@ async function usar(id) {
 
     await db.collection("historico").add({
       ...snap.data(),
+      estado: "usado",
+      usadoAt: new Date(),
+      stockDocId: id,
       created: new Date()
     });
 
@@ -739,6 +829,38 @@ async function usar(id) {
   } catch (error) {
     console.error(error);
     mostrarMensagem("Erro ao mover para histórico.", "erro");
+  }
+}
+
+async function usarPorCodigoEtiquetaToner(codigoOuPayload) {
+  const codigo = extrairCodigoEtiquetaTonerAppBraga(codigoOuPayload);
+  if (!codigo) return false;
+
+  try {
+    let id = "";
+    const local = stockGlobal.find((item) =>
+      String(item.codigoEtiqueta || "").toUpperCase() === codigo ||
+      String(item.codigoScan || "").toUpperCase().includes(codigo)
+    );
+    if (local?.idDoc) id = local.idDoc;
+
+    if (!id && db?.collection) {
+      const snap = await db.collection("stock").where("codigoEtiqueta", "==", codigo).limit(1).get();
+      if (!snap.empty) id = snap.docs[0].id;
+    }
+
+    if (!id) {
+      mostrarMensagem("Código de toner não encontrado em stock.", "erro");
+      return true;
+    }
+
+    await usar(id);
+    mostrarMensagem(`Toner ${codigo} passado para usado.`);
+    return true;
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao passar toner para usado.", "erro");
+    return true;
   }
 }
 
@@ -5132,8 +5254,14 @@ function aplicarDadosOCRNoFormularioStable(dados) {
   return !!(dados.tonerCode || dados.equipamento || dados.cor || dados.dataFolha || dados.serie);
 }
 
-function processarTextoLidoStable(textoLido) {
+async function processarTextoLidoStable(textoLido) {
   const bruto = String(textoLido || "");
+  const codigoEtiqueta = extrairCodigoEtiquetaTonerAppBraga(bruto);
+  if (codigoEtiqueta) {
+    await usarPorCodigoEtiquetaToner(codigoEtiqueta);
+    return true;
+  }
+
   const normal = normalizarTextoOCRStable(bruto);
 
   const tkMatch = normal.match(/TK[\s-]?(\d{4}[A-Z]?)/);
@@ -5177,9 +5305,9 @@ async function startScannerStable() {
     await scannerInstanceStable.start(
       { facingMode: "environment" },
       { fps: 10, qrbox: { width: 280, height: 180 } },
-      (decodedText) => {
+      async (decodedText) => {
         enhanceScannerStatus("Código lido. A processar automaticamente...");
-        processarTextoLidoStable(decodedText);
+        await processarTextoLidoStable(decodedText);
         stopScannerStable();
       },
       () => {}
@@ -5316,6 +5444,7 @@ function extrairDadosEtiquetaWord() {
   const loc = (el("localizacao") && el("localizacao").value) || "";
   const dataFolha = (el("dataFolha") && el("dataFolha").value) || "";
   const dataScan = (el("data") && el("data").value) || "";
+  const codigoEtiqueta = getCodigoEtiquetaAtualAppBraga();
 
   let serie = "";
   let localCurto = "";
@@ -5336,7 +5465,9 @@ function extrairDadosEtiquetaWord() {
     serie: serie || "SEM SÉRIE",
     localCurto: localCurto || "Sem Localização",
     armazem: armazem || "",
-    dataEtiqueta: dataEtiqueta || formatDatePTAppBraga(dataScan) || "Sem Data"
+    dataEtiqueta: dataEtiqueta || formatDatePTAppBraga(dataScan) || "Sem Data",
+    codigoEtiqueta,
+    codigoScan: buildPayloadQrTonerAppBraga(codigoEtiqueta)
   };
 }
 
@@ -5360,8 +5491,14 @@ async function gerarWordEtiquetaFromForm(auto = false) {
       Paragraph,
       AlignmentType,
       TextRun,
+      ImageRun,
       HeadingLevel
     } = docx;
+    const qrDataUrl = await gerarQrDataUrlAppBraga(dados.codigoScan, 220);
+    const qrRun = qrDataUrl && ImageRun ? new ImageRun({
+      data: dataUrlToUint8ArrayAppBraga(qrDataUrl),
+      transformation: { width: 120, height: 120 }
+    }) : null;
 
     const doc = new Document({
       creator: "App Braga",
@@ -5403,6 +5540,28 @@ async function gerarWordEtiquetaFromForm(auto = false) {
                   size: 56
                 })
               ]
+            }),
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              spacing: { before: 160, after: 160 },
+              children: qrRun ? [qrRun] : [
+                new TextRun({
+                  text: dados.codigoEtiqueta,
+                  bold: true,
+                  size: 24
+                })
+              ]
+            }),
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              spacing: { before: 0, after: 0 },
+              children: [
+                new TextRun({
+                  text: dados.codigoEtiqueta,
+                  bold: true,
+                  size: 22
+                })
+              ]
             })
           ]
         }
@@ -5422,7 +5581,7 @@ async function gerarWordEtiquetaFromForm(auto = false) {
       a.remove();
     }, 1200);
 
-    await guardarEtiquetaPartilhada({ origem: auto ? "scan" : "manual" });
+    await guardarEtiquetaPartilhada({ origem: auto ? "scan" : "manual", codigoEtiqueta: dados.codigoEtiqueta, codigoScan: dados.codigoScan });
 
     if (!auto) {
       mostrarMensagem("Etiqueta Word gerada com sucesso.");
@@ -6761,11 +6920,13 @@ function resetStockMinimoConfig() {
 
 function ensureLoteFieldOnEdit() {
   const item = localStorage.getItem("editarToner");
+  prepararCodigoEtiquetaTonerAppBraga(false);
   if (!item || !el("lote")) return;
   try {
     const toner = JSON.parse(item);
     el("lote").value = toner.lote || "";
     if (el("dataFolha")) el("dataFolha").value = toner.dataFolha || "";
+    if (el("codigoEtiqueta")) el("codigoEtiqueta").value = toner.codigoEtiqueta || toner.codigoToner || getCodigoEtiquetaAtualAppBraga();
   } catch (e) { console.error(e); }
 }
 
@@ -6792,18 +6953,18 @@ function exportCsvFile(filename, headers, rows) {
 
 function exportarExcelStock() {
   if (!stockGlobal.length) return mostrarMensagem("Não há stock para exportar.", "erro");
-  exportCsvFile("stock_app_braga.csv", ["idInterno","equipamento","localizacao","cor","lote","data","dataFolha"], stockGlobal);
+  exportCsvFile("stock_app_braga.csv", ["idInterno","codigoEtiqueta","equipamento","localizacao","cor","lote","data","dataFolha"], stockGlobal);
 }
 
 function exportarExcelHistorico() {
   if (!historicoGlobal.length) return mostrarMensagem("Não há histórico para exportar.", "erro");
-  exportCsvFile("historico_app_braga.csv", ["idInterno","equipamento","localizacao","cor","lote","data","dataFolha"], historicoGlobal);
+  exportCsvFile("historico_app_braga.csv", ["idInterno","codigoEtiqueta","equipamento","localizacao","cor","lote","data","dataFolha"], historicoGlobal);
 }
 
 function exportarExcelTudo() {
   const rows = [...stockGlobal.map(x => ({...x, origem:"stock"})), ...historicoGlobal.map(x => ({...x, origem:"historico"}))];
   if (!rows.length) return mostrarMensagem("Não há dados para exportar.", "erro");
-  exportCsvFile("dados_completos_app_braga.csv", ["origem","idInterno","equipamento","localizacao","cor","lote","data","dataFolha"], rows);
+  exportCsvFile("dados_completos_app_braga.csv", ["origem","idInterno","codigoEtiqueta","equipamento","localizacao","cor","lote","data","dataFolha"], rows);
 }
 
 function filtrarHistoricoAvancado() {
@@ -6835,6 +6996,7 @@ function abrirEditarStockModal(id) {
   if (el("editStockCor")) el("editStockCor").value = item.cor || "";
   if (el("editStockLocalizacao")) el("editStockLocalizacao").value = item.localizacao || "";
   if (el("editStockLote")) el("editStockLote").value = item.lote || "";
+  if (el("editStockCodigoEtiqueta")) el("editStockCodigoEtiqueta").value = item.codigoEtiqueta || "";
   if (el("editStockData")) el("editStockData").value = item.data || "";
   if (el("editStockDataFolha")) el("editStockDataFolha").value = item.dataFolha || "";
   if (el("modalEditarStock")) el("modalEditarStock").style.display = "flex";
@@ -6852,6 +7014,7 @@ async function guardarEdicaoStockModal() {
     cor: el("editStockCor")?.value || "",
     localizacao: el("editStockLocalizacao")?.value || "",
     lote: el("editStockLote")?.value || "",
+    codigoEtiqueta: el("editStockCodigoEtiqueta")?.value || "",
     data: el("editStockData")?.value || "",
     dataFolha: el("editStockDataFolha")?.value || ""
   };
@@ -7025,6 +7188,7 @@ function montarPayloadEtiquetaPartilhada(extra = {}) {
   const cor = extra.cor || ((el("cor") && el("cor").value) || "");
   const lote = extra.lote || ((el("lote") && el("lote").value) || "");
   const origem = extra.origem || "scan";
+  const codigoEtiqueta = extra.codigoEtiqueta || getCodigoEtiquetaAtualAppBraga();
   return {
     serie: info.serie || extra.serie || "SEM SÉRIE",
     localCurto: info.localCurto || "Sem Localização",
@@ -7037,6 +7201,8 @@ function montarPayloadEtiquetaPartilhada(extra = {}) {
     equipamento: equipamento || "",
     cor: cor || "",
     lote: lote || "",
+    codigoEtiqueta,
+    codigoScan: extra.codigoScan || buildPayloadQrTonerAppBraga(codigoEtiqueta),
     origem,
     created: Date.now()
   };
@@ -7137,6 +7303,7 @@ function renderEtiquetasWordCards() {
       <div class="meta-line">Equipamento: <span class="meta-value">${t.equipamento || '-'}</span></div>
       <div class="meta-line">Cor: <span class="meta-value">${t.cor || '-'}</span></div>
       <div class="meta-line">Lote: <span class="meta-value">${t.lote || '-'}</span></div>
+      <div class="meta-line">Código: <span class="meta-value">${t.codigoEtiqueta || '-'}</span></div>
       <div class="meta-line">Data: <span class="meta-value">${t.dataEtiqueta || '-'}</span></div>
       <div class="meta-line">Origem: <span class="meta-value">${t.origem || 'scan'}</span></div>
       <div class="card-actions">
@@ -7156,10 +7323,12 @@ function montarHtmlEtiquetaImpressao(item) {
     ["Equipamento", item.equipamento],
     ["Cor", item.cor],
     ["Lote", item.lote],
+    ["Código", item.codigoEtiqueta],
     ["Data", item.dataScan || item.dataEtiqueta || item.data || item.dataFolha],
     ["Origem", item.origem]
   ].filter(([,v]) => String(v || '').trim());
 
+  const codigoScan = item.codigoScan || (item.codigoEtiqueta ? buildPayloadQrTonerAppBraga(item.codigoEtiqueta) : "");
   const escapeHtml = (v) => String(v ?? '').replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c] || c));
   const rows = linhas.map(([k,v]) => `<div class="etq-row"><div class="etq-key">${escapeHtml(k)}</div><div class="etq-val">${escapeHtml(v)}</div></div>`).join('');
   return `<!DOCTYPE html>
@@ -7176,12 +7345,15 @@ function montarHtmlEtiquetaImpressao(item) {
   .etq-row { display:flex; flex-direction:column; margin:0 0 3.5mm; }
   .etq-key { font-size:11px; font-weight:1000; text-transform:uppercase; letter-spacing:.4px; }
   .etq-val { font-size:16px; line-height:1.25; word-break:break-word; }
+  .etq-qr { width:30mm; height:30mm; margin-top:auto; }
+  .etq-code { font-size:9px; font-weight:900; margin-top:2mm; word-break:break-all; }
 </style>
 </head>
 <body>
   <div class="etq-wrap">
     <div class="etq-title">${escapeHtml(item.localCurto || item.localizacao || 'Etiqueta')}</div>
     ${rows}
+    ${codigoScan ? `<div class="etq-qr" data-etq-qr="${escapeHtml(codigoScan)}"></div><div class="etq-code">${escapeHtml(item.codigoEtiqueta || codigoScan)}</div>` : ""}
   </div>
 </body>
 </html>`;
@@ -7204,6 +7376,7 @@ async function regerarEtiquetaWordPartilhada(id) {
     overlay.style.justifyContent = 'center';
     overlay.innerHTML = montarHtmlEtiquetaOverlay(item);
     document.body.appendChild(overlay);
+    renderQrCodesAppBraga(overlay);
 
     const oldTitle = document.title;
     document.title = `Etiqueta-${(item.localCurto || item.localizacao || 'Etiqueta')}`;
@@ -7237,10 +7410,12 @@ function montarHtmlEtiquetaOverlay(item) {
     ["Equipamento", item.equipamento],
     ["Cor", item.cor],
     ["Lote", item.lote],
+    ["Código", item.codigoEtiqueta],
     ["Data", item.dataScan || item.dataEtiqueta || item.data || item.dataFolha],
     ["Origem", item.origem]
   ].filter(([,v]) => String(v || '').trim());
 
+  const codigoScan = item.codigoScan || (item.codigoEtiqueta ? buildPayloadQrTonerAppBraga(item.codigoEtiqueta) : "");
   const escapeHtml = (v) => String(v ?? '').replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c] || c));
   const rows = linhas.map(([k,v]) => `<div class="etq-row"><div class="etq-key">${escapeHtml(k)}</div><div class="etq-val">${escapeHtml(v)}</div></div>`).join('');
   return `
@@ -7257,10 +7432,15 @@ function montarHtmlEtiquetaOverlay(item) {
       #printAreaEtiquetaAppBraga .etq-row { display:flex; flex-direction:column; margin:0 0 3.5mm; }
       #printAreaEtiquetaAppBraga .etq-key { font-size:11px; font-weight:1000; text-transform:uppercase; letter-spacing:.4px; }
       #printAreaEtiquetaAppBraga .etq-val { font-size:16px; line-height:1.25; word-break:break-word; }
+      #printAreaEtiquetaAppBraga .etq-qr { width:30mm; height:30mm; margin-top:auto; }
+      #printAreaEtiquetaAppBraga .etq-qr img,
+      #printAreaEtiquetaAppBraga .etq-qr canvas { width:30mm !important; height:30mm !important; }
+      #printAreaEtiquetaAppBraga .etq-code { font-size:9px; font-weight:900; margin-top:2mm; word-break:break-all; }
     </style>
     <div class="etq-sheet">
       <div class="etq-title">${escapeHtml(item.localCurto || item.localizacao || 'Etiqueta')}</div>
       ${rows}
+      ${codigoScan ? `<div class="etq-qr" data-etq-qr="${escapeHtml(codigoScan)}"></div><div class="etq-code">${escapeHtml(item.codigoEtiqueta || codigoScan)}</div>` : ""}
     </div>`;
 }
 
