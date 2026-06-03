@@ -7369,10 +7369,12 @@ function montarHtmlEtiquetaImpressao(item) {
     ["Local", item.localCurto || item.localizacao],
     ["Série", item.serie],
     ["Armazém", item.armazem],
+    ["Localização", item.localizacao],
     ["Equipamento", item.equipamento],
     ["Cor", item.cor],
     ["Lote", item.lote],
     ["SDS Ref", item.sdsRef],
+    ["Código", item.codigoEtiqueta],
     ["Data", item.dataScan || item.dataEtiqueta || item.data || item.dataFolha],
     ["Origem", item.origem]
   ].filter(([,v]) => String(v || '').trim());
@@ -7432,7 +7434,7 @@ async function regerarEtiquetaWordPartilhada(id) {
 
     setTimeout(() => {
       try {
-        try{ if(window.reforcarEtiquetaTonerPrint) window.reforcarEtiquetaTonerPrint(); }catch(e){} try{ if(window.appBragaHideEtiquetaRedundantFields) window.appBragaHideEtiquetaRedundantFields(); }catch(e){} window.print();
+        try{ if(window.reforcarEtiquetaTonerPrint) window.reforcarEtiquetaTonerPrint(); }catch(e){} window.print();
         mostrarMensagem('Etiqueta pronta a imprimir.');
       } catch (e) {
         console.error(e);
@@ -7455,10 +7457,12 @@ function montarHtmlEtiquetaOverlay(item) {
     ["Local", item.localCurto || item.localizacao],
     ["Série", item.serie],
     ["Armazém", item.armazem],
+    ["Localização", item.localizacao],
     ["Equipamento", item.equipamento],
     ["Cor", item.cor],
     ["Lote", item.lote],
     ["SDS Ref", item.sdsRef],
+    ["Código", item.codigoEtiqueta],
     ["Data", item.dataScan || item.dataEtiqueta || item.data || item.dataFolha],
     ["Origem", item.origem]
   ].filter(([,v]) => String(v || '').trim());
@@ -9373,28 +9377,12 @@ window.addEventListener("orientationchange", () => {
 })();
 
 
+/* Etiqueta completa */
+.etq-sheet,
+.print-label,
+.etiqueta-word,
+.word-label{
+ border:2px solid #000 !important;
+ box-sizing:border-box !important;
+}
 
-
-
-
-/* ===== ETIQUETA_SAFE_HIDE_FIELDS ===== */
-(function(){
-  window.appBragaHideEtiquetaRedundantFields = function(){
-    try{
-      const root = document.getElementById("printAreaEtiquetaAppBraga");
-      if(!root) return;
-      root.querySelectorAll(".etq-row,.etq-field,div").forEach(function(el){
-        const text = (el.textContent || "").trim().toLowerCase();
-        if(
-          text.startsWith("localização") ||
-          text.startsWith("localizacao") ||
-          text.startsWith("código") ||
-          text.startsWith("codigo")
-        ){
-          el.style.display = "none";
-        }
-      });
-    }catch(e){}
-  };
-})();
-/* ===== END ETIQUETA_SAFE_HIDE_FIELDS ===== */
