@@ -225,7 +225,7 @@ async function broadcast(title, body, data) {
       }
     } catch (error) {
       console.warn(`Falhou push para dispositivo: ${error.message}`);
-      if (/UNREGISTERED|NotRegistered|not registered/i.test(error.message)) {
+      if (/UNREGISTERED|NotRegistered|not registered/i.test(error.message) || error.statusCode === 404 || error.statusCode === 410) {
         await deactivateNotificationDevice(item, "push-unregistered");
       }
     }

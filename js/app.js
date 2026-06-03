@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.23.8";
+const APP_VERSION = "1.23.9";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
 
 
@@ -2118,15 +2118,45 @@ function urlBase64ToUint8ArrayAppBraga(base64String) {
   return Uint8Array.from([...rawData].map((char) => char.charCodeAt(0)));
 }
 
+function uint8ArrayToBase64UrlAppBraga(value) {
+  const bytes = value instanceof Uint8Array ? value : new Uint8Array(value || []);
+  let raw = "";
+  bytes.forEach((byte) => { raw += String.fromCharCode(byte); });
+  return window.btoa(raw).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function pushSubscriptionUsaVapidAtualApp(subscription, vapidKey) {
+  try {
+    const currentKey = subscription?.options?.applicationServerKey;
+    if (!currentKey) return true;
+    return uint8ArrayToBase64UrlAppBraga(currentKey) === String(vapidKey || "").replace(/=+$/g, "");
+  } catch {
+    return true;
+  }
+}
+
 function getNotificationSubscriptionDocId(endpoint) {
   return `standard-web-push-${Math.abs(hashTextoAppBraga(endpoint || navigator.userAgent || "device"))}`;
 }
 
-async function registarPushSubscriptionPadraoApp(vapidKey) {
+async function registarPushSubscriptionPadraoApp(vapidKey, options = {}) {
   if (!vapidKey || !webPushDisponivelApp()) return null;
   await registarServiceWorkerAppBraga();
   const registration = await navigator.serviceWorker.ready;
   let subscription = await registration.pushManager.getSubscription();
+
+  if (subscription && (options.forceReset || !pushSubscriptionUsaVapidAtualApp(subscription, vapidKey))) {
+    const oldEndpoint = subscription.endpoint;
+    try { await subscription.unsubscribe(); } catch {}
+    if (oldEndpoint && window.db?.collection) {
+      await window.db.collection("notificationTokens").doc(getNotificationSubscriptionDocId(oldEndpoint)).set({
+        active: false,
+        disabledAt: Date.now(),
+        disabledReason: options.forceReset ? "mobile-reregisto-manual" : "vapid-key-changed"
+      }, { merge: true });
+    }
+    subscription = null;
+  }
 
   if (!subscription) {
     subscription = await registration.pushManager.subscribe({
@@ -2153,6 +2183,7 @@ async function registarPushSubscriptionPadraoApp(vapidKey) {
     platform: navigator.platform || "",
     permission: "Notification" in window ? Notification.permission : "unsupported",
     pushAvailable: true,
+    vapidPublicKey: vapidKey,
     updatedAt: Date.now(),
     createdAt: Date.now()
   }, { merge: true });
@@ -2319,14 +2350,15 @@ function renderDispositivosNotificacoesApp(items = []) {
     const mode = labelMetodoNotificacaoApp(item);
     const updated = formatTimestampApp(item.updatedAt || item.createdAt);
     const ready = item.source === "electron-native" || item.token || item.pushSubscription?.endpoint;
+    const keyOk = !item.vapidPublicKey || item.vapidPublicKey === APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY;
     return `
       <div class="notification-device-card ${isCurrent ? "is-current" : ""}">
         <div>
           <strong>${escapeHtmlAppBraga(device)}</strong>
           <span>${escapeHtmlAppBraga(mode)} - ${escapeHtmlAppBraga(permission)}</span>
-          <small>Ultimo contacto: ${escapeHtmlAppBraga(updated)}</small>
+          <small>Ultimo contacto: ${escapeHtmlAppBraga(updated)}${keyOk ? "" : " - reparar VAPID"}</small>
         </div>
-        <span class="health-status ${ready ? "ok" : "warn"}">${isCurrent ? "Este dispositivo" : (ready ? "Registado" : "Local")}</span>
+        <span class="health-status ${ready && keyOk ? "ok" : "warn"}">${isCurrent ? "Este dispositivo" : (ready ? (keyOk ? "Registado" : "Reparar") : "Local")}</span>
       </div>
     `;
   }).join("");
@@ -2441,7 +2473,7 @@ async function registarDispositivoLocalNotificacoesApp(source = "web-local") {
   mostrarMensagem("Push remoto indisponivel; notificacoes locais ativadas.");
 }
 
-async function registarDispositivoPushApp() {
+async function registarDispositivoPushApp(forceReset = false) {
   try {
     if (!window.db || !window.db.collection) throw new Error("Firestore indisponivel.");
     const vapidKey = String(document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "").trim();
@@ -2486,7 +2518,7 @@ async function registarDispositivoPushApp() {
     let fcmOk = false;
 
     try {
-      standardOk = !!(await registarPushSubscriptionPadraoApp(vapidKey));
+      standardOk = !!(await registarPushSubscriptionPadraoApp(vapidKey, { forceReset }));
     } catch (error) {
       console.warn("Erro no Web Push standard:", error);
     }
@@ -2501,7 +2533,7 @@ async function registarDispositivoPushApp() {
 
     await guardarConfigNotificacoesApp({ notificationEnabled: true, notificationVapidKey: vapidKey });
     setNotificationTokenStatus("Registado", "ok");
-    mostrarMensagem(standardOk && fcmOk ? "Dispositivo registado para Web Push e FCM." : "Dispositivo registado para push.");
+    mostrarMensagem(forceReset ? "Registo de notificacoes reparado neste dispositivo." : (standardOk && fcmOk ? "Dispositivo registado para Web Push e FCM." : "Dispositivo registado para push."));
   } catch (error) {
     console.error("Erro ao registar push:", error);
     setNotificationTokenStatus("Erro no registo", "bad");
