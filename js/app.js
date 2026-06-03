@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.19.0";
+const APP_VERSION = "1.20.0";
 
 
 
@@ -438,6 +438,7 @@ async function disponivel() {
   const cor = el("cor");
   const data = el("data");
   const lote = el("lote");
+  const sdsRef = el("sdsRef");
   const codigoEtiqueta = getCodigoEtiquetaAtualAppBraga();
 
   if (!equipamento || !cor) return;
@@ -447,6 +448,7 @@ async function disponivel() {
   const corValue = cor.value;
   const dataValue = data ? data.value : "";
   const loteValue = lote ? lote.value : "";
+  const sdsRefValue = sdsRef ? sdsRef.value.trim() : "";
 
   if (!eq || !corValue) {
     mostrarMensagem("Preenche o equipamento e a cor.", "erro");
@@ -464,6 +466,7 @@ async function disponivel() {
       data: dataValue || "Sem Data",
       dataFolha: (el("dataFolha") && el("dataFolha").value) || "Sem Data da Folha",
       lote: loteValue || "",
+      sdsRef: sdsRefValue || "",
       codigoEtiqueta,
       codigoScan: buildPayloadQrTonerAppBraga(codigoEtiqueta),
       estado: "stock",
@@ -476,6 +479,7 @@ async function disponivel() {
     if (data) data.value = "";
     if (el("dataFolha")) el("dataFolha").value = "";
     if (lote) lote.value = "";
+    if (sdsRef) sdsRef.value = "";
     prepararCodigoEtiquetaTonerAppBraga(true);
 
     mostrarMensagem("Toner adicionado com sucesso.");
@@ -767,6 +771,7 @@ function renderStockCards(items) {
       <div class="meta-line">Cor: <span class="meta-value">${t.cor}</span></div>
       <div class="meta-line">Localização: <span class="meta-value">${t.localizacao}</span></div>
       <div class="meta-line">Lote: <span class="meta-value">${t.lote || "-"}</span></div>
+      <div class="meta-line">SDS Ref: <span class="meta-value">${t.sdsRef || "-"}</span></div>
       <div class="meta-line">Código etiqueta: <span class="meta-value">${t.codigoEtiqueta || "-"}</span></div>
       <div class="meta-line">Data Scan: <span class="meta-value">${t.data || "Sem Data"}</span></div>
       <div class="meta-line">Data Folha: <span class="meta-value">${t.dataFolha || "Sem Data da Folha"}</span></div>
@@ -795,6 +800,7 @@ function renderHistoricoCards(items) {
       <div class="meta-line">Cor: <span class="meta-value">${t.cor || "-"}</span></div>
       <div class="meta-line">Localização: <span class="meta-value">${t.localizacao || "Sem Localização"}</span></div>
       <div class="meta-line">Lote: <span class="meta-value">${t.lote || "-"}</span></div>
+      <div class="meta-line">SDS Ref: <span class="meta-value">${t.sdsRef || "-"}</span></div>
       <div class="meta-line">Código etiqueta: <span class="meta-value">${t.codigoEtiqueta || "-"}</span></div>
       <div class="meta-line">Data Scan: <span class="meta-value">${t.data || "Sem Data"}</span></div>
       <div class="meta-line">Data Folha: <span class="meta-value">${t.dataFolha || "Sem Data da Folha"}</span></div>
@@ -5216,9 +5222,11 @@ function extrairDadosEtiquetaOCRStable(texto) {
   }
 
   const lote = extractLoteFromText(t);
+  const sdsRef = extractSdsRefFromText(texto);
 
   return {
     lote,
+    sdsRef,
     tonerCode,
     equipamento,
     cor,
@@ -5239,6 +5247,9 @@ function aplicarDadosOCRNoFormularioStable(dados) {
   if (el("lote")) {
     el("lote").value = dados.lote || "";
   }
+  if (el("sdsRef")) {
+    el("sdsRef").value = dados.sdsRef || "";
+  }
 
   preencherDataAtualSeVaziaStable();
 
@@ -5251,7 +5262,7 @@ function aplicarDadosOCRNoFormularioStable(dados) {
     abrirSerie3DigitosStable();
   }
 
-  return !!(dados.tonerCode || dados.equipamento || dados.cor || dados.dataFolha || dados.serie);
+  return !!(dados.tonerCode || dados.equipamento || dados.cor || dados.dataFolha || dados.serie || dados.sdsRef);
 }
 
 async function processarTextoLidoStable(textoLido) {
@@ -5372,6 +5383,7 @@ async function processarOCRInputStable(event) {
     const resumo = [
       dados.tonerCode ? `Toner: ${dados.tonerCode}` : "",
       dados.lote ? `Lote: ${dados.lote}` : "",
+      dados.sdsRef ? `SDS Ref: ${dados.sdsRef}` : "",
       dados.equipamento ? `Equipamento: ${dados.equipamento}` : "",
       dados.cor ? `Cor: ${dados.cor}` : "",
       dados.dataFolha ? `Data folha: ${dados.dataFolha}` : "",
@@ -5444,6 +5456,7 @@ function extrairDadosEtiquetaWord() {
   const loc = (el("localizacao") && el("localizacao").value) || "";
   const dataFolha = (el("dataFolha") && el("dataFolha").value) || "";
   const dataScan = (el("data") && el("data").value) || "";
+  const sdsRef = (el("sdsRef") && el("sdsRef").value) || "";
   const codigoEtiqueta = getCodigoEtiquetaAtualAppBraga();
 
   let serie = "";
@@ -5466,6 +5479,7 @@ function extrairDadosEtiquetaWord() {
     localCurto: localCurto || "Sem Localização",
     armazem: armazem || "",
     dataEtiqueta: dataEtiqueta || formatDatePTAppBraga(dataScan) || "Sem Data",
+    sdsRef: sdsRef.trim(),
     codigoEtiqueta,
     codigoScan: buildPayloadQrTonerAppBraga(codigoEtiqueta)
   };
@@ -5562,6 +5576,17 @@ async function gerarWordEtiquetaFromForm(auto = false) {
                   size: 22
                 })
               ]
+            }),
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              spacing: { before: 120, after: 0 },
+              children: [
+                new TextRun({
+                  text: dados.sdsRef ? `SDS Ref: ${dados.sdsRef}` : "",
+                  bold: true,
+                  size: 18
+                })
+              ]
             })
           ]
         }
@@ -5581,7 +5606,7 @@ async function gerarWordEtiquetaFromForm(auto = false) {
       a.remove();
     }, 1200);
 
-    await guardarEtiquetaPartilhada({ origem: auto ? "scan" : "manual", codigoEtiqueta: dados.codigoEtiqueta, codigoScan: dados.codigoScan });
+    await guardarEtiquetaPartilhada({ origem: auto ? "scan" : "manual", codigoEtiqueta: dados.codigoEtiqueta, codigoScan: dados.codigoScan, sdsRef: dados.sdsRef });
 
     if (!auto) {
       mostrarMensagem("Etiqueta Word gerada com sucesso.");
@@ -6925,6 +6950,7 @@ function ensureLoteFieldOnEdit() {
   try {
     const toner = JSON.parse(item);
     el("lote").value = toner.lote || "";
+    if (el("sdsRef")) el("sdsRef").value = toner.sdsRef || "";
     if (el("dataFolha")) el("dataFolha").value = toner.dataFolha || "";
     if (el("codigoEtiqueta")) el("codigoEtiqueta").value = toner.codigoEtiqueta || toner.codigoToner || getCodigoEtiquetaAtualAppBraga();
   } catch (e) { console.error(e); }
@@ -6934,6 +6960,21 @@ function extractLoteFromText(text) {
   const t = String(text || "").toUpperCase();
   const m = t.match(/(?:LOTE|LOT|BATCH)\s*[:#-]?\s*([A-Z0-9-]{4})/);
   return m ? m[1] : "";
+}
+
+function extractSdsRefFromText(text) {
+  const raw = String(text || "").replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim();
+  const patterns = [
+    /\bSDS\s*(?:REF|REFERENCE|REFERENCIA|REFER\u00caNCIA)?\s*[:#-]?\s*([A-Z0-9][A-Z0-9._\/-]{3,40})/i,
+    /\bSDS[-_\s]*REF\s*[:#-]?\s*([A-Z0-9][A-Z0-9._\/-]{3,40})/i,
+    /\bREFER\u00caNCIA\s*SDS\s*[:#-]?\s*([A-Z0-9][A-Z0-9._\/-]{3,40})/i,
+    /\bREFERENCIA\s*SDS\s*[:#-]?\s*([A-Z0-9][A-Z0-9._\/-]{3,40})/i
+  ];
+  for (const pattern of patterns) {
+    const match = raw.match(pattern);
+    if (match && match[1]) return match[1].replace(/[;,.)]+$/g, "").toUpperCase();
+  }
+  return "";
 }
 
 function enhanceScannerStatus(extra = "") {
@@ -6953,18 +6994,18 @@ function exportCsvFile(filename, headers, rows) {
 
 function exportarExcelStock() {
   if (!stockGlobal.length) return mostrarMensagem("Não há stock para exportar.", "erro");
-  exportCsvFile("stock_app_braga.csv", ["idInterno","codigoEtiqueta","equipamento","localizacao","cor","lote","data","dataFolha"], stockGlobal);
+  exportCsvFile("stock_app_braga.csv", ["idInterno","codigoEtiqueta","sdsRef","equipamento","localizacao","cor","lote","data","dataFolha"], stockGlobal);
 }
 
 function exportarExcelHistorico() {
   if (!historicoGlobal.length) return mostrarMensagem("Não há histórico para exportar.", "erro");
-  exportCsvFile("historico_app_braga.csv", ["idInterno","codigoEtiqueta","equipamento","localizacao","cor","lote","data","dataFolha"], historicoGlobal);
+  exportCsvFile("historico_app_braga.csv", ["idInterno","codigoEtiqueta","sdsRef","equipamento","localizacao","cor","lote","data","dataFolha"], historicoGlobal);
 }
 
 function exportarExcelTudo() {
   const rows = [...stockGlobal.map(x => ({...x, origem:"stock"})), ...historicoGlobal.map(x => ({...x, origem:"historico"}))];
   if (!rows.length) return mostrarMensagem("Não há dados para exportar.", "erro");
-  exportCsvFile("dados_completos_app_braga.csv", ["origem","idInterno","codigoEtiqueta","equipamento","localizacao","cor","lote","data","dataFolha"], rows);
+  exportCsvFile("dados_completos_app_braga.csv", ["origem","idInterno","codigoEtiqueta","sdsRef","equipamento","localizacao","cor","lote","data","dataFolha"], rows);
 }
 
 function filtrarHistoricoAvancado() {
@@ -6977,7 +7018,7 @@ function filtrarHistoricoAvancado() {
 
   const items = historicoGlobal.filter(t => {
     const data = String(t.data || "");
-    const okText = !texto || [t.idInterno,t.equipamento,t.localizacao,t.cor,t.lote].some(v => normalizarTexto(v).includes(texto));
+    const okText = !texto || [t.idInterno,t.codigoEtiqueta,t.sdsRef,t.equipamento,t.localizacao,t.cor,t.lote].some(v => normalizarTexto(v).includes(texto));
     const okFrom = !dFrom || data >= dFrom;
     const okTo = !dTo || data <= dTo;
     const okLoc = !fLoc || normalizarTexto(t.localizacao).includes(fLoc);
@@ -6996,6 +7037,7 @@ function abrirEditarStockModal(id) {
   if (el("editStockCor")) el("editStockCor").value = item.cor || "";
   if (el("editStockLocalizacao")) el("editStockLocalizacao").value = item.localizacao || "";
   if (el("editStockLote")) el("editStockLote").value = item.lote || "";
+  if (el("editStockSdsRef")) el("editStockSdsRef").value = item.sdsRef || "";
   if (el("editStockCodigoEtiqueta")) el("editStockCodigoEtiqueta").value = item.codigoEtiqueta || "";
   if (el("editStockData")) el("editStockData").value = item.data || "";
   if (el("editStockDataFolha")) el("editStockDataFolha").value = item.dataFolha || "";
@@ -7014,6 +7056,7 @@ async function guardarEdicaoStockModal() {
     cor: el("editStockCor")?.value || "",
     localizacao: el("editStockLocalizacao")?.value || "",
     lote: el("editStockLote")?.value || "",
+    sdsRef: el("editStockSdsRef")?.value || "",
     codigoEtiqueta: el("editStockCodigoEtiqueta")?.value || "",
     data: el("editStockData")?.value || "",
     dataFolha: el("editStockDataFolha")?.value || ""
@@ -7047,6 +7090,7 @@ function abrirEditarHistoricoModal(id) {
   if (el("editHistoricoCor")) el("editHistoricoCor").value = item.cor || "";
   if (el("editHistoricoLocalizacao")) el("editHistoricoLocalizacao").value = item.localizacao || "";
   if (el("editHistoricoLote")) el("editHistoricoLote").value = item.lote || "";
+  if (el("editHistoricoSdsRef")) el("editHistoricoSdsRef").value = item.sdsRef || "";
   if (el("editHistoricoData")) el("editHistoricoData").value = item.data || "";
   if (el("editHistoricoDataFolha")) el("editHistoricoDataFolha").value = item.dataFolha || "";
   if (el("modalEditarHistorico")) el("modalEditarHistorico").style.display = "flex";
@@ -7064,6 +7108,7 @@ async function guardarEdicaoHistoricoModal() {
     cor: el("editHistoricoCor")?.value || "",
     localizacao: el("editHistoricoLocalizacao")?.value || "",
     lote: el("editHistoricoLote")?.value || "",
+    sdsRef: el("editHistoricoSdsRef")?.value || "",
     data: el("editHistoricoData")?.value || "",
     dataFolha: el("editHistoricoDataFolha")?.value || ""
   };
@@ -7116,7 +7161,9 @@ const filtrarStockDebounced = debounceAppBraga(function() {
     normalizarTexto(t.equipamento).includes(txt) ||
     normalizarTexto(t.cor).includes(txt) ||
     normalizarTexto(t.localizacao).includes(txt) ||
-    normalizarTexto(t.lote).includes(txt)
+    normalizarTexto(t.lote).includes(txt) ||
+    normalizarTexto(t.sdsRef).includes(txt) ||
+    normalizarTexto(t.codigoEtiqueta).includes(txt)
   );
   renderStockCards(filtrados);
 }, 120);
@@ -7187,6 +7234,7 @@ function montarPayloadEtiquetaPartilhada(extra = {}) {
   const equipamento = extra.equipamento || ((el("equipamento") && el("equipamento").value) || "");
   const cor = extra.cor || ((el("cor") && el("cor").value) || "");
   const lote = extra.lote || ((el("lote") && el("lote").value) || "");
+  const sdsRef = extra.sdsRef || ((el("sdsRef") && el("sdsRef").value) || "");
   const origem = extra.origem || "scan";
   const codigoEtiqueta = extra.codigoEtiqueta || getCodigoEtiquetaAtualAppBraga();
   return {
@@ -7201,6 +7249,7 @@ function montarPayloadEtiquetaPartilhada(extra = {}) {
     equipamento: equipamento || "",
     cor: cor || "",
     lote: lote || "",
+    sdsRef: sdsRef || "",
     codigoEtiqueta,
     codigoScan: extra.codigoScan || buildPayloadQrTonerAppBraga(codigoEtiqueta),
     origem,
@@ -7282,7 +7331,7 @@ function renderEtiquetasWordCards() {
   let items = Array.isArray(etiquetasWordGlobal) ? [...etiquetasWordGlobal] : [];
   if (origem) items = items.filter(x => normalizarTexto(x.origem).includes(origem));
   if (texto) {
-    items = items.filter(x => [x.serie,x.localCurto,x.localizacao,x.equipamento,x.cor,x.lote,x.dataEtiqueta].some(v => normalizarTexto(v).includes(texto)));
+    items = items.filter(x => [x.serie,x.localCurto,x.localizacao,x.equipamento,x.cor,x.lote,x.sdsRef,x.codigoEtiqueta,x.dataEtiqueta].some(v => normalizarTexto(v).includes(texto)));
   }
   items.sort((a, b) => getEtiquetaDateValue(b) - getEtiquetaDateValue(a));
   setText("countEtiquetasTotal", items.length);
@@ -7303,6 +7352,7 @@ function renderEtiquetasWordCards() {
       <div class="meta-line">Equipamento: <span class="meta-value">${t.equipamento || '-'}</span></div>
       <div class="meta-line">Cor: <span class="meta-value">${t.cor || '-'}</span></div>
       <div class="meta-line">Lote: <span class="meta-value">${t.lote || '-'}</span></div>
+      <div class="meta-line">SDS Ref: <span class="meta-value">${t.sdsRef || '-'}</span></div>
       <div class="meta-line">Código: <span class="meta-value">${t.codigoEtiqueta || '-'}</span></div>
       <div class="meta-line">Data: <span class="meta-value">${t.dataEtiqueta || '-'}</span></div>
       <div class="meta-line">Origem: <span class="meta-value">${t.origem || 'scan'}</span></div>
@@ -7323,6 +7373,7 @@ function montarHtmlEtiquetaImpressao(item) {
     ["Equipamento", item.equipamento],
     ["Cor", item.cor],
     ["Lote", item.lote],
+    ["SDS Ref", item.sdsRef],
     ["Código", item.codigoEtiqueta],
     ["Data", item.dataScan || item.dataEtiqueta || item.data || item.dataFolha],
     ["Origem", item.origem]
@@ -7410,6 +7461,7 @@ function montarHtmlEtiquetaOverlay(item) {
     ["Equipamento", item.equipamento],
     ["Cor", item.cor],
     ["Lote", item.lote],
+    ["SDS Ref", item.sdsRef],
     ["Código", item.codigoEtiqueta],
     ["Data", item.dataScan || item.dataEtiqueta || item.data || item.dataFolha],
     ["Origem", item.origem]
