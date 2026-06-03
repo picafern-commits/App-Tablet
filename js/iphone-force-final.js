@@ -122,6 +122,7 @@
       btn.textContent = "☰";
       sidebar.style.removeProperty("transform");
       sidebar.style.removeProperty("pointer-events");
+      sidebar.style.removeProperty("visibility");
     }
 
     btn.onclick = function (e) {
@@ -153,6 +154,10 @@
         }, 40);
       });
     });
+
+    if (isMobile() && !document.body.classList.contains("sidebar-open")) {
+      close();
+    }
   }
 
   function init() {
@@ -176,5 +181,19 @@
   window.addEventListener("resize", function () {
     forceFullscreenLayout();
     setupMenu();
+  });
+
+  window.addEventListener("pageshow", function () {
+    var sidebar = document.querySelector(".sidebar");
+    var overlay = document.querySelector(".app-sidebar-overlay");
+    var btn = document.querySelector(".app-menu-toggle");
+    if (!isMobile() || !sidebar) return;
+    sidebar.classList.remove("app-open");
+    document.body.classList.remove("sidebar-open");
+    overlay && overlay.classList.remove("show");
+    if (btn) btn.textContent = "☰";
+    sidebar.style.removeProperty("transform");
+    sidebar.style.removeProperty("pointer-events");
+    sidebar.style.removeProperty("visibility");
   });
 })();

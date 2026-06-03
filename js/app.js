@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.23.4";
+const APP_VERSION = "1.23.5";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BFm5qjGZUqbqNuTADly_22pPnPGH04CtTJkaiTdlneZw7BRNmgjngqL5Ru4WCE1DD83vrZTuOkW_I7WvMOBaOFk";
 
 
