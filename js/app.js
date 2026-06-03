@@ -26,8 +26,8 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.23.6";
-const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BFm5qjGZUqbqNuTADly_22pPnPGH04CtTJkaiTdlneZw7BRNmgjngqL5Ru4WCE1DD83vrZTuOkW_I7WvMOBaOFk";
+const APP_VERSION = "1.23.7";
+const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
 
 
 
@@ -1704,7 +1704,7 @@ function aplicarConfigNotificacoesApp(config = {}) {
   appNotificationState.maintenance = config.notifyMaintenance !== false;
   appNotificationState.radios = config.notifyRadios === true;
   appNotificationState.intervalMinutes = Math.max(5, Number(config.notificationIntervalMinutes || 15));
-  appNotificationState.vapidKey = String(config.notificationVapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "").trim();
+  appNotificationState.vapidKey = String(APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || config.notificationVapidKey || "").trim();
 
   const setChecked = (id, value) => {
     const node = document.getElementById(id);
