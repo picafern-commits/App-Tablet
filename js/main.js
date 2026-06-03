@@ -122,6 +122,19 @@ function getNodeRuntimePath() {
   }) || "";
 }
 
+function markPushWatcherStopped(reason, mode = "parado", readiness = getPushWatcherReadiness()) {
+  pushWatcherStatus = {
+    ok: false,
+    running: false,
+    mode,
+    error: reason || "",
+    startedAt: null,
+    ...readiness
+  };
+  if (reason) appendPushWatcherLog(reason);
+  return pushWatcherStatus;
+}
+
 function startPushWatcherAuto() {
   if (pushWatcherProcess && !pushWatcherProcess.killed) return pushWatcherStatus;
   const watcherPath = path.join(__dirname, "..", "tools", "web-push-watch.js");
@@ -130,20 +143,16 @@ function startPushWatcherAuto() {
   const nodeRuntime = getNodeRuntimePath();
 
   if (!fs.existsSync(watcherPath)) {
-    pushWatcherStatus = { ok: false, running: false, mode: "erro", error: "Watcher indisponivel", startedAt: null, ...readiness };
-    return pushWatcherStatus;
+    return markPushWatcherStopped("Watcher indisponivel", "erro", readiness);
   }
   if (!nodeRuntime) {
-    pushWatcherStatus = { ok: false, running: false, mode: "sem-node", error: "Node.js nao encontrado. Usa Ligar Notificacoes.bat ou instala Node.js.", startedAt: null, ...readiness };
-    return pushWatcherStatus;
+    return markPushWatcherStopped("Este PC recebe notificacoes, mas nao envia porque nao tem Node.js.", "recetor-sem-node", readiness);
   }
   if (!env.GOOGLE_APPLICATION_CREDENTIALS || !fs.existsSync(env.GOOGLE_APPLICATION_CREDENTIALS)) {
-    pushWatcherStatus = { ok: false, running: false, mode: "sem-service-account", error: "Falta service-account.json", startedAt: null, ...readiness };
-    return pushWatcherStatus;
+    return markPushWatcherStopped("Falta service-account.json", "sem-service-account", readiness);
   }
   if (!env.APP_BRAGA_VAPID_PUBLIC_KEY || !env.APP_BRAGA_VAPID_PRIVATE_KEY) {
-    pushWatcherStatus = { ok: false, running: false, mode: "sem-vapid", error: "Faltam VAPID keys locais", startedAt: null, ...readiness };
-    return pushWatcherStatus;
+    return markPushWatcherStopped("Faltam VAPID keys locais", "sem-vapid", readiness);
   }
 
   try {
@@ -154,16 +163,19 @@ function startPushWatcherAuto() {
       stdio: ["ignore", "pipe", "pipe"]
     });
   } catch (error) {
-    pushWatcherStatus = { ok: false, running: false, mode: "erro", error: error.message, startedAt: null, ...readiness };
-    appendPushWatcherLog(`Erro ao iniciar watcher: ${error.message}`);
-    return pushWatcherStatus;
+    return markPushWatcherStopped(`Erro ao iniciar watcher: ${error.message}`, "erro", readiness);
   }
 
   pushWatcherStatus = { ok: true, running: true, mode: "electron-auto", error: "", startedAt: new Date().toISOString(), pid: pushWatcherProcess.pid, ...readiness };
   appendPushWatcherLog("Watcher iniciado pelo Electron.");
   pushWatcherProcess.stdout.on("data", (chunk) => appendPushWatcherLog(chunk.toString("utf8").trim()));
   pushWatcherProcess.stderr.on("data", (chunk) => appendPushWatcherLog(`ERRO: ${chunk.toString("utf8").trim()}`));
+  pushWatcherProcess.on("error", (error) => {
+    markPushWatcherStopped(`Erro ao iniciar watcher: ${error.message}`, error.code === "ENOENT" ? "recetor-sem-node" : "erro", readiness);
+    pushWatcherProcess = null;
+  });
   pushWatcherProcess.on("exit", (code) => {
+    if (pushWatcherStatus.mode === "recetor-sem-node") return;
     pushWatcherStatus = { ...pushWatcherStatus, ok: false, running: false, mode: "parado", error: `Watcher terminou com codigo ${code}` };
     appendPushWatcherLog(pushWatcherStatus.error);
     pushWatcherProcess = null;

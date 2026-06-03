@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.23.7";
+const APP_VERSION = "1.23.8";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
 
 
@@ -2261,7 +2261,8 @@ async function atualizarEstadoNotificacoesApp(showMessage = false) {
   if (window.electronAPI?.getPushWatcherStatus) {
     const status = await window.electronAPI.getPushWatcherStatus().catch((error) => ({ ok: false, error: error.message }));
     const running = !!status?.running;
-    setNotificationServiceText("notifyServiceStatus", running ? "Ativo" : "Parado", running ? "ok" : "warn");
+    const receiverOnly = status?.mode === "recetor-sem-node";
+    setNotificationServiceText("notifyServiceStatus", running ? "Ativo" : (receiverOnly ? "Recebe apenas" : "Parado"), running || receiverOnly ? "ok" : "warn");
     setNotificationServiceText("notifyServiceDetail", running ? `Ligado desde ${formatStartedAtApp(status.startedAt)}` : (status.error || "Pode ser ligado pelo botão"));
     const credentialsOk = !!(status?.serviceAccountReady && status?.vapidReady);
     setNotificationServiceText("notifyCredentialsStatus", credentialsOk ? "OK" : "Incompletas", credentialsOk ? "ok" : "warn");
