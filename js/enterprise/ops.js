@@ -229,52 +229,10 @@
     const actions = document.createElement("div");
     actions.className = "enterprise-window-actions";
     actions.innerHTML = `
-      <button class="secondary-btn enterprise-window-btn" type="button" data-enterprise-displays>Detectar monitores</button>
-      <select class="enterprise-window-select" data-enterprise-display-select aria-label="Escolher monitor"></select>
-      <button class="secondary-btn enterprise-window-btn" type="button" data-enterprise-move-display>Mover para monitor</button>
-      <span class="enterprise-window-status" data-enterprise-display-status></span>
       <button class="secondary-btn enterprise-window-btn" type="button" data-enterprise-hide>Segundo plano</button>
       <button class="secondary-btn enterprise-window-btn enterprise-window-close" type="button" data-enterprise-close>Fechar App</button>
     `;
     sidebar.appendChild(actions);
-    const select = actions.querySelector("[data-enterprise-display-select]");
-    const status = actions.querySelector("[data-enterprise-display-status]");
-    const setDisplayStatus = (message) => {
-      if (status) status.textContent = message || "";
-    };
-    const loadDisplays = async () => {
-      if (!window.electronAPI?.listDisplays || !select) {
-        setDisplayStatus("Electron indisponivel");
-        return;
-      }
-      setDisplayStatus("A detectar...");
-      try {
-        const result = await window.electronAPI.listDisplays();
-        const displays = result?.displays || [];
-        select.innerHTML = displays.map((display) => `
-          <option value="${escapeHtml(display.id)}">${escapeHtml(display.label)}${display.primary ? " - Principal" : ""}${display.current ? " - Atual" : ""} - ${display.bounds.width}x${display.bounds.height}</option>
-        `).join("");
-        if (result?.currentDisplayId) select.value = String(result.currentDisplayId);
-        setDisplayStatus(displays.length ? `${displays.length} monitor(es)` : "Sem monitores");
-      } catch (error) {
-        setDisplayStatus("Erro ao detectar");
-      }
-    };
-    const moveDisplay = async () => {
-      if (!select?.value || !window.electronAPI?.moveToDisplay) return;
-      setDisplayStatus("A mover...");
-      try {
-        const result = await window.electronAPI.moveToDisplay(select.value);
-        setDisplayStatus(result?.ok ? "Movido" : "Falhou");
-        setTimeout(loadDisplays, 900);
-      } catch (error) {
-        setDisplayStatus("Erro ao mover");
-      }
-    };
-    actions.querySelector("[data-enterprise-displays]")?.addEventListener("click", loadDisplays);
-    actions.querySelector("[data-enterprise-move-display]")?.addEventListener("click", moveDisplay);
-    select?.addEventListener("change", moveDisplay);
-    loadDisplays();
     actions.querySelector("[data-enterprise-hide]")?.addEventListener("click", async () => {
       await window.electronAPI.hideApp();
     });
@@ -302,6 +260,72 @@
     `;
     const actions = themeCard.querySelector(".theme-pro-actions");
     themeCard.insertBefore(row, actions || null);
+  }
+
+  function setElectronDisplayStatus(status, details) {
+    const statusNode = document.getElementById("electronDisplayStatus");
+    const detailsNode = document.getElementById("electronDisplayDetails");
+    if (statusNode) statusNode.textContent = status || "";
+    if (detailsNode) detailsNode.textContent = details || "";
+  }
+
+  async function carregarMonitoresElectronApp() {
+    const select = document.getElementById("electronDisplaySelect");
+    if (!select) return;
+    if (!window.electronAPI?.listDisplays) {
+      select.innerHTML = `<option value="">Electron indisponivel</option>`;
+      setElectronDisplayStatus("Indisponivel", "Abre esta pagina dentro da app Electron instalada. No browser/GitHub Pages nao ha acesso aos monitores do PC.");
+      return;
+    }
+    select.innerHTML = `<option value="">A detectar...</option>`;
+    setElectronDisplayStatus("A detectar", "A pedir lista de monitores ao processo principal do Electron.");
+    try {
+      const result = await window.electronAPI.listDisplays();
+      const displays = Array.isArray(result?.displays) ? result.displays : [];
+      select.innerHTML = displays.length ? displays.map((display) => `
+        <option value="${escapeHtml(display.id)}">${escapeHtml(display.label)}${display.primary ? " - Principal" : ""}${display.current ? " - Atual" : ""} - ${display.bounds.width}x${display.bounds.height}</option>
+      `).join("") : `<option value="">Sem monitores detectados</option>`;
+      if (result?.currentDisplayId) select.value = String(result.currentDisplayId);
+      setElectronDisplayStatus(
+        displays.length ? `${displays.length} monitor(es) detectado(s)` : "Sem monitores",
+        displays.length ? "Escolhe o monitor e carrega em mover." : "O Windows/Electron devolveu zero monitores."
+      );
+    } catch (error) {
+      select.innerHTML = `<option value="">Erro ao detectar</option>`;
+      setElectronDisplayStatus("Erro", error?.message || "Falha ao comunicar com o Electron.");
+    }
+  }
+
+  async function moverAppParaMonitorElectron() {
+    const select = document.getElementById("electronDisplaySelect");
+    const displayId = select?.value || "";
+    if (!window.electronAPI?.moveToDisplay) {
+      setElectronDisplayStatus("Indisponivel", "Esta funcao so trabalha na app Electron instalada.");
+      return;
+    }
+    if (!displayId) {
+      setElectronDisplayStatus("Escolhe um monitor", "Deteta os monitores e escolhe um monitor valido.");
+      return;
+    }
+    setElectronDisplayStatus("A mover", "A janela vai sair temporariamente de fullscreen para mudar de ecra.");
+    try {
+      const result = await window.electronAPI.moveToDisplay(displayId);
+      if (!result?.ok) {
+        setElectronDisplayStatus("Falhou", result?.error || "O Electron nao conseguiu mover a janela.");
+        return;
+      }
+      setElectronDisplayStatus("Movido", "Monitor guardado. A app vai tentar abrir neste monitor no proximo arranque.");
+      setTimeout(carregarMonitoresElectronApp, 900);
+    } catch (error) {
+      setElectronDisplayStatus("Erro", error?.message || "Falha ao mover a janela.");
+    }
+  }
+
+  function setupElectronDisplayConfig() {
+    if (!document.getElementById("electronDisplaySelect")) return;
+    window.carregarMonitoresElectronApp = carregarMonitoresElectronApp;
+    window.moverAppParaMonitorElectron = moverAppParaMonitorElectron;
+    carregarMonitoresElectronApp();
   }
 
   function polishModalsAndEmptyStates() {
@@ -562,6 +586,7 @@
     setupElectronSidebarActions();
     setupSearchShell();
     setupDensityControls();
+    setupElectronDisplayConfig();
     polishModalsAndEmptyStates();
     ensureDashboardOps();
     updateSystemHealthExtra();
@@ -576,6 +601,7 @@
     setupDeviceClasses();
     setupSidebar();
     setupElectronSidebarActions();
+    setupElectronDisplayConfig();
   }, { passive: true });
   window.AppBragaEnterpriseOps = {
     refresh: init,
