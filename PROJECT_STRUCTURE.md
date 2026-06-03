@@ -1,0 +1,36 @@
+# App Braga - estrutura dos sistemas
+
+## Base da app
+
+- `html/` - paginas publicadas no GitHub Pages.
+- `js/app.js` - logica principal e compatibilidade Firebase v8.
+- `js/main.js` - processo principal Electron, usado apenas no setup desktop.
+- `js/preload.js` - ponte segura entre Electron e a app Web.
+- `sw.js` - Service Worker da app Web/PWA.
+
+## Sistemas organizados
+
+- `js/systems/backup/local-backup.js` - backup local automatico no Electron.
+- `js/enterprise/ops.js` - camada operacional: sidebar, pesquisa, notificacoes e integracoes visuais globais.
+- `css/enterprise/ops.css` - camada CSS global de estabilidade, layout e fixes.
+- `css/iphone-force-final.css` / `js/iphone-force-final.js` - fixes finais de iPhone/sidebar.
+- `js/core/helpers.js` - helpers comuns.
+
+## Modulos por area
+
+- `js/pistolas/` - CRUD, Firebase, filtros e render de Pistolas CK65.
+- `js/portas/` - CRUD, Firebase e render de Portas Rede.
+- `js/stock/` - CRUD, Firebase e render de Stock.
+- `js/users/` - CRUD, Firebase, filtros e render de Users.
+
+## Ferramentas externas
+
+- `tools/web-push-watch.js` - watcher local para Web Push sem Cloud Functions/Blaze.
+
+## Regras de manutencao
+
+- Nao mover `firebase-init.js` sem validar compatibilidade Firebase v8/v10.
+- Nao remover workflows GitHub.
+- Novos sistemas devem entrar em `js/systems/<nome>/`.
+- Novas camadas CSS globais devem entrar em `css/enterprise/` ou `css/systems/<nome>/`.
+- `node_modules/`, `dist/`, `.env` e service accounts ficam fora do Git.

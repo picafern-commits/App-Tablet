@@ -12,5 +12,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   setFullscreen: (value) => ipcRenderer.invoke("app:set-fullscreen", value),
   hideApp: () => ipcRenderer.invoke("app:hide"),
   closeApp: () => ipcRenderer.invoke("app:close"),
-  openExternal: (url) => ipcRenderer.invoke("app:open-external", url)
+  openExternal: (url) => ipcRenderer.invoke("app:open-external", url),
+  getBackupStatus: () => ipcRenderer.invoke("backup:status"),
+  writeLocalBackup: (payload) => ipcRenderer.invoke("backup:write", payload),
+  openBackupFolder: () => ipcRenderer.invoke("backup:open-folder")
 });

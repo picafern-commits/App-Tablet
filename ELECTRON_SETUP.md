@@ -40,3 +40,12 @@ npm run push:watch
 ```
 
 Ele le alteracoes na Firestore e envia FCM para os tokens registados em `notificationTokens`.
+
+## Backup local automatico
+
+O backup local automatico funciona no Electron porque precisa de permissao para escrever em disco.
+
+- Horario: dias uteis as 18:30.
+- A app tem de estar aberta ou minimizada para segundo plano/tray.
+- Os ficheiros sao guardados na pasta `local-backups` dentro de `userData` do Electron.
+- O estado, temporizador e botao de backup manual aparecem em `Configuracoes > Backup local automatico`.

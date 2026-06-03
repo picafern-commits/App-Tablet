@@ -19,6 +19,27 @@ function settingsPath() {
   return path.join(app.getPath("userData"), "desktop-settings.json");
 }
 
+function backupDirPath() {
+  return path.join(app.getPath("userData"), "local-backups");
+}
+
+function backupStatusPath() {
+  return path.join(backupDirPath(), "backup-status.json");
+}
+
+function readBackupStatus() {
+  try {
+    return JSON.parse(fs.readFileSync(backupStatusPath(), "utf8"));
+  } catch {
+    return { ok: false, lastRunAt: null, lastRunDate: null, lastFile: null, lastError: null };
+  }
+}
+
+function writeBackupStatus(status) {
+  fs.mkdirSync(backupDirPath(), { recursive: true });
+  fs.writeFileSync(backupStatusPath(), JSON.stringify(status, null, 2), "utf8");
+}
+
 function readDesktopSettings() {
   try {
     return JSON.parse(fs.readFileSync(settingsPath(), "utf8"));
@@ -322,6 +343,55 @@ ipcMain.handle("app:open-external", async (_event, url) => {
   if (!url) return { ok: false };
   await shell.openExternal(String(url));
   return { ok: true };
+});
+
+ipcMain.handle("backup:status", async () => ({
+  ok: true,
+  backupDir: backupDirPath(),
+  status: readBackupStatus()
+}));
+
+ipcMain.handle("backup:write", async (_event, payload = {}) => {
+  try {
+    const now = new Date();
+    const stamp = now.toISOString().replace(/[:.]/g, "-");
+    const fileName = `app-braga-backup-${stamp}.json`;
+    const filePath = path.join(backupDirPath(), fileName);
+    const data = {
+      app: "App Braga",
+      createdAt: now.toISOString(),
+      source: "electron-local-backup",
+      ...payload
+    };
+    fs.mkdirSync(backupDirPath(), { recursive: true });
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8");
+    const status = {
+      ok: true,
+      lastRunAt: now.toISOString(),
+      lastRunDate: now.toISOString().slice(0, 10),
+      lastFile: filePath,
+      lastError: null,
+      collectionCount: payload.collectionCount || 0,
+      documentCount: payload.documentCount || 0
+    };
+    writeBackupStatus(status);
+    return { ok: true, filePath, status };
+  } catch (error) {
+    const status = {
+      ...readBackupStatus(),
+      ok: false,
+      lastError: error.message,
+      lastErrorAt: new Date().toISOString()
+    };
+    try { writeBackupStatus(status); } catch {}
+    return { ok: false, error: error.message, status };
+  }
+});
+
+ipcMain.handle("backup:open-folder", async () => {
+  fs.mkdirSync(backupDirPath(), { recursive: true });
+  await shell.openPath(backupDirPath());
+  return { ok: true, backupDir: backupDirPath() };
 });
 
 app.on("before-quit", () => {

@@ -1,4 +1,4 @@
-const APP_BRAGA_SW = "app-braga-runtime-v12";
+const APP_BRAGA_SW = "app-braga-runtime-v13";
 const APP_BRAGA_FIREBASE_CONFIG = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
   authDomain: "toner-manager-756c4.firebaseapp.com",
@@ -47,6 +47,7 @@ const APP_SHELL = [
   "./js/app.js",
   "./js/app-theme-pro.js",
   "./js/enterprise/ops.js",
+  "./js/systems/backup/local-backup.js",
   "./js/core/helpers.js",
   "./js/iphone-force-final.js",
   "./icon-192.png",

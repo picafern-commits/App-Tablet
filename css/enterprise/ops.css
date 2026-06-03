@@ -18,11 +18,29 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
+/* Remove title bars/hero headers across pages. */
+.main > .page-hero,
+.main > .dashboard-header,
+.main > .reference-header,
+.main > .topbar,
+main > .page-hero,
+main > .dashboard-header,
+main > .reference-header,
+main > .topbar,
+.dashboard-shell > .dashboard-header,
+.topbar.premium-topbar,
+.premium-topbar {
+  display: none !important;
+}
+
 .main,
 main {
   min-height: 100svh !important;
   overflow: visible !important;
   max-width: var(--enterprise-content-max);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
 .sidebar {
@@ -71,8 +89,6 @@ main {
   display: block !important;
 }
 
-.page-hero,
-.dashboard-header,
 .panel-title-row,
 .section-header {
   display: flex !important;
@@ -89,7 +105,8 @@ main {
 .config-form-grid,
 .config-backup-grid,
 .system-health-grid,
-.dashboard-ops-grid {
+.dashboard-ops-grid,
+.local-backup-grid {
   display: grid !important;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
   gap: 16px !important;
@@ -106,6 +123,25 @@ main {
 .dashboard-panel,
 .metric-card {
   border-radius: var(--app-radius, 18px) !important;
+}
+
+.panel,
+.config-section,
+.dashboard-panel {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.section-header {
+  margin-bottom: 14px;
+}
+
+.section-header h2,
+.section-header h3,
+.panel-title-row h2,
+.panel-title-row h3 {
+  letter-spacing: 0;
+  line-height: 1.15;
 }
 
 .item-actions,
@@ -388,6 +424,19 @@ body.enterprise-search-ready .enterprise-search-shell {
 
 .featured-panel {
   overflow: hidden;
+}
+
+.local-backup-panel .health-card strong {
+  word-break: break-word;
+}
+
+.local-backup-panel #localBackupPath {
+  margin: 12px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.local-backup-panel .config-actions-row {
+  margin-top: 14px;
 }
 
 #listaDashboardStock.equipment-grid {
