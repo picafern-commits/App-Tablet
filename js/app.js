@@ -5299,8 +5299,9 @@ function aplicarDadosOCRNoFormularioStable(dados) {
   if (el("lote")) {
     el("lote").value = dados.lote || "";
   }
-  if (el("sdsRef") && dados.sdsRef) {
-    el("sdsRef").value = dados.sdsRef;
+  if (el("sdsRef")) {
+    const sdsValido = String(dados.sdsRef || "").trim().toUpperCase();
+    el("sdsRef").value = /^S\d{7,12}$/.test(sdsValido) ? sdsValido : "";
   }
 
   preencherDataAtualSeVaziaStable();
@@ -5517,7 +5518,8 @@ function extrairDadosEtiquetaWord() {
   const loc = (el("localizacao") && el("localizacao").value) || "";
   const dataFolha = (el("dataFolha") && el("dataFolha").value) || "";
   const dataScan = (el("data") && el("data").value) || "";
-  const sdsRef = (el("sdsRef") && el("sdsRef").value) || "";
+  const rawSdsRef = (el("sdsRef") && el("sdsRef").value) || "";
+  const sdsRef = /^S\d{7,12}$/i.test(String(rawSdsRef).trim()) ? String(rawSdsRef).trim().toUpperCase() : "";
   const codigoEtiqueta = getCodigoEtiquetaAtualAppBraga();
 
   let serie = "";
@@ -7025,35 +7027,48 @@ function extractLoteFromText(text) {
 
 function extractSdsRefFromText(text) {
   const original = String(text || "");
-  const raw = original
+
+  // Junta linhas mas preserva o suficiente para apanhar "SDS Ref. S340120677"
+  const normalized = original
     .replace(/[\r\n]+/g, " ")
+    .replace(/[|]/g, "I")
+    .replace(/[•·]/g, ".")
     .replace(/\s+/g, " ")
     .trim();
 
-  const normalized = raw
-    .replace(/[|]/g, "I")
-    .replace(/[•·]/g, ".")
-    .replace(/\s+/g, " ");
+  function cleanSdsCandidate(value) {
+    const v = String(value || "")
+      .replace(/\s+/g, "")
+      .replace(/[;,.)]+$/g, "")
+      .toUpperCase();
 
-  const patterns = [
-    /\bSDS\s*R(?:EF|E F|F|E)?\.?\s*[:#\-]?\s*([A-Z]\s*\d[\d\s]{5,20})\b/i,
-    /\bSDS\s*(?:REF|REFERENCE|REFERENCIA|REFERÊNCIA)\.?\s*[:#\-]?\s*([A-Z]\s*\d[\d\s]{5,20})\b/i,
-    /\bSDS[-_\s]*REF\.?\s*[:#\-]?\s*([A-Z]\s*\d[\d\s]{5,20})\b/i,
-    /\bREFER[ÊE]NCIA\s*SDS\.?\s*[:#\-]?\s*([A-Z]\s*\d[\d\s]{5,20})\b/i,
-    /\bSDS\b.{0,40}\b([A-Z]\d{7,12})\b/i,
-    /\b(S\d{7,12})\b/i
-  ];
+    // SDS verdadeiro tem de ser S + números. Nunca aceitar REF.
+    if (/^S\d{7,12}$/.test(v)) return v;
+    return "";
+  }
 
-  for (const pattern of patterns) {
-    const match = normalized.match(pattern);
-    if (match && match[1]) {
-      const value = String(match[1])
-        .replace(/\s+/g, "")
-        .replace(/[;,.)]+$/g, "")
-        .toUpperCase();
+  // Caso principal Kyocera:
+  // "SDS Ref. S340120677"
+  // "SDS Ref: S340120677"
+  // "SDS REF S340120677"
+  const kyocera = normalized.match(/\bSDS\s*REF\.?\s*[:#\-]?\s*(S\s*\d(?:\s*\d){7,12})\b/i);
+  if (kyocera && kyocera[1]) {
+    const fixed = cleanSdsCandidate(kyocera[1]);
+    if (fixed) return fixed;
+  }
 
-      if (/^S\d{7,12}$/.test(value)) return value;
-    }
+  // Variações OCR com espaços no REF ou texto entre SDS e o código
+  const nearSds = normalized.match(/\bSDS\b.{0,60}?\b(S\s*\d(?:\s*\d){7,12})\b/i);
+  if (nearSds && nearSds[1]) {
+    const fixed = cleanSdsCandidate(nearSds[1]);
+    if (fixed) return fixed;
+  }
+
+  // Procura linha/código isolado no formato SDS, mas nunca palavras como REF
+  const fallback = normalized.match(/\b(S\d{7,12})\b/i);
+  if (fallback && fallback[1]) {
+    const fixed = cleanSdsCandidate(fallback[1]);
+    if (fixed) return fixed;
   }
 
   return "";
