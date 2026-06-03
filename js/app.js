@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.20.2";
+const APP_VERSION = "1.20.3";
 
 
 
@@ -473,6 +473,8 @@ async function disponivel() {
       created: new Date()
     });
 
+    const etiquetaGerada = await gerarWordEtiquetaFromForm(true);
+
     equipamento.value = "";
     if (localizacao) localizacao.value = "";
     cor.value = "";
@@ -482,7 +484,12 @@ async function disponivel() {
     if (sdsRef) sdsRef.value = "";
     prepararCodigoEtiquetaTonerAppBraga(true);
 
-    mostrarMensagem("Toner adicionado com sucesso.");
+    mostrarMensagem(
+      etiquetaGerada
+        ? "Toner adicionado ao stock e etiqueta gerada."
+        : "Toner adicionado ao stock, mas a etiqueta nao foi gerada.",
+      etiquetaGerada ? "sucesso" : "erro"
+    );
   } catch (error) {
     console.error(error);
     mostrarMensagem("Erro ao adicionar toner.", "erro");
@@ -5455,9 +5462,6 @@ async function processarOCRInputStable(event) {
 
     mostrarOCRStatusStable(resumo || "A folha foi lida, mas não encontrei dados suficientes.");
     mostrarMensagem(ok ? "Folha lida com sucesso." : "Não encontrei dados suficientes na folha.", ok ? "sucesso" : "erro");
-    if (ok && dados.serie && dados.equipamento) {
-      await gerarWordEtiquetaFromForm(true);
-    }
   } catch (e) {
     console.error("Erro OCR:", e);
     mostrarOCRStatusStable("Erro ao ler a folha.");
@@ -5551,15 +5555,15 @@ function extrairDadosEtiquetaWord() {
 async function gerarWordEtiquetaFromForm(auto = false) {
   try {
     if (typeof docx === "undefined") {
-      mostrarMensagem("Biblioteca Word não carregada.", "erro");
-      return;
+      if (!auto) mostrarMensagem("Biblioteca Word não carregada.", "erro");
+      return false;
     }
 
     const dados = extrairDadosEtiquetaWord();
 
     if (!dados.localCurto || !dados.serie) {
-      mostrarMensagem("Faltam dados para gerar a etiqueta Word.", "erro");
-      return;
+      if (!auto) mostrarMensagem("Faltam dados para gerar a etiqueta Word.", "erro");
+      return false;
     }
 
     const {
@@ -5674,9 +5678,11 @@ async function gerarWordEtiquetaFromForm(auto = false) {
     if (!auto) {
       mostrarMensagem("Etiqueta Word gerada com sucesso.");
     }
+    return true;
   } catch (error) {
     console.error("Erro ao gerar Word:", error);
-    mostrarMensagem("Erro ao gerar a etiqueta Word.", "erro");
+    if (!auto) mostrarMensagem("Erro ao gerar a etiqueta Word.", "erro");
+    return false;
   }
 }
 
