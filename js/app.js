@@ -26,7 +26,8 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.23.2";
+const APP_VERSION = "1.23.3";
+const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BFm5qjGZUqbqNuTADly_22pPnPGH04CtTJkaiTdlneZw7BRNmgjngqL5Ru4WCE1DD83vrZTuOkW_I7WvMOBaOFk";
 
 
 
@@ -1703,7 +1704,7 @@ function aplicarConfigNotificacoesApp(config = {}) {
   appNotificationState.maintenance = config.notifyMaintenance !== false;
   appNotificationState.radios = config.notifyRadios === true;
   appNotificationState.intervalMinutes = Math.max(5, Number(config.notificationIntervalMinutes || 15));
-  appNotificationState.vapidKey = String(config.notificationVapidKey || "").trim();
+  appNotificationState.vapidKey = String(config.notificationVapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "").trim();
 
   const setChecked = (id, value) => {
     const node = document.getElementById(id);
@@ -1718,7 +1719,10 @@ function aplicarConfigNotificacoesApp(config = {}) {
   const interval = document.getElementById("notifyIntervalMinutes");
   if (interval) interval.value = String(appNotificationState.intervalMinutes);
   const vapid = document.getElementById("notifyVapidKey");
-  if (vapid) vapid.value = appNotificationState.vapidKey;
+  if (vapid) {
+    vapid.value = appNotificationState.vapidKey;
+    vapid.placeholder = "Public key Web Push ja configurada";
+  }
 
   iniciarMonitorNotificacoesApp();
   carregarDispositivosNotificacoesApp(false);
@@ -1767,7 +1771,7 @@ async function guardarConfigNotificacoesApp(overrides = null) {
     notifyMaintenance: !!document.getElementById("notifyMaintenance")?.checked,
     notifyRadios: !!document.getElementById("notifyRadios")?.checked,
     notificationIntervalMinutes: Number(document.getElementById("notifyIntervalMinutes")?.value || 15),
-    notificationVapidKey: String(document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || "").trim()
+    notificationVapidKey: String(document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "").trim()
   };
 
   if (overrides) {
@@ -2210,6 +2214,22 @@ function formatTimestampApp(value) {
   });
 }
 
+function labelDispositivoNotificacaoApp(item = {}) {
+  const type = String(item.deviceType || item.platform || "").toLowerCase();
+  if (type.includes("electron")) return "PC Electron";
+  if (type.includes("phone")) return "iPhone / Telemovel";
+  if (type.includes("tablet")) return "Tablet";
+  if (type.includes("pc")) return "PC Web";
+  return "Dispositivo";
+}
+
+function labelMetodoNotificacaoApp(item = {}) {
+  if (item.source === "electron-native") return "Electron nativo";
+  if (item.pushSubscription?.endpoint) return "Web Push standard";
+  if (item.token) return "Firebase FCM";
+  return item.source || "Registo local";
+}
+
 function renderDispositivosNotificacoesApp(items = []) {
   const host = document.getElementById("notifyDevicesList");
   if (!host) return;
@@ -2227,19 +2247,19 @@ function renderDispositivosNotificacoesApp(items = []) {
     const isCurrent = item.id === appNotificationState.restoredTokenDocId ||
       (appNotificationState.fcmToken && item.token === appNotificationState.fcmToken) ||
       (appNotificationState.pushSubscriptionEndpoint && item.endpoint === appNotificationState.pushSubscriptionEndpoint);
-    const source = item.source || "desconhecido";
-    const device = item.deviceType || item.platform || "Dispositivo";
+    const device = labelDispositivoNotificacaoApp(item);
     const permission = item.permission || "sem dados";
-    const mode = item.pushSubscription?.endpoint ? "Web Push standard" : (item.token ? "FCM" : source);
+    const mode = labelMetodoNotificacaoApp(item);
     const updated = formatTimestampApp(item.updatedAt || item.createdAt);
+    const ready = item.source === "electron-native" || item.token || item.pushSubscription?.endpoint;
     return `
       <div class="notification-device-card ${isCurrent ? "is-current" : ""}">
         <div>
           <strong>${escapeHtmlAppBraga(device)}</strong>
           <span>${escapeHtmlAppBraga(mode)} - ${escapeHtmlAppBraga(permission)}</span>
-          <small>Atualizado: ${escapeHtmlAppBraga(updated)}</small>
+          <small>Ultimo contacto: ${escapeHtmlAppBraga(updated)}</small>
         </div>
-        <span class="health-status ${isCurrent ? "ok" : "warn"}">${isCurrent ? "Este" : "Ativo"}</span>
+        <span class="health-status ${ready ? "ok" : "warn"}">${isCurrent ? "Este dispositivo" : (ready ? "Registado" : "Local")}</span>
       </div>
     `;
   }).join("");
@@ -2291,7 +2311,7 @@ async function restaurarRegistoPushAtualApp() {
       return;
     }
 
-    const vapidKey = String(appNotificationState.vapidKey || document.getElementById("notifyVapidKey")?.value || "").trim();
+    const vapidKey = String(appNotificationState.vapidKey || document.getElementById("notifyVapidKey")?.value || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "").trim();
     if (vapidKey && webPushDisponivelApp()) {
       let restored = false;
       try {
@@ -2357,7 +2377,7 @@ async function registarDispositivoLocalNotificacoesApp(source = "web-local") {
 async function registarDispositivoPushApp() {
   try {
     if (!window.db || !window.db.collection) throw new Error("Firestore indisponivel.");
-    const vapidKey = String(document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || "").trim();
+    const vapidKey = String(document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "").trim();
 
     if (window.electronAPI?.showNotification) {
       await guardarConfigNotificacoesApp({ notificationEnabled: true, notificationVapidKey: vapidKey });

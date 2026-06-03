@@ -34,12 +34,17 @@ O instalador fica em `dist`.
 
 Para notificacoes Web Push com a app fechada, precisas de um processo externo a enviar FCM. Este projeto inclui um watcher local gratuito:
 
+As VAPID keys locais ficam em `.env.push.local.ps1`, que nao vai para o GitHub.
+Guarda o ficheiro `service-account.json` do Firebase em:
+
+```text
+C:\Minhas Apps\AppBragaDesktop\service-account.json
+```
+
+Depois usa:
+
 ```powershell
-$env:GOOGLE_APPLICATION_CREDENTIALS="C:\caminho\service-account.json"
-$env:APP_BRAGA_VAPID_PUBLIC_KEY="chave-publica-web-push"
-$env:APP_BRAGA_VAPID_PRIVATE_KEY="chave-privada-web-push"
-$env:APP_BRAGA_VAPID_SUBJECT="mailto:admin@appbraga.pt"
-npm run push:watch
+npm run push:watch:local
 ```
 
 Ele le alteracoes na Firestore e envia FCM/Web Push standard para os dispositivos registados em `notificationTokens`.
@@ -47,7 +52,7 @@ Ele le alteracoes na Firestore e envia FCM/Web Push standard para os dispositivo
 Teste manual para todos os dispositivos registados:
 
 ```powershell
-npm run push:test
+npm run push:test:local
 ```
 
 No Electron, as notificacoes nativas funcionam enquanto o processo estiver aberto ou minimizado para a tray. No iPhone/Android, a app deve estar instalada como PWA e o dispositivo deve aparecer em `Configuracoes > Dispositivos ativos` como `Web Push standard` ou `FCM`.
