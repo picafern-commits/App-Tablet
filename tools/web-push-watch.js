@@ -4,10 +4,19 @@
 const fs = require("fs");
 const https = require("https");
 const crypto = require("crypto");
+let webpush = null;
+try {
+  webpush = require("web-push");
+} catch {
+  webpush = null;
+}
 
 const SERVICE_ACCOUNT_PATH = process.env.GOOGLE_APPLICATION_CREDENTIALS || process.env.FIREBASE_SERVICE_ACCOUNT;
 const PROJECT_ID = process.env.FIREBASE_PROJECT_ID || "toner-manager-756c4";
 const POLL_SECONDS = Math.max(15, Number(process.env.APP_BRAGA_PUSH_INTERVAL || 60));
+const VAPID_PUBLIC_KEY = process.env.APP_BRAGA_VAPID_PUBLIC_KEY || "";
+const VAPID_PRIVATE_KEY = process.env.APP_BRAGA_VAPID_PRIVATE_KEY || "";
+const VAPID_SUBJECT = process.env.APP_BRAGA_VAPID_SUBJECT || "mailto:admin@appbraga.pt";
 const WATCH_COLLECTIONS = (process.env.APP_BRAGA_PUSH_COLLECTIONS || "printers,stock,manutencoes,radios,radioWeeklyRecords")
   .split(",")
   .map((item) => item.trim())
@@ -19,6 +28,10 @@ if (!SERVICE_ACCOUNT_PATH) {
 }
 
 const serviceAccount = JSON.parse(fs.readFileSync(SERVICE_ACCOUNT_PATH, "utf8"));
+
+if (webpush && VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+}
 
 function base64url(input) {
   return Buffer.from(input)
@@ -122,8 +135,9 @@ async function listCollection(collection) {
 async function listTokens() {
   const docs = await listCollection("notificationTokens");
   return docs
-    .map((doc) => doc.fields)
-    .filter((item) => item.active !== false && item.token && String(item.source || "").includes("web-push"));
+    .map((doc) => ({ id: getDocId(doc.name), ...doc.fields }))
+    .filter((item) => item.active !== false)
+    .filter((item) => item.token || item.pushSubscription?.endpoint);
 }
 
 async function sendFcm(token, title, body, data = {}) {
@@ -152,10 +166,25 @@ async function broadcast(title, body, data) {
   const tokens = await listTokens();
   for (const item of tokens) {
     try {
-      await sendFcm(item.token, title, body, data);
-      console.log(`Push enviado: ${item.deviceName || item.deviceType || item.token.slice(0, 12)}`);
+      if (item.token) {
+        await sendFcm(item.token, title, body, data);
+        console.log(`FCM enviado: ${item.deviceName || item.deviceType || item.token.slice(0, 12)}`);
+      }
+      if (item.pushSubscription?.endpoint) {
+        if (!webpush || !VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
+          console.warn("Web Push standard ignorado: instala web-push e define APP_BRAGA_VAPID_PUBLIC_KEY/PRIVATE_KEY.");
+          continue;
+        }
+        await webpush.sendNotification(item.pushSubscription, JSON.stringify({
+          title,
+          body,
+          tag: data?.event || data?.collection || "app-braga",
+          data
+        }));
+        console.log(`Web Push enviado: ${item.deviceName || item.deviceType || item.id || item.pushSubscription.endpoint.slice(0, 24)}`);
+      }
     } catch (error) {
-      console.warn(`Falhou push para token: ${error.message}`);
+      console.warn(`Falhou push para dispositivo: ${error.message}`);
     }
   }
 }
@@ -293,6 +322,8 @@ async function pollOnce() {
 
 async function main() {
   console.log(`App Braga Web Push watcher ativo. Projeto: ${PROJECT_ID}. Intervalo: ${POLL_SECONDS}s.`);
+  if (!webpush) console.warn("Modulo web-push nao instalado. FCM continua ativo; Web Push standard nao sera enviado.");
+  if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) console.warn("VAPID private/public nao definidas. Web Push standard nao sera enviado.");
   await pollOnce();
   setInterval(() => pollOnce().catch((error) => console.error(error.message)), POLL_SECONDS * 1000);
 }

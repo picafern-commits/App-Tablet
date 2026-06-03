@@ -9,7 +9,7 @@
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/style.css?v=ops-dashboard-backup-1">
+  <link rel="stylesheet" href="../css/style.css?v=notify-all-devices-1">
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
   <link rel="stylesheet" href="../css/app-theme-pro.css?v=theme-pro-1">
   <link rel="stylesheet" href="../css/enterprise/ops.css?v=ops-7">
@@ -276,11 +276,11 @@
           <div class="empty-state mini">A carregar dispositivos...</div>
         </div>
       </div>
-      <p class="section-subtitle notification-note">Electron consegue avisar com a janela fechada para a tray. Web/iPhone/Android precisam de permissão do sistema; push com a app totalmente fechada depende de suporte Web Push do dispositivo.</p>
+      <p class="section-subtitle notification-note">Electron avisa enquanto o processo estiver ativo/tray. Web, iPhone e Android usam Web Push/FCM com permissão do sistema; para funcionar com a app fechada é preciso o watcher externo ativo.</p>
       <div class="health-card">
         <span>Web Push externo</span>
         <strong>Usa npm run push:watch num PC/servidor</strong>
-        <p class="section-subtitle">Sem Blaze: o watcher local lê a Firestore e envia FCM para os dispositivos registados.</p>
+        <p class="section-subtitle">Sem Blaze: o watcher local lê a Firestore e envia FCM/Web Push standard para os dispositivos registados.</p>
       </div>
     </div>
 
@@ -334,11 +334,12 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<script src="../js/app.js?v=ops-dashboard-backup-1"></script>
+<script src="../js/app.js?v=notify-all-devices-1"></script>
   <script src="../js/core/helpers.js"></script>
   <script src="../js/iphone-force-final.js?v=v3-final"></script>
 <script src="../js/enterprise/ops.js?v=ops-7"></script>
 <script src="../js/systems/backup/local-backup.js?v=backup-2"></script>
-<script src="../js/config-collapsible.js?v=collapse-final-1"></script>
+<script src="../js/config-collapsible.js?v=collapse-all-2"></script>
 </body>
 </html>
+

@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.22.0";
+const APP_VERSION = "1.23.0";
 
 
 
@@ -92,6 +92,7 @@ const appNotificationState = {
   intervalMinutes: 15,
   vapidKey: "",
   fcmToken: "",
+  pushSubscriptionEndpoint: "",
   sent: {},
   realtimeBoot: {},
   realtimeLast: {},
@@ -2094,6 +2095,79 @@ function getNotificationTokenDocId(token) {
   return encodeURIComponent(String(token || "")).replace(/\./g, "%2E").slice(0, 1400);
 }
 
+function urlBase64ToUint8ArrayAppBraga(base64String) {
+  const padding = "=".repeat((4 - base64String.length % 4) % 4);
+  const base64 = `${base64String}${padding}`.replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = window.atob(base64);
+  return Uint8Array.from([...rawData].map((char) => char.charCodeAt(0)));
+}
+
+function getNotificationSubscriptionDocId(endpoint) {
+  return `standard-web-push-${Math.abs(hashTextoAppBraga(endpoint || navigator.userAgent || "device"))}`;
+}
+
+async function registarPushSubscriptionPadraoApp(vapidKey) {
+  if (!vapidKey || !webPushDisponivelApp()) return null;
+  await registarServiceWorkerAppBraga();
+  const registration = await navigator.serviceWorker.ready;
+  let subscription = await registration.pushManager.getSubscription();
+
+  if (!subscription) {
+    subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8ArrayAppBraga(vapidKey)
+    });
+  }
+
+  const json = subscription.toJSON ? subscription.toJSON() : subscription;
+  const endpoint = json.endpoint || subscription.endpoint;
+  if (!endpoint || !window.db?.collection) return null;
+
+  const docId = getNotificationSubscriptionDocId(endpoint);
+  appNotificationState.pushSubscriptionEndpoint = endpoint;
+  appNotificationState.restoredTokenDocId = docId;
+  await window.db.collection("notificationTokens").doc(docId).set({
+    active: true,
+    source: "standard-web-push",
+    pushSubscription: json,
+    endpoint,
+    appVersion: APP_VERSION,
+    deviceType: getNotificationDeviceTypeApp(),
+    userAgent: navigator.userAgent,
+    platform: navigator.platform || "",
+    permission: "Notification" in window ? Notification.permission : "unsupported",
+    pushAvailable: true,
+    updatedAt: Date.now(),
+    createdAt: Date.now()
+  }, { merge: true });
+  return { docId, endpoint };
+}
+
+async function registarFcmWebPushApp(vapidKey) {
+  const messaging = await garantirFirebaseMessagingApp();
+  const registration = await navigator.serviceWorker.ready;
+  const token = await messaging.getToken({ vapidKey, serviceWorkerRegistration: registration });
+  if (!token) throw new Error("Firebase nao devolveu token.");
+
+  const docId = getNotificationTokenDocId(token);
+  appNotificationState.fcmToken = token;
+  appNotificationState.restoredTokenDocId = appNotificationState.restoredTokenDocId || docId;
+  await window.db.collection("notificationTokens").doc(docId).set({
+    token,
+    active: true,
+    source: "web-push-fcm",
+    appVersion: APP_VERSION,
+    deviceType: getNotificationDeviceTypeApp(),
+    userAgent: navigator.userAgent,
+    platform: navigator.platform || "",
+    permission: "Notification" in window ? Notification.permission : "unsupported",
+    pushAvailable: true,
+    updatedAt: Date.now(),
+    createdAt: Date.now()
+  }, { merge: true });
+  return { docId, token };
+}
+
 function webPushDisponivelApp() {
   return !!(window.isSecureContext && "serviceWorker" in navigator && "PushManager" in window);
 }
@@ -2136,21 +2210,24 @@ function renderDispositivosNotificacoesApp(items = []) {
     .sort((a, b) => normalizeTimestampApp(b.updatedAt || b.createdAt) - normalizeTimestampApp(a.updatedAt || a.createdAt));
 
   if (!activeItems.length) {
-    host.innerHTML = `<div class="empty-state mini">Ainda não há dispositivos ativos.</div>`;
+    host.innerHTML = `<div class="empty-state mini">Ainda nao ha dispositivos ativos.</div>`;
     return;
   }
 
   host.innerHTML = activeItems.map((item) => {
-    const isCurrent = item.id === appNotificationState.restoredTokenDocId || (appNotificationState.fcmToken && item.token === appNotificationState.fcmToken);
+    const isCurrent = item.id === appNotificationState.restoredTokenDocId ||
+      (appNotificationState.fcmToken && item.token === appNotificationState.fcmToken) ||
+      (appNotificationState.pushSubscriptionEndpoint && item.endpoint === appNotificationState.pushSubscriptionEndpoint);
     const source = item.source || "desconhecido";
     const device = item.deviceType || item.platform || "Dispositivo";
     const permission = item.permission || "sem dados";
+    const mode = item.pushSubscription?.endpoint ? "Web Push standard" : (item.token ? "FCM" : source);
     const updated = formatTimestampApp(item.updatedAt || item.createdAt);
     return `
       <div class="notification-device-card ${isCurrent ? "is-current" : ""}">
         <div>
           <strong>${escapeHtmlAppBraga(device)}</strong>
-          <span>${escapeHtmlAppBraga(source)} · ${escapeHtmlAppBraga(permission)}</span>
+          <span>${escapeHtmlAppBraga(mode)} - ${escapeHtmlAppBraga(permission)}</span>
           <small>Atualizado: ${escapeHtmlAppBraga(updated)}</small>
         </div>
         <span class="health-status ${isCurrent ? "ok" : "warn"}">${isCurrent ? "Este" : "Ativo"}</span>
@@ -2207,25 +2284,18 @@ async function restaurarRegistoPushAtualApp() {
 
     const vapidKey = String(appNotificationState.vapidKey || document.getElementById("notifyVapidKey")?.value || "").trim();
     if (vapidKey && webPushDisponivelApp()) {
-      await registarServiceWorkerAppBraga();
-      const messaging = await garantirFirebaseMessagingApp();
-      const registration = await navigator.serviceWorker.ready;
-      const token = await messaging.getToken({ vapidKey, serviceWorkerRegistration: registration });
-      if (token) {
-        const docId = getNotificationTokenDocId(token);
-        appNotificationState.fcmToken = token;
-        appNotificationState.restoredTokenDocId = docId;
-        await window.db.collection("notificationTokens").doc(docId).set({
-          token,
-          active: true,
-          source: "web-push",
-          appVersion: APP_VERSION,
-          deviceType: getNotificationDeviceTypeApp(),
-          userAgent: navigator.userAgent,
-          platform: navigator.platform || "",
-          permission,
-          updatedAt: Date.now()
-        }, { merge: true });
+      let restored = false;
+      try {
+        restored = !!(await registarPushSubscriptionPadraoApp(vapidKey));
+      } catch (error) {
+        console.warn("Web Push standard indisponivel:", error);
+      }
+      try {
+        restored = !!(await registarFcmWebPushApp(vapidKey)) || restored;
+      } catch (error) {
+        console.warn("FCM Web Push indisponivel:", error);
+      }
+      if (restored) {
         setNotificationTokenStatus("Registado", "ok");
         return;
       }
@@ -2316,30 +2386,26 @@ async function registarDispositivoPushApp() {
     }
 
     setNotificationTokenStatus("A registar...", "warn");
-    await registarServiceWorkerAppBraga();
-    const messaging = await garantirFirebaseMessagingApp();
-    const registration = await navigator.serviceWorker.ready;
-    const token = await messaging.getToken({ vapidKey, serviceWorkerRegistration: registration });
-    if (!token) throw new Error("Firebase nao devolveu token.");
+    let standardOk = false;
+    let fcmOk = false;
 
-    appNotificationState.fcmToken = token;
-    appNotificationState.restoredTokenDocId = getNotificationTokenDocId(token);
-    await window.db.collection("notificationTokens").doc(getNotificationTokenDocId(token)).set({
-      token,
-      active: true,
-      source: "web-push",
-      appVersion: APP_VERSION,
-      deviceType: getNotificationDeviceTypeApp(),
-      userAgent: navigator.userAgent,
-      platform: navigator.platform || "",
-      permission: Notification.permission,
-      updatedAt: Date.now(),
-      createdAt: Date.now()
-    }, { merge: true });
+    try {
+      standardOk = !!(await registarPushSubscriptionPadraoApp(vapidKey));
+    } catch (error) {
+      console.warn("Erro no Web Push standard:", error);
+    }
+
+    try {
+      fcmOk = !!(await registarFcmWebPushApp(vapidKey));
+    } catch (error) {
+      console.warn("Erro no FCM Web Push:", error);
+    }
+
+    if (!standardOk && !fcmOk) throw new Error("Nenhum servico push remoto ficou disponivel neste dispositivo.");
 
     await guardarConfigNotificacoesApp({ notificationEnabled: true, notificationVapidKey: vapidKey });
     setNotificationTokenStatus("Registado", "ok");
-    mostrarMensagem("Dispositivo registado para push.");
+    mostrarMensagem(standardOk && fcmOk ? "Dispositivo registado para Web Push e FCM." : "Dispositivo registado para push.");
   } catch (error) {
     console.error("Erro ao registar push:", error);
     setNotificationTokenStatus("Erro no registo", "bad");

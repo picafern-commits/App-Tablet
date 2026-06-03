@@ -1,28 +1,143 @@
+(function () {
+  const KEY = "appBragaConfigCollapsedFinal";
+  const CARD_SELECTOR = "main .config-section, main .config-card, main .enterprise-config-card";
 
-(function(){
-  const KEY="appBragaConfigCollapsedFinal";
-  function state(){try{return JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){return {}}}
-  function save(s){localStorage.setItem(KEY,JSON.stringify(s))}
-  function title(card,i){const h=card.querySelector("h1,h2,h3,h4,.card-title");return h?h.textContent.replace(/\s+/g," ").trim():`Secção ${i+1}`}
-  function key(t){return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}
-  function setup(){
-    if(!/config\.html$/i.test(location.pathname))return;
-    const cards=[...document.querySelectorAll("main .config-card, main .enterprise-config-card")];
-    cards.forEach((card,i)=>{
-      if(card.dataset.collapseReady==="1"||card.closest(".modal-card"))return;
-      const t=title(card,i), k=key(t)||("sec-"+i), s=state();
-      const children=[...card.childNodes];
-      const head=document.createElement("button");head.type="button";head.className="config-collapse-header";head.innerHTML=`<span class="config-collapse-title">${t}</span><span class="config-collapse-icon">−</span>`;
-      const body=document.createElement("div");body.className="config-collapse-body";
-      children.forEach(n=>{if(n.nodeType===1&&n.matches("h1,h2,h3,h4,.card-title"))n.style.display="none";body.appendChild(n)});
-      card.appendChild(head);card.appendChild(body);card.dataset.collapseReady="1";card.dataset.key=k;
-      function apply(c){card.classList.toggle("is-collapsed",c);body.style.display=c?"none":"";head.querySelector(".config-collapse-icon").textContent=c?"+":"−"}
-      head.onclick=e=>{e.preventDefault();const c=!card.classList.contains("is-collapsed");const st=state();st[k]=c;save(st);apply(c)};
-      apply(s[k]===true);
+  function state() {
+    try {
+      return JSON.parse(localStorage.getItem(KEY) || "{}");
+    } catch {
+      return {};
+    }
+  }
+
+  function save(nextState) {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(nextState || {}));
+    } catch {
+      // UI preference only.
+    }
+  }
+
+  function cleanTitle(text) {
+    return String(text || "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function title(card, index) {
+    const heading = card.querySelector(".section-header h1, .section-header h2, .section-header h3, .section-header h4, h1, h2, h3, h4, .card-title");
+    return cleanTitle(heading ? heading.textContent : `Seccao ${index + 1}`);
+  }
+
+  function key(text, index) {
+    return cleanTitle(text)
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || `sec-${index}`;
+  }
+
+  function hideDuplicatedTitle(node) {
+    if (node.nodeType !== 1) return;
+    if (node.matches("h1,h2,h3,h4,.card-title")) {
+      node.style.display = "none";
+      return;
+    }
+    const heading = node.querySelector(":scope > h1, :scope > h2, :scope > h3, :scope > h4, :scope > .card-title");
+    if (heading) heading.style.display = "none";
+  }
+
+  function applyCollapsed(card, body, collapsed) {
+    card.classList.toggle("is-collapsed", collapsed);
+    body.hidden = collapsed;
+    const icon = card.querySelector(".config-collapse-icon");
+    if (icon) icon.textContent = collapsed ? "+" : "-";
+  }
+
+  function ensureGlobalActions() {
+    if (document.querySelector(".config-collapse-global-actions")) return;
+    const main = document.querySelector("main");
+    if (!main) return;
+    const actions = document.createElement("div");
+    actions.className = "config-collapse-global-actions";
+    actions.innerHTML = `
+      <button class="secondary-btn" type="button" onclick="configExpandAll()">Abrir tudo</button>
+      <button class="secondary-btn" type="button" onclick="configCollapseAll()">Fechar tudo</button>
+    `;
+    const hero = main.querySelector(".page-hero, .dashboard-header, .section-header");
+    if (hero?.nextSibling) main.insertBefore(actions, hero.nextSibling);
+    else main.insertBefore(actions, main.firstChild);
+  }
+
+  function setup() {
+    if (!/config\.html$/i.test(location.pathname)) return;
+    ensureGlobalActions();
+    const saved = state();
+    const cards = [...document.querySelectorAll(CARD_SELECTOR)];
+
+    cards.forEach((card, index) => {
+      if (card.dataset.collapseReady === "1" || card.closest(".modal-card")) return;
+
+      const cardTitle = title(card, index);
+      const cardKey = key(cardTitle, index);
+      const children = [...card.childNodes];
+      const header = document.createElement("button");
+      const body = document.createElement("div");
+
+      header.type = "button";
+      header.className = "config-collapse-header";
+      header.innerHTML = `<span class="config-collapse-title">${cardTitle}</span><span class="config-collapse-icon">-</span>`;
+      body.className = "config-collapse-body";
+
+      children.forEach((child) => {
+        hideDuplicatedTitle(child);
+        body.appendChild(child);
+      });
+
+      card.classList.add("config-collapsible-card");
+      card.dataset.collapseReady = "1";
+      card.dataset.key = cardKey;
+      card.appendChild(header);
+      card.appendChild(body);
+
+      header.addEventListener("click", (event) => {
+        event.preventDefault();
+        const nextCollapsed = !card.classList.contains("is-collapsed");
+        const nextState = state();
+        nextState[cardKey] = nextCollapsed;
+        save(nextState);
+        applyCollapsed(card, body, nextCollapsed);
+      });
+
+      applyCollapsed(card, body, saved[cardKey] === true);
     });
   }
-  window.configExpandAll=()=>{const s=state();document.querySelectorAll(".config-collapsible-card,.config-card,.enterprise-config-card").forEach(c=>{if(c.dataset.key)s[c.dataset.key]=false});save(s);document.querySelectorAll(".config-collapse-body").forEach(b=>b.style.display="");document.querySelectorAll(".config-collapse-icon").forEach(i=>i.textContent="−")};
-  window.configCollapseAll=()=>{const s=state();document.querySelectorAll(".config-card,.enterprise-config-card").forEach(c=>{if(c.dataset.key)s[c.dataset.key]=true});save(s);document.querySelectorAll(".config-collapse-body").forEach(b=>b.style.display="none");document.querySelectorAll(".config-collapse-icon").forEach(i=>i.textContent="+")};
-  document.addEventListener("DOMContentLoaded",()=>{setup();setTimeout(setup,500);setTimeout(setup,1500)});
-  window.addEventListener("pageshow",()=>setTimeout(setup,200));
+
+  window.configExpandAll = () => {
+    const nextState = state();
+    document.querySelectorAll(CARD_SELECTOR).forEach((card) => {
+      if (card.dataset.key) nextState[card.dataset.key] = false;
+      const body = card.querySelector(".config-collapse-body");
+      if (body) applyCollapsed(card, body, false);
+    });
+    save(nextState);
+  };
+
+  window.configCollapseAll = () => {
+    const nextState = state();
+    document.querySelectorAll(CARD_SELECTOR).forEach((card) => {
+      if (card.dataset.key) nextState[card.dataset.key] = true;
+      const body = card.querySelector(".config-collapse-body");
+      if (body) applyCollapsed(card, body, true);
+    });
+    save(nextState);
+  };
+
+  document.addEventListener("DOMContentLoaded", () => {
+    setup();
+    setTimeout(setup, 500);
+    setTimeout(setup, 1500);
+  });
+  window.addEventListener("pageshow", () => setTimeout(setup, 200));
 })();
