@@ -5655,3 +5655,54 @@ div:has(> #primaryColor) {
 /* ===== END ETIQUETA TONER / WORD MAIS FORTE FINAL ===== */
 
 
+
+
+/* Etiqueta completa */
+.etq-sheet,
+.print-label,
+.etiqueta-word,
+.word-label{
+ border:2px solid #000 !important;
+ box-sizing:border-box !important;
+}
+
+
+
+/* ===== ETIQUETA REMOVE LOCALIZACAO FINAL ===== */
+#printAreaEtiquetaAppBraga .etq-sheet,
+.print-label,
+.etiqueta-word,
+.word-label {
+  position: relative !important;
+  border: 2.2px solid #000 !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+#printAreaEtiquetaAppBraga .qr-top-right,
+#printAreaEtiquetaAppBraga .qrcode,
+#printAreaEtiquetaAppBraga .qr-code,
+#printAreaEtiquetaAppBraga .etiqueta-qr {
+  position: absolute !important;
+  top: 7mm !important;
+  right: 7mm !important;
+  width: 23mm !important;
+  height: 23mm !important;
+  max-width: 23mm !important;
+  max-height: 23mm !important;
+  bottom: auto !important;
+  left: auto !important;
+}
+
+@media print {
+  @page { size: 100mm 150mm; margin: 0; }
+
+  #printAreaEtiquetaAppBraga .etq-sheet,
+  .print-label,
+  .etiqueta-word,
+  .word-label {
+    border: 2.2px solid #000 !important;
+    box-sizing: border-box !important;
+  }
+}
+/* ===== END ETIQUETA REMOVE LOCALIZACAO FINAL ===== */

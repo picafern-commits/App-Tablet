@@ -769,7 +769,6 @@ function renderStockCards(items) {
       <div class="stock-id">${t.idInterno}</div>
       <div class="meta-line">Equipamento: <span class="meta-value">${t.equipamento}</span></div>
       <div class="meta-line">Cor: <span class="meta-value">${t.cor}</span></div>
-      <div class="meta-line">Localização: <span class="meta-value">${t.localizacao}</span></div>
       <div class="meta-line">Lote: <span class="meta-value">${t.lote || "-"}</span></div>
       <div class="meta-line">SDS Ref: <span class="meta-value">${t.sdsRef || "-"}</span></div>
       <div class="meta-line">Código etiqueta: <span class="meta-value">${t.codigoEtiqueta || "-"}</span></div>
@@ -798,7 +797,6 @@ function renderHistoricoCards(items) {
       <div class="history-id">${t.idInterno}</div>
       <div class="meta-line">Equipamento: <span class="meta-value">${t.equipamento}</span></div>
       <div class="meta-line">Cor: <span class="meta-value">${t.cor || "-"}</span></div>
-      <div class="meta-line">Localização: <span class="meta-value">${t.localizacao || "Sem Localização"}</span></div>
       <div class="meta-line">Lote: <span class="meta-value">${t.lote || "-"}</span></div>
       <div class="meta-line">SDS Ref: <span class="meta-value">${t.sdsRef || "-"}</span></div>
       <div class="meta-line">Código etiqueta: <span class="meta-value">${t.codigoEtiqueta || "-"}</span></div>
@@ -1117,7 +1115,6 @@ function renderManutencoes(items) {
 
       <div class="meta-line">Técnico: <span class="meta-value">${item.tecnico}</span></div>
       <div class="meta-line">Armazém: <span class="meta-value">${item.armazem}</span></div>
-      <div class="meta-line">Localização: <span class="meta-value">${item.localizacao}</span></div>
       <div class="meta-line">IP: <span class="meta-value"><a href="http://${item.ip}" target="_blank" rel="noopener noreferrer">${item.ip}</a></span></div>
       <div class="meta-line">Pedido: <span class="meta-value">${item.dataPedido}</span></div>
       <div class="meta-line">Resolução: <span class="meta-value">${item.dataResolucao || "Sem resolução"}</span></div>
@@ -2172,7 +2169,6 @@ function abrirHistoricoImpressora(item) {
             <div class="meta-line">ID: <span class="meta-value">${h.idInterno || "-"}</span></div>
             <div class="meta-line">Cor: <span class="meta-value">${h.cor || "-"}</span></div>
             <div class="meta-line">Data: <span class="meta-value">${h.data || "Sem Data"}</span></div>
-            <div class="meta-line">Localização: <span class="meta-value">${h.localizacao || "Sem Localização"}</span></div>
           </div>
         `).join("") : `<div class="panel empty-state"><h3>Sem histórico para esta impressora</h3><p>Quando houver movimentos associados, aparecem aqui.</p></div>`}
       </div>
@@ -7348,7 +7344,6 @@ function renderEtiquetasWordCards() {
       <div class="stock-id">${t.localCurto || t.localizacao || 'Etiqueta'}</div>
       <div class="meta-line">Série: <span class="meta-value">${t.serie || '-'}</span></div>
       <div class="meta-line">Armazém: <span class="meta-value">${t.armazem || '-'}</span></div>
-      <div class="meta-line">Localização: <span class="meta-value">${t.localizacao || '-'}</span></div>
       <div class="meta-line">Equipamento: <span class="meta-value">${t.equipamento || '-'}</span></div>
       <div class="meta-line">Cor: <span class="meta-value">${t.cor || '-'}</span></div>
       <div class="meta-line">Lote: <span class="meta-value">${t.lote || '-'}</span></div>
@@ -7369,7 +7364,6 @@ function montarHtmlEtiquetaImpressao(item) {
     ["Local", item.localCurto || item.localizacao],
     ["Série", item.serie],
     ["Armazém", item.armazem],
-    ["Localização", item.localizacao],
     ["Equipamento", item.equipamento],
     ["Cor", item.cor],
     ["Lote", item.lote],
@@ -7390,13 +7384,13 @@ function montarHtmlEtiquetaImpressao(item) {
 <style>
   @page { size: 100mm 150mm; margin: 0; }
   html, body { margin:0; padding:0; width:100mm; height:150mm; font-family: Arial, sans-serif; }
-  body { box-sizing:border-box; padding:8mm; color:#000; }
+  body { box-sizing:border-box; padding:7mm; color:#000; }
   .etq-wrap { width:100%; height:100%; display:flex; flex-direction:column; justify-content:flex-start; }
-  .etq-title { font-size:22px; font-weight:1000; margin:0 0 6mm; }
+  .etq-title { font-size:22px; font-weight:1000; margin:0 30mm 6mm 0; }
   .etq-row { display:flex; flex-direction:column; margin:0 0 3.5mm; }
   .etq-key { font-size:11px; font-weight:1000; text-transform:uppercase; letter-spacing:.4px; }
   .etq-val { font-size:16px; line-height:1.25; word-break:break-word; }
-  .etq-qr { width:30mm; height:30mm; margin-top:auto; }
+  .etq-qr { position:absolute; top:8mm; right:8mm; width:24mm; height:24mm; margin-top:0; }
   .etq-code { font-size:9px; font-weight:900; margin-top:2mm; word-break:break-all; }
 </style>
 </head>
@@ -7434,7 +7428,7 @@ async function regerarEtiquetaWordPartilhada(id) {
 
     setTimeout(() => {
       try {
-        try{ if(window.reforcarEtiquetaTonerPrint) window.reforcarEtiquetaTonerPrint(); }catch(e){} window.print();
+        try{ if(window.reforcarEtiquetaTonerPrint) window.reforcarEtiquetaTonerPrint(); }catch(e){} try{ if(window.reforcarEtiquetaSemLocalizacao) window.reforcarEtiquetaSemLocalizacao(); }catch(e){} window.print();
         mostrarMensagem('Etiqueta pronta a imprimir.');
       } catch (e) {
         console.error(e);
@@ -7457,7 +7451,6 @@ function montarHtmlEtiquetaOverlay(item) {
     ["Local", item.localCurto || item.localizacao],
     ["Série", item.serie],
     ["Armazém", item.armazem],
-    ["Localização", item.localizacao],
     ["Equipamento", item.equipamento],
     ["Cor", item.cor],
     ["Lote", item.lote],
@@ -7479,12 +7472,12 @@ function montarHtmlEtiquetaOverlay(item) {
         #printAreaEtiquetaAppBraga, #printAreaEtiquetaAppBraga * { visibility: visible !important; }
         #printAreaEtiquetaAppBraga { position: fixed !important; inset: 0 !important; width: 100mm !important; height: 150mm !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; background: #fff !important; }
       }
-      #printAreaEtiquetaAppBraga .etq-sheet { width:100mm; height:150mm; max-width:100mm; max-height:150mm; overflow:hidden; box-sizing:border-box; padding:8mm; color:#000; font-family:'Arial Black', Arial, Helvetica, sans-serif; font-weight:950; background:#fff; display:flex; flex-direction:column; justify-content:flex-start; break-inside: avoid; page-break-inside: avoid; break-after: avoid-page; page-break-after: avoid; }
-      #printAreaEtiquetaAppBraga .etq-title { font-size:22px; font-weight:1000; margin:0 0 6mm; }
+      #printAreaEtiquetaAppBraga .etq-sheet { position:relative; width:100mm; height:150mm; max-width:100mm; max-height:150mm; overflow:hidden; box-sizing:border-box; padding:7mm; color:#000; font-family:'Arial Black', Arial, Helvetica, sans-serif; font-weight:950; background:#fff; display:flex; flex-direction:column; justify-content:flex-start; break-inside: avoid; page-break-inside: avoid; break-after: avoid-page; page-break-after: avoid; }
+      #printAreaEtiquetaAppBraga .etq-title { font-size:22px; font-weight:1000; margin:0 30mm 6mm 0; }
       #printAreaEtiquetaAppBraga .etq-row { display:flex; flex-direction:column; margin:0 0 3.5mm; }
       #printAreaEtiquetaAppBraga .etq-key { font-size:11px; font-weight:1000; text-transform:uppercase; letter-spacing:.4px; }
       #printAreaEtiquetaAppBraga .etq-val { font-size:16px; line-height:1.25; word-break:break-word; }
-      #printAreaEtiquetaAppBraga .etq-qr { width:30mm; height:30mm; margin-top:auto; }
+      #printAreaEtiquetaAppBraga .etq-qr { position:absolute; top:8mm; right:8mm; width:24mm; height:24mm; margin-top:0; }
       #printAreaEtiquetaAppBraga .etq-qr img,
       #printAreaEtiquetaAppBraga .etq-qr canvas { width:30mm !important; height:30mm !important; }
       #printAreaEtiquetaAppBraga .etq-code { font-size:9px; font-weight:900; margin-top:2mm; word-break:break-all; }
@@ -9374,4 +9367,79 @@ window.addEventListener("orientationchange", () => {
     `;
   };
   document.addEventListener("DOMContentLoaded", window.reforcarEtiquetaTonerPrint);
+})();
+
+
+/* Etiqueta completa */
+.etq-sheet,
+.print-label,
+.etiqueta-word,
+.word-label{
+ border:2px solid #000 !important;
+ box-sizing:border-box !important;
+}
+
+
+/* ===== ETIQUETA SEM LOCALIZACAO FINAL ===== */
+(function(){
+  window.reforcarEtiquetaSemLocalizacao = function(){
+    try{
+      const styleId = "etiqueta-sem-localizacao-final";
+      let style = document.getElementById(styleId);
+      if(!style){
+        style = document.createElement("style");
+        style.id = styleId;
+        document.head.appendChild(style);
+      }
+      style.textContent = `
+        @media print {
+          @page { size: 100mm 150mm; margin: 0; }
+        }
+        #printAreaEtiquetaAppBraga .etq-sheet,
+        .print-label,
+        .etiqueta-word,
+        .word-label {
+          position: relative !important;
+          border: 2.2px solid #000 !important;
+          box-sizing: border-box !important;
+          overflow: hidden !important;
+        }
+        #printAreaEtiquetaAppBraga .etq-row:has(.etq-label),
+        #printAreaEtiquetaAppBraga .etq-field {
+          margin-bottom: 4.2mm !important;
+        }
+        #printAreaEtiquetaAppBraga .etq-label {
+          color: #000 !important;
+          font-weight: 1000 !important;
+          letter-spacing: .08em !important;
+        }
+        #printAreaEtiquetaAppBraga .etq-value {
+          color: #000 !important;
+          font-weight: 1000 !important;
+        }
+        #printAreaEtiquetaAppBraga .qr-top-right,
+        #printAreaEtiquetaAppBraga .qrcode,
+        #printAreaEtiquetaAppBraga .qr-code,
+        #printAreaEtiquetaAppBraga .etiqueta-qr {
+          position: absolute !important;
+          top: 7mm !important;
+          right: 7mm !important;
+          width: 23mm !important;
+          height: 23mm !important;
+          max-width: 23mm !important;
+          max-height: 23mm !important;
+          bottom: auto !important;
+          left: auto !important;
+        }
+      `;
+      // remove visualmente campo localização se algum template antigo ainda o gerar
+      document.querySelectorAll("#printAreaEtiquetaAppBraga .etq-row, #printAreaEtiquetaAppBraga .etq-field, #printAreaEtiquetaAppBraga div").forEach(el=>{
+        const text=(el.textContent||"").trim().toLowerCase();
+        if(text.startsWith("localização") || text.startsWith("localizacao")){
+          el.remove();
+        }
+      });
+    }catch(e){}
+  };
+  document.addEventListener("DOMContentLoaded", window.reforcarEtiquetaSemLocalizacao);
 })();
