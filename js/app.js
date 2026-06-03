@@ -5299,8 +5299,8 @@ function aplicarDadosOCRNoFormularioStable(dados) {
   if (el("lote")) {
     el("lote").value = dados.lote || "";
   }
-  if (el("sdsRef")) {
-    el("sdsRef").value = dados.sdsRef || "";
+  if (el("sdsRef") && dados.sdsRef) {
+    el("sdsRef").value = dados.sdsRef;
   }
 
   preencherDataAtualSeVaziaStable();
@@ -7024,17 +7024,38 @@ function extractLoteFromText(text) {
 }
 
 function extractSdsRefFromText(text) {
-  const raw = String(text || "").replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim();
+  const original = String(text || "");
+  const raw = original
+    .replace(/[\r\n]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const normalized = raw
+    .replace(/[|]/g, "I")
+    .replace(/[•·]/g, ".")
+    .replace(/\s+/g, " ");
+
   const patterns = [
-    /\bSDS\s*(?:REF|REFERENCE|REFERENCIA|REFER\u00caNCIA)?\s*[:#-]?\s*([A-Z0-9][A-Z0-9._\/-]{3,40})/i,
-    /\bSDS[-_\s]*REF\s*[:#-]?\s*([A-Z0-9][A-Z0-9._\/-]{3,40})/i,
-    /\bREFER\u00caNCIA\s*SDS\s*[:#-]?\s*([A-Z0-9][A-Z0-9._\/-]{3,40})/i,
-    /\bREFERENCIA\s*SDS\s*[:#-]?\s*([A-Z0-9][A-Z0-9._\/-]{3,40})/i
+    /\bSDS\s*R(?:EF|E F|F|E)?\.?\s*[:#\-]?\s*([A-Z]\s*\d[\d\s]{5,20})\b/i,
+    /\bSDS\s*(?:REF|REFERENCE|REFERENCIA|REFERÊNCIA)\.?\s*[:#\-]?\s*([A-Z]\s*\d[\d\s]{5,20})\b/i,
+    /\bSDS[-_\s]*REF\.?\s*[:#\-]?\s*([A-Z]\s*\d[\d\s]{5,20})\b/i,
+    /\bREFER[ÊE]NCIA\s*SDS\.?\s*[:#\-]?\s*([A-Z]\s*\d[\d\s]{5,20})\b/i,
+    /\bSDS\b.{0,40}\b([A-Z]\d{7,12})\b/i,
+    /\b(S\d{7,12})\b/i
   ];
+
   for (const pattern of patterns) {
-    const match = raw.match(pattern);
-    if (match && match[1]) return match[1].replace(/[;,.)]+$/g, "").toUpperCase();
+    const match = normalized.match(pattern);
+    if (match && match[1]) {
+      const value = String(match[1])
+        .replace(/\s+/g, "")
+        .replace(/[;,.)]+$/g, "")
+        .toUpperCase();
+
+      if (/^S\d{7,12}$/.test(value)) return value;
+    }
   }
+
   return "";
 }
 
