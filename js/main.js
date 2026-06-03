@@ -103,14 +103,38 @@ function getPushWatcherReadiness() {
   };
 }
 
+function nodeRuntimeCandidates() {
+  return [
+    process.env.APP_BRAGA_NODE_PATH,
+    process.env.NODE_EXE,
+    "C:\\Program Files\\nodejs\\node.exe",
+    "C:\\Program Files (x86)\\nodejs\\node.exe"
+  ].filter(Boolean);
+}
+
+function getNodeRuntimePath() {
+  return nodeRuntimeCandidates().find((candidate) => {
+    try {
+      return fs.existsSync(candidate);
+    } catch {
+      return false;
+    }
+  }) || "";
+}
+
 function startPushWatcherAuto() {
   if (pushWatcherProcess && !pushWatcherProcess.killed) return pushWatcherStatus;
   const watcherPath = path.join(__dirname, "..", "tools", "web-push-watch.js");
   const env = buildPushWatcherEnv();
   const readiness = getPushWatcherReadiness();
+  const nodeRuntime = getNodeRuntimePath();
 
   if (!fs.existsSync(watcherPath)) {
     pushWatcherStatus = { ok: false, running: false, mode: "erro", error: "Watcher indisponivel", startedAt: null, ...readiness };
+    return pushWatcherStatus;
+  }
+  if (!nodeRuntime) {
+    pushWatcherStatus = { ok: false, running: false, mode: "sem-node", error: "Node.js nao encontrado. Usa Ligar Notificacoes.bat ou instala Node.js.", startedAt: null, ...readiness };
     return pushWatcherStatus;
   }
   if (!env.GOOGLE_APPLICATION_CREDENTIALS || !fs.existsSync(env.GOOGLE_APPLICATION_CREDENTIALS)) {
@@ -122,12 +146,18 @@ function startPushWatcherAuto() {
     return pushWatcherStatus;
   }
 
-  pushWatcherProcess = spawn(process.execPath, [watcherPath], {
-    cwd: path.join(__dirname, ".."),
-    env: { ...env, ELECTRON_RUN_AS_NODE: "1" },
-    windowsHide: true,
-    stdio: ["ignore", "pipe", "pipe"]
-  });
+  try {
+    pushWatcherProcess = spawn(nodeRuntime, [watcherPath], {
+      cwd: path.join(__dirname, ".."),
+      env,
+      windowsHide: true,
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+  } catch (error) {
+    pushWatcherStatus = { ok: false, running: false, mode: "erro", error: error.message, startedAt: null, ...readiness };
+    appendPushWatcherLog(`Erro ao iniciar watcher: ${error.message}`);
+    return pushWatcherStatus;
+  }
 
   pushWatcherStatus = { ok: true, running: true, mode: "electron-auto", error: "", startedAt: new Date().toISOString(), pid: pushWatcherProcess.pid, ...readiness };
   appendPushWatcherLog("Watcher iniciado pelo Electron.");
