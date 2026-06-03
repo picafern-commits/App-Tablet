@@ -9,7 +9,7 @@
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/style.css?v=stock-qr-button-1">
+  <link rel="stylesheet" href="../css/style.css?v=stock-qr-preview-1">
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
   <link rel="stylesheet" href="../css/app-theme-pro.css?v=theme-pro-1">
   <link rel="stylesheet" href="../css/enterprise/ops.css?v=ops-6">
@@ -68,7 +68,12 @@
     </div>
   </div>
 
+  <div class="stock-qr-preview-frame" id="stockQrPreviewFrame">
   <div id="stockQrReader" class="stock-qr-reader"></div>
+  <div class="stock-qr-aim">
+    <span></span><span></span><span></span><span></span>
+  </div>
+</div>
   <div id="stockQrStatus" class="stock-qr-status">Scanner desligado.</div>
 </section>
 
@@ -101,7 +106,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<script src="../js/app.js?v=stock-qr-beep-1"></script>
+<script src="../js/app.js?v=stock-qr-preview-1"></script>
   <script src="../js/core/helpers.js"></script>
   <script src="../js/iphone-force-final.js?v=v3-final"></script>
 <script src="../js/enterprise/ops.js?v=ops-6"></script>

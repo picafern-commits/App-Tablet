@@ -5715,3 +5715,107 @@ div:has(> #primaryColor) {
   }
 }
 /* ===== END STOCK QR SCANNER BUTTON ===== */
+
+
+/* ===== STOCK QR CAMERA PREVIEW ===== */
+.stock-qr-preview-frame {
+  position: relative !important;
+  width: min(100%, 460px) !important;
+  aspect-ratio: 1 / 1 !important;
+  margin-top: 14px !important;
+  border-radius: 22px !important;
+  overflow: hidden !important;
+  background: #020617 !important;
+  border: 2px solid var(--cc-btn-border, var(--cc-card-border, rgba(255,255,255,.18))) !important;
+  box-shadow: 0 18px 44px rgba(0,0,0,.36) !important;
+  display: none !important;
+}
+
+.stock-qr-preview-frame.active {
+  display: block !important;
+}
+
+.stock-qr-reader {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 320px !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  background: #020617 !important;
+}
+
+.stock-qr-reader video,
+.stock-qr-reader canvas {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 0 !important;
+}
+
+.stock-qr-aim {
+  position: absolute !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+.stock-qr-aim::before {
+  content: "" !important;
+  width: 62% !important;
+  height: 62% !important;
+  border: 2px solid rgba(255,255,255,.78) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 0 0 999px rgba(0,0,0,.22) !important;
+}
+
+.stock-qr-aim span {
+  position: absolute !important;
+  width: 34px !important;
+  height: 34px !important;
+  border-color: #22c55e !important;
+  border-style: solid !important;
+}
+
+.stock-qr-aim span:nth-child(1) {
+  top: 18% !important;
+  left: 18% !important;
+  border-width: 4px 0 0 4px !important;
+  border-top-left-radius: 12px !important;
+}
+
+.stock-qr-aim span:nth-child(2) {
+  top: 18% !important;
+  right: 18% !important;
+  border-width: 4px 4px 0 0 !important;
+  border-top-right-radius: 12px !important;
+}
+
+.stock-qr-aim span:nth-child(3) {
+  bottom: 18% !important;
+  left: 18% !important;
+  border-width: 0 0 4px 4px !important;
+  border-bottom-left-radius: 12px !important;
+}
+
+.stock-qr-aim span:nth-child(4) {
+  bottom: 18% !important;
+  right: 18% !important;
+  border-width: 0 4px 4px 0 !important;
+  border-bottom-right-radius: 12px !important;
+}
+
+@media (max-width: 700px) {
+  .stock-qr-preview-frame {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 330px !important;
+  }
+
+  .stock-qr-reader {
+    min-height: 330px !important;
+  }
+}
+/* ===== END STOCK QR CAMERA PREVIEW ===== */

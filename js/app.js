@@ -5362,6 +5362,8 @@ async function startScannerStable() {
   }
 
   reader.innerHTML = "";
+  const previewFrame = document.getElementById("stockQrPreviewFrame");
+  if (previewFrame) previewFrame.classList.add("active");
   scannerInstanceStable = new Html5Qrcode("reader");
 
   try {
@@ -9509,7 +9511,7 @@ async function startStockQrScanner() {
   try {
     await stockQrScannerInstance.start(
       { facingMode: "environment" },
-      { fps: 10, qrbox: { width: 260, height: 260 } },
+      { fps: 12, qrbox: { width: 250, height: 250 } },
       async (decodedText) => {
         const code = extrairABTDoQrStock(decodedText);
         const now = Date.now();
@@ -9561,6 +9563,8 @@ async function stopStockQrScanner() {
     stockQrScannerInstance = null;
     stockQrScannerActive = false;
     if (reader) reader.innerHTML = "";
+    const previewFrame = document.getElementById("stockQrPreviewFrame");
+    if (previewFrame) previewFrame.classList.remove("active");
     setStockQrStatus("Scanner desligado.");
   }
 }
