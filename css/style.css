@@ -5630,7 +5630,8 @@ div:has(> #primaryColor) {
 .etiquetas-page .word-label {
   background: #fff !important;
   color: #000 !important;
-  border: 2.6px solid #000 !important;
+  border: 0 !important;
+  outline: 0 !important;
 }
 
 #printAreaEtiquetaAppBraga .etq-title {
@@ -5649,7 +5650,16 @@ div:has(> #primaryColor) {
     print-color-adjust: exact !important;
   }
   #printAreaEtiquetaAppBraga .etq-sheet {
-    border: 2.6px solid #000 !important;
+    border: 0 !important;
+    outline: 0 !important;
+    width: 96mm !important;
+    height: 146mm !important;
+    max-width: 96mm !important;
+    max-height: 146mm !important;
+    margin: 2mm !important;
+    padding: 6mm !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
   }
 }
 /* ===== END ETIQUETA TONER / WORD MAIS FORTE FINAL ===== */

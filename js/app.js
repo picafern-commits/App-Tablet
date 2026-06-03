@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.20.3";
+const APP_VERSION = "1.20.4";
 
 
 
@@ -431,6 +431,52 @@ async function gerarID() {
     return "TON-" + String(n).padStart(4, "0");
   });
 }
+
+function formatTonerIdCounterAppBraga(value) {
+  return "TON-" + String(Math.max(0, Number(value) || 0)).padStart(4, "0");
+}
+
+async function carregarContadorTonerConfig() {
+  const currentNode = el("tonerCounterCurrent");
+  const nextNode = el("tonerCounterNext");
+  if (!currentNode && !nextNode) return;
+
+  try {
+    if (!db || !db.collection) throw new Error("Firestore indisponivel");
+    const snap = await db.collection("config").doc("contador").get();
+    const valor = snap.exists ? Number((snap.data() || {}).valor || 0) : 0;
+    if (currentNode) currentNode.textContent = valor > 0 ? formatTonerIdCounterAppBraga(valor) : "Ainda sem IDs";
+    if (nextNode) nextNode.textContent = formatTonerIdCounterAppBraga(valor + 1);
+  } catch (error) {
+    console.error(error);
+    if (currentNode) currentNode.textContent = "Erro";
+    if (nextNode) nextNode.textContent = "Erro";
+  }
+}
+
+async function reiniciarContadorTonerConfig() {
+  if (!confirm("Reiniciar o contador dos toners? O próximo toner criado vai ser TON-0001.")) return;
+
+  try {
+    await db.collection("config").doc("contador").set({
+      valor: 0,
+      resetAt: new Date()
+    }, { merge: true });
+    await carregarContadorTonerConfig();
+    mostrarMensagem("Contador reiniciado. O próximo toner será TON-0001.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao reiniciar contador dos toners.", "erro");
+  }
+}
+
+window.carregarContadorTonerConfig = carregarContadorTonerConfig;
+window.reiniciarContadorTonerConfig = reiniciarContadorTonerConfig;
+document.addEventListener("DOMContentLoaded", () => {
+  if (el("tonerCounterCurrent") || el("tonerCounterNext")) {
+    setTimeout(carregarContadorTonerConfig, 700);
+  }
+});
 
 async function disponivel() {
   const equipamento = el("equipamento");
@@ -7505,14 +7551,15 @@ function montarHtmlEtiquetaImpressao(item) {
 <title>Etiqueta</title>
 <style>
   @page { size: 100mm 150mm; margin: 0; }
-  html, body { margin:0; padding:0; width:100mm; height:150mm; font-family: Arial, sans-serif; }
-  body { box-sizing:border-box; padding:8mm; color:#000; }
-  .etq-wrap { width:100%; height:100%; display:flex; flex-direction:column; justify-content:flex-start; }
-  .etq-title { font-size:22px; font-weight:1000; margin:0 32mm 6mm 0; }
-  .etq-row { display:flex; flex-direction:column; margin:0 0 3.5mm; }
-  .etq-key { font-size:11px; font-weight:1000; text-transform:uppercase; letter-spacing:.4px; }
-  .etq-val { font-size:16px; line-height:1.25; word-break:break-word; }
-  .etq-qr { position:absolute; top:8mm; right:8mm; width:22mm; height:22mm; }
+  html, body { margin:0; padding:0; width:100mm; height:150mm; overflow:hidden; font-family: Arial, sans-serif; background:#fff; }
+  body { box-sizing:border-box; padding:2mm; color:#000; }
+  .etq-wrap { position:relative; box-sizing:border-box; width:96mm; height:146mm; overflow:hidden; padding:6mm; display:flex; flex-direction:column; justify-content:flex-start; background:#fff; }
+  .etq-title { font-size:21px; font-weight:1000; margin:0 28mm 5mm 0; line-height:1.05; }
+  .etq-row { display:flex; flex-direction:column; margin:0 0 3mm; }
+  .etq-key { font-size:10px; font-weight:1000; text-transform:uppercase; letter-spacing:.3px; }
+  .etq-val { font-size:15px; line-height:1.18; word-break:break-word; }
+  .etq-qr { position:absolute; top:6mm; right:6mm; width:20mm; height:20mm; }
+  .etq-qr img, .etq-qr canvas { width:20mm !important; height:20mm !important; }
   .etq-code { font-size:9px; font-weight:900; margin-top:2mm; word-break:break-all; }
 </style>
 </head>
@@ -7593,14 +7640,14 @@ function montarHtmlEtiquetaOverlay(item) {
         #printAreaEtiquetaAppBraga, #printAreaEtiquetaAppBraga * { visibility: visible !important; }
         #printAreaEtiquetaAppBraga { position: fixed !important; inset: 0 !important; width: 100mm !important; height: 150mm !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; background: #fff !important; }
       }
-      #printAreaEtiquetaAppBraga .etq-sheet { position:relative; width:100mm; height:150mm; max-width:100mm; max-height:150mm; overflow:hidden; box-sizing:border-box; padding:8mm; color:#000; font-family:'Arial Black', Arial, Helvetica, sans-serif; font-weight:950; background:#fff; display:flex; flex-direction:column; justify-content:flex-start; break-inside: avoid; page-break-inside: avoid; break-after: avoid-page; page-break-after: avoid; }
-      #printAreaEtiquetaAppBraga .etq-title { font-size:22px; font-weight:1000; margin:0 32mm 6mm 0; }
-      #printAreaEtiquetaAppBraga .etq-row { display:flex; flex-direction:column; margin:0 0 3.5mm; }
-      #printAreaEtiquetaAppBraga .etq-key { font-size:11px; font-weight:1000; text-transform:uppercase; letter-spacing:.4px; }
-      #printAreaEtiquetaAppBraga .etq-val { font-size:16px; line-height:1.25; word-break:break-word; }
-      #printAreaEtiquetaAppBraga .etq-qr { position:absolute; top:8mm; right:8mm; width:22mm; height:22mm; }
+      #printAreaEtiquetaAppBraga .etq-sheet { position:relative; width:96mm; height:146mm; max-width:96mm; max-height:146mm; overflow:hidden; box-sizing:border-box; margin:2mm; padding:6mm; color:#000; font-family:'Arial Black', Arial, Helvetica, sans-serif; font-weight:950; background:#fff; display:flex; flex-direction:column; justify-content:flex-start; break-inside: avoid; page-break-inside: avoid; break-after: avoid-page; page-break-after: avoid; }
+      #printAreaEtiquetaAppBraga .etq-title { font-size:21px; font-weight:1000; margin:0 28mm 5mm 0; line-height:1.05; }
+      #printAreaEtiquetaAppBraga .etq-row { display:flex; flex-direction:column; margin:0 0 3mm; }
+      #printAreaEtiquetaAppBraga .etq-key { font-size:10px; font-weight:1000; text-transform:uppercase; letter-spacing:.3px; }
+      #printAreaEtiquetaAppBraga .etq-val { font-size:15px; line-height:1.18; word-break:break-word; }
+      #printAreaEtiquetaAppBraga .etq-qr { position:absolute; top:6mm; right:6mm; width:20mm; height:20mm; }
       #printAreaEtiquetaAppBraga .etq-qr img,
-      #printAreaEtiquetaAppBraga .etq-qr canvas { width:22mm !important; height:22mm !important; }
+      #printAreaEtiquetaAppBraga .etq-qr canvas { width:20mm !important; height:20mm !important; }
       #printAreaEtiquetaAppBraga .etq-code { font-size:9px; font-weight:900; margin-top:2mm; word-break:break-all; }
     </style>
     <div class="etq-sheet">
@@ -9459,8 +9506,16 @@ window.addEventListener("orientationchange", () => {
       #printAreaEtiquetaAppBraga .etq-sheet {
         background: #fff !important;
         color: #000 !important;
-        border: 2.6px solid #000 !important;
-        padding: 7mm !important;
+        border: 0 !important;
+        outline: 0 !important;
+        width: 96mm !important;
+        height: 146mm !important;
+        max-width: 96mm !important;
+        max-height: 146mm !important;
+        margin: 2mm !important;
+        padding: 6mm !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
       }
       #printAreaEtiquetaAppBraga .etq-title {
         color: #000 !important;
@@ -9475,7 +9530,7 @@ window.addEventListener("orientationchange", () => {
       #printAreaEtiquetaAppBraga th {
         color: #000 !important;
         border-color: #000 !important;
-        border-width: 2px !important;
+        border-width: 0 !important;
         font-size: 15px !important;
         font-weight: 950 !important;
       }

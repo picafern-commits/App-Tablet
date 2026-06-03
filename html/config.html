@@ -9,7 +9,7 @@
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/style.css?v=iphone-preview-visible-final-1">
+  <link rel="stylesheet" href="../css/style.css?v=counter-label-print-1">
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
   <link rel="stylesheet" href="../css/app-theme-pro.css?v=theme-pro-1">
   <link rel="stylesheet" href="../css/enterprise/ops.css?v=ops-7">
@@ -146,6 +146,29 @@
       </div>
     </div>
 
+    <div class="panel config-section">
+      <div class="section-header">
+        <div>
+          <h3>IDs dos toners</h3>
+          <p class="section-subtitle">Controlo do contador usado para gerar IDs como TON-0001.</p>
+        </div>
+        <button class="secondary-btn" type="button" onclick="carregarContadorTonerConfig()">Atualizar</button>
+      </div>
+      <div class="config-form-grid">
+        <div class="health-card">
+          <span>Último ID usado</span>
+          <strong id="tonerCounterCurrent">A carregar</strong>
+        </div>
+        <div class="health-card">
+          <span>Próximo ID</span>
+          <strong id="tonerCounterNext">A carregar</strong>
+        </div>
+      </div>
+      <div class="config-actions-row">
+        <button class="secondary-btn danger" type="button" onclick="reiniciarContadorTonerConfig()">Reiniciar para TON-0001</button>
+      </div>
+    </div>
+
     <div class="panel config-section electron-displays-panel">
       <div class="section-header">
         <div>
@@ -274,7 +297,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<script src="../js/app.js?v=auto-label-stock-1"></script>
+<script src="../js/app.js?v=counter-label-print-1"></script>
   <script src="../js/core/helpers.js"></script>
   <script src="../js/iphone-force-final.js?v=v3-final"></script>
 <script src="../js/enterprise/ops.js?v=ops-7"></script>
