@@ -225,7 +225,19 @@
 
   function setupElectronSidebarActions() {
     const sidebar = document.querySelector(".sidebar");
-    if (!sidebar || !window.electronAPI?.closeApp || sidebar.querySelector(".enterprise-window-actions")) return;
+    if (!sidebar || !window.electronAPI?.closeApp) return;
+    sidebar.querySelectorAll("[data-enterprise-displays], [data-enterprise-display-select], [data-enterprise-move-display], [data-enterprise-display-status]").forEach((node) => node.remove());
+    const existingActions = sidebar.querySelector(".enterprise-window-actions");
+    if (existingActions) {
+      if (!existingActions.querySelector("[data-enterprise-hide]")) {
+        existingActions.insertAdjacentHTML("beforeend", `<button class="secondary-btn enterprise-window-btn" type="button" data-enterprise-hide>Segundo plano</button>`);
+      }
+      if (!existingActions.querySelector("[data-enterprise-close]")) {
+        existingActions.insertAdjacentHTML("beforeend", `<button class="secondary-btn enterprise-window-btn enterprise-window-close" type="button" data-enterprise-close>Fechar App</button>`);
+      }
+      bindElectronWindowButtons(existingActions);
+      return;
+    }
     const actions = document.createElement("div");
     actions.className = "enterprise-window-actions";
     actions.innerHTML = `
@@ -233,6 +245,12 @@
       <button class="secondary-btn enterprise-window-btn enterprise-window-close" type="button" data-enterprise-close>Fechar App</button>
     `;
     sidebar.appendChild(actions);
+    bindElectronWindowButtons(actions);
+  }
+
+  function bindElectronWindowButtons(actions) {
+    if (actions.dataset.enterpriseBound) return;
+    actions.dataset.enterpriseBound = "1";
     actions.querySelector("[data-enterprise-hide]")?.addEventListener("click", async () => {
       await window.electronAPI.hideApp();
     });

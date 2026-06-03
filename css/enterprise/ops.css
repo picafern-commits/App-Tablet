@@ -407,6 +407,13 @@ body.enterprise-search-ready .enterprise-search-shell {
   padding: 14px 10px 0;
 }
 
+.sidebar [data-enterprise-displays],
+.sidebar [data-enterprise-display-select],
+.sidebar [data-enterprise-move-display],
+.sidebar [data-enterprise-display-status] {
+  display: none !important;
+}
+
 .enterprise-window-btn {
   width: 100%;
   min-height: 40px;
