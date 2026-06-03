@@ -162,71 +162,6 @@ main {
   min-width: 118px;
 }
 
-.enterprise-search-shell {
-  position: sticky;
-  top: 12px;
-  z-index: 1200;
-  margin: 0 0 16px;
-  display: none;
-}
-
-body.enterprise-search-ready .enterprise-search-shell {
-  display: block;
-}
-
-.enterprise-search-box {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 10px;
-  padding: 10px;
-  border-radius: 18px;
-  border: 1px solid var(--app-border);
-  background: rgba(18, 18, 20, .86);
-  box-shadow: 0 16px 40px rgba(0,0,0,.28);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-}
-
-.enterprise-search-box input {
-  min-height: 46px !important;
-}
-
-.enterprise-search-results {
-  margin-top: 8px;
-  border: 1px solid var(--app-border);
-  border-radius: 18px;
-  background: rgba(18, 18, 20, .96);
-  box-shadow: 0 20px 50px rgba(0,0,0,.30);
-  max-height: 50vh;
-  overflow: auto;
-  display: none;
-}
-
-.enterprise-search-results.is-open {
-  display: block;
-}
-
-.enterprise-search-result {
-  display: grid;
-  gap: 4px;
-  padding: 12px 14px;
-  border-bottom: 1px solid rgba(255,255,255,.07);
-  cursor: pointer;
-}
-
-.enterprise-search-result:last-child {
-  border-bottom: 0;
-}
-
-.enterprise-search-result strong {
-  color: var(--app-text);
-}
-
-.enterprise-search-result span {
-  color: var(--app-muted);
-  font-size: 13px;
-}
-
 .dashboard-ops-panel {
   margin-top: 16px;
 }
@@ -393,9 +328,6 @@ body.enterprise-search-ready .enterprise-search-shell {
     flex: 1 1 100%;
   }
 
-  .enterprise-search-shell {
-    top: calc(68px + env(safe-area-inset-top));
-  }
 }
 
 /* Visual upgrade pack: typed cards, modals and density modes */

@@ -197,30 +197,8 @@
   }
 
   function setupSearchShell() {
-    if (!isHtmlPage()) return;
-    const main = document.querySelector(".main, main");
-    if (!main || document.querySelector(".enterprise-search-shell")) return;
-    const shell = document.createElement("div");
-    shell.className = "enterprise-search-shell";
-    shell.innerHTML = `
-      <div class="enterprise-search-box">
-        <input id="enterpriseGlobalSearch" type="search" placeholder="Pesquisar na APP..." autocomplete="off">
-        <button class="secondary-btn" type="button" id="enterpriseSearchClose">Limpar</button>
-      </div>
-      <div id="enterpriseSearchResults" class="enterprise-search-results"></div>
-    `;
-    main.insertBefore(shell, main.firstElementChild);
-    document.body.classList.add("enterprise-search-ready");
-
-    const input = shell.querySelector("#enterpriseGlobalSearch");
-    const results = shell.querySelector("#enterpriseSearchResults");
-    shell.querySelector("#enterpriseSearchClose")?.addEventListener("click", () => {
-      input.value = "";
-      results.classList.remove("is-open");
-      results.innerHTML = "";
-    });
-    input.addEventListener("focus", setupRealtimeSearchAndNotifications, { once: true });
-    input.addEventListener("input", () => renderSearchResults(input.value, results));
+    document.querySelectorAll(".enterprise-search-shell").forEach((node) => node.remove());
+    document.body.classList.remove("enterprise-search-ready");
   }
 
   function setupElectronSidebarActions() {
@@ -512,7 +490,6 @@
     const cards = [
       ["Service Worker", "healthServiceWorker"],
       ["Tema", "healthTheme"],
-      ["Pesquisa global", "healthSearch"],
       ["Ultima sync", "healthLastSync"]
     ];
     cards.forEach(([label, id]) => {
@@ -534,7 +511,6 @@
     const sw = "serviceWorker" in navigator ? await navigator.serviceWorker.getRegistration().catch(() => null) : null;
     set("healthServiceWorker", sw ? "Ativo" : "Sem registo", sw ? "ok" : "warn");
     set("healthTheme", window.AppThemePro ? "Ativo" : "Indisponivel", window.AppThemePro ? "ok" : "warn");
-    set("healthSearch", state.searchIndex.length ? `${state.searchIndex.length} registos` : "A carregar", state.searchIndex.length ? "ok" : "warn");
     set("healthLastSync", new Date().toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" }), "ok");
   }
 

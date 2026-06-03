@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.20.1";
+const APP_VERSION = "1.20.2";
 
 
 
