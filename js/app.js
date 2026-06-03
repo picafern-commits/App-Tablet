@@ -9521,6 +9521,62 @@ function isIphoneSafariStockQr() {
          (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 }
 
+
+async function escolherCameraTraseiraStockQr() {
+  try {
+    await garantirHtml5QrcodeStock();
+
+    if (!Html5Qrcode.getCameras) {
+      return { facingMode: { ideal: "environment" } };
+    }
+
+    const cameras = await Html5Qrcode.getCameras();
+    if (!Array.isArray(cameras) || !cameras.length) {
+      throw new Error("Nenhuma câmera encontrada pelo navegador.");
+    }
+
+    const rear = cameras.find((cam) => {
+      const label = String(cam.label || "").toLowerCase();
+      return (
+        label.includes("back") ||
+        label.includes("rear") ||
+        label.includes("traseira") ||
+        label.includes("environment") ||
+        label.includes("wide")
+      );
+    });
+
+    const chosen = rear || cameras[cameras.length - 1] || cameras[0];
+    return chosen && chosen.id ? chosen.id : { facingMode: { ideal: "environment" } };
+  } catch (error) {
+    console.error("Erro ao escolher câmera:", error);
+    throw error;
+  }
+}
+
+function mensagemErroCameraStockQr(error) {
+  const name = String(error && (error.name || error.code) || "");
+  const message = String(error && error.message || error || "");
+
+  if (/NotAllowed|Permission|denied/i.test(name + " " + message)) {
+    return "Câmera bloqueada. Vai às definições do Safari e permite a câmera para este site.";
+  }
+
+  if (/NotFound|DevicesNotFound/i.test(name + " " + message)) {
+    return "Não encontrei câmera disponível no iPhone.";
+  }
+
+  if (/NotReadable|TrackStart/i.test(name + " " + message)) {
+    return "A câmera está ocupada por outra app. Fecha a câmera/WhatsApp e tenta outra vez.";
+  }
+
+  if (/Overconstrained|Constraint/i.test(name + " " + message)) {
+    return "O iPhone recusou a câmera traseira. Vou tentar outra câmera.";
+  }
+
+  return "Erro ao abrir câmera: " + (message || name || "erro desconhecido");
+}
+
 async function startStockQrScanner() {
   const reader = document.getElementById("stockQrReader");
 
@@ -9547,9 +9603,7 @@ async function startStockQrScanner() {
   stockQrScannerInstance = new Html5Qrcode("stockQrReader");
 
   try {
-    const cameraConfig = isIphoneSafariStockQr()
-      ? { facingMode: { ideal: "environment" } }
-      : { facingMode: "environment" };
+    const cameraConfig = await escolherCameraTraseiraStockQr();
 
     await stockQrScannerInstance.start(
       cameraConfig,
@@ -9590,9 +9644,7 @@ async function startStockQrScanner() {
     console.error("Erro scanner QR Stock:", error);
     const previewFrameError = document.getElementById("stockQrPreviewFrame");
     if (previewFrameError) previewFrameError.classList.remove("loading");
-    const msg = isIphoneSafariStockQr()
-      ? "No iPhone tens de permitir a câmera e abrir a APP por HTTPS/Safari."
-      : "Não foi possível abrir a câmera.";
+    const msg = mensagemErroCameraStockQr(error);
     setStockQrStatus(msg, "erro");
     mostrarMensagem(msg, "erro");
   }
@@ -9621,3 +9673,18 @@ async function stopStockQrScanner() {
 window.startStockQrScanner = startStockQrScanner;
 window.stopStockQrScanner = stopStockQrScanner;
 /* ===== END STOCK QR SCANNER BUTTON ===== */
+
+
+window.testarCamerasStockQr = async function(){
+  try{
+    await garantirHtml5QrcodeStock();
+    const cams = await Html5Qrcode.getCameras();
+    console.log("Câmeras disponíveis:", cams);
+    setStockQrStatus("Câmeras encontradas: " + (cams || []).map(c => c.label || c.id).join(" | "));
+    return cams;
+  }catch(e){
+    console.error(e);
+    setStockQrStatus(mensagemErroCameraStockQr(e), "erro");
+    return [];
+  }
+};

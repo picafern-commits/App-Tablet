@@ -5869,3 +5869,30 @@ div:has(> #primaryColor) {
   }
 }
 /* ===== END IPHONE QR CAMERA PREVIEW FIX ===== */
+
+
+/* ===== IPHONE CAMERA ID QR FIX ===== */
+.stock-qr-status {
+  white-space: normal !important;
+  line-height: 1.35 !important;
+}
+
+.stock-qr-preview-frame.active #stockQrReader {
+  display: block !important;
+}
+
+.stock-qr-preview-frame.active #stockQrReader:empty {
+  display: block !important;
+  min-height: 360px !important;
+}
+
+.stock-qr-preview-frame.active #stockQrReader:empty::before {
+  content: "A preparar câmera..." !important;
+  display: grid !important;
+  place-items: center !important;
+  min-height: 360px !important;
+  color: #fff !important;
+  font-weight: 950 !important;
+  background: #020617 !important;
+}
+/* ===== END IPHONE CAMERA ID QR FIX ===== */
