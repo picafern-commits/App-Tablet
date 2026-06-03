@@ -37,8 +37,20 @@ if (-not $env:APP_BRAGA_VAPID_PUBLIC_KEY -or -not $env:APP_BRAGA_VAPID_PRIVATE_K
   exit 1
 }
 
+$nodeCmd = "node"
+try {
+  & $nodeCmd --version | Out-Null
+} catch {
+  $nodeCmd = $null
+}
+
+if (-not $nodeCmd) {
+  Write-Host "Node.js nao encontrado. Abre a APP Electron instalada; ela tenta ligar o watcher automaticamente." -ForegroundColor Yellow
+  exit 1
+}
+
 if ($Test) {
-  node tools/web-push-watch.js --test
+  & $nodeCmd tools/web-push-watch.js --test
 } else {
-  node tools/web-push-watch.js
+  & $nodeCmd tools/web-push-watch.js
 }

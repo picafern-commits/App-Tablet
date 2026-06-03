@@ -1,4 +1,5 @@
 const { app, BrowserWindow, shell, ipcMain, Tray, Menu, Notification, screen, dialog } = require("electron");
+const { spawn } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 const http = require("http");
@@ -7,6 +8,8 @@ const snmp = require("net-snmp");
 
 let win;
 let tray;
+let pushWatcherProcess = null;
+let pushWatcherStatus = { ok: false, running: false, mode: "parado", error: "", startedAt: null, logFile: "" };
 app.isQuitting = false;
 
 const APP_REMOTE_URL = "https://picafern-commits.github.io/App-Tablet/html/index.html";
@@ -29,6 +32,99 @@ function backupDirPath() {
 
 function backupStatusPath() {
   return path.join(backupDirPath(), "backup-status.json");
+}
+
+function pushWatcherLogPath() {
+  return path.join(app.getPath("userData"), "push-watch.log");
+}
+
+function appendPushWatcherLog(text) {
+  try {
+    fs.mkdirSync(app.getPath("userData"), { recursive: true });
+    fs.appendFileSync(pushWatcherLogPath(), `[${new Date().toISOString()}] ${text}\n`, "utf8");
+  } catch {}
+}
+
+function parseLocalPushEnvFile(filePath) {
+  const env = {};
+  try {
+    if (!fs.existsSync(filePath)) return env;
+    const raw = fs.readFileSync(filePath, "utf8");
+    raw.split(/\r?\n/).forEach((line) => {
+      const match = line.match(/\$env:([A-Z0-9_]+)\s*=\s*["']([^"']+)["']/i);
+      if (match) env[match[1]] = match[2];
+    });
+  } catch {}
+  return env;
+}
+
+function pushEnvCandidates() {
+  const appRoot = path.join(__dirname, "..");
+  const parentRoot = path.resolve(appRoot, "..");
+  return [
+    path.join(app.getPath("userData"), ".env.push.local.ps1"),
+    path.join(appRoot, ".env.push.local.ps1"),
+    path.join(parentRoot, ".env.push.local.ps1"),
+    path.join("C:\\Minhas Apps\\AppBragaDesktop\\AppBragaTeste-main", ".env.push.local.ps1")
+  ];
+}
+
+function serviceAccountCandidates() {
+  const appRoot = path.join(__dirname, "..");
+  const parentRoot = path.resolve(appRoot, "..");
+  return [
+    process.env.GOOGLE_APPLICATION_CREDENTIALS,
+    path.join(app.getPath("userData"), "service-account.json"),
+    path.join(appRoot, "service-account.json"),
+    path.join(parentRoot, "service-account.json"),
+    "C:\\Minhas Apps\\AppBragaDesktop\\service-account.json",
+    "C:\\Minhas Apps\\AppBragaDesktop\\firebase-service-account.json"
+  ].filter(Boolean);
+}
+
+function buildPushWatcherEnv() {
+  const env = { ...process.env };
+  pushEnvCandidates().forEach((filePath) => Object.assign(env, parseLocalPushEnvFile(filePath)));
+  const serviceAccount = serviceAccountCandidates().find((candidate) => fs.existsSync(candidate));
+  if (serviceAccount) env.GOOGLE_APPLICATION_CREDENTIALS = serviceAccount;
+  return env;
+}
+
+function startPushWatcherAuto() {
+  if (pushWatcherProcess && !pushWatcherProcess.killed) return pushWatcherStatus;
+  const watcherPath = path.join(__dirname, "..", "tools", "web-push-watch.js");
+  const env = buildPushWatcherEnv();
+
+  if (!fs.existsSync(watcherPath)) {
+    pushWatcherStatus = { ok: false, running: false, mode: "erro", error: "Watcher indisponivel", startedAt: null, logFile: pushWatcherLogPath() };
+    return pushWatcherStatus;
+  }
+  if (!env.GOOGLE_APPLICATION_CREDENTIALS || !fs.existsSync(env.GOOGLE_APPLICATION_CREDENTIALS)) {
+    pushWatcherStatus = { ok: false, running: false, mode: "sem-service-account", error: "Falta service-account.json", startedAt: null, logFile: pushWatcherLogPath() };
+    return pushWatcherStatus;
+  }
+  if (!env.APP_BRAGA_VAPID_PUBLIC_KEY || !env.APP_BRAGA_VAPID_PRIVATE_KEY) {
+    pushWatcherStatus = { ok: false, running: false, mode: "sem-vapid", error: "Faltam VAPID keys locais", startedAt: null, logFile: pushWatcherLogPath() };
+    return pushWatcherStatus;
+  }
+
+  pushWatcherProcess = spawn(process.execPath, [watcherPath], {
+    cwd: path.join(__dirname, ".."),
+    env: { ...env, ELECTRON_RUN_AS_NODE: "1" },
+    windowsHide: true,
+    stdio: ["ignore", "pipe", "pipe"]
+  });
+
+  pushWatcherStatus = { ok: true, running: true, mode: "electron-auto", error: "", startedAt: new Date().toISOString(), logFile: pushWatcherLogPath() };
+  appendPushWatcherLog("Watcher iniciado pelo Electron.");
+  pushWatcherProcess.stdout.on("data", (chunk) => appendPushWatcherLog(chunk.toString("utf8").trim()));
+  pushWatcherProcess.stderr.on("data", (chunk) => appendPushWatcherLog(`ERRO: ${chunk.toString("utf8").trim()}`));
+  pushWatcherProcess.on("exit", (code) => {
+    pushWatcherStatus = { ...pushWatcherStatus, ok: false, running: false, mode: "parado", error: `Watcher terminou com codigo ${code}` };
+    appendPushWatcherLog(pushWatcherStatus.error);
+    pushWatcherProcess = null;
+  });
+  return pushWatcherStatus;
 }
 
 function readBackupStatus() {
@@ -319,6 +415,7 @@ ipcMain.handle("printer:get-toner-snmp", async (_event, ip) => {
 app.whenReady().then(() => {
   createWindow();
   createTray();
+  setTimeout(startPushWatcherAuto, 2500);
   app.on("activate", () => {
     mostrarJanelaPrincipal();
   });
@@ -367,7 +464,15 @@ ipcMain.handle("app:notification-status", async () => ({
   platform: process.platform,
   appUserModelId: process.platform === "win32" ? "com.appbraga.desktop" : "",
   trayReady: !!tray,
-  focused: !!win && !win.isDestroyed() && win.isFocused()
+  focused: !!win && !win.isDestroyed() && win.isFocused(),
+  pushWatcher: pushWatcherStatus
+}));
+
+ipcMain.handle("app:push-watcher-start", async () => startPushWatcherAuto());
+
+ipcMain.handle("app:push-watcher-status", async () => ({
+  ...pushWatcherStatus,
+  running: !!(pushWatcherProcess && !pushWatcherProcess.killed)
 }));
 
 ipcMain.handle("app:notification-dialog-test", async () => {
@@ -502,6 +607,9 @@ ipcMain.handle("backup:open-folder", async () => {
 
 app.on("before-quit", () => {
   app.isQuitting = true;
+  try {
+    if (pushWatcherProcess && !pushWatcherProcess.killed) pushWatcherProcess.kill();
+  } catch {}
 });
 
 app.on("window-all-closed", () => {

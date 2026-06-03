@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.23.3";
+const APP_VERSION = "1.23.4";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BFm5qjGZUqbqNuTADly_22pPnPGH04CtTJkaiTdlneZw7BRNmgjngqL5Ru4WCE1DD83vrZTuOkW_I7WvMOBaOFk";
 
 
@@ -3827,11 +3827,15 @@ async function verificarSistemasApp() {
     const electronNotify = await window.electronAPI.getNotificationStatus().catch(() => null);
     if (electronNotify?.ok) {
       setHealthStatus("healthNotifications", electronNotify.supported ? "Electron OK" : "Electron sem toast", electronNotify.supported ? "ok" : "warn");
+      const watcher = electronNotify.pushWatcher || {};
+      setHealthStatus("healthPushWatcher", watcher.running ? "Ativo" : (watcher.error || "Parado"), watcher.running ? "ok" : "warn");
     } else {
       setHealthStatus("healthNotifications", "Electron erro", "bad");
+      setHealthStatus("healthPushWatcher", "Erro", "bad");
     }
   } else {
     setHealthStatus("healthNotifications", notifyOk ? "Ativas" : (notifyPermission === "unsupported" ? "Sem suporte" : "Sem permissao"), notifyOk ? "ok" : "warn");
+    setHealthStatus("healthPushWatcher", "Externo", "warn");
   }
   setHealthStatus("healthFirebase", window.firebase ? "Carregado" : "Indisponível", window.firebase ? "ok" : "bad");
   setHealthStatus("healthAuth", window.firebase?.auth ? "Carregado" : "Indisponível", window.firebase?.auth ? "ok" : "warn");

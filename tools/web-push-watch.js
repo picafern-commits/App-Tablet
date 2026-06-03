@@ -132,6 +132,46 @@ async function listCollection(collection) {
   return (data.documents || []).map(parseDoc);
 }
 
+function toFirestoreFields(data = {}) {
+  const fields = {};
+  Object.entries(data).forEach(([key, value]) => {
+    if (typeof value === "boolean") fields[key] = { booleanValue: value };
+    else if (typeof value === "number") fields[key] = { integerValue: String(Math.round(value)) };
+    else fields[key] = { stringValue: String(value ?? "") };
+  });
+  return fields;
+}
+
+async function updateCollectionDoc(collection, id, data = {}) {
+  if (!id) return;
+  const token = await getAccessToken();
+  const updateMask = Object.keys(data).map((key) => `updateMask.fieldPaths=${encodeURIComponent(key)}`).join("&");
+  const path = `/v1/projects/${PROJECT_ID}/databases/(default)/documents/${collection}/${encodeURIComponent(id)}${updateMask ? `?${updateMask}` : ""}`;
+  return requestJson({
+    method: "PATCH",
+    hostname: "firestore.googleapis.com",
+    path,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    }
+  }, { fields: toFirestoreFields(data) });
+}
+
+async function deactivateNotificationDevice(item, reason) {
+  if (!item?.id) return;
+  try {
+    await updateCollectionDoc("notificationTokens", item.id, {
+      active: false,
+      disabledAt: Date.now(),
+      disabledReason: reason || "push-invalid"
+    });
+    console.log(`Dispositivo desativado: ${item.deviceName || item.deviceType || item.id}`);
+  } catch (error) {
+    console.warn(`Nao foi possivel desativar dispositivo ${item.id}: ${error.message}`);
+  }
+}
+
 async function listTokens() {
   const docs = await listCollection("notificationTokens");
   return docs
@@ -185,6 +225,9 @@ async function broadcast(title, body, data) {
       }
     } catch (error) {
       console.warn(`Falhou push para dispositivo: ${error.message}`);
+      if (/UNREGISTERED|NotRegistered|not registered/i.test(error.message)) {
+        await deactivateNotificationDevice(item, "push-unregistered");
+      }
     }
   }
 }

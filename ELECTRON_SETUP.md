@@ -41,7 +41,15 @@ Guarda o ficheiro `service-account.json` do Firebase em:
 C:\Minhas Apps\AppBragaDesktop\service-account.json
 ```
 
-Depois usa:
+No Electron, o watcher tenta arrancar automaticamente quando a app abre.
+Tambem podes usar estes ficheiros de duplo clique, sem mexer no npm:
+
+```text
+Ligar Notificacoes.bat
+Testar Notificacoes.bat
+```
+
+Alternativa por terminal:
 
 ```powershell
 npm run push:watch:local

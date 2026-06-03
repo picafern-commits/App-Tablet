@@ -36,6 +36,8 @@
       "assets/**/*",
       "manifest.json",
       "ELECTRON_SETUP.md",
+      "Ligar Notificacoes.bat",
+      "Testar Notificacoes.bat",
       "sw.js",
       "icon.ico",
       "icon-192.png",
