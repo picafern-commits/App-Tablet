@@ -331,14 +331,3 @@ ${linhas}
  if (typeof appUsersApi.apagarUser === "function") window.apagarUser = appUsersApi.apagarUser;
  if (typeof appUsersApi.imprimirUser === "function") window.imprimirUser = appUsersApi.imprimirUser;
 })();
-
-
-/* Etiqueta completa */
-.etq-sheet,
-.print-label,
-.etiqueta-word,
-.word-label{
- border:2px solid #000 !important;
- box-sizing:border-box !important;
-}
-

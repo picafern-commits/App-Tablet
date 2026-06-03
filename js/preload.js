@@ -19,14 +19,3 @@ contextBridge.exposeInMainWorld("electronAPI", {
   writeLocalBackup: (payload) => ipcRenderer.invoke("backup:write", payload),
   openBackupFolder: () => ipcRenderer.invoke("backup:open-folder")
 });
-
-
-/* Etiqueta completa */
-.etq-sheet,
-.print-label,
-.etiqueta-word,
-.word-label{
- border:2px solid #000 !important;
- box-sizing:border-box !important;
-}
-
