@@ -840,19 +840,71 @@ async function usar(id) {
 
 async function usarPorCodigoEtiquetaToner(codigoOuPayload) {
   const codigo = extrairCodigoEtiquetaTonerAppBraga(codigoOuPayload);
-  if (!codigo) return false;
+  const raw = String(codigoOuPayload || "").trim();
+  const rawUpper = raw.toUpperCase();
+
+  if (!codigo && !rawUpper) return false;
 
   try {
     let id = "";
-    const local = stockGlobal.find((item) =>
-      String(item.codigoEtiqueta || "").toUpperCase() === codigo ||
-      String(item.codigoScan || "").toUpperCase().includes(codigo)
-    );
-    if (local?.idDoc) id = local.idDoc;
+
+    const matchLocal = stockGlobal.find((item) => {
+      const codigoEtiqueta = String(item.codigoEtiqueta || "").toUpperCase();
+      const codigoScan = String(item.codigoScan || "").toUpperCase();
+      const idInterno = String(item.idInterno || "").toUpperCase();
+      const serie = String(item.serie || "").toUpperCase();
+
+      return (
+        (codigo && codigoEtiqueta === codigo) ||
+        (codigo && codigoScan.includes(codigo)) ||
+        (codigo && idInterno === codigo) ||
+        (codigo && serie === codigo) ||
+        (rawUpper && codigoScan === rawUpper) ||
+        (rawUpper && codigoScan.includes(rawUpper)) ||
+        (rawUpper && codigoEtiqueta === rawUpper)
+      );
+    });
+
+    if (matchLocal?.idDoc) id = matchLocal.idDoc;
 
     if (!id && db?.collection) {
-      const snap = await db.collection("stock").where("codigoEtiqueta", "==", codigo).limit(1).get();
-      if (!snap.empty) id = snap.docs[0].id;
+      if (codigo) {
+        let snap = await db.collection("stock").where("codigoEtiqueta", "==", codigo).limit(1).get();
+        if (!snap.empty) id = snap.docs[0].id;
+
+        if (!id) {
+          snap = await db.collection("stock").where("idInterno", "==", codigo).limit(1).get();
+          if (!snap.empty) id = snap.docs[0].id;
+        }
+
+        if (!id) {
+          snap = await db.collection("stock").where("serie", "==", codigo).limit(1).get();
+          if (!snap.empty) id = snap.docs[0].id;
+        }
+      }
+
+      if (!id && rawUpper) {
+        const snapAll = await db.collection("stock").limit(200).get();
+        snapAll.forEach((doc) => {
+          if (id) return;
+          const item = doc.data() || {};
+          const codigoEtiqueta = String(item.codigoEtiqueta || "").toUpperCase();
+          const codigoScan = String(item.codigoScan || "").toUpperCase();
+          const idInterno = String(item.idInterno || "").toUpperCase();
+          const serie = String(item.serie || "").toUpperCase();
+
+          if (
+            codigoEtiqueta === rawUpper ||
+            codigoScan === rawUpper ||
+            codigoScan.includes(rawUpper) ||
+            (codigo && codigoScan.includes(codigo)) ||
+            idInterno === rawUpper ||
+            serie === rawUpper
+          ) {
+            id = doc.id;
+          }
+        });
+      }
     }
 
     if (!id) {
@@ -861,7 +913,7 @@ async function usarPorCodigoEtiquetaToner(codigoOuPayload) {
     }
 
     await usar(id);
-    mostrarMensagem(`Toner ${codigo} passado para usado.`);
+    mostrarMensagem(`Toner ${codigo || rawUpper} passado para histórico.`);
     return true;
   } catch (error) {
     console.error(error);
@@ -5318,7 +5370,15 @@ async function startScannerStable() {
       { fps: 10, qrbox: { width: 280, height: 180 } },
       async (decodedText) => {
         enhanceScannerStatus("Código lido. A processar automaticamente...");
-        await processarTextoLidoStable(decodedText);
+
+        // 1º tenta usar o QR como etiqueta de toner existente em Stock.
+        // Se encontrar, passa automaticamente de Stock para Histórico.
+        const passouStockHistorico = await usarPorCodigoEtiquetaToner(decodedText);
+        if (!passouStockHistorico) {
+          // Se não for QR de stock, mantém o comportamento antigo do scanner.
+          await processarTextoLidoStable(decodedText);
+        }
+
         stopScannerStable();
       },
       () => {}
@@ -9371,3 +9431,5 @@ window.addEventListener("orientationchange", () => {
   };
   document.addEventListener("DOMContentLoaded", window.reforcarEtiquetaTonerPrint);
 })();
+
+window.usarPorCodigoEtiquetaToner = usarPorCodigoEtiquetaToner;
