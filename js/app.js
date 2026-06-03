@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.23.1";
+const APP_VERSION = "1.23.2";
 
 
 
@@ -1973,6 +1973,14 @@ function iniciarMonitorNotificacoesApp() {
 
 async function testarNotificacaoApp() {
   const ok = await enviarNotificacaoApp("App Braga", "Teste de notificacao concluido.", "app-braga-test", { force: true, url: "html/config.html" });
+  if (window.electronAPI?.getNotificationStatus) {
+    const status = await window.electronAPI.getNotificationStatus().catch(() => null);
+    if (status?.ok && !status.supported) {
+      await window.electronAPI.showNotificationDialogTest?.();
+      mostrarMensagem("Electron funciona, mas o Windows nao aceitou toast nativo.", "erro");
+      return;
+    }
+  }
   mostrarMensagem(ok ? "Notificacao de teste enviada." : "Ativa as permissoes de notificacoes primeiro.", ok ? "sucesso" : "erro");
 }
 
@@ -3795,7 +3803,16 @@ async function verificarSistemasApp() {
   setHealthStatus("healthPin", appSecurityState.biometricEnabled ? "Biometria ativa" : (appSecurityState.pinHash ? "PIN ativo" : "Desligado"), hasSecurityEnabledApp() ? "ok" : "warn");
   const notifyPermission = notificationPermissionApp();
   const notifyOk = notifyPermission === "granted" || notifyPermission === "electron";
-  setHealthStatus("healthNotifications", notifyOk ? "Ativas" : (notifyPermission === "unsupported" ? "Sem suporte" : "Sem permissao"), notifyOk ? "ok" : "warn");
+  if (window.electronAPI?.getNotificationStatus) {
+    const electronNotify = await window.electronAPI.getNotificationStatus().catch(() => null);
+    if (electronNotify?.ok) {
+      setHealthStatus("healthNotifications", electronNotify.supported ? "Electron OK" : "Electron sem toast", electronNotify.supported ? "ok" : "warn");
+    } else {
+      setHealthStatus("healthNotifications", "Electron erro", "bad");
+    }
+  } else {
+    setHealthStatus("healthNotifications", notifyOk ? "Ativas" : (notifyPermission === "unsupported" ? "Sem suporte" : "Sem permissao"), notifyOk ? "ok" : "warn");
+  }
   setHealthStatus("healthFirebase", window.firebase ? "Carregado" : "Indisponível", window.firebase ? "ok" : "bad");
   setHealthStatus("healthAuth", window.firebase?.auth ? "Carregado" : "Indisponível", window.firebase?.auth ? "ok" : "warn");
 

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell, ipcMain, Tray, Menu, Notification, screen } = require("electron");
+const { app, BrowserWindow, shell, ipcMain, Tray, Menu, Notification, screen, dialog } = require("electron");
 const path = require("path");
 const fs = require("fs");
 const http = require("http");
@@ -332,6 +332,7 @@ ipcMain.handle("app:notify", async (_event, payload = {}) => {
   try {
     const title = String(payload.title || "App Braga");
     const body = String(payload.body || "");
+    const tag = String(payload.tag || "");
     if (!Notification.isSupported()) {
       if (tray && process.platform === "win32") {
         tray.displayBalloon({
@@ -351,10 +352,33 @@ ipcMain.handle("app:notify", async (_event, payload = {}) => {
       silent: false
     });
     notification.show();
+    if (tag === "app-braga-test" && win && !win.isDestroyed()) {
+      win.webContents.send("app:notification-tested", { ok: true, mode: "electron-notification" });
+    }
     return { ok: true, mode: "electron-notification" };
   } catch (error) {
     return { ok: false, error: error.message };
   }
+});
+
+ipcMain.handle("app:notification-status", async () => ({
+  ok: true,
+  supported: Notification.isSupported(),
+  platform: process.platform,
+  appUserModelId: process.platform === "win32" ? "com.appbraga.desktop" : "",
+  trayReady: !!tray,
+  focused: !!win && !win.isDestroyed() && win.isFocused()
+}));
+
+ipcMain.handle("app:notification-dialog-test", async () => {
+  if (!win || win.isDestroyed()) return { ok: false, error: "Janela indisponivel" };
+  await dialog.showMessageBox(win, {
+    type: "info",
+    title: "App Braga",
+    message: "Teste de notificacao",
+    detail: "Se este aviso apareceu, a ponte Electron esta a funcionar. Se o toast do Windows nao apareceu, o problema esta nas permissoes/notificacoes do Windows."
+  });
+  return { ok: true };
 });
 
 ipcMain.handle("app:get-info", async () => ({

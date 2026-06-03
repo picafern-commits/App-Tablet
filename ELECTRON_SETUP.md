@@ -36,10 +36,21 @@ Para notificacoes Web Push com a app fechada, precisas de um processo externo a 
 
 ```powershell
 $env:GOOGLE_APPLICATION_CREDENTIALS="C:\caminho\service-account.json"
+$env:APP_BRAGA_VAPID_PUBLIC_KEY="chave-publica-web-push"
+$env:APP_BRAGA_VAPID_PRIVATE_KEY="chave-privada-web-push"
+$env:APP_BRAGA_VAPID_SUBJECT="mailto:admin@appbraga.pt"
 npm run push:watch
 ```
 
-Ele le alteracoes na Firestore e envia FCM para os tokens registados em `notificationTokens`.
+Ele le alteracoes na Firestore e envia FCM/Web Push standard para os dispositivos registados em `notificationTokens`.
+
+Teste manual para todos os dispositivos registados:
+
+```powershell
+npm run push:test
+```
+
+No Electron, as notificacoes nativas funcionam enquanto o processo estiver aberto ou minimizado para a tray. No iPhone/Android, a app deve estar instalada como PWA e o dispositivo deve aparecer em `Configuracoes > Dispositivos ativos` como `Web Push standard` ou `FCM`.
 
 ## Backup local automatico
 

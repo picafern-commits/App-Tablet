@@ -321,6 +321,15 @@ async function pollOnce() {
 }
 
 async function main() {
+  if (process.argv.includes("--test")) {
+    await broadcast("App Braga", "Teste Web Push recebido com sucesso.", {
+      event: "manual-test",
+      url: "https://picafern-commits.github.io/App-Tablet/html/config.html"
+    });
+    console.log("Teste Web Push concluido.");
+    return;
+  }
+
   console.log(`App Braga Web Push watcher ativo. Projeto: ${PROJECT_ID}. Intervalo: ${POLL_SECONDS}s.`);
   if (!webpush) console.warn("Modulo web-push nao instalado. FCM continua ativo; Web Push standard nao sera enviado.");
   if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) console.warn("VAPID private/public nao definidas. Web Push standard nao sera enviado.");

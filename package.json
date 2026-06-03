@@ -11,7 +11,8 @@
     "pack": "electron-builder --dir",
     "setup": "electron-builder --win nsis",
     "dist": "electron-builder --win nsis",
-    "push:watch": "node tools/web-push-watch.js"
+    "push:watch": "node tools/web-push-watch.js",
+    "push:test": "node tools/web-push-watch.js --test"
   },
   "devDependencies": {
     "electron": "41.2.0",
