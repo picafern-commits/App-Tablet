@@ -5819,3 +5819,53 @@ div:has(> #primaryColor) {
   }
 }
 /* ===== END STOCK QR CAMERA PREVIEW ===== */
+
+
+/* ===== IPHONE QR CAMERA PREVIEW FIX ===== */
+.stock-qr-preview-frame.loading::after {
+  content: "A abrir câmera..." !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 5 !important;
+  display: grid !important;
+  place-items: center !important;
+  background: rgba(2,6,23,.72) !important;
+  color: #fff !important;
+  font-weight: 950 !important;
+}
+
+.stock-qr-preview-frame.active {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+#stockQrReader,
+#stockQrReader > div,
+#stockQrReader video,
+#stockQrReader canvas {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+#stockQrReader video {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 320px !important;
+  object-fit: cover !important;
+  background: #020617 !important;
+  transform: translateZ(0) !important;
+}
+
+@supports (-webkit-touch-callout: none) {
+  .stock-qr-preview-frame {
+    min-height: 360px !important;
+  }
+
+  #stockQrReader,
+  #stockQrReader video {
+    min-height: 360px !important;
+  }
+}
+/* ===== END IPHONE QR CAMERA PREVIEW FIX ===== */

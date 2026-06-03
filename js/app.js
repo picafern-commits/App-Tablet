@@ -5363,7 +5363,12 @@ async function startScannerStable() {
 
   reader.innerHTML = "";
   const previewFrame = document.getElementById("stockQrPreviewFrame");
-  if (previewFrame) previewFrame.classList.add("active");
+  if (previewFrame) {
+    previewFrame.classList.add("active", "loading");
+    setTimeout(() => {
+      try { previewFrame.scrollIntoView({ behavior: "smooth", block: "center" }); } catch(e) {}
+    }, 80);
+  }
   scannerInstanceStable = new Html5Qrcode("reader");
 
   try {
@@ -9486,6 +9491,36 @@ function setStockQrStatus(text, type = "") {
   node.className = "stock-qr-status" + (type ? " " + type : "");
 }
 
+
+function garantirHtml5QrcodeStock() {
+  return new Promise((resolve, reject) => {
+    if (typeof Html5Qrcode !== "undefined") {
+      resolve(true);
+      return;
+    }
+
+    const existing = document.querySelector('script[data-stock-qr-lib="1"]');
+    if (existing) {
+      existing.addEventListener("load", () => resolve(true), { once: true });
+      existing.addEventListener("error", () => reject(new Error("Falha ao carregar biblioteca QR.")), { once: true });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://unpkg.com/html5-qrcode";
+    script.async = true;
+    script.dataset.stockQrLib = "1";
+    script.onload = () => resolve(true);
+    script.onerror = () => reject(new Error("Falha ao carregar biblioteca QR."));
+    document.head.appendChild(script);
+  });
+}
+
+function isIphoneSafariStockQr() {
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent || "") || 
+         (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
 async function startStockQrScanner() {
   const reader = document.getElementById("stockQrReader");
 
@@ -9494,9 +9529,12 @@ async function startStockQrScanner() {
     return;
   }
 
-  if (typeof Html5Qrcode === "undefined") {
+  try {
+    await garantirHtml5QrcodeStock();
+  } catch (error) {
+    console.error(error);
     mostrarMensagem("Biblioteca do scanner QR não carregada.", "erro");
-    setStockQrStatus("Biblioteca QR não carregada.", "erro");
+    setStockQrStatus("Biblioteca QR não carregada. Verifica internet/HTTPS.", "erro");
     return;
   }
 
@@ -9509,9 +9547,13 @@ async function startStockQrScanner() {
   stockQrScannerInstance = new Html5Qrcode("stockQrReader");
 
   try {
+    const cameraConfig = isIphoneSafariStockQr()
+      ? { facingMode: { ideal: "environment" } }
+      : { facingMode: "environment" };
+
     await stockQrScannerInstance.start(
-      { facingMode: "environment" },
-      { fps: 12, qrbox: { width: 250, height: 250 } },
+      cameraConfig,
+      { fps: 10, qrbox: { width: 240, height: 240 }, aspectRatio: 1.0 },
       async (decodedText) => {
         const code = extrairABTDoQrStock(decodedText);
         const now = Date.now();
@@ -9540,12 +9582,19 @@ async function startStockQrScanner() {
     );
 
     stockQrScannerActive = true;
+    const previewFrameOk = document.getElementById("stockQrPreviewFrame");
+    if (previewFrameOk) previewFrameOk.classList.remove("loading");
     setStockQrStatus("Câmera ligada. Aponta para o QR da etiqueta.");
     mostrarMensagem("Câmera QR ligada.");
   } catch (error) {
     console.error("Erro scanner QR Stock:", error);
-    setStockQrStatus("Não foi possível abrir a câmera.", "erro");
-    mostrarMensagem("Não foi possível abrir a câmera.", "erro");
+    const previewFrameError = document.getElementById("stockQrPreviewFrame");
+    if (previewFrameError) previewFrameError.classList.remove("loading");
+    const msg = isIphoneSafariStockQr()
+      ? "No iPhone tens de permitir a câmera e abrir a APP por HTTPS/Safari."
+      : "Não foi possível abrir a câmera.";
+    setStockQrStatus(msg, "erro");
+    mostrarMensagem(msg, "erro");
   }
 }
 
@@ -9564,7 +9613,7 @@ async function stopStockQrScanner() {
     stockQrScannerActive = false;
     if (reader) reader.innerHTML = "";
     const previewFrame = document.getElementById("stockQrPreviewFrame");
-    if (previewFrame) previewFrame.classList.remove("active");
+    if (previewFrame) previewFrame.classList.remove("active", "loading");
     setStockQrStatus("Scanner desligado.");
   }
 }
