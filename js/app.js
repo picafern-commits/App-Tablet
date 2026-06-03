@@ -7369,12 +7369,10 @@ function montarHtmlEtiquetaImpressao(item) {
     ["Local", item.localCurto || item.localizacao],
     ["Série", item.serie],
     ["Armazém", item.armazem],
-    ["Localização", item.localizacao],
     ["Equipamento", item.equipamento],
     ["Cor", item.cor],
     ["Lote", item.lote],
     ["SDS Ref", item.sdsRef],
-    ["Código", item.codigoEtiqueta],
     ["Data", item.dataScan || item.dataEtiqueta || item.data || item.dataFolha],
     ["Origem", item.origem]
   ].filter(([,v]) => String(v || '').trim());
@@ -7392,11 +7390,11 @@ function montarHtmlEtiquetaImpressao(item) {
   html, body { margin:0; padding:0; width:100mm; height:150mm; font-family: Arial, sans-serif; }
   body { box-sizing:border-box; padding:8mm; color:#000; }
   .etq-wrap { width:100%; height:100%; display:flex; flex-direction:column; justify-content:flex-start; }
-  .etq-title { font-size:22px; font-weight:1000; margin:0 0 6mm; }
+  .etq-title { font-size:22px; font-weight:1000; margin:0 32mm 6mm 0; }
   .etq-row { display:flex; flex-direction:column; margin:0 0 3.5mm; }
   .etq-key { font-size:11px; font-weight:1000; text-transform:uppercase; letter-spacing:.4px; }
   .etq-val { font-size:16px; line-height:1.25; word-break:break-word; }
-  .etq-qr { width:30mm; height:30mm; margin-top:auto; }
+  .etq-qr { position:absolute; top:8mm; right:8mm; width:22mm; height:22mm; }
   .etq-code { font-size:9px; font-weight:900; margin-top:2mm; word-break:break-all; }
 </style>
 </head>
@@ -7404,7 +7402,7 @@ function montarHtmlEtiquetaImpressao(item) {
   <div class="etq-wrap">
     <div class="etq-title">${escapeHtml(item.localCurto || item.localizacao || 'Etiqueta')}</div>
     ${rows}
-    ${codigoScan ? `<div class="etq-qr" data-etq-qr="${escapeHtml(codigoScan)}"></div><div class="etq-code">${escapeHtml(item.codigoEtiqueta || codigoScan)}</div>` : ""}
+    ${codigoScan ? `<div class="etq-qr" data-etq-qr="${escapeHtml(codigoScan)}"></div>` : ""}
   </div>
 </body>
 </html>`;
@@ -7457,12 +7455,10 @@ function montarHtmlEtiquetaOverlay(item) {
     ["Local", item.localCurto || item.localizacao],
     ["Série", item.serie],
     ["Armazém", item.armazem],
-    ["Localização", item.localizacao],
     ["Equipamento", item.equipamento],
     ["Cor", item.cor],
     ["Lote", item.lote],
     ["SDS Ref", item.sdsRef],
-    ["Código", item.codigoEtiqueta],
     ["Data", item.dataScan || item.dataEtiqueta || item.data || item.dataFolha],
     ["Origem", item.origem]
   ].filter(([,v]) => String(v || '').trim());
@@ -7479,20 +7475,20 @@ function montarHtmlEtiquetaOverlay(item) {
         #printAreaEtiquetaAppBraga, #printAreaEtiquetaAppBraga * { visibility: visible !important; }
         #printAreaEtiquetaAppBraga { position: fixed !important; inset: 0 !important; width: 100mm !important; height: 150mm !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; background: #fff !important; }
       }
-      #printAreaEtiquetaAppBraga .etq-sheet { width:100mm; height:150mm; max-width:100mm; max-height:150mm; overflow:hidden; box-sizing:border-box; padding:8mm; color:#000; font-family:'Arial Black', Arial, Helvetica, sans-serif; font-weight:950; background:#fff; display:flex; flex-direction:column; justify-content:flex-start; break-inside: avoid; page-break-inside: avoid; break-after: avoid-page; page-break-after: avoid; }
-      #printAreaEtiquetaAppBraga .etq-title { font-size:22px; font-weight:1000; margin:0 0 6mm; }
+      #printAreaEtiquetaAppBraga .etq-sheet { position:relative; width:100mm; height:150mm; max-width:100mm; max-height:150mm; overflow:hidden; box-sizing:border-box; padding:8mm; color:#000; font-family:'Arial Black', Arial, Helvetica, sans-serif; font-weight:950; background:#fff; display:flex; flex-direction:column; justify-content:flex-start; break-inside: avoid; page-break-inside: avoid; break-after: avoid-page; page-break-after: avoid; }
+      #printAreaEtiquetaAppBraga .etq-title { font-size:22px; font-weight:1000; margin:0 32mm 6mm 0; }
       #printAreaEtiquetaAppBraga .etq-row { display:flex; flex-direction:column; margin:0 0 3.5mm; }
       #printAreaEtiquetaAppBraga .etq-key { font-size:11px; font-weight:1000; text-transform:uppercase; letter-spacing:.4px; }
       #printAreaEtiquetaAppBraga .etq-val { font-size:16px; line-height:1.25; word-break:break-word; }
-      #printAreaEtiquetaAppBraga .etq-qr { width:30mm; height:30mm; margin-top:auto; }
+      #printAreaEtiquetaAppBraga .etq-qr { position:absolute; top:8mm; right:8mm; width:22mm; height:22mm; }
       #printAreaEtiquetaAppBraga .etq-qr img,
-      #printAreaEtiquetaAppBraga .etq-qr canvas { width:30mm !important; height:30mm !important; }
+      #printAreaEtiquetaAppBraga .etq-qr canvas { width:22mm !important; height:22mm !important; }
       #printAreaEtiquetaAppBraga .etq-code { font-size:9px; font-weight:900; margin-top:2mm; word-break:break-all; }
     </style>
     <div class="etq-sheet">
       <div class="etq-title">${escapeHtml(item.localCurto || item.localizacao || 'Etiqueta')}</div>
       ${rows}
-      ${codigoScan ? `<div class="etq-qr" data-etq-qr="${escapeHtml(codigoScan)}"></div><div class="etq-code">${escapeHtml(item.codigoEtiqueta || codigoScan)}</div>` : ""}
+      ${codigoScan ? `<div class="etq-qr" data-etq-qr="${escapeHtml(codigoScan)}"></div>` : ""}
     </div>`;
 }
 
