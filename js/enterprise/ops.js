@@ -231,23 +231,49 @@
     actions.innerHTML = `
       <button class="secondary-btn enterprise-window-btn" type="button" data-enterprise-displays>Detectar monitores</button>
       <select class="enterprise-window-select" data-enterprise-display-select aria-label="Escolher monitor"></select>
+      <button class="secondary-btn enterprise-window-btn" type="button" data-enterprise-move-display>Mover para monitor</button>
+      <span class="enterprise-window-status" data-enterprise-display-status></span>
       <button class="secondary-btn enterprise-window-btn" type="button" data-enterprise-hide>Segundo plano</button>
       <button class="secondary-btn enterprise-window-btn enterprise-window-close" type="button" data-enterprise-close>Fechar App</button>
     `;
     sidebar.appendChild(actions);
     const select = actions.querySelector("[data-enterprise-display-select]");
+    const status = actions.querySelector("[data-enterprise-display-status]");
+    const setDisplayStatus = (message) => {
+      if (status) status.textContent = message || "";
+    };
     const loadDisplays = async () => {
-      if (!window.electronAPI?.listDisplays || !select) return;
-      const result = await window.electronAPI.listDisplays();
-      const displays = result?.displays || [];
-      select.innerHTML = displays.map((display) => `
-        <option value="${escapeHtml(display.id)}">${escapeHtml(display.label)}${display.primary ? " · Principal" : ""} · ${display.bounds.width}x${display.bounds.height}</option>
-      `).join("");
+      if (!window.electronAPI?.listDisplays || !select) {
+        setDisplayStatus("Electron indisponivel");
+        return;
+      }
+      setDisplayStatus("A detectar...");
+      try {
+        const result = await window.electronAPI.listDisplays();
+        const displays = result?.displays || [];
+        select.innerHTML = displays.map((display) => `
+          <option value="${escapeHtml(display.id)}">${escapeHtml(display.label)}${display.primary ? " - Principal" : ""}${display.current ? " - Atual" : ""} - ${display.bounds.width}x${display.bounds.height}</option>
+        `).join("");
+        if (result?.currentDisplayId) select.value = String(result.currentDisplayId);
+        setDisplayStatus(displays.length ? `${displays.length} monitor(es)` : "Sem monitores");
+      } catch (error) {
+        setDisplayStatus("Erro ao detectar");
+      }
+    };
+    const moveDisplay = async () => {
+      if (!select?.value || !window.electronAPI?.moveToDisplay) return;
+      setDisplayStatus("A mover...");
+      try {
+        const result = await window.electronAPI.moveToDisplay(select.value);
+        setDisplayStatus(result?.ok ? "Movido" : "Falhou");
+        setTimeout(loadDisplays, 900);
+      } catch (error) {
+        setDisplayStatus("Erro ao mover");
+      }
     };
     actions.querySelector("[data-enterprise-displays]")?.addEventListener("click", loadDisplays);
-    select?.addEventListener("change", async () => {
-      if (select.value && window.electronAPI?.moveToDisplay) await window.electronAPI.moveToDisplay(select.value);
-    });
+    actions.querySelector("[data-enterprise-move-display]")?.addEventListener("click", moveDisplay);
+    select?.addEventListener("change", moveDisplay);
     loadDisplays();
     actions.querySelector("[data-enterprise-hide]")?.addEventListener("click", async () => {
       await window.electronAPI.hideApp();

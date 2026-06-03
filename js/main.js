@@ -55,6 +55,32 @@ function writeDesktopSettings(settings) {
   } catch {}
 }
 
+function getDisplayById(displayId) {
+  const displays = screen.getAllDisplays();
+  return displays.find((display) => String(display.id) === String(displayId)) || null;
+}
+
+function getDisplayForWindow() {
+  if (!win || win.isDestroyed()) return screen.getPrimaryDisplay();
+  return screen.getDisplayMatching(win.getBounds());
+}
+
+function getSavedOrPrimaryDisplay(settings = readDesktopSettings()) {
+  return getDisplayById(settings.displayId) || screen.getPrimaryDisplay();
+}
+
+function getWindowBoundsForDisplay(display, settings = readDesktopSettings()) {
+  const area = display.workArea || display.bounds;
+  const width = Math.min(Math.max(settings.width || 1400, 1100), area.width);
+  const height = Math.min(Math.max(settings.height || 860, 700), area.height);
+  return {
+    x: area.x + Math.round((area.width - width) / 2),
+    y: area.y + Math.round((area.height - height) / 2),
+    width,
+    height
+  };
+}
+
 function mostrarJanelaPrincipal() {
   if (!win) {
     createWindow();
@@ -84,9 +110,13 @@ function createTray() {
 
 function createWindow() {
   const desktopSettings = readDesktopSettings();
+  const startDisplay = getSavedOrPrimaryDisplay(desktopSettings);
+  const startBounds = getWindowBoundsForDisplay(startDisplay, desktopSettings);
   win = new BrowserWindow({
-    width: desktopSettings.width || 1600,
-    height: desktopSettings.height || 1000,
+    x: startBounds.x,
+    y: startBounds.y,
+    width: startBounds.width,
+    height: startBounds.height,
     minWidth: 1100,
     minHeight: 700,
     fullscreen: desktopSettings.fullscreen !== false,
@@ -328,6 +358,7 @@ ipcMain.handle("app:set-fullscreen", async (_event, value) => {
 });
 
 ipcMain.handle("app:list-displays", async () => {
+  const current = getDisplayForWindow();
   const displays = screen.getAllDisplays().map((display, index) => ({
     id: display.id,
     index: index + 1,
@@ -335,28 +366,31 @@ ipcMain.handle("app:list-displays", async () => {
     bounds: display.bounds,
     workArea: display.workArea,
     scaleFactor: display.scaleFactor,
-    primary: display.id === screen.getPrimaryDisplay().id
+    primary: display.id === screen.getPrimaryDisplay().id,
+    current: display.id === current.id
   }));
-  return { ok: true, displays };
+  return { ok: true, displays, currentDisplayId: current.id };
 });
 
 ipcMain.handle("app:move-to-display", async (_event, displayId) => {
   if (!win) return { ok: false, error: "Janela indisponivel" };
-  const displays = screen.getAllDisplays();
-  const target = displays.find((display) => String(display.id) === String(displayId)) || displays[0];
+  const target = getDisplayById(displayId) || screen.getPrimaryDisplay();
   if (!target) return { ok: false, error: "Monitor indisponivel" };
   const wasFullscreen = win.isFullScreen();
-  if (wasFullscreen) win.setFullScreen(false);
-  const area = target.workArea || target.bounds;
-  const width = Math.min(Math.max(1200, Math.round(area.width * 0.92)), area.width);
-  const height = Math.min(Math.max(760, Math.round(area.height * 0.92)), area.height);
-  const x = area.x + Math.round((area.width - width) / 2);
-  const y = area.y + Math.round((area.height - height) / 2);
-  win.setBounds({ x, y, width, height }, true);
+  const settings = readDesktopSettings();
+  const nextBounds = getWindowBoundsForDisplay(target, settings);
+  if (wasFullscreen) {
+    win.setFullScreen(false);
+    await new Promise((resolve) => setTimeout(resolve, 350));
+  }
+  win.setBounds(nextBounds, false);
+  win.setPosition(nextBounds.x, nextBounds.y, false);
+  win.setSize(nextBounds.width, nextBounds.height, false);
+  win.show();
   win.focus();
-  if (wasFullscreen) setTimeout(() => win && !win.isDestroyed() && win.setFullScreen(true), 120);
-  writeDesktopSettings({ ...readDesktopSettings(), width, height, fullscreen: wasFullscreen });
-  return { ok: true, display: target.id };
+  if (wasFullscreen) setTimeout(() => win && !win.isDestroyed() && win.setFullScreen(true), 650);
+  writeDesktopSettings({ ...settings, ...nextBounds, displayId: target.id, fullscreen: wasFullscreen });
+  return { ok: true, display: target.id, bounds: nextBounds, fullscreen: wasFullscreen };
 });
 
 ipcMain.handle("app:hide", async () => {

@@ -428,6 +428,15 @@ body.enterprise-search-ready .enterprise-search-shell {
   font-weight: 800 !important;
 }
 
+.enterprise-window-status {
+  display: block;
+  min-height: 18px;
+  color: var(--muted, #a7adba);
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: center;
+}
+
 .enterprise-window-close {
   border-color: color-mix(in srgb, #ef4444 70%, var(--border, #2b3444)) !important;
   color: #fecaca !important;
