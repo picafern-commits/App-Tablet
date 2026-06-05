@@ -1,7 +1,7 @@
 {
   "name": "app-braga",
   "version": "1.4.0",
-  "description": "App Braga - gestão de toners e computadores",
+  "description": "App Braga - gestao de toners e computadores",
   "main": "js/main.js",
   "author": "Ricardo Fernandes",
   "license": "MIT",
@@ -11,10 +11,6 @@
     "pack": "electron-builder --dir",
     "setup": "electron-builder --win nsis",
     "dist": "electron-builder --win nsis",
-    "push:watch": "node tools/web-push-watch.js",
-    "push:test": "node tools/web-push-watch.js --test",
-    "push:watch:local": "powershell -ExecutionPolicy Bypass -File tools/start-push-local.ps1",
-    "push:test:local": "powershell -ExecutionPolicy Bypass -File tools/start-push-local.ps1 -Test",
     "functions:lint": "npm --prefix functions run lint",
     "functions:deploy": "firebase deploy --only functions"
   },
@@ -33,13 +29,10 @@
       "html/**/*",
       "css/**/*",
       "js/**/*",
-      "tools/**/*",
       "img/**/*",
       "assets/**/*",
       "manifest.json",
       "ELECTRON_SETUP.md",
-      "Ligar Notificacoes.bat",
-      "Testar Notificacoes.bat",
       "sw.js",
       "icon.ico",
       "icon-192.png",
@@ -61,7 +54,6 @@
     }
   },
   "dependencies": {
-    "net-snmp": "^3.26.0",
-    "web-push": "^3.6.7"
+    "net-snmp": "^3.26.0"
   }
 }

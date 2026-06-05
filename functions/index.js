@@ -74,6 +74,15 @@ function getTonerReplacementEvents(beforeFields, afterFields) {
     .filter(({ before: oldItem, after: newItem }) => oldItem && oldItem.percent <= 0 && newItem.percent >= 95);
 }
 
+function getTonerZeroEvents(beforeFields, afterFields) {
+  const before = getTonerItems(beforeFields);
+  const after = getTonerItems(afterFields);
+  const beforeMap = new Map(before.map((item) => [item.key, item]));
+  return after
+    .map((item) => ({ before: beforeMap.get(item.key), after: item }))
+    .filter(({ before: oldItem, after: newItem }) => newItem.percent <= 0 && (!oldItem || oldItem.percent > 0));
+}
+
 function getPrinterLabel(fields = {}, id = "") {
   const model = fields.modelo || fields.model || fields.name || "Impressora";
   const loc = fields.localizacao || fields.location || fields.armazem || id;
@@ -229,24 +238,39 @@ exports.onPrinterWritten = onDocumentWritten({
 }, async (event) => {
   if (!event.data?.before.exists || !event.data?.after.exists) return;
   const config = await getNotificationConfig();
-  if (config.notificationEnabled === false || config.notifyTonerChange === false) return;
+  if (config.notificationEnabled === false) return;
 
   const before = event.data.before.data() || {};
   const after = event.data.after.data() || {};
-  const events = getTonerReplacementEvents(before, after);
-  if (!events.length) return;
-
   const label = getPrinterLabel(after, event.params.printerId);
-  for (const tonerEvent of events) {
-    await broadcast("Toner trocado", `${label}: ${tonerEvent.after.label} passou de ${tonerEvent.before.percent}% para ${tonerEvent.after.percent}%.`, {
-      collection: "printers",
-      event: "toner-replaced",
-      printerId: event.params.printerId,
-      color: tonerEvent.after.key,
-      beforePercent: tonerEvent.before.percent,
-      afterPercent: tonerEvent.after.percent,
-      url: "https://picafern-commits.github.io/App-Tablet/html/impressoras.html"
-    });
+
+  if (config.notifyTonerZero !== false) {
+    const zeroEvents = getTonerZeroEvents(before, after);
+    for (const tonerEvent of zeroEvents) {
+      await broadcast("Toner a 0%", `${label}: ${tonerEvent.after.label} chegou a 0%.`, {
+        collection: "printers",
+        event: "toner-zero",
+        printerId: event.params.printerId,
+        color: tonerEvent.after.key,
+        afterPercent: tonerEvent.after.percent,
+        url: "https://picafern-commits.github.io/App-Tablet/html/impressoras.html"
+      });
+    }
+  }
+
+  if (config.notifyTonerChange !== false) {
+    const events = getTonerReplacementEvents(before, after);
+    for (const tonerEvent of events) {
+      await broadcast("Toner trocado", `${label}: ${tonerEvent.after.label} passou de ${tonerEvent.before.percent}% para ${tonerEvent.after.percent}%.`, {
+        collection: "printers",
+        event: "toner-replaced",
+        printerId: event.params.printerId,
+        color: tonerEvent.after.key,
+        beforePercent: tonerEvent.before.percent,
+        afterPercent: tonerEvent.after.percent,
+        url: "https://picafern-commits.github.io/App-Tablet/html/impressoras.html"
+      });
+    }
   }
 });
 

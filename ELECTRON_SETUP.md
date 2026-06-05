@@ -30,40 +30,24 @@ npm run setup
 
 O instalador fica em `dist`.
 
-## Web Push sem Blaze
+## Notificacoes
 
-Para notificacoes Web Push com a app fechada, precisas de um processo externo a enviar FCM. Este projeto inclui um watcher local gratuito:
+As notificacoes remotas sao enviadas pelas Firebase Cloud Functions no projeto Firebase.
+O Electron nao arranca nenhum watcher local e nao precisa de Node no PC da empresa.
 
-As VAPID keys locais ficam em `.env.push.local.ps1`, que nao vai para o GitHub.
-Guarda o ficheiro `service-account.json` do Firebase em:
+Fluxo atual:
 
-```text
-C:\Minhas Apps\AppBragaDesktop\service-account.json
-```
+- A app regista cada dispositivo em `notificationTokens`.
+- As Cloud Functions observam alteracoes relevantes na Firestore.
+- O Firebase envia Web Push/FCM para PC, Android e iPhone instalado como PWA.
 
-No Electron, o watcher tenta arrancar automaticamente quando a app abre.
-Tambem podes usar estes ficheiros de duplo clique, sem mexer no npm:
+Para validar dentro da app, abre `Configuracoes > Notificacoes` e usa:
 
-```text
-Ligar Notificacoes.bat
-Testar Notificacoes.bat
-```
+- `Registar este dispositivo`
+- `Testar push remoto`
+- `Atualizar lista`
 
-Alternativa por terminal:
-
-```powershell
-npm run push:watch:local
-```
-
-Ele le alteracoes na Firestore e envia FCM/Web Push standard para os dispositivos registados em `notificationTokens`.
-
-Teste manual para todos os dispositivos registados:
-
-```powershell
-npm run push:test:local
-```
-
-No Electron, as notificacoes nativas funcionam enquanto o processo estiver aberto ou minimizado para a tray. No iPhone/Android, a app deve estar instalada como PWA e o dispositivo deve aparecer em `Configuracoes > Dispositivos ativos` como `Web Push standard` ou `FCM`.
+No iPhone/Android, a app deve estar instalada no ecra principal e as permissoes de notificacoes devem estar ativas no sistema.
 
 ## Backup local automatico
 

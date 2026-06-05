@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.24.5";
+const APP_VERSION = "1.24.6";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
 
 
@@ -2432,23 +2432,6 @@ async function atualizarEstadoNotificacoesApp(showMessage = false) {
     return true;
   }
 
-  if (window.electronAPI?.getPushWatcherStatus) {
-    const status = await window.electronAPI.getPushWatcherStatus().catch((error) => ({ ok: false, error: error.message }));
-    const running = !!status?.running;
-    const receiverOnly = status?.mode === "recetor-sem-node";
-    setNotificationServiceText("notifyServiceStatus", running ? "Ativo" : (receiverOnly ? "Recebe apenas" : "Parado"), running || receiverOnly ? "ok" : "warn");
-    setNotificationServiceText("notifyServiceDetail", running ? `Ligado desde ${formatStartedAtApp(status.startedAt)}` : (status.error || "Pode ser ligado pelo botão"));
-    const credentialsOk = !!(status?.serviceAccountReady && status?.vapidReady);
-    setNotificationServiceText("notifyCredentialsStatus", credentialsOk ? "OK" : "Incompletas", credentialsOk ? "ok" : "warn");
-    const parts = [
-      status?.serviceAccountReady ? "Service account OK" : "Falta service-account",
-      status?.vapidReady ? "VAPID OK" : "Falta VAPID"
-    ];
-    setNotificationServiceText("notifyCredentialsDetail", parts.join(" - "));
-    if (showMessage) mostrarMensagem(running ? "Serviço de notificações ativo." : (status.error || "Serviço de notificações parado."), running ? "sucesso" : "erro");
-    return;
-  }
-
   if (await renderCloudFunctionsStatus()) {
     if (showMessage) mostrarMensagem("Cloud Functions de notificacoes ativo.");
     return;
@@ -2464,14 +2447,8 @@ async function atualizarEstadoNotificacoesApp(showMessage = false) {
 }
 
 async function ligarServicoNotificacoesApp() {
-  if (!window.electronAPI?.startPushWatcher) {
-    mostrarMensagem("Com Blaze, o servico corre nas Cloud Functions. Usa Testar push remoto para validar.", "sucesso");
-    await atualizarEstadoNotificacoesApp(false);
-    return;
-  }
-  const status = await window.electronAPI.startPushWatcher().catch((error) => ({ ok: false, error: error.message }));
+  mostrarMensagem("O envio remoto corre nas Cloud Functions. Usa Testar push remoto para validar.", "sucesso");
   await atualizarEstadoNotificacoesApp(false);
-  mostrarMensagem(status?.running || status?.ok ? "Serviço de notificações ligado." : (status?.error || "Não foi possível ligar o serviço."), status?.running || status?.ok ? "sucesso" : "erro");
 }
 
 function renderDispositivosNotificacoesApp(items = []) {
@@ -4115,15 +4092,19 @@ async function verificarSistemasApp() {
     const electronNotify = await window.electronAPI.getNotificationStatus().catch(() => null);
     if (electronNotify?.ok) {
       setHealthStatus("healthNotifications", electronNotify.supported ? "Electron OK" : "Electron sem toast", electronNotify.supported ? "ok" : "warn");
-      const watcher = electronNotify.pushWatcher || {};
-      setHealthStatus("healthPushWatcher", watcher.running ? "Ativo" : (watcher.error || "Parado"), watcher.running ? "ok" : "warn");
     } else {
       setHealthStatus("healthNotifications", "Electron erro", "bad");
-      setHealthStatus("healthPushWatcher", "Erro", "bad");
     }
   } else {
     setHealthStatus("healthNotifications", notifyOk ? "Ativas" : (notifyPermission === "unsupported" ? "Sem suporte" : "Sem permissao"), notifyOk ? "ok" : "warn");
-    setHealthStatus("healthPushWatcher", "Externo", "warn");
+  }
+
+  if (window.db?.collection) {
+    const cloudDoc = await window.db.collection("config").doc("cloudNotifications").get().catch(() => null);
+    const cloudData = cloudDoc?.exists ? cloudDoc.data() || {} : null;
+    setHealthStatus("healthPushWatcher", cloudData ? "Cloud Functions OK" : "A aguardar", cloudData ? "ok" : "warn");
+  } else {
+    setHealthStatus("healthPushWatcher", "Sem Firestore", "warn");
   }
   setHealthStatus("healthFirebase", window.firebase ? "Carregado" : "Indisponível", window.firebase ? "ok" : "bad");
   setHealthStatus("healthAuth", window.firebase?.auth ? "Carregado" : "Indisponível", window.firebase?.auth ? "ok" : "warn");

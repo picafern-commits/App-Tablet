@@ -1,5 +1,4 @@
 const { app, BrowserWindow, shell, ipcMain, Tray, Menu, Notification, screen, dialog } = require("electron");
-const { spawn } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 const http = require("http");
@@ -8,8 +7,6 @@ const snmp = require("net-snmp");
 
 let win;
 let tray;
-let pushWatcherProcess = null;
-let pushWatcherStatus = { ok: false, running: false, mode: "parado", error: "", startedAt: null, logFile: "" };
 app.isQuitting = false;
 
 const APP_REMOTE_URL = "https://picafern-commits.github.io/App-Tablet/html/index.html";
@@ -32,164 +29,6 @@ function backupDirPath() {
 
 function backupStatusPath() {
   return path.join(backupDirPath(), "backup-status.json");
-}
-
-function pushWatcherLogPath() {
-  return path.join(app.getPath("userData"), "push-watch.log");
-}
-
-function appendPushWatcherLog(text) {
-  try {
-    fs.mkdirSync(app.getPath("userData"), { recursive: true });
-    fs.appendFileSync(pushWatcherLogPath(), `[${new Date().toISOString()}] ${text}\n`, "utf8");
-  } catch {}
-}
-
-function parseLocalPushEnvFile(filePath) {
-  const env = {};
-  try {
-    if (!fs.existsSync(filePath)) return env;
-    const raw = fs.readFileSync(filePath, "utf8");
-    raw.split(/\r?\n/).forEach((line) => {
-      const match = line.match(/\$env:([A-Z0-9_]+)\s*=\s*["']([^"']+)["']/i);
-      if (match) env[match[1]] = match[2];
-    });
-  } catch {}
-  return env;
-}
-
-function pushEnvCandidates() {
-  const appRoot = path.join(__dirname, "..");
-  const parentRoot = path.resolve(appRoot, "..");
-  const roaming = app.getPath("appData");
-  return [
-    path.join(app.getPath("userData"), ".env.push.local.ps1"),
-    path.join(roaming, "app-braga", ".env.push.local.ps1"),
-    path.join(roaming, "App Braga", ".env.push.local.ps1"),
-    path.join(appRoot, ".env.push.local.ps1"),
-    path.join(parentRoot, ".env.push.local.ps1"),
-    path.join(process.cwd(), ".env.push.local.ps1"),
-    path.join("C:\\Minhas Apps\\AppBragaDesktop", ".env.push.local.ps1"),
-    path.join("C:\\Minhas Apps\\AppBragaDesktop\\AppBragaTeste-main", ".env.push.local.ps1")
-  ];
-}
-
-function serviceAccountCandidates() {
-  const appRoot = path.join(__dirname, "..");
-  const parentRoot = path.resolve(appRoot, "..");
-  const roaming = app.getPath("appData");
-  return [
-    process.env.GOOGLE_APPLICATION_CREDENTIALS,
-    path.join(app.getPath("userData"), "service-account.json"),
-    path.join(roaming, "app-braga", "service-account.json"),
-    path.join(roaming, "App Braga", "service-account.json"),
-    path.join(appRoot, "service-account.json"),
-    path.join(parentRoot, "service-account.json"),
-    path.join(process.cwd(), "service-account.json"),
-    "C:\\Minhas Apps\\AppBragaDesktop\\AppBragaTeste-main\\service-account.json",
-    "C:\\Minhas Apps\\AppBragaDesktop\\service-account.json",
-    "C:\\Minhas Apps\\AppBragaDesktop\\firebase-service-account.json"
-  ].filter(Boolean);
-}
-
-function buildPushWatcherEnv() {
-  const env = { ...process.env };
-  pushEnvCandidates().forEach((filePath) => Object.assign(env, parseLocalPushEnvFile(filePath)));
-  const serviceAccount = serviceAccountCandidates().find((candidate) => fs.existsSync(candidate));
-  if (serviceAccount) env.GOOGLE_APPLICATION_CREDENTIALS = serviceAccount;
-  return env;
-}
-
-function getPushWatcherReadiness() {
-  const env = buildPushWatcherEnv();
-  return {
-    serviceAccountReady: !!(env.GOOGLE_APPLICATION_CREDENTIALS && fs.existsSync(env.GOOGLE_APPLICATION_CREDENTIALS)),
-    serviceAccountPath: env.GOOGLE_APPLICATION_CREDENTIALS || "",
-    vapidReady: !!(env.APP_BRAGA_VAPID_PUBLIC_KEY && env.APP_BRAGA_VAPID_PRIVATE_KEY),
-    vapidPublicReady: !!env.APP_BRAGA_VAPID_PUBLIC_KEY,
-    vapidPrivateReady: !!env.APP_BRAGA_VAPID_PRIVATE_KEY,
-    logFile: pushWatcherLogPath()
-  };
-}
-
-function nodeRuntimeCandidates() {
-  return [
-    process.env.APP_BRAGA_NODE_PATH,
-    process.env.NODE_EXE,
-    "C:\\Program Files\\nodejs\\node.exe",
-    "C:\\Program Files (x86)\\nodejs\\node.exe"
-  ].filter(Boolean);
-}
-
-function getNodeRuntimePath() {
-  return nodeRuntimeCandidates().find((candidate) => {
-    try {
-      return fs.existsSync(candidate);
-    } catch {
-      return false;
-    }
-  }) || "";
-}
-
-function markPushWatcherStopped(reason, mode = "parado", readiness = getPushWatcherReadiness()) {
-  pushWatcherStatus = {
-    ok: false,
-    running: false,
-    mode,
-    error: reason || "",
-    startedAt: null,
-    ...readiness
-  };
-  if (reason) appendPushWatcherLog(reason);
-  return pushWatcherStatus;
-}
-
-function startPushWatcherAuto() {
-  if (pushWatcherProcess && !pushWatcherProcess.killed) return pushWatcherStatus;
-  const watcherPath = path.join(__dirname, "..", "tools", "web-push-watch.js");
-  const env = buildPushWatcherEnv();
-  const readiness = getPushWatcherReadiness();
-  const nodeRuntime = getNodeRuntimePath();
-
-  if (!fs.existsSync(watcherPath)) {
-    return markPushWatcherStopped("Watcher indisponivel", "erro", readiness);
-  }
-  if (!nodeRuntime) {
-    return markPushWatcherStopped("Este PC recebe notificacoes, mas nao envia porque nao tem Node.js.", "recetor-sem-node", readiness);
-  }
-  if (!env.GOOGLE_APPLICATION_CREDENTIALS || !fs.existsSync(env.GOOGLE_APPLICATION_CREDENTIALS)) {
-    return markPushWatcherStopped("Falta service-account.json", "sem-service-account", readiness);
-  }
-  if (!env.APP_BRAGA_VAPID_PUBLIC_KEY || !env.APP_BRAGA_VAPID_PRIVATE_KEY) {
-    return markPushWatcherStopped("Faltam VAPID keys locais", "sem-vapid", readiness);
-  }
-
-  try {
-    pushWatcherProcess = spawn(nodeRuntime, [watcherPath], {
-      cwd: path.join(__dirname, ".."),
-      env,
-      windowsHide: true,
-      stdio: ["ignore", "pipe", "pipe"]
-    });
-  } catch (error) {
-    return markPushWatcherStopped(`Erro ao iniciar watcher: ${error.message}`, "erro", readiness);
-  }
-
-  pushWatcherStatus = { ok: true, running: true, mode: "electron-auto", error: "", startedAt: new Date().toISOString(), pid: pushWatcherProcess.pid, ...readiness };
-  appendPushWatcherLog("Watcher iniciado pelo Electron.");
-  pushWatcherProcess.stdout.on("data", (chunk) => appendPushWatcherLog(chunk.toString("utf8").trim()));
-  pushWatcherProcess.stderr.on("data", (chunk) => appendPushWatcherLog(`ERRO: ${chunk.toString("utf8").trim()}`));
-  pushWatcherProcess.on("error", (error) => {
-    markPushWatcherStopped(`Erro ao iniciar watcher: ${error.message}`, error.code === "ENOENT" ? "recetor-sem-node" : "erro", readiness);
-    pushWatcherProcess = null;
-  });
-  pushWatcherProcess.on("exit", (code) => {
-    if (pushWatcherStatus.mode === "recetor-sem-node") return;
-    pushWatcherStatus = { ...pushWatcherStatus, ok: false, running: false, mode: "parado", error: `Watcher terminou com codigo ${code}` };
-    appendPushWatcherLog(pushWatcherStatus.error);
-    pushWatcherProcess = null;
-  });
-  return pushWatcherStatus;
 }
 
 function readBackupStatus() {
@@ -480,7 +319,6 @@ ipcMain.handle("printer:get-toner-snmp", async (_event, ip) => {
 app.whenReady().then(() => {
   createWindow();
   createTray();
-  setTimeout(startPushWatcherAuto, 2500);
   app.on("activate", () => {
     mostrarJanelaPrincipal();
   });
@@ -529,16 +367,7 @@ ipcMain.handle("app:notification-status", async () => ({
   platform: process.platform,
   appUserModelId: process.platform === "win32" ? "com.appbraga.desktop" : "",
   trayReady: !!tray,
-  focused: !!win && !win.isDestroyed() && win.isFocused(),
-  pushWatcher: pushWatcherStatus
-}));
-
-ipcMain.handle("app:push-watcher-start", async () => startPushWatcherAuto());
-
-ipcMain.handle("app:push-watcher-status", async () => ({
-  ...pushWatcherStatus,
-  ...getPushWatcherReadiness(),
-  running: !!(pushWatcherProcess && !pushWatcherProcess.killed)
+  focused: !!win && !win.isDestroyed() && win.isFocused()
 }));
 
 ipcMain.handle("app:notification-dialog-test", async () => {
@@ -673,9 +502,6 @@ ipcMain.handle("backup:open-folder", async () => {
 
 app.on("before-quit", () => {
   app.isQuitting = true;
-  try {
-    if (pushWatcherProcess && !pushWatcherProcess.killed) pushWatcherProcess.kill();
-  } catch {}
 });
 
 app.on("window-all-closed", () => {

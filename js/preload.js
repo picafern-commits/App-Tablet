@@ -11,8 +11,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getNotificationStatus: () => ipcRenderer.invoke("app:notification-status"),
   showNotificationDialogTest: () => ipcRenderer.invoke("app:notification-dialog-test"),
   onNotificationTested: (cb) => ipcRenderer.on("app:notification-tested", (_event, payload) => cb(payload)),
-  startPushWatcher: () => ipcRenderer.invoke("app:push-watcher-start"),
-  getPushWatcherStatus: () => ipcRenderer.invoke("app:push-watcher-status"),
   getAppInfo: () => ipcRenderer.invoke("app:get-info"),
   setFullscreen: (value) => ipcRenderer.invoke("app:set-fullscreen", value),
   listDisplays: () => ipcRenderer.invoke("app:list-displays"),

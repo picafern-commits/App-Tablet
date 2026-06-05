@@ -143,7 +143,7 @@
         <div class="health-card"><span>Rede</span><strong id="healthNetwork">A verificar</strong></div>
         <div class="health-card"><span>PIN / biometria</span><strong id="healthPin">A verificar</strong></div>
         <div class="health-card"><span>Notificações</span><strong id="healthNotifications">A verificar</strong></div>
-        <div class="health-card"><span>Watcher push</span><strong id="healthPushWatcher">A verificar</strong></div>
+        <div class="health-card"><span>Cloud Functions</span><strong id="healthPushWatcher">A verificar</strong></div>
         <div class="health-card"><span>Dispositivo</span><strong id="healthDevice">A verificar</strong></div>
       </div>
     </div>
@@ -282,7 +282,7 @@
         </div>
         <div class="notification-service-grid">
           <div class="notification-service-card">
-            <span>Serviço push</span>
+            <span>Envio remoto</span>
             <strong id="notifyServiceStatus">A verificar</strong>
             <small id="notifyServiceDetail">-</small>
           </div>
@@ -315,11 +315,11 @@
           <div class="empty-state mini">A carregar dispositivos...</div>
         </div>
       </div>
-      <p class="section-subtitle notification-note">Web, iPhone e Android usam Web Push/FCM com permissão do sistema. Com Blaze ativo, o envio remoto deve ser feito pelas Firebase Cloud Functions.</p>
+      <p class="section-subtitle notification-note">Web, iPhone e Android usam Web Push/FCM com permissão do sistema. O envio remoto corre nas Firebase Cloud Functions.</p>
       <div class="health-card">
         <span>Envio remoto</span>
         <strong>Firebase Cloud Functions</strong>
-        <p class="section-subtitle">O watcher local fica apenas como fallback. O envio principal corre no Firebase.</p>
+        <p class="section-subtitle">Este é o serviço principal de notificações da APP.</p>
       </div>
     </div>
 
