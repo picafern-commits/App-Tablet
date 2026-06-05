@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.24.3";
+const APP_VERSION = "1.24.4";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
 
 
@@ -1662,6 +1662,27 @@ function getTonerReplacementEventsApp(previousInfo, nextInfo) {
     .filter(({ before, after }) => before && before.percent <= 0 && after.percent >= 95);
 }
 
+function normalizeVapidPublicKeyApp(value) {
+  return String(value || "").replace(/\s+/g, "").trim();
+}
+
+function isValidVapidPublicKeyApp(value) {
+  try {
+    const key = normalizeVapidPublicKeyApp(value);
+    if (!key || key.length < 80) return false;
+    const bytes = urlBase64ToUint8ArrayAppBraga(key);
+    return bytes.length === 65 && bytes[0] === 4;
+  } catch {
+    return false;
+  }
+}
+
+function resolveVapidPublicKeyApp(value) {
+  const configured = normalizeVapidPublicKeyApp(value);
+  if (isValidVapidPublicKeyApp(configured)) return configured;
+  return normalizeVapidPublicKeyApp(APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY);
+}
+
 async function maybeNotifyTonerReplacement(ip, previousInfo, nextInfo) {
   if (!appNotificationState.tonerChange) return;
   const events = getTonerReplacementEventsApp(previousInfo, nextInfo);
@@ -1704,7 +1725,7 @@ function aplicarConfigNotificacoesApp(config = {}) {
   appNotificationState.maintenance = config.notifyMaintenance !== false;
   appNotificationState.radios = config.notifyRadios === true;
   appNotificationState.intervalMinutes = Math.max(5, Number(config.notificationIntervalMinutes || 15));
-  appNotificationState.vapidKey = String(config.notificationVapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "").trim();
+  appNotificationState.vapidKey = resolveVapidPublicKeyApp(config.notificationVapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "");
 
   const setChecked = (id, value) => {
     const node = document.getElementById(id);
@@ -1771,7 +1792,7 @@ async function guardarConfigNotificacoesApp(overrides = null) {
     notifyMaintenance: !!document.getElementById("notifyMaintenance")?.checked,
     notifyRadios: !!document.getElementById("notifyRadios")?.checked,
     notificationIntervalMinutes: Number(document.getElementById("notifyIntervalMinutes")?.value || 15),
-    notificationVapidKey: String(document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "").trim()
+    notificationVapidKey: resolveVapidPublicKeyApp(document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "")
   };
 
   if (overrides) {
@@ -2096,6 +2117,11 @@ function setNotificationTokenStatus(text, state = "warn") {
   if (!node) return;
   node.textContent = text;
   node.className = `health-status ${state}`;
+}
+
+function setNotificationDeviceDiagnostic(text) {
+  const node = document.getElementById("notifyDeviceDiagnostic");
+  if (node) node.textContent = text || "Sem diagnostico.";
 }
 
 function carregarScriptAppBraga(src) {
@@ -2528,7 +2554,7 @@ async function restaurarRegistoPushAtualApp() {
       return;
     }
 
-    const vapidKey = String(appNotificationState.vapidKey || document.getElementById("notifyVapidKey")?.value || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "").trim();
+    const vapidKey = resolveVapidPublicKeyApp(appNotificationState.vapidKey || document.getElementById("notifyVapidKey")?.value || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "");
     if (vapidKey && webPushDisponivelApp()) {
       let restored = false;
       try {
@@ -2598,7 +2624,8 @@ async function registarDispositivoLocalNotificacoesApp(source = "web-local") {
 async function registarDispositivoPushApp(forceReset = false) {
   try {
     if (!window.db || !window.db.collection) throw new Error("Firestore indisponivel.");
-    const vapidKey = String(document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "").trim();
+    const vapidKey = resolveVapidPublicKeyApp(document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "");
+    setNotificationDeviceDiagnostic(`Permissao: ${notificationPermissionApp()} | Push: ${webPushDisponivelApp() ? "disponivel" : "indisponivel"} | PWA: ${isStandalonePwaAppBraga() ? "sim" : "nao"} | iOS: ${isIosAppBraga() ? "sim" : "nao"}`);
 
     if (window.electronAPI?.showNotification) {
       await guardarConfigNotificacoesApp({ notificationEnabled: true, notificationVapidKey: vapidKey });
@@ -2633,6 +2660,7 @@ async function registarDispositivoPushApp(forceReset = false) {
     if (!("Notification" in window) || Notification.permission !== "granted") return;
 
     if (!webPushDisponivelApp()) {
+      setNotificationDeviceDiagnostic("PushManager indisponivel neste browser/app. No iPhone tem de abrir pelo icone do ecra principal e ter iOS 16.4+.");
       await registarDispositivoLocalNotificacoesApp("web-local-no-push");
       return;
     }
@@ -2640,15 +2668,18 @@ async function registarDispositivoPushApp(forceReset = false) {
     setNotificationTokenStatus("A registar...", "warn");
     let standardOk = false;
     let fcmOk = false;
+    let standardError = "";
+    let fcmError = "";
 
     try {
       standardOk = !!(await registarPushSubscriptionPadraoApp(vapidKey, { forceReset }));
       if (standardOk) await gravarDiagnosticoPushApp({ standardPush: true, standardPushError: "" });
     } catch (error) {
       console.warn("Erro no Web Push standard:", error);
+      standardError = error?.message || String(error);
       await gravarDiagnosticoPushApp({
         standardPush: false,
-        standardPushError: error?.message || String(error)
+        standardPushError: standardError
       });
     }
 
@@ -2656,12 +2687,22 @@ async function registarDispositivoPushApp(forceReset = false) {
       fcmOk = !!(await registarFcmWebPushApp(vapidKey));
     } catch (error) {
       console.warn("Erro no FCM Web Push:", error);
+      fcmError = error?.message || String(error);
     }
 
-    if (!standardOk && !fcmOk) throw new Error("Nenhum servico push remoto ficou disponivel neste dispositivo.");
+    if (!standardOk && !fcmOk) {
+      const details = [
+        isIosAppBraga() && !isStandalonePwaAppBraga() ? "iPhone nao esta em modo app do ecra principal" : "",
+        !webPushDisponivelApp() ? "PushManager indisponivel" : "",
+        standardError ? `Web Push: ${standardError}` : "",
+        fcmError ? `FCM: ${fcmError}` : ""
+      ].filter(Boolean).join(" | ");
+      throw new Error(details || "Nenhum servico push remoto ficou disponivel neste dispositivo.");
+    }
 
     await guardarConfigNotificacoesApp({ notificationEnabled: true, notificationVapidKey: vapidKey });
     setNotificationTokenStatus("Registado", "ok");
+    setNotificationDeviceDiagnostic(`Registo OK | Web Push standard: ${standardOk ? "sim" : "nao"} | FCM: ${fcmOk ? "sim" : "nao"}`);
     if (isIosAppBraga() && !isStandalonePwaAppBraga()) {
       mostrarMensagem("No iPhone, abre a APP pelo ecra principal para receber push com a app fechada.", "erro");
       return;
@@ -2674,6 +2715,7 @@ async function registarDispositivoPushApp(forceReset = false) {
   } catch (error) {
     console.error("Erro ao registar push:", error);
     setNotificationTokenStatus("Erro no registo", "bad");
+    setNotificationDeviceDiagnostic(error?.message || "Erro desconhecido no registo push.");
     const code = String(error?.code || "");
     const message = String(error?.message || "");
     let friendly = message || "Erro ao registar push.";
