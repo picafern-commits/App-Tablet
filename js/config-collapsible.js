@@ -1,21 +1,36 @@
 (function () {
-  const KEY = "appBragaConfigCollapsedFinal";
   const CARD_SELECTOR = "main .config-section, main .config-card, main .enterprise-config-card";
+  let memoryState = {};
+  let remoteLoaded = false;
 
-  function state() {
+  async function loadState() {
+    if (remoteLoaded) return memoryState;
     try {
-      return JSON.parse(localStorage.getItem(KEY) || "{}");
-    } catch {
-      return {};
-    }
+      if (window.db?.collection) {
+        const snap = await window.db.collection("config").doc("uiConfigCollapse").get();
+        memoryState = snap.exists ? (snap.data()?.sections || {}) : {};
+        remoteLoaded = true;
+      }
+    } catch {}
+    return memoryState;
   }
 
-  function save(nextState) {
+  function state() {
+    return memoryState || {};
+  }
+
+  async function save(nextState) {
+    memoryState = nextState || {};
     try {
-      localStorage.setItem(KEY, JSON.stringify(nextState || {}));
-    } catch {
-      // UI preference only.
+      if (window.db?.collection) {
+        await window.db.collection("config").doc("uiConfigCollapse").set({
+          sections: memoryState,
+          updatedAt: Date.now()
+        }, { merge: true });
+        remoteLoaded = true;
+      }
     }
+    catch {}
   }
 
   function cleanTitle(text) {
@@ -70,8 +85,9 @@
     else main.insertBefore(actions, main.firstChild);
   }
 
-  function setup() {
+  async function setup() {
     if (!/config\.html$/i.test(location.pathname)) return;
+    await loadState();
     ensureGlobalActions();
     const saved = state();
     const cards = [...document.querySelectorAll(CARD_SELECTOR)];

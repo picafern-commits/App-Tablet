@@ -182,6 +182,19 @@ async function updateRuntimeStatus(data = {}) {
   }, { merge: true });
 }
 
+async function writeAudit(action, data = {}) {
+  try {
+    await admin.firestore().collection("auditLogs").add({
+      action,
+      source: "firebase-functions",
+      createdAt: Date.now(),
+      ...data
+    });
+  } catch (error) {
+    logger.warn("Falhou escrita de auditoria", { action, error: error.message });
+  }
+}
+
 async function broadcast(title, body, data = {}) {
   const devices = await getActiveNotificationDevices();
   const canStandardWebPush = configureWebPush();
@@ -217,6 +230,16 @@ async function broadcast(title, body, data = {}) {
     standardWebPushReady: canStandardWebPush
   });
 
+  await writeAudit("notification-broadcast", {
+    title,
+    body,
+    sent,
+    failed,
+    event: data.event || data.collection || "manual",
+    collection: data.collection || "",
+    targetUrl: data.url || APP_URL
+  });
+
   return { sent, failed };
 }
 
@@ -225,6 +248,11 @@ exports.onNotificationRequestCreated = onDocumentCreated({
   secrets: [VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY]
 }, async (event) => {
   const data = event.data?.data() || {};
+  await writeAudit("notification-test-request", {
+    requestId: event.params.requestId,
+    title: data.title || "App Braga",
+    event: data.event || "manual-remote-test"
+  });
   await broadcast(data.title || "App Braga", data.body || "Teste remoto de notificacao.", {
     event: data.event || "manual-remote-test",
     requestId: event.params.requestId,
@@ -255,6 +283,13 @@ exports.onPrinterWritten = onDocumentWritten({
         afterPercent: tonerEvent.after.percent,
         url: "https://picafern-commits.github.io/App-Tablet/html/impressoras.html"
       });
+      await writeAudit("toner-zero", {
+        collection: "printers",
+        documentId: event.params.printerId,
+        printer: label,
+        color: tonerEvent.after.key,
+        afterPercent: tonerEvent.after.percent
+      });
     }
   }
 
@@ -270,6 +305,14 @@ exports.onPrinterWritten = onDocumentWritten({
         afterPercent: tonerEvent.after.percent,
         url: "https://picafern-commits.github.io/App-Tablet/html/impressoras.html"
       });
+      await writeAudit("toner-replaced", {
+        collection: "printers",
+        documentId: event.params.printerId,
+        printer: label,
+        color: tonerEvent.after.key,
+        beforePercent: tonerEvent.before.percent,
+        afterPercent: tonerEvent.after.percent
+      });
     }
   }
 });
@@ -282,6 +325,10 @@ exports.onStockWritten = onDocumentWritten({
   const config = await getNotificationConfig();
   if (config.notificationEnabled === false || config.notifyStockMin === false) return;
   if (!event.data.before.exists) return;
+  await writeAudit("stock-updated", {
+    collection: "stock",
+    documentId: event.params.stockId
+  });
   await broadcast("Stock atualizado", "Foi feita uma alteracao no stock.", {
     collection: "stock",
     event: "stock-updated",
@@ -299,6 +346,12 @@ exports.onManutencaoWritten = onDocumentWritten({
   if (config.notificationEnabled === false || config.notifyMaintenance === false) return;
   const after = event.data.after.data() || {};
   const label = after.modelo || after.numeroSerie || after.ip || "Manutencao";
+  await writeAudit(event.data.before.exists ? "maintenance-updated" : "maintenance-created", {
+    collection: "manutencoes",
+    documentId: event.params.manutencaoId,
+    label,
+    status: after.estado || ""
+  });
   await broadcast(event.data.before.exists ? "Manutencao atualizada" : "Nova manutencao", `${label}: ${after.estado || "estado atualizado"}.`, {
     collection: "manutencoes",
     event: event.data.before.exists ? "maintenance-updated" : "maintenance-created",
@@ -314,6 +367,11 @@ exports.onRadioWeeklyRecordCreated = onDocumentCreated({
   const config = await getNotificationConfig();
   if (config.notificationEnabled === false || config.notifyRadios !== true) return;
   const data = event.data?.data() || {};
+  await writeAudit("radio-weekly-created", {
+    collection: "radioWeeklyRecords",
+    documentId: event.params.recordId,
+    weekLabel: data.weekLabel || ""
+  });
   await broadcast("Registo semanal de radios", data.weekLabel || "Foi criado um registo semanal de radios.", {
     collection: "radioWeeklyRecords",
     event: "radio-weekly-created",

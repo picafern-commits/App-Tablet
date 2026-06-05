@@ -17,7 +17,8 @@
     { name: "etiquetasWord", label: "Etiqueta Word", page: "etiquetas-word.html", fields: ["titulo", "data", "user", "descricao"] },
     { name: "notificationTokens", label: "Dispositivo push", page: "config.html", fields: ["deviceName", "deviceType", "source", "permission", "token"] },
     { name: "notificationDevices", label: "Dispositivo push", page: "config.html", fields: ["name", "deviceName", "platform", "token", "lastSeenAt"] },
-    { name: "pushDevices", label: "Dispositivo push", page: "config.html", fields: ["name", "deviceName", "platform", "token", "lastSeenAt"] }
+    { name: "pushDevices", label: "Dispositivo push", page: "config.html", fields: ["name", "deviceName", "platform", "token", "lastSeenAt"] },
+    { name: "auditLogs", label: "Auditoria", page: "historico.html", fields: ["action", "path", "collection", "event", "title"] }
   ];
 
   const ICONS = {
@@ -473,15 +474,102 @@
   }
 
   function ensureDashboardOps() {
-    document.querySelector("#dashboardOpsPanel")?.remove();
+    if (!document.getElementById("listaDashboardStock")) return null;
+    let panel = document.getElementById("dashboardOpsPanel");
+    if (panel) return panel;
+    const main = document.querySelector("main");
+    const metrics = document.querySelector(".enterprise-metrics");
+    if (!main) return null;
+    panel = document.createElement("section");
+    panel.id = "dashboardOpsPanel";
+    panel.className = "dashboard-panel dashboard-ops-panel";
+    panel.innerHTML = `
+      <div class="panel-title-row">
+        <h2>Centro Operacional</h2>
+        <span class="status-pill" id="dashboardOpsSync">A sincronizar</span>
+      </div>
+      <div class="dashboard-ops-grid">
+        <div class="dashboard-ops-card">
+          <span>Toner critico</span>
+          <strong id="dashboardOpsLowTonerCount">0</strong>
+          <small>Abaixo de 25%</small>
+        </div>
+        <div class="dashboard-ops-card">
+          <span>Dispositivos push</span>
+          <strong id="dashboardOpsPushCount">0</strong>
+          <small id="dashboardOpsPushDetail">Ativos</small>
+        </div>
+        <div class="dashboard-ops-card">
+          <span>Manutencoes</span>
+          <strong id="dashboardOpsMaintenanceCount">0</strong>
+          <small>Pendentes ou em reparacao</small>
+        </div>
+        <div class="dashboard-ops-card">
+          <span>Atividade</span>
+          <strong id="dashboardOpsAuditCount">0</strong>
+          <small>Eventos recentes</small>
+        </div>
+      </div>
+      <div class="dashboard-low-toner-list" id="dashboardOpsLowTonerList">
+        <div class="empty-state mini">Sem toner critico neste momento.</div>
+      </div>
+    `;
+    if (metrics?.nextSibling) main.insertBefore(panel, metrics.nextSibling);
+    else main.insertBefore(panel, main.firstChild);
+    return panel;
   }
 
   function renderLowTonerDashboard() {
-    ensureDashboardOps();
+    const panel = ensureDashboardOps();
+    if (!panel) return;
+    const countNode = document.getElementById("dashboardOpsLowTonerCount");
+    const list = document.getElementById("dashboardOpsLowTonerList");
+    if (countNode) countNode.textContent = String(state.lowToner.length);
+    if (!list) return;
+    if (!state.lowToner.length) {
+      list.innerHTML = `<div class="empty-state mini">Sem toner critico neste momento.</div>`;
+      return;
+    }
+    list.innerHTML = state.lowToner.slice(0, 8).map((item) => {
+      const color = tonerColor(item.percent);
+      return `
+        <div class="dashboard-low-toner-item">
+          <div>
+            <strong>${escapeHtml(item.title)}</strong>
+            <span>${escapeHtml(item.subtitle || item.ip || "")}</span>
+            <small>${escapeHtml(item.ip || "")}</small>
+          </div>
+          <div>
+            <div class="dashboard-low-toner-meter">
+              <div class="dashboard-low-toner-fill" style="width:${item.percent}%;--toner-level-color:${color}"></div>
+            </div>
+            <strong style="color:${color}">${item.percent}%</strong>
+          </div>
+        </div>
+      `;
+    }).join("");
   }
 
   function updateDashboardOps() {
-    ensureDashboardOps();
+    const panel = ensureDashboardOps();
+    if (!panel) return;
+    const set = (id, value) => {
+      const node = document.getElementById(id);
+      if (node) node.textContent = String(value);
+    };
+    const tokens = Object.values(state.collectionCache.notificationTokens || {})
+      .filter((item) => item.active !== false && (item.token || item.pushSubscription?.endpoint));
+    const manutencoes = Object.values(state.collectionCache.manutencoes || {})
+      .filter((item) => !/resolvido|fechado|concluido|concluído/i.test(String(item.estado || "")));
+    const audit = Object.values(state.collectionCache.auditLogs || {});
+    set("dashboardOpsPushCount", tokens.length);
+    set("dashboardOpsMaintenanceCount", manutencoes.length);
+    set("dashboardOpsAuditCount", audit.length);
+    const pushDetail = document.getElementById("dashboardOpsPushDetail");
+    if (pushDetail) pushDetail.textContent = tokens.length ? "Prontos para receber" : "Sem dispositivos ativos";
+    const sync = document.getElementById("dashboardOpsSync");
+    if (sync) sync.textContent = `Sync ${new Date().toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" })}`;
+    renderLowTonerDashboard();
   }
   function updateSystemHealthExtra() {
     const grid = document.getElementById("systemHealthGrid");
