@@ -17,7 +17,7 @@ const POLL_SECONDS = Math.max(15, Number(process.env.APP_BRAGA_PUSH_INTERVAL || 
 const VAPID_PUBLIC_KEY = process.env.APP_BRAGA_VAPID_PUBLIC_KEY || "";
 const VAPID_PRIVATE_KEY = process.env.APP_BRAGA_VAPID_PRIVATE_KEY || "";
 const VAPID_SUBJECT = process.env.APP_BRAGA_VAPID_SUBJECT || "mailto:admin@appbraga.pt";
-const WATCH_COLLECTIONS = (process.env.APP_BRAGA_PUSH_COLLECTIONS || "printers,stock,manutencoes,radios,radioWeeklyRecords")
+const WATCH_COLLECTIONS = (process.env.APP_BRAGA_PUSH_COLLECTIONS || "printers,stock,manutencoes,radios,radioWeeklyRecords,notificationRequests")
   .split(",")
   .map((item) => item.trim())
   .filter(Boolean);
@@ -204,10 +204,12 @@ async function sendFcm(token, title, body, data = {}) {
 
 async function broadcast(title, body, data) {
   const tokens = await listTokens();
+  let sent = 0;
   for (const item of tokens) {
     try {
       if (item.token) {
         await sendFcm(item.token, title, body, data);
+        sent += 1;
         console.log(`FCM enviado: ${item.deviceName || item.deviceType || item.token.slice(0, 12)}`);
       }
       if (item.pushSubscription?.endpoint) {
@@ -221,6 +223,7 @@ async function broadcast(title, body, data) {
           tag: data?.event || data?.collection || "app-braga",
           data
         }));
+        sent += 1;
         console.log(`Web Push enviado: ${item.deviceName || item.deviceType || item.id || item.pushSubscription.endpoint.slice(0, 24)}`);
       }
     } catch (error) {
@@ -230,6 +233,7 @@ async function broadcast(title, body, data) {
       }
     }
   }
+  return sent;
 }
 
 const seen = new Map();
@@ -340,6 +344,21 @@ async function handlePrinterReplacementPush(doc, config) {
   }
 }
 
+async function handleNotificationRequestPush(doc, config) {
+  if (config.notificationEnabled === false) return;
+  const id = getDocId(doc.name);
+  const fields = doc.fields || {};
+  const title = fields.title || "App Braga";
+  const body = fields.body || "Teste remoto de notificacao.";
+  const url = fields.url || "https://picafern-commits.github.io/App-Tablet/html/config.html";
+  await broadcast(title, body, {
+    collection: "notificationRequests",
+    event: fields.event || "manual-remote-test",
+    requestId: id,
+    url
+  });
+}
+
 async function pollOnce() {
   const notificationConfig = await getNotificationConfig();
   for (const collection of WATCH_COLLECTIONS) {
@@ -348,11 +367,16 @@ async function pollOnce() {
     for (const doc of docs) {
       const key = doc.name;
       const previous = seen.get(key);
-      if (previous && previous !== doc.updateTime) changed += 1;
+      const isNew = !previous;
+      const isModified = !!previous && previous !== doc.updateTime;
+      if (!boot && (isNew || isModified)) changed += 1;
       seen.set(key, doc.updateTime);
       if (collection === "printers") await handlePrinterReplacementPush(doc, notificationConfig);
+      if (collection === "notificationRequests" && !boot && (isNew || isModified)) {
+        await handleNotificationRequestPush(doc, notificationConfig);
+      }
     }
-    if (!boot && changed && collection !== "printers") {
+    if (!boot && changed && collection !== "printers" && collection !== "notificationRequests") {
       await broadcast("App Braga", `${collection}: ${changed} alteracao${changed === 1 ? "" : "es"}.`, {
         collection,
         changed,

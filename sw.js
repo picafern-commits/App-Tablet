@@ -1,4 +1,4 @@
-const APP_BRAGA_SW = "app-braga-runtime-v29";
+const APP_BRAGA_SW = "app-braga-runtime-v30";
 const APP_BRAGA_FIREBASE_CONFIG = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
   authDomain: "toner-manager-756c4.firebaseapp.com",
@@ -9,6 +9,32 @@ const APP_BRAGA_FIREBASE_CONFIG = {
   appId: "1:1004492465437:web:6a745933c51fc17b04adf4"
 };
 
+function appBragaNotificationOptions(payload = {}) {
+  const data = payload.data || {};
+  return {
+    body: payload.body || data.body || "",
+    icon: data.icon || "./icon-192.png",
+    badge: data.badge || "./icon-192.png",
+    tag: payload.tag || data.tag || data.event || "app-braga-push",
+    renotify: true,
+    requireInteraction: !!data.requireInteraction,
+    data: {
+      url: data.url || payload.url || "./index.html",
+      ...data
+    }
+  };
+}
+
+function appBragaShowNotification(payload = {}) {
+  const title = payload.title || payload?.notification?.title || payload?.data?.title || "App Braga";
+  const normalized = {
+    ...(payload.notification || {}),
+    ...payload,
+    ...(payload.data || {})
+  };
+  return self.registration.showNotification(title, appBragaNotificationOptions(normalized));
+}
+
 try {
   importScripts("https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js");
   importScripts("https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js");
@@ -16,14 +42,10 @@ try {
   if (self.firebase && firebase.messaging) {
     const messaging = firebase.messaging();
     messaging.onBackgroundMessage((payload) => {
-      const notification = payload.notification || {};
-      const data = payload.data || {};
-      self.registration.showNotification(notification.title || data.title || "App Braga", {
-        body: notification.body || data.body || "",
-        icon: data.icon || "./icon-192.png",
-        badge: "./icon-192.png",
-        tag: data.tag || "app-braga-fcm",
-        data: { url: data.url || "./index.html" }
+      return appBragaShowNotification({
+        ...(payload.notification || {}),
+        data: payload.data || {},
+        tag: payload?.data?.tag || "app-braga-fcm"
       });
     });
   }
@@ -101,15 +123,7 @@ self.addEventListener("message", (event) => {
   }
   if (event.data && event.data.type === "APP_BRAGA_NOTIFY") {
     const payload = event.data.payload || {};
-    event.waitUntil(
-      self.registration.showNotification(payload.title || "App Braga", {
-        body: payload.body || "",
-        icon: "./icon-192.png",
-        badge: "./icon-192.png",
-        tag: payload.tag || "app-braga",
-        data: payload.data || {}
-      })
-    );
+    event.waitUntil(appBragaShowNotification(payload));
   }
 });
 
@@ -120,15 +134,7 @@ self.addEventListener("push", (event) => {
   } catch (error) {
     payload = { title: "App Braga", body: event.data ? event.data.text() : "Nova notificacao" };
   }
-  event.waitUntil(
-    self.registration.showNotification(payload.title || "App Braga", {
-      body: payload.body || "",
-      icon: "./icon-192.png",
-      badge: "./icon-192.png",
-      tag: payload.tag || "app-braga-push",
-      data: payload.data || { url: "./index.html" }
-    })
-  );
+  event.waitUntil(appBragaShowNotification(payload));
 });
 
 self.addEventListener("notificationclick", (event) => {

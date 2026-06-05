@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.24.0";
+const APP_VERSION = "1.24.1";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
 
 
@@ -1704,7 +1704,7 @@ function aplicarConfigNotificacoesApp(config = {}) {
   appNotificationState.maintenance = config.notifyMaintenance !== false;
   appNotificationState.radios = config.notifyRadios === true;
   appNotificationState.intervalMinutes = Math.max(5, Number(config.notificationIntervalMinutes || 15));
-  appNotificationState.vapidKey = String(APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || config.notificationVapidKey || "").trim();
+  appNotificationState.vapidKey = String(config.notificationVapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "").trim();
 
   const setChecked = (id, value) => {
     const node = document.getElementById(id);
@@ -1991,6 +1991,28 @@ async function testarNotificacaoApp() {
   mostrarMensagem(ok ? "Notificacao de teste enviada." : "Ativa as permissoes de notificacoes primeiro.", ok ? "sucesso" : "erro");
 }
 
+async function testarPushRemotoNotificacoesApp() {
+  try {
+    if (!window.db?.collection) throw new Error("Firestore indisponivel.");
+    await window.db.collection("notificationRequests").add({
+      title: "App Braga",
+      body: "Teste remoto Web Push recebido. Este teste tambem funciona com a app fechada.",
+      url: "https://picafern-commits.github.io/App-Tablet/html/config.html",
+      event: "manual-remote-test",
+      requestedFrom: getNotificationDeviceTypeApp(),
+      requestedUserAgent: navigator.userAgent || "",
+      createdAt: Date.now()
+    });
+    setNotificationServiceText("notifyLastTestStatus", "Pedido enviado", "warn");
+    setNotificationServiceText("notifyLastTestDetail", "Aguarda o watcher enviar o push remoto");
+    mostrarMensagem("Pedido de push remoto criado. O watcher tem de estar ativo no PC/servidor.");
+  } catch (error) {
+    console.error("Erro no teste remoto push:", error);
+    setNotificationServiceText("notifyLastTestStatus", "Falhou", "bad");
+    mostrarMensagem(error.message || "Nao foi possivel criar o teste remoto.", "erro");
+  }
+}
+
 async function entrarFullscreenApp() {
   try {
     if (document.fullscreenElement) {
@@ -2178,6 +2200,7 @@ async function registarPushSubscriptionPadraoApp(vapidKey, options = {}) {
     pushSubscription: json,
     endpoint,
     appVersion: APP_VERSION,
+    deviceName: labelDispositivoNotificacaoApp({ deviceType: getNotificationDeviceTypeApp() }),
     deviceType: getNotificationDeviceTypeApp(),
     userAgent: navigator.userAgent,
     platform: navigator.platform || "",
@@ -2204,6 +2227,7 @@ async function registarFcmWebPushApp(vapidKey) {
     active: true,
     source: "web-push-fcm",
     appVersion: APP_VERSION,
+    deviceName: labelDispositivoNotificacaoApp({ deviceType: getNotificationDeviceTypeApp() }),
     deviceType: getNotificationDeviceTypeApp(),
     userAgent: navigator.userAgent,
     platform: navigator.platform || "",
@@ -2217,6 +2241,39 @@ async function registarFcmWebPushApp(vapidKey) {
 
 function webPushDisponivelApp() {
   return !!(window.isSecureContext && "serviceWorker" in navigator && "PushManager" in window);
+}
+
+function isIosAppBraga() {
+  return /iphone|ipad|ipod/i.test(navigator.userAgent || "") ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
+function isStandalonePwaAppBraga() {
+  return !!(
+    window.matchMedia?.("(display-mode: standalone)")?.matches ||
+    window.matchMedia?.("(display-mode: fullscreen)")?.matches ||
+    window.navigator.standalone === true
+  );
+}
+
+async function gravarDiagnosticoPushApp(data = {}) {
+  try {
+    if (!window.db?.collection) return;
+    const id = getLocalNotificationDeviceIdApp("push-diagnostic");
+    await window.db.collection("notificationDiagnostics").doc(id).set({
+      appVersion: APP_VERSION,
+      deviceType: getNotificationDeviceTypeApp(),
+      ios: isIosAppBraga(),
+      standalone: isStandalonePwaAppBraga(),
+      pushAvailable: webPushDisponivelApp(),
+      permission: "Notification" in window ? Notification.permission : "unsupported",
+      userAgent: navigator.userAgent || "",
+      updatedAt: Date.now(),
+      ...data
+    }, { merge: true });
+  } catch (error) {
+    console.warn("Nao foi possivel gravar diagnostico push:", error);
+  }
 }
 
 function getNotificationDeviceTypeApp() {
@@ -2459,6 +2516,7 @@ async function registarDispositivoLocalNotificacoesApp(source = "web-local") {
       active: true,
       source,
       appVersion: APP_VERSION,
+      deviceName: labelDispositivoNotificacaoApp({ deviceType: getNotificationDeviceTypeApp() }),
       deviceType: getNotificationDeviceTypeApp(),
       userAgent: navigator.userAgent,
       platform: navigator.platform || "",
@@ -2485,6 +2543,7 @@ async function registarDispositivoPushApp(forceReset = false) {
         active: true,
         source: "electron-native",
         appVersion: APP_VERSION,
+        deviceName: "PC Electron",
         deviceType: "pc-electron",
         userAgent: navigator.userAgent,
         platform: navigator.platform || "",
@@ -2519,8 +2578,13 @@ async function registarDispositivoPushApp(forceReset = false) {
 
     try {
       standardOk = !!(await registarPushSubscriptionPadraoApp(vapidKey, { forceReset }));
+      if (standardOk) await gravarDiagnosticoPushApp({ standardPush: true, standardPushError: "" });
     } catch (error) {
       console.warn("Erro no Web Push standard:", error);
+      await gravarDiagnosticoPushApp({
+        standardPush: false,
+        standardPushError: error?.message || String(error)
+      });
     }
 
     try {
@@ -2533,6 +2597,14 @@ async function registarDispositivoPushApp(forceReset = false) {
 
     await guardarConfigNotificacoesApp({ notificationEnabled: true, notificationVapidKey: vapidKey });
     setNotificationTokenStatus("Registado", "ok");
+    if (isIosAppBraga() && !isStandalonePwaAppBraga()) {
+      mostrarMensagem("No iPhone, abre a APP pelo ecra principal para receber push com a app fechada.", "erro");
+      return;
+    }
+    if (isIosAppBraga() && !standardOk) {
+      mostrarMensagem("iPhone registado sem Web Push standard. Carrega em Reparar registo depois de abrir a APP pelo ecra principal.", "erro");
+      return;
+    }
     mostrarMensagem(forceReset ? "Registo de notificacoes reparado neste dispositivo." : (standardOk && fcmOk ? "Dispositivo registado para Web Push e FCM." : "Dispositivo registado para push."));
   } catch (error) {
     console.error("Erro ao registar push:", error);
@@ -5042,6 +5114,7 @@ window.registarDispositivoPushApp = registarDispositivoPushApp;
 window.guardarConfigNotificacoesApp = guardarConfigNotificacoesApp;
 window.verificarAlertasNotificacoesApp = verificarAlertasNotificacoesApp;
 window.testarNotificacaoApp = testarNotificacaoApp;
+window.testarPushRemotoNotificacoesApp = testarPushRemotoNotificacoesApp;
 window.pedirPermissaoNotificacoesApp = pedirPermissaoNotificacoesApp;
 window.verificarSistemasApp = verificarSistemasApp;
 window.adicionarInformacao = adicionarInformacao;
@@ -6262,7 +6335,9 @@ async function registarServiceWorkerAppBraga() {
   try {
     if (!("serviceWorker" in navigator)) return;
     const swUrl = location.pathname.includes("/html/") ? "../sw.js" : "sw.js";
-    await navigator.serviceWorker.register(swUrl);
+    const registration = await navigator.serviceWorker.register(swUrl);
+    await registration.update?.();
+    return registration;
   } catch (e) {
     console.error("Erro a registar service worker", e);
   }
