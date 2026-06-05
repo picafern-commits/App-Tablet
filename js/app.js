@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.24.4";
+const APP_VERSION = "1.24.5";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
 
 
@@ -2159,6 +2159,16 @@ function getNotificationTokenDocId(token) {
   return encodeURIComponent(String(token || "")).replace(/\./g, "%2E").slice(0, 1400);
 }
 
+function hashTextoNotificacoesApp(text) {
+  const value = String(text || "");
+  let hash = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = ((hash << 5) - hash) + value.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
 function urlBase64ToUint8ArrayAppBraga(base64String) {
   const padding = "=".repeat((4 - base64String.length % 4) % 4);
   const base64 = `${base64String}${padding}`.replace(/-/g, "+").replace(/_/g, "/");
@@ -2184,7 +2194,7 @@ function pushSubscriptionUsaVapidAtualApp(subscription, vapidKey) {
 }
 
 function getNotificationSubscriptionDocId(endpoint) {
-  return `standard-web-push-${Math.abs(hashTextoAppBraga(endpoint || navigator.userAgent || "device"))}`;
+  return `standard-web-push-${hashTextoNotificacoesApp(endpoint || navigator.userAgent || "device")}`;
 }
 
 async function registarPushSubscriptionPadraoApp(vapidKey, options = {}) {
@@ -2314,15 +2324,15 @@ function getNotificationDeviceTypeApp() {
 }
 
 function getLocalNotificationDeviceIdApp(source = "web-local") {
-  return `${source}-${encodeURIComponent(navigator.platform || "device")}-${Math.abs(hashTextoAppBraga(navigator.userAgent || ""))}`;
+  return `${source}-${encodeURIComponent(navigator.platform || "device")}-${hashTextoNotificacoesApp(navigator.userAgent || "")}`;
 }
 
 function getNotificationDeviceKeyApp() {
-  return `device-${Math.abs(hashTextoAppBraga([
+  return `device-${hashTextoNotificacoesApp([
     navigator.platform || "",
     navigator.userAgent || "",
     getNotificationDeviceTypeApp()
-  ].join("|")))}`;
+  ].join("|"))}`;
 }
 
 async function desativarRegistosAntigosDispositivoApp(currentDocId, deviceKey) {
@@ -2473,7 +2483,7 @@ function renderDispositivosNotificacoesApp(items = []) {
     .sort((a, b) => normalizeTimestampApp(b.updatedAt || b.createdAt) - normalizeTimestampApp(a.updatedAt || a.createdAt));
   const uniqueMap = new Map();
   sortedActive.forEach((item) => {
-    const key = item.deviceKey || `${item.deviceType || ""}|${item.platform || ""}|${Math.abs(hashTextoAppBraga(item.userAgent || item.id || ""))}`;
+    const key = item.deviceKey || `${item.deviceType || ""}|${item.platform || ""}|${hashTextoNotificacoesApp(item.userAgent || item.id || "")}`;
     if (!uniqueMap.has(key)) uniqueMap.set(key, item);
   });
   const activeItems = Array.from(uniqueMap.values());
