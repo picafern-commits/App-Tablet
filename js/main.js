@@ -61,10 +61,15 @@ function parseLocalPushEnvFile(filePath) {
 function pushEnvCandidates() {
   const appRoot = path.join(__dirname, "..");
   const parentRoot = path.resolve(appRoot, "..");
+  const roaming = app.getPath("appData");
   return [
     path.join(app.getPath("userData"), ".env.push.local.ps1"),
+    path.join(roaming, "app-braga", ".env.push.local.ps1"),
+    path.join(roaming, "App Braga", ".env.push.local.ps1"),
     path.join(appRoot, ".env.push.local.ps1"),
     path.join(parentRoot, ".env.push.local.ps1"),
+    path.join(process.cwd(), ".env.push.local.ps1"),
+    path.join("C:\\Minhas Apps\\AppBragaDesktop", ".env.push.local.ps1"),
     path.join("C:\\Minhas Apps\\AppBragaDesktop\\AppBragaTeste-main", ".env.push.local.ps1")
   ];
 }
@@ -72,11 +77,15 @@ function pushEnvCandidates() {
 function serviceAccountCandidates() {
   const appRoot = path.join(__dirname, "..");
   const parentRoot = path.resolve(appRoot, "..");
+  const roaming = app.getPath("appData");
   return [
     process.env.GOOGLE_APPLICATION_CREDENTIALS,
     path.join(app.getPath("userData"), "service-account.json"),
+    path.join(roaming, "app-braga", "service-account.json"),
+    path.join(roaming, "App Braga", "service-account.json"),
     path.join(appRoot, "service-account.json"),
     path.join(parentRoot, "service-account.json"),
+    path.join(process.cwd(), "service-account.json"),
     "C:\\Minhas Apps\\AppBragaDesktop\\AppBragaTeste-main\\service-account.json",
     "C:\\Minhas Apps\\AppBragaDesktop\\service-account.json",
     "C:\\Minhas Apps\\AppBragaDesktop\\firebase-service-account.json"

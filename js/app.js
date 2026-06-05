@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.24.1";
+const APP_VERSION = "1.24.2";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
 
 
@@ -2192,6 +2192,7 @@ async function registarPushSubscriptionPadraoApp(vapidKey, options = {}) {
   if (!endpoint || !window.db?.collection) return null;
 
   const docId = getNotificationSubscriptionDocId(endpoint);
+  const deviceKey = getNotificationDeviceKeyApp();
   appNotificationState.pushSubscriptionEndpoint = endpoint;
   appNotificationState.restoredTokenDocId = docId;
   await window.db.collection("notificationTokens").doc(docId).set({
@@ -2200,6 +2201,7 @@ async function registarPushSubscriptionPadraoApp(vapidKey, options = {}) {
     pushSubscription: json,
     endpoint,
     appVersion: APP_VERSION,
+    deviceKey,
     deviceName: labelDispositivoNotificacaoApp({ deviceType: getNotificationDeviceTypeApp() }),
     deviceType: getNotificationDeviceTypeApp(),
     userAgent: navigator.userAgent,
@@ -2210,6 +2212,7 @@ async function registarPushSubscriptionPadraoApp(vapidKey, options = {}) {
     updatedAt: Date.now(),
     createdAt: Date.now()
   }, { merge: true });
+  await desativarRegistosAntigosDispositivoApp(docId, deviceKey);
   return { docId, endpoint };
 }
 
@@ -2220,6 +2223,7 @@ async function registarFcmWebPushApp(vapidKey) {
   if (!token) throw new Error("Firebase nao devolveu token.");
 
   const docId = getNotificationTokenDocId(token);
+  const deviceKey = getNotificationDeviceKeyApp();
   appNotificationState.fcmToken = token;
   appNotificationState.restoredTokenDocId = appNotificationState.restoredTokenDocId || docId;
   await window.db.collection("notificationTokens").doc(docId).set({
@@ -2227,6 +2231,7 @@ async function registarFcmWebPushApp(vapidKey) {
     active: true,
     source: "web-push-fcm",
     appVersion: APP_VERSION,
+    deviceKey,
     deviceName: labelDispositivoNotificacaoApp({ deviceType: getNotificationDeviceTypeApp() }),
     deviceType: getNotificationDeviceTypeApp(),
     userAgent: navigator.userAgent,
@@ -2236,6 +2241,7 @@ async function registarFcmWebPushApp(vapidKey) {
     updatedAt: Date.now(),
     createdAt: Date.now()
   }, { merge: true });
+  await desativarRegistosAntigosDispositivoApp(docId, deviceKey);
   return { docId, token };
 }
 
@@ -2283,6 +2289,38 @@ function getNotificationDeviceTypeApp() {
 
 function getLocalNotificationDeviceIdApp(source = "web-local") {
   return `${source}-${encodeURIComponent(navigator.platform || "device")}-${Math.abs(hashTextoAppBraga(navigator.userAgent || ""))}`;
+}
+
+function getNotificationDeviceKeyApp() {
+  return `device-${Math.abs(hashTextoAppBraga([
+    navigator.platform || "",
+    navigator.userAgent || "",
+    getNotificationDeviceTypeApp()
+  ].join("|")))}`;
+}
+
+async function desativarRegistosAntigosDispositivoApp(currentDocId, deviceKey) {
+  try {
+    if (!window.db?.collection || !deviceKey) return;
+    const snapshot = await window.db.collection("notificationTokens").get();
+    const batch = window.db.batch();
+    let changes = 0;
+    snapshot.forEach((doc) => {
+      const data = doc.data() || {};
+      const sameDevice = data.deviceKey === deviceKey ||
+        (!data.deviceKey && data.userAgent === navigator.userAgent && data.deviceType === getNotificationDeviceTypeApp());
+      if (!sameDevice || doc.id === currentDocId || data.active === false) return;
+      batch.set(doc.ref, {
+        active: false,
+        disabledAt: Date.now(),
+        disabledReason: "substituido-por-registo-atual"
+      }, { merge: true });
+      changes += 1;
+    });
+    if (changes) await batch.commit();
+  } catch (error) {
+    console.warn("Nao foi possivel limpar registos antigos deste dispositivo:", error);
+  }
 }
 
 function normalizeTimestampApp(value) {
@@ -2387,10 +2425,16 @@ function renderDispositivosNotificacoesApp(items = []) {
   const host = document.getElementById("notifyDevicesList");
   if (!host) return;
 
-  const activeItems = items
+  const sortedActive = items
     .filter((item) => item.active !== false)
     .sort((a, b) => normalizeTimestampApp(b.updatedAt || b.createdAt) - normalizeTimestampApp(a.updatedAt || a.createdAt));
-  renderResumoDispositivosNotificacoesApp(items);
+  const uniqueMap = new Map();
+  sortedActive.forEach((item) => {
+    const key = item.deviceKey || `${item.deviceType || ""}|${item.platform || ""}|${Math.abs(hashTextoAppBraga(item.userAgent || item.id || ""))}`;
+    if (!uniqueMap.has(key)) uniqueMap.set(key, item);
+  });
+  const activeItems = Array.from(uniqueMap.values());
+  renderResumoDispositivosNotificacoesApp(activeItems);
   atualizarEstadoNotificacoesApp(false);
 
   if (!activeItems.length) {
@@ -2511,11 +2555,13 @@ async function registarDispositivoLocalNotificacoesApp(source = "web-local") {
   await guardarConfigNotificacoesApp({ notificationEnabled: true, notificationVapidKey: appNotificationState.vapidKey });
   if (window.db?.collection) {
     const id = getLocalNotificationDeviceIdApp(source);
+    const deviceKey = getNotificationDeviceKeyApp();
     appNotificationState.restoredTokenDocId = id;
     await window.db.collection("notificationTokens").doc(id).set({
       active: true,
       source,
       appVersion: APP_VERSION,
+      deviceKey,
       deviceName: labelDispositivoNotificacaoApp({ deviceType: getNotificationDeviceTypeApp() }),
       deviceType: getNotificationDeviceTypeApp(),
       userAgent: navigator.userAgent,
@@ -2525,6 +2571,7 @@ async function registarDispositivoLocalNotificacoesApp(source = "web-local") {
       updatedAt: Date.now(),
       createdAt: Date.now()
     }, { merge: true });
+    await desativarRegistosAntigosDispositivoApp(id, deviceKey);
   }
   setNotificationTokenStatus("Local ativo", "warn");
   await enviarNotificacaoApp("App Braga", "Notificacoes locais ativas neste dispositivo.", `${source}-register`, { force: true });
@@ -2543,6 +2590,7 @@ async function registarDispositivoPushApp(forceReset = false) {
         active: true,
         source: "electron-native",
         appVersion: APP_VERSION,
+        deviceKey: "pc-electron-native",
         deviceName: "PC Electron",
         deviceType: "pc-electron",
         userAgent: navigator.userAgent,

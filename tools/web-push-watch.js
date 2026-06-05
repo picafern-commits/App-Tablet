@@ -174,10 +174,17 @@ async function deactivateNotificationDevice(item, reason) {
 
 async function listTokens() {
   const docs = await listCollection("notificationTokens");
-  return docs
+  const active = docs
     .map((doc) => ({ id: getDocId(doc.name), ...doc.fields }))
     .filter((item) => item.active !== false)
     .filter((item) => item.token || item.pushSubscription?.endpoint);
+  const sorted = active.sort((a, b) => Number(b.updatedAt || b.createdAt || 0) - Number(a.updatedAt || a.createdAt || 0));
+  const unique = new Map();
+  sorted.forEach((item) => {
+    const key = item.deviceKey || `${item.deviceType || ""}|${item.platform || ""}|${item.userAgent || item.id || ""}`;
+    if (!unique.has(key)) unique.set(key, item);
+  });
+  return Array.from(unique.values());
 }
 
 async function sendFcm(token, title, body, data = {}) {
