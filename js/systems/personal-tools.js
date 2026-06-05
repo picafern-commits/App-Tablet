@@ -178,7 +178,7 @@
         </div>
       </section>
     `;
-    if (target?.parentNode) target.parentNode.insertBefore(root, target);
+    if (target?.parentNode) target.parentNode.insertBefore(root, target.nextSibling);
     else main.appendChild(root);
     bindDashboard(root);
     return root;

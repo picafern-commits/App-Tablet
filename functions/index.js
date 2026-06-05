@@ -83,6 +83,15 @@ function getTonerZeroEvents(beforeFields, afterFields) {
     .filter(({ before: oldItem, after: newItem }) => newItem.percent <= 0 && (!oldItem || oldItem.percent > 0));
 }
 
+function getTonerLowEvents(beforeFields, afterFields, threshold = 25) {
+  const before = getTonerItems(beforeFields);
+  const after = getTonerItems(afterFields);
+  const beforeMap = new Map(before.map((item) => [item.key, item]));
+  return after
+    .map((item) => ({ before: beforeMap.get(item.key), after: item }))
+    .filter(({ before: oldItem, after: newItem }) => newItem.percent > 0 && newItem.percent <= threshold && (!oldItem || oldItem.percent > threshold));
+}
+
 function getPrinterLabel(fields = {}, id = "") {
   const model = fields.modelo || fields.model || fields.name || "Impressora";
   const loc = fields.localizacao || fields.location || fields.armazem || id;
@@ -288,6 +297,29 @@ exports.onPrinterWritten = onDocumentWritten({
         documentId: event.params.printerId,
         printer: label,
         color: tonerEvent.after.key,
+        afterPercent: tonerEvent.after.percent
+      });
+    }
+  }
+
+  if (config.notifyTonerLow25 !== false) {
+    const lowEvents = getTonerLowEvents(before, after, 25);
+    for (const tonerEvent of lowEvents) {
+      await broadcast("Toner a 25%", `${label}: ${tonerEvent.after.label} chegou a ${tonerEvent.after.percent}%.`, {
+        collection: "printers",
+        event: "toner-low-25",
+        printerId: event.params.printerId,
+        color: tonerEvent.after.key,
+        beforePercent: tonerEvent.before ? tonerEvent.before.percent : "",
+        afterPercent: tonerEvent.after.percent,
+        url: "https://picafern-commits.github.io/App-Tablet/html/impressoras.html"
+      });
+      await writeAudit("toner-low-25", {
+        collection: "printers",
+        documentId: event.params.printerId,
+        printer: label,
+        color: tonerEvent.after.key,
+        beforePercent: tonerEvent.before ? tonerEvent.before.percent : null,
         afterPercent: tonerEvent.after.percent
       });
     }

@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.25.0";
+const APP_VERSION = "1.25.1";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
 
 
@@ -86,6 +86,7 @@ let appNotificationTimer = null;
 const appNotificationState = {
   enabled: false,
   tonerZero: true,
+  tonerLow25: true,
   tonerChange: true,
   stockMin: true,
   maintenance: true,
@@ -1720,6 +1721,7 @@ async function maybeNotifyTonerReplacement(ip, previousInfo, nextInfo) {
 function aplicarConfigNotificacoesApp(config = {}) {
   appNotificationState.enabled = config.notificationEnabled === true;
   appNotificationState.tonerZero = config.notifyTonerZero !== false;
+  appNotificationState.tonerLow25 = config.notifyTonerLow25 !== false;
   appNotificationState.tonerChange = config.notifyTonerChange !== false;
   appNotificationState.stockMin = config.notifyStockMin !== false;
   appNotificationState.maintenance = config.notifyMaintenance !== false;
@@ -1733,6 +1735,7 @@ function aplicarConfigNotificacoesApp(config = {}) {
   };
   setChecked("notifyEnabled", appNotificationState.enabled);
   setChecked("notifyTonerZero", appNotificationState.tonerZero);
+  setChecked("notifyTonerLow25", appNotificationState.tonerLow25);
   setChecked("notifyTonerChange", appNotificationState.tonerChange);
   setChecked("notifyStockMin", appNotificationState.stockMin);
   setChecked("notifyMaintenance", appNotificationState.maintenance);
@@ -1787,6 +1790,7 @@ async function guardarConfigNotificacoesApp(overrides = null) {
   const data = overrides || {
     notificationEnabled: !!document.getElementById("notifyEnabled")?.checked,
     notifyTonerZero: !!document.getElementById("notifyTonerZero")?.checked,
+    notifyTonerLow25: !!document.getElementById("notifyTonerLow25")?.checked,
     notifyTonerChange: !!document.getElementById("notifyTonerChange")?.checked,
     notifyStockMin: !!document.getElementById("notifyStockMin")?.checked,
     notifyMaintenance: !!document.getElementById("notifyMaintenance")?.checked,
@@ -1797,6 +1801,7 @@ async function guardarConfigNotificacoesApp(overrides = null) {
 
   if (overrides) {
     if (typeof data.notifyTonerZero === "undefined") data.notifyTonerZero = appNotificationState.tonerZero;
+    if (typeof data.notifyTonerLow25 === "undefined") data.notifyTonerLow25 = appNotificationState.tonerLow25 !== false;
     if (typeof data.notifyTonerChange === "undefined") data.notifyTonerChange = appNotificationState.tonerChange;
     if (typeof data.notifyStockMin === "undefined") data.notifyStockMin = appNotificationState.stockMin;
     if (typeof data.notifyMaintenance === "undefined") data.notifyMaintenance = appNotificationState.maintenance;
