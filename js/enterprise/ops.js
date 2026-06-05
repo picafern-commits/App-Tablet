@@ -259,6 +259,40 @@
     themeCard.insertBefore(row, actions || null);
   }
 
+  function shouldSpellcheck(node) {
+    if (!node || node.disabled || node.readOnly) return false;
+    if (node.matches?.("textarea,[contenteditable='true']")) return true;
+    if (!node.matches?.("input")) return false;
+    const type = String(node.getAttribute("type") || "text").toLowerCase();
+    return ["", "text", "search", "email"].includes(type);
+  }
+
+  function applySpellcheck(root = document) {
+    document.documentElement.lang = document.documentElement.lang || "pt-PT";
+    root.querySelectorAll?.("input, textarea, [contenteditable='true']").forEach((node) => {
+      if (!shouldSpellcheck(node)) return;
+      node.setAttribute("spellcheck", "true");
+      node.setAttribute("autocorrect", "on");
+      node.setAttribute("autocomplete", node.getAttribute("autocomplete") || "on");
+      node.setAttribute("lang", node.getAttribute("lang") || "pt-PT");
+    });
+  }
+
+  function setupSpellcheck() {
+    applySpellcheck(document);
+    if (window.__appBragaSpellcheckObserver) return;
+    window.__appBragaSpellcheckObserver = new MutationObserver((records) => {
+      records.forEach((record) => {
+        record.addedNodes.forEach((node) => {
+          if (node.nodeType !== 1) return;
+          if (shouldSpellcheck(node)) applySpellcheck({ querySelectorAll: () => [node] });
+          applySpellcheck(node);
+        });
+      });
+    });
+    window.__appBragaSpellcheckObserver.observe(document.body, { childList: true, subtree: true });
+  }
+
   function setElectronDisplayStatus(status, details) {
     const statusNode = document.getElementById("electronDisplayStatus");
     const detailsNode = document.getElementById("electronDisplayDetails");
@@ -627,6 +661,7 @@
     setupElectronSidebarActions();
     setupSearchShell();
     setupDensityControls();
+    setupSpellcheck();
     setupElectronDisplayConfig();
     polishModalsAndEmptyStates();
     ensureDashboardOps();
