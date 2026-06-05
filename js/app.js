@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.24.2";
+const APP_VERSION = "1.24.3";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
 
 
@@ -2384,6 +2384,18 @@ async function atualizarEstadoNotificacoesApp(showMessage = false) {
   const service = document.getElementById("notifyServiceStatus");
   if (!service) return;
 
+  async function renderCloudFunctionsStatus() {
+    if (!window.db?.collection) return false;
+    const doc = await window.db.collection("config").doc("cloudNotifications").get().catch(() => null);
+    const data = doc?.exists ? doc.data() || {} : null;
+    if (!data) return false;
+    setNotificationServiceText("notifyServiceStatus", "Cloud Functions", "ok");
+    setNotificationServiceText("notifyServiceDetail", data.lastRunAt ? `Ultimo envio: ${formatTimestampApp(data.lastRunAt)}` : "Ativo no Firebase");
+    setNotificationServiceText("notifyCredentialsStatus", data.standardWebPushReady === false ? "FCM OK" : "OK", data.standardWebPushReady === false ? "warn" : "ok");
+    setNotificationServiceText("notifyCredentialsDetail", `Firebase ${data.region || "europe-west1"} - enviados: ${data.lastSent ?? 0} - falhas: ${data.lastFailed ?? 0}`);
+    return true;
+  }
+
   if (window.electronAPI?.getPushWatcherStatus) {
     const status = await window.electronAPI.getPushWatcherStatus().catch((error) => ({ ok: false, error: error.message }));
     const running = !!status?.running;
@@ -2401,18 +2413,23 @@ async function atualizarEstadoNotificacoesApp(showMessage = false) {
     return;
   }
 
+  if (await renderCloudFunctionsStatus()) {
+    if (showMessage) mostrarMensagem("Cloud Functions de notificacoes ativo.");
+    return;
+  }
+
   const permission = notificationPermissionApp();
   const ok = permission === "granted";
   setNotificationServiceText("notifyServiceStatus", ok ? "Web pronta" : "Permissão pendente", ok ? "ok" : "warn");
-  setNotificationServiceText("notifyServiceDetail", ok ? "Push depende do watcher externo" : "Ativa as notificações neste dispositivo");
+  setNotificationServiceText("notifyServiceDetail", ok ? "A aguardar primeiro envio das Cloud Functions" : "Ativa as notificações neste dispositivo");
   setNotificationServiceText("notifyCredentialsStatus", appNotificationState.vapidKey ? "VAPID OK" : "Falta VAPID", appNotificationState.vapidKey ? "ok" : "warn");
-  setNotificationServiceText("notifyCredentialsDetail", "GitHub Pages não corre watcher sozinho");
-  if (showMessage) mostrarMensagem(ok ? "Notificações web prontas." : "Ativa permissões e regista o dispositivo.", ok ? "sucesso" : "erro");
+  setNotificationServiceText("notifyCredentialsDetail", "Cloud Functions envia as notificacoes no Firebase");
+  if (showMessage) mostrarMensagem(ok ? "Notificacoes web prontas." : "Ativa permissoes e regista o dispositivo.", ok ? "sucesso" : "erro");
 }
 
 async function ligarServicoNotificacoesApp() {
   if (!window.electronAPI?.startPushWatcher) {
-    mostrarMensagem("No iPhone/Android o serviço é externo. Usa o PC/Electron para ligar o watcher.", "erro");
+    mostrarMensagem("Com Blaze, o servico corre nas Cloud Functions. Usa Testar push remoto para validar.", "sucesso");
     await atualizarEstadoNotificacoesApp(false);
     return;
   }

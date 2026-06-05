@@ -314,11 +314,11 @@
           <div class="empty-state mini">A carregar dispositivos...</div>
         </div>
       </div>
-      <p class="section-subtitle notification-note">Electron avisa enquanto o processo estiver ativo/tray. Web, iPhone e Android usam Web Push/FCM com permissão do sistema; para funcionar com a app fechada é preciso o watcher externo ativo.</p>
+      <p class="section-subtitle notification-note">Web, iPhone e Android usam Web Push/FCM com permissão do sistema. Com Blaze ativo, o envio remoto deve ser feito pelas Firebase Cloud Functions.</p>
       <div class="health-card">
-        <span>Web Push externo</span>
-        <strong>Usa npm run push:watch num PC/servidor</strong>
-        <p class="section-subtitle">Sem Blaze: o watcher local lê a Firestore e envia FCM/Web Push standard para os dispositivos registados.</p>
+        <span>Envio remoto</span>
+        <strong>Firebase Cloud Functions</strong>
+        <p class="section-subtitle">O watcher local fica apenas como fallback. O envio principal corre no Firebase.</p>
       </div>
     </div>
 
