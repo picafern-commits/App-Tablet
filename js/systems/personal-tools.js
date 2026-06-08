@@ -22,6 +22,10 @@
     return /\/html\/index\.html$/i.test(location.pathname) || /\/index\.html$/i.test(location.pathname) || !!document.getElementById("listaDashboardStock");
   }
 
+  function isTasksPage() {
+    return /\/html\/tarefas\.html$/i.test(location.pathname) || /\/tarefas\.html$/i.test(location.pathname) || !!document.getElementById("personalTasksPage");
+  }
+
   function db() {
     return window.db && typeof window.db.collection === "function" ? window.db : null;
   }
@@ -184,6 +188,44 @@
     return root;
   }
 
+  function tasksPageRoot() {
+    if (!isTasksPage()) return null;
+    let root = document.getElementById("personalTasksPage");
+    if (root?.dataset.bound) return root;
+    if (!root) return null;
+    root.dataset.bound = "1";
+    root.innerHTML = `
+      <section class="personal-panel personal-tasks-board">
+        <div class="personal-panel-head">
+          <div>
+            <h2>Tarefas</h2>
+            <p>Lista simples para trabalho diário, manutenção e seguimento.</p>
+          </div>
+          <button type="button" class="primary-btn" data-personal-add-task>Adicionar tarefa</button>
+        </div>
+        <div id="personalTaskList" class="personal-list personal-task-list"></div>
+      </section>
+      <section class="personal-grid">
+        <div class="personal-panel">
+          <div class="personal-panel-head">
+            <h2>Offline</h2>
+            <button type="button" class="secondary-btn" data-personal-sync>Sincronizar</button>
+          </div>
+          <div id="personalOfflineStatus" class="personal-list"></div>
+        </div>
+        <div class="personal-panel">
+          <div class="personal-panel-head">
+            <h2>Relatorio semanal</h2>
+            <button type="button" class="secondary-btn" data-personal-weekly>Gerar</button>
+          </div>
+          <div id="personalWeeklySummary" class="personal-list"></div>
+        </div>
+      </section>
+    `;
+    bindDashboard(root);
+    return root;
+  }
+
   function bindDashboard(root) {
     root.querySelector("[data-personal-add-task]")?.addEventListener("click", addTask);
     root.querySelector("[data-personal-weekly]")?.addEventListener("click", generateWeeklyReport);
@@ -241,7 +283,8 @@
   function renderTasks() {
     const host = document.getElementById("personalTaskList");
     if (!host) return;
-    const tasks = (state.collections.personalTasks || []).filter((item) => !item.done).sort((a, b) => getTimestamp(b.createdAt) - getTimestamp(a.createdAt)).slice(0, 8);
+    const limit = isTasksPage() ? 80 : 8;
+    const tasks = (state.collections.personalTasks || []).filter((item) => !item.done).sort((a, b) => getTimestamp(b.createdAt) - getTimestamp(a.createdAt)).slice(0, limit);
     if (!tasks.length) {
       host.innerHTML = `<div class="empty-state mini">Sem tarefas abertas.</div>`;
       return;
@@ -530,6 +573,7 @@
 
   function renderAll() {
     dashboardRoot();
+    tasksPageRoot();
     renderMorning();
     renderTasks();
     renderPreventive();
@@ -539,6 +583,7 @@
 
   function init() {
     dashboardRoot();
+    tasksPageRoot();
     bootRealtime();
     updateQueueCount();
     renderAll();

@@ -98,6 +98,22 @@
   gap: 10px;
 }
 
+.personal-tasks-board {
+  min-height: 420px;
+}
+
+.personal-task-list {
+  gap: 12px;
+}
+
+.personal-task-list .personal-row {
+  min-height: 68px;
+}
+
+.personal-task-list .personal-row button {
+  min-width: 88px;
+}
+
 .personal-row {
   display: flex;
   align-items: center;

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt">
 <head>
 <script src="../js/app-theme-pro.js?v=theme-pro-1"></script>
@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
   <link rel="stylesheet" href="../css/app-theme-pro.css?v=theme-pro-1">
   <link rel="stylesheet" href="../css/enterprise/ops.css?v=ops-9">
-  <link rel="stylesheet" href="../css/systems/personal-tools.css?v=personal-1">
+  <link rel="stylesheet" href="../css/systems/personal-tools.css?v=personal-3">
   <link rel="stylesheet" href="../css/systems/global-search.css?v=global-search-2">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -36,18 +36,20 @@
 	<a href="index.html">Dashboard</a>
 	<a href="add-toner.html">Adicionar Toner</a>
 	<a href="stock.html">Stock</a>
-	<a href="historico.html">Histórico</a>
-	<a href="etiquetas-word.html" class="active">Etiquetas Word</a>
+	<a href="historico.html">HistÃ³rico</a>
+	
+<a href="tarefas.html">Tarefas</a>
+<a href="etiquetas-word.html" class="active">Etiquetas Word</a>
 	<a href="impressoras.html">Impressoras</a>
-	<a href="manutencao-impressoras.html">Manutenção Impressoras</a>
+	<a href="manutencao-impressoras.html">ManutenÃ§Ã£o Impressoras</a>
 	<a href="computadores.html">Computadores</a>
 	<a href="users.html">Users</a>
 	<a href="pistolas.html">Pistolas CK65</a>
 	<a href="portas.html">Portas Rede</a>
-	<a href="radios.html">Rádios</a>
-	<a href="informacoes.html">Informações</a>
-	<a href="diagnostico.html">Diagnóstico</a>
-	<a href="config.html">Configurações</a>
+	<a href="radios.html">RÃ¡dios</a>
+	<a href="informacoes.html">InformaÃ§Ãµes</a>
+	<a href="diagnostico.html">DiagnÃ³stico</a>
+	<a href="config.html">ConfiguraÃ§Ãµes</a>
 </aside>
 
 <main class="main">
@@ -63,13 +65,13 @@
 
   <section class="panel etiquetas-bulk-toolbar">
     <div class="toolbar-search">
-      <input id="searchEtiquetasWord" type="text" placeholder="Pesquisar etiqueta, série, SDS, lote...">
+      <input id="searchEtiquetasWord" type="text" placeholder="Pesquisar etiqueta, sÃ©rie, SDS, lote...">
     </div>
     <div class="etiquetas-bulk-actions">
-      <button class="secondary-btn" type="button" onclick="selecionarEtiquetasWordVisiveis()">Selecionar visíveis</button>
-      <button class="secondary-btn" type="button" onclick="limparSelecaoEtiquetasWord()">Limpar seleção</button>
+      <button class="secondary-btn" type="button" onclick="selecionarEtiquetasWordVisiveis()">Selecionar visÃ­veis</button>
+      <button class="secondary-btn" type="button" onclick="limparSelecaoEtiquetasWord()">Limpar seleÃ§Ã£o</button>
       <button class="primary-btn" type="button" onclick="imprimirEtiquetasWordSelecionadas()">Imprimir selecionadas</button>
-      <button class="secondary-btn" type="button" onclick="reimprimirUltimaEtiquetaWord()">Reimprimir última etiqueta</button>
+      <button class="secondary-btn" type="button" onclick="reimprimirUltimaEtiquetaWord()">Reimprimir Ãºltima etiqueta</button>
     </div>
     <div class="section-subtitle"><span id="etiquetasSelecionadasCount">0</span> etiquetas selecionadas</div>
   </section>
@@ -84,14 +86,14 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<script src="../js/app.js?v=1.30.3"></script>
-<script src="../js/systems/equipment/equipment-models.js?v=equipment-2"></script>
+<script src="../js/app.js?v=1.30.4"></script>
+<script src="../js/systems/equipment/equipment-models.js?v=equipment-3"></script>
 <script src="../js/systems/global-search/global-search.js?v=global-search-2"></script>
   <script src="../js/core/helpers.js"></script>
   <script src="../js/iphone-force-final.js?v=iphone-sidebar-slide-1"></script>
 <script src="../js/enterprise/ops.js?v=ops-10"></script>
 <script src="../js/systems/backup/local-backup.js?v=backup-2"></script>
-<script src="../js/systems/personal-tools.js?v=personal-2"></script>
+<script src="../js/systems/personal-tools.js?v=personal-3"></script>
 
 <script src="../js/iphone-sidebar-final.js?v=iphone-sidebar-final-1"></script>
 </body>

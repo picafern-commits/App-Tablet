@@ -212,7 +212,7 @@
         existingActions.insertAdjacentHTML("beforeend", `<button class="secondary-btn enterprise-window-btn" type="button" data-enterprise-hide>Segundo plano</button>`);
       }
       if (!existingActions.querySelector("[data-enterprise-close]")) {
-        existingActions.insertAdjacentHTML("beforeend", `<button class="secondary-btn enterprise-window-btn enterprise-window-close" type="button" data-enterprise-close>Fechar App</button>`);
+        existingActions.insertAdjacentHTML("beforeend", `<button class="secondary-btn enterprise-window-btn enterprise-window-close" type="button" data-enterprise-close>Fechar APP</button>`);
       }
       bindElectronWindowButtons(existingActions);
       return;
@@ -221,7 +221,7 @@
     actions.className = "enterprise-window-actions";
     actions.innerHTML = `
       <button class="secondary-btn enterprise-window-btn" type="button" data-enterprise-hide>Segundo plano</button>
-      <button class="secondary-btn enterprise-window-btn enterprise-window-close" type="button" data-enterprise-close>Fechar App</button>
+      <button class="secondary-btn enterprise-window-btn enterprise-window-close" type="button" data-enterprise-close>Fechar APP</button>
     `;
     sidebar.appendChild(actions);
     bindElectronWindowButtons(actions);

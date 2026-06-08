@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt">
 <head>
 <script src="../js/app-theme-pro.js?v=theme-pro-1"></script>
@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
   <link rel="stylesheet" href="../css/app-theme-pro.css?v=theme-pro-1">
   <link rel="stylesheet" href="../css/enterprise/ops.css?v=ops-9">
-  <link rel="stylesheet" href="../css/systems/personal-tools.css?v=personal-1">
+  <link rel="stylesheet" href="../css/systems/personal-tools.css?v=personal-3">
   <link rel="stylesheet" href="../css/systems/global-search.css?v=global-search-2">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -36,18 +36,20 @@
 	<a href="index.html">Dashboard</a>
 	<a href="add-toner.html">Adicionar Toner</a>
 	<a href="stock.html" class="active">Stock</a>
-	<a href="historico.html">Histórico</a>
-	<a href="etiquetas-word.html">Etiquetas Word</a>
+	<a href="historico.html">HistÃ³rico</a>
+	
+<a href="tarefas.html">Tarefas</a>
+<a href="etiquetas-word.html">Etiquetas Word</a>
 	<a href="impressoras.html">Impressoras</a>
-	<a href="manutencao-impressoras.html">Manutenção Impressoras</a>
+	<a href="manutencao-impressoras.html">ManutenÃ§Ã£o Impressoras</a>
 	<a href="computadores.html">Computadores</a>
 	<a href="users.html">Users</a>
 	<a href="pistolas.html">Pistolas CK65</a>
 	<a href="portas.html">Portas Rede</a>
-	<a href="radios.html">Rádios</a>
-	<a href="informacoes.html">Informações</a>
-	<a href="diagnostico.html">Diagnóstico</a>
-	<a href="config.html">Configurações</a>
+	<a href="radios.html">RÃ¡dios</a>
+	<a href="informacoes.html">InformaÃ§Ãµes</a>
+	<a href="diagnostico.html">DiagnÃ³stico</a>
+	<a href="config.html">ConfiguraÃ§Ãµes</a>
 </aside>
 <main class="main">
 	
@@ -56,7 +58,7 @@
 	<span class="status-pill">Sistema Online</span>
   </div>
 	
-  <div class="topbar premium-topbar"><div class="topbar-main"><h1>Stock</h1><p class="subtitle">Toners disponíveis</p></div><div class="topbar-status"><span class="version-pill" id="appVersion">v1.0.0 Premium</span></div></div>
+  <div class="topbar premium-topbar"><div class="topbar-main"><h1>Stock</h1><p class="subtitle">Toners disponÃ­veis</p></div><div class="topbar-status"><span class="version-pill" id="appVersion">v1.0.0 Premium</span></div></div>
   <div class="stats-grid"><div class="stat-card stat-card-full"><span>Total em stock</span><strong id="countStock">0</strong></div></div>
   <div class="panel">
     <div class="toolbar">
@@ -68,8 +70,8 @@
 <section class="panel stock-qr-scanner-panel" id="stockQrScannerPanel">
   <div class="section-header">
     <div class="stock-qr-actions">
-      <button class="primary-btn" type="button" onclick="startStockQrScanner()">Ligar câmera QR</button>
-      <button class="secondary-btn" type="button" onclick="stopStockQrScanner()">Fechar câmera</button>
+      <button class="primary-btn" type="button" onclick="startStockQrScanner()">Ligar cÃ¢mera QR</button>
+      <button class="secondary-btn" type="button" onclick="stopStockQrScanner()">Fechar cÃ¢mera</button>
     </div>
   </div>
 
@@ -91,10 +93,10 @@
       <div class="form-grid">
         <label><span>Equipamento</span><input id="editStockEquipamento" type="text"></label>
         <label><span>Cor</span><input id="editStockCor" type="text"></label>
-        <label><span>Localização</span><input id="editStockLocalizacao" type="text"></label>
+        <label><span>LocalizaÃ§Ã£o</span><input id="editStockLocalizacao" type="text"></label>
         <label><span>Lote</span><input id="editStockLote" type="text"></label>
         <label><span>SDS Ref</span><input id="editStockSdsRef" type="text"></label>
-        <label><span>Código etiqueta</span><input id="editStockCodigoEtiqueta" type="text"></label>
+        <label><span>CÃ³digo etiqueta</span><input id="editStockCodigoEtiqueta" type="text"></label>
         <label><span>Data Scan</span><input id="editStockData" type="text"></label>
         <label><span>Data Folha</span><input id="editStockDataFolha" type="text"></label>
       </div>
@@ -111,14 +113,14 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<script src="../js/app.js?v=1.30.3"></script>
-<script src="../js/systems/equipment/equipment-models.js?v=equipment-2"></script>
+<script src="../js/app.js?v=1.30.4"></script>
+<script src="../js/systems/equipment/equipment-models.js?v=equipment-3"></script>
 <script src="../js/systems/global-search/global-search.js?v=global-search-2"></script>
   <script src="../js/core/helpers.js"></script>
   <script src="../js/iphone-force-final.js?v=iphone-sidebar-slide-1"></script>
 <script src="../js/enterprise/ops.js?v=ops-10"></script>
 <script src="../js/systems/backup/local-backup.js?v=backup-2"></script>
-<script src="../js/systems/personal-tools.js?v=personal-2"></script>
+<script src="../js/systems/personal-tools.js?v=personal-3"></script>
 <script src="../js/iphone-sidebar-final.js?v=iphone-sidebar-final-1"></script>
 </body>
 </html>

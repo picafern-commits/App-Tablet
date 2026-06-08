@@ -4,12 +4,12 @@
 <script src="../js/app-theme-pro.js?v=theme-pro-1"></script>
 <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-  <title>Computadores</title>
+  <title>Tarefas</title>
   <meta name="theme-color" content="#101114">
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/style.css?v=1.30.3">
+  <link rel="stylesheet" href="../css/style.css?v=1.24.7">
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
   <link rel="stylesheet" href="../css/app-theme-pro.css?v=theme-pro-1">
   <link rel="stylesheet" href="../css/enterprise/ops.css?v=ops-9">
@@ -23,7 +23,6 @@
   <meta name="msapplication-tap-highlight" content="no">
   <link rel="stylesheet" href="../css/iphone-force-final.css?v=iphone-sidebar-slide-1">
   <link rel="stylesheet" href="../css/iphone-sidebar-final.css?v=iphone-sidebar-final-1">
-
 </head>
 <body>
 <aside class="sidebar">
@@ -33,98 +32,42 @@
       <h2>App Braga</h2>
     </div>
   </div>
-	<a href="index.html">Dashboard</a>
-	<a href="add-toner.html">Adicionar Toner</a>
-	<a href="stock.html">Stock</a>
-	<a href="historico.html">HistÃ³rico</a>
-	
-<a href="tarefas.html">Tarefas</a>
-<a href="etiquetas-word.html">Etiquetas Word</a>
-	<a href="impressoras.html">Impressoras</a>
-	<a href="manutencao-impressoras.html">ManutenÃ§Ã£o Impressoras</a>
-	<a href="computadores.html" class="active">Computadores</a>
-	<a href="users.html">Users</a>
-	<a href="pistolas.html">Pistolas CK65</a>
-	<a href="portas.html">Portas Rede</a>
-	<a href="radios.html">RÃ¡dios</a>
-	<a href="informacoes.html">InformaÃ§Ãµes</a>
-	<a href="diagnostico.html">DiagnÃ³stico</a>
-	<a href="config.html">ConfiguraÃ§Ãµes</a>
+  <a href="index.html">Dashboard</a>
+  <a href="add-toner.html">Adicionar Toner</a>
+  <a href="stock.html">Stock</a>
+  <a href="historico.html">HistÃ³rico</a>
+  <a href="tarefas.html" class="active">Tarefas</a>
+  <a href="etiquetas-word.html">Etiquetas Word</a>
+  <a href="impressoras.html">Impressoras</a>
+  <a href="manutencao-impressoras.html">ManutenÃ§Ã£o Impressoras</a>
+  <a href="computadores.html">Computadores</a>
+  <a href="users.html">Users</a>
+  <a href="pistolas.html">Pistolas CK65</a>
+  <a href="portas.html">Portas Rede</a>
+  <a href="radios.html">RÃ¡dios</a>
+  <a href="informacoes.html">InformaÃ§Ãµes</a>
+  <a href="config.html">ConfiguraÃ§Ãµes</a>
 </aside>
+
 <main class="main">
-	
   <div class="page-hero">
-    <div class="page-hero-title">Computadores</div>
-	<span class="status-pill">Sistema Online</span>
-  </div>
-	
-  <div class="page-hero computadores-hero">
-    <div>
-      <div class="breadcrumb"></div>
-      <div class="page-hero-title">Computadores</div>
-      <p class="section-subtitle"></p>
-    </div>
+    <div class="page-hero-title">Tarefas</div>
     <span class="status-pill">Sistema Online</span>
   </div>
-
-  <div class="stats-grid computadores-stats">
-    <div class="stat-card stat-card-full">
-      <span>Total Registos</span>
-      <strong id="countPCs">0</strong>
-    </div>
-  </div>
-
-  <div class="panel computadores-form-panel">
-    <div class="section-header">
-      <div>
-        <h3>Novo computador</h3>
-      </div>
-      <button class="primary-btn" onclick="guardarPC()">Guardar computador</button>
-    </div>
-
-    <div class="form-grid computadores-form-grid">
-      <label><span>Nome do computador</span><input id="nomePC" type="text" placeholder="Ex: BR-PC-001"></label>
-      <label><span>Data</span><input id="dataPC" type="date"></label>
-    </div>
-
-    <div id="checklist" class="computadores-checklist"></div>
-  </div>
-
-  <div class="panel computadores-list-panel">
-    <div class="section-header">
-      <div>
-        <h3>Registos</h3>
-      </div>
-    </div>
-    <div id="listaPC" class="cards-list computadores-grid"></div>
-  </div>
-
+  <div id="personalTasksPage" class="personal-dashboard"></div>
 </main>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-
 <script src="../js/app.js?v=1.30.4"></script>
 <script src="../js/systems/equipment/equipment-models.js?v=equipment-3"></script>
 <script src="../js/systems/global-search/global-search.js?v=global-search-2"></script>
-  <script src="../js/core/helpers.js"></script>
-  <script src="../js/iphone-force-final.js?v=iphone-sidebar-slide-1"></script>
-<script src="../js/enterprise/ops.js?v=ops-10"></script>
+<script src="../js/core/helpers.js"></script>
+<script src="../js/iphone-force-final.js?v=iphone-sidebar-slide-1"></script>
+<script src="../js/enterprise/ops.js?v=ops-11"></script>
 <script src="../js/systems/backup/local-backup.js?v=backup-2"></script>
 <script src="../js/systems/personal-tools.js?v=personal-3"></script>
-
 <script src="../js/iphone-sidebar-final.js?v=iphone-sidebar-final-1"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-

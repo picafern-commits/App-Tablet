@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt">
 <head>
 <script src="../js/app-theme-pro.js?v=theme-pro-1"></script>
@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
   <link rel="stylesheet" href="../css/app-theme-pro.css?v=theme-pro-1">
   <link rel="stylesheet" href="../css/enterprise/ops.css?v=ops-9">
-  <link rel="stylesheet" href="../css/systems/personal-tools.css?v=personal-1">
+  <link rel="stylesheet" href="../css/systems/personal-tools.css?v=personal-3">
   <link rel="stylesheet" href="../css/systems/global-search.css?v=global-search-2">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -38,6 +38,8 @@
 <a href="add-toner.html">Adicionar Toner</a>
 <a href="stock.html">Stock</a>
 <a href="historico.html">Historico</a>
+
+<a href="tarefas.html">Tarefas</a>
 <a href="etiquetas-word.html">Etiquetas Word</a>
 <a href="impressoras.html">Impressoras</a>
 <a href="manutencao-impressoras.html">Manutencao Impressoras</a>
@@ -47,7 +49,7 @@
 <a href="portas.html">Portas Rede</a>
 <a href="radios.html">Radios</a>
 <a href="informacoes.html">Informacoes</a>
-<a href="diagnostico.html">Diagnóstico</a>
+<a href="diagnostico.html">DiagnÃ³stico</a>
 	<a href="config.html" class="active">Configuracoes</a>
 </aside>
 <main class="main">
@@ -145,7 +147,7 @@
         <div class="health-card"><span>Auth</span><strong id="healthAuth">A verificar</strong></div>
         <div class="health-card"><span>Rede</span><strong id="healthNetwork">A verificar</strong></div>
         <div class="health-card"><span>PIN / biometria</span><strong id="healthPin">A verificar</strong></div>
-        <div class="health-card"><span>Notificações</span><strong id="healthNotifications">A verificar</strong></div>
+        <div class="health-card"><span>NotificaÃ§Ãµes</span><strong id="healthNotifications">A verificar</strong></div>
         <div class="health-card"><span>Cloud Functions</span><strong id="healthPushWatcher">A verificar</strong></div>
         <div class="health-card"><span>Dispositivo</span><strong id="healthDevice">A verificar</strong></div>
       </div>
@@ -154,8 +156,8 @@
     <div class="panel config-section">
       <div class="section-header">
         <div>
-          <h3>Permissões</h3>
-          <p class="section-subtitle">Perfil operacional aplicado à APP neste momento.</p>
+          <h3>PermissÃµes</h3>
+          <p class="section-subtitle">Perfil operacional aplicado Ã  APP neste momento.</p>
         </div>
         <button class="secondary-btn" type="button" onclick="carregarPermissoesApp()">Atualizar</button>
       </div>
@@ -164,15 +166,15 @@
           <span>Perfil ativo</span>
           <select id="appRoleSelect" onchange="guardarPerfilApp(this.value)">
             <option value="admin">Admin</option>
-            <option value="tecnico">Técnico</option>
-            <option value="armazem">Armazém</option>
+            <option value="tecnico">TÃ©cnico</option>
+            <option value="armazem">ArmazÃ©m</option>
             <option value="consulta">Consulta</option>
           </select>
         </label>
         <div class="health-card">
           <span>Estado</span>
           <strong id="appRoleStatus">A carregar</strong>
-          <p class="section-subtitle">Consulta bloqueia ações destrutivas. Técnico/Armazém mantêm operação diária.</p>
+          <p class="section-subtitle">Consulta bloqueia aÃ§Ãµes destrutivas. TÃ©cnico/ArmazÃ©m mantÃªm operaÃ§Ã£o diÃ¡ria.</p>
         </div>
       </div>
     </div>
@@ -187,11 +189,11 @@
       </div>
       <div class="config-form-grid">
         <div class="health-card">
-          <span>Último ID usado</span>
+          <span>Ãšltimo ID usado</span>
           <strong id="tonerCounterCurrent">A carregar</strong>
         </div>
         <div class="health-card">
-          <span>Próximo ID</span>
+          <span>PrÃ³ximo ID</span>
           <strong id="tonerCounterNext">A carregar</strong>
         </div>
       </div>
@@ -230,10 +232,10 @@
     <div class="panel config-section config-section-notifications">
       <div class="section-header">
         <div>
-          <h3 class="config-notificacoes-title">Notificações</h3>
-          <p class="section-subtitle">Alertas de toner, stock, manutenção e estado da APP.</p>
+          <h3 class="config-notificacoes-title">NotificaÃ§Ãµes</h3>
+          <p class="section-subtitle">Alertas de toner, stock, manutenÃ§Ã£o e estado da APP.</p>
         </div>
-        <button class="primary-btn" type="button" onclick="pedirPermissaoNotificacoesApp()">Ativar notificações</button>
+        <button class="primary-btn" type="button" onclick="pedirPermissaoNotificacoesApp()">Ativar notificaÃ§Ãµes</button>
       </div>
 
       <div class="config-form-grid">
@@ -241,8 +243,8 @@
         <label class="switch-row config-field-inline"><input type="checkbox" id="notifyTonerZero" onchange="guardarConfigNotificacoesApp()"> <span>Toner a 0%</span></label>
         <label class="switch-row config-field-inline"><input type="checkbox" id="notifyTonerLow25" onchange="guardarConfigNotificacoesApp()"> <span>Toner chega a 25%</span></label>
         <label class="switch-row config-field-inline"><input type="checkbox" id="notifyTonerChange" onchange="guardarConfigNotificacoesApp()"> <span>Toner trocado 0% para cheio</span></label>
-        <label class="switch-row config-field-inline"><input type="checkbox" id="notifyStockMin" onchange="guardarConfigNotificacoesApp()"> <span>Stock abaixo do mínimo</span></label>
-        <label class="switch-row config-field-inline"><input type="checkbox" id="notifyMaintenance" onchange="guardarConfigNotificacoesApp()"> <span>Manutenções pendentes</span></label>
+        <label class="switch-row config-field-inline"><input type="checkbox" id="notifyStockMin" onchange="guardarConfigNotificacoesApp()"> <span>Stock abaixo do mÃ­nimo</span></label>
+        <label class="switch-row config-field-inline"><input type="checkbox" id="notifyMaintenance" onchange="guardarConfigNotificacoesApp()"> <span>ManutenÃ§Ãµes pendentes</span></label>
         <label class="switch-row config-field-inline"><input type="checkbox" id="notifyRadios" onchange="guardarConfigNotificacoesApp()"> <span>Radios e registos semanais</span></label>
         <label class="config-auth-field">
           <span>Verificar alertas</span>
@@ -262,7 +264,7 @@
 
       <div class="config-actions-row">
         <button id="fullscreenToggleBtn" class="secondary-btn" type="button" onclick="entrarFullscreenApp()">Entrar em fullscreen</button>
-        <button class="secondary-btn" type="button" onclick="testarNotificacaoApp()">Testar notificação</button>
+        <button class="secondary-btn" type="button" onclick="testarNotificacaoApp()">Testar notificaÃ§Ã£o</button>
         <button class="secondary-btn" type="button" onclick="testarPushRemotoNotificacoesApp()">Testar push remoto</button>
         <button class="secondary-btn" type="button" onclick="verificarAlertasNotificacoesApp(true)">Verificar alertas agora</button>
         <button class="secondary-btn" type="button" onclick="registarDispositivoPushApp()">Registar este dispositivo</button>
@@ -270,18 +272,18 @@
       </div>
       <div class="notification-token-status">
         <span>Estado deste dispositivo</span>
-        <strong id="notifyTokenStatus">Ainda não registado</strong>
-        <small id="notifyDeviceDiagnostic">Sem diagnóstico ainda.</small>
+        <strong id="notifyTokenStatus">Ainda nÃ£o registado</strong>
+        <small id="notifyDeviceDiagnostic">Sem diagnÃ³stico ainda.</small>
       </div>
       <div class="notification-service-panel">
         <div class="section-header">
           <div>
-            <h4>Estado das notificações</h4>
-            <p class="section-subtitle">Confirma se o serviço está ligado e se há dispositivos prontos a receber alertas.</p>
+            <h4>Estado das notificaÃ§Ãµes</h4>
+            <p class="section-subtitle">Confirma se o serviÃ§o estÃ¡ ligado e se hÃ¡ dispositivos prontos a receber alertas.</p>
           </div>
           <div class="config-actions-row compact">
             <button class="secondary-btn" type="button" onclick="atualizarEstadoNotificacoesApp(true)">Atualizar estado</button>
-            <button class="primary-btn" type="button" onclick="ligarServicoNotificacoesApp()">Ligar serviço</button>
+            <button class="primary-btn" type="button" onclick="ligarServicoNotificacoesApp()">Ligar serviÃ§o</button>
           </div>
         </div>
         <div class="notification-service-grid">
@@ -301,9 +303,9 @@
             <small id="notifyCredentialsDetail">-</small>
           </div>
           <div class="notification-service-card">
-            <span>Último teste</span>
+            <span>Ãšltimo teste</span>
             <strong id="notifyLastTestStatus">Sem teste</strong>
-            <small id="notifyLastTestDetail">Carrega em Testar notificação</small>
+            <small id="notifyLastTestDetail">Carrega em Testar notificaÃ§Ã£o</small>
           </div>
         </div>
       </div>
@@ -311,7 +313,7 @@
         <div class="section-header">
           <div>
             <h4>Dispositivos registados e ativos</h4>
-            <p class="section-subtitle">Equipamentos que podem receber notificações da App Braga.</p>
+            <p class="section-subtitle">Equipamentos que podem receber notificaÃ§Ãµes da App Braga.</p>
           </div>
           <button class="secondary-btn" type="button" onclick="carregarDispositivosNotificacoesApp(true)">Atualizar lista</button>
         </div>
@@ -319,11 +321,11 @@
           <div class="empty-state mini">A carregar dispositivos...</div>
         </div>
       </div>
-      <p class="section-subtitle notification-note">Web, iPhone e Android usam Web Push/FCM com permissão do sistema. O envio remoto corre nas Firebase Cloud Functions.</p>
+      <p class="section-subtitle notification-note">Web, iPhone e Android usam Web Push/FCM com permissÃ£o do sistema. O envio remoto corre nas Firebase Cloud Functions.</p>
       <div class="health-card">
         <span>Envio remoto</span>
         <strong>Firebase Cloud Functions</strong>
-        <p class="section-subtitle">Este é o serviço principal de notificações da APP.</p>
+        <p class="section-subtitle">Este Ã© o serviÃ§o principal de notificaÃ§Ãµes da APP.</p>
       </div>
     </div>
 
@@ -377,14 +379,14 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<script src="../js/app.js?v=1.30.3"></script>
-<script src="../js/systems/equipment/equipment-models.js?v=equipment-2"></script>
+<script src="../js/app.js?v=1.30.4"></script>
+<script src="../js/systems/equipment/equipment-models.js?v=equipment-3"></script>
 <script src="../js/systems/global-search/global-search.js?v=global-search-2"></script>
   <script src="../js/core/helpers.js"></script>
   <script src="../js/iphone-force-final.js?v=iphone-sidebar-slide-1"></script>
 <script src="../js/enterprise/ops.js?v=ops-10"></script>
 <script src="../js/systems/backup/local-backup.js?v=backup-2"></script>
-<script src="../js/systems/personal-tools.js?v=personal-2"></script>
+<script src="../js/systems/personal-tools.js?v=personal-3"></script>
 <script src="../js/config-collapsible.js?v=collapse-all-2"></script>
 <script src="../js/iphone-sidebar-final.js?v=iphone-sidebar-final-1"></script>
 </body>
