@@ -264,6 +264,52 @@
 }
 
 @media print {
+  body.printing-equipment-qr > *:not(#equipmentQrPrintArea) {
+    display: none !important;
+  }
+
+  body.printing-equipment-qr #equipmentQrPrintArea {
+    display: grid !important;
+    place-items: center !important;
+    min-height: 100vh !important;
+    background: #fff !important;
+  }
+
+  .equipment-qr-label {
+    width: 96mm;
+    min-height: 120mm;
+    padding: 8mm;
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 4mm;
+    color: #000 !important;
+    background: #fff !important;
+    border: 2px solid #000;
+    text-align: center;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  .equipment-qr-label img {
+    width: 58mm;
+    height: 58mm;
+  }
+
+  .equipment-qr-label strong {
+    color: #000 !important;
+    font-size: 18pt;
+    font-weight: 900;
+    overflow-wrap: anywhere;
+  }
+
+  .equipment-qr-label span,
+  .equipment-qr-label small {
+    color: #000 !important;
+    font-size: 11pt;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
   .sidebar,
   .app-menu-toggle,
   .app-sidebar-overlay,

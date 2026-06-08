@@ -158,6 +158,7 @@
     const actions = [
       ...(state.config.actions || []),
       { label: "Copiar link", action: "copy" },
+      { label: "Imprimir QR", action: "printQr" },
       { label: "Imprimir ficha", action: "print" }
     ];
     host.innerHTML = actions.map((action) => {
@@ -165,6 +166,7 @@
       return `<button class="secondary-btn" type="button" data-equipment-action="${escapeHtml(action.action)}">${escapeHtml(action.label)}</button>`;
     }).join("");
     host.querySelector('[data-equipment-action="copy"]')?.addEventListener("click", copyLink);
+    host.querySelector('[data-equipment-action="printQr"]')?.addEventListener("click", printQrLabel);
     host.querySelector('[data-equipment-action="print"]')?.addEventListener("click", () => window.print());
   }
 
@@ -175,6 +177,37 @@
     } catch {
       setLoading("Nao foi possivel copiar automaticamente");
     }
+  }
+
+  function printQrLabel() {
+    const title = titleFor(state.config, state.item);
+    const subtitle = subtitleFor(state.config, state.item);
+    const existing = byId("equipmentQrPrintArea");
+    if (existing) existing.remove();
+
+    const area = document.createElement("div");
+    area.id = "equipmentQrPrintArea";
+    area.innerHTML = `
+      <div class="equipment-qr-label">
+        <img src="${escapeHtml(buildQrUrl())}" alt="QR">
+        <strong>${escapeHtml(title)}</strong>
+        <span>${escapeHtml(state.config.label)}</span>
+        <small>${escapeHtml(subtitle || state.item.id || "")}</small>
+      </div>
+    `;
+    document.body.appendChild(area);
+    document.body.classList.add("printing-equipment-qr");
+
+    const cleanup = () => {
+      document.body.classList.remove("printing-equipment-qr");
+      area.remove();
+      window.removeEventListener("afterprint", cleanup);
+    };
+    window.addEventListener("afterprint", cleanup);
+    setTimeout(() => {
+      window.print();
+      setTimeout(cleanup, 1200);
+    }, 80);
   }
 
   function itemMatchesRelation(item, relation, source) {
