@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.30.4";
+const APP_VERSION = "1.30.5";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
 
 
@@ -123,17 +123,32 @@ function el(id) {
 
 function corrigirTextoMojibakeAppBraga(texto) {
   const raw = String(texto ?? "");
-  if (!/[ÃƒÃ‚Ã¢]/.test(raw)) return raw;
-  try {
-    return decodeURIComponent(escape(raw));
-  } catch {
-    return raw
-      .replace(/Ã‚Â·/g, "Â·")
-      .replace(/Ã¢â‚¬â€/g, "â€”")
-      .replace(/Ã¢â‚¬â€œ/g, "â€“")
-      .replace(/Ã¢Å“â€/g, "âœ”")
-      .replace(/Ã¢ÂÅ’/g, "âœ–");
+  if (!/[\u00c3\u00c2\u00e2\u00c6\u00c5]/.test(raw)) return raw;
+  const decoder = new TextDecoder("utf-8", { fatal: false });
+  const cp1252 = new Map([
+    ["\u20ac", 0x80], ["\u201a", 0x82], ["\u0192", 0x83], ["\u201e", 0x84],
+    ["\u2026", 0x85], ["\u2020", 0x86], ["\u2021", 0x87], ["\u02c6", 0x88],
+    ["\u2030", 0x89], ["\u0160", 0x8a], ["\u2039", 0x8b], ["\u0152", 0x8c],
+    ["\u017d", 0x8e], ["\u2018", 0x91], ["\u2019", 0x92], ["\u201c", 0x93],
+    ["\u201d", 0x94], ["\u2022", 0x95], ["\u2013", 0x96], ["\u2014", 0x97],
+    ["\u02dc", 0x98], ["\u2122", 0x99], ["\u0161", 0x9a], ["\u203a", 0x9b],
+    ["\u0153", 0x9c], ["\u017e", 0x9e], ["\u0178", 0x9f]
+  ]);
+  let current = raw;
+  for (let i = 0; i < 4; i += 1) {
+    if (!/[\u00c3\u00c2\u00e2\u00c6\u00c5]/.test(current)) break;
+    const bytes = Uint8Array.from(Array.from(current, (char) => cp1252.get(char) ?? (char.charCodeAt(0) & 255)));
+    const next = decoder.decode(bytes);
+    if (!next || next === current) break;
+    current = next;
   }
+  return current
+    .replace(/\u00c2\u00b7/g, "\u00b7")
+    .replace(/\u00e2\u20ac\u201d/g, "\u2014")
+    .replace(/\u00e2\u20ac\u201c/g, "\u2013")
+    .replace(/\u00e2\u0153\u201d/g, "\u2714")
+    .replace(/\u00e2\u009d\u0152/g, "\u2716")
+    .replace(/\u00ef\u00bb\u00bf/g, "");
 }
 
 function corrigirTextosVisiveisAppBraga(root = document.body) {
@@ -143,7 +158,7 @@ function corrigirTextosVisiveisAppBraga(root = document.body) {
     acceptNode(node) {
       const parent = node.parentElement;
       if (!parent || skip.has(parent.tagName)) return NodeFilter.FILTER_REJECT;
-      return /[ÃƒÃ‚Ã¢]/.test(node.nodeValue || "") ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+      return /[\u00c3\u00c2\u00e2\u00c6\u00c5]/.test(node.nodeValue || "") ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
     }
   });
   const nodes = [];
@@ -151,7 +166,10 @@ function corrigirTextosVisiveisAppBraga(root = document.body) {
   nodes.forEach((node) => {
     node.nodeValue = corrigirTextoMojibakeAppBraga(node.nodeValue);
   });
-  const attrs = ["placeholder", "title", "aria-label", "alt", "value"];
+  if (document.title) {
+    document.title = corrigirTextoMojibakeAppBraga(document.title);
+  }
+  const attrs = ["placeholder", "title", "aria-label", "alt"];
   root.querySelectorAll?.("input, textarea, img, button, [title], [aria-label]").forEach((node) => {
     attrs.forEach((attr) => {
       if (node.hasAttribute?.(attr)) {
@@ -160,6 +178,11 @@ function corrigirTextosVisiveisAppBraga(root = document.body) {
         if (fixed !== value) node.setAttribute(attr, fixed);
       }
     });
+  });
+  root.querySelectorAll?.("option").forEach((node) => {
+    const value = node.getAttribute("value");
+    const fixed = corrigirTextoMojibakeAppBraga(value);
+    if (fixed !== value) node.setAttribute("value", fixed);
   });
 }
 
@@ -193,6 +216,20 @@ if (document.readyState === "loading") {
 } else {
   iniciarCorrecaoMojibakeAppBraga();
 }
+
+(() => {
+  const nativeAlert = window.alert?.bind(window);
+  const nativeConfirm = window.confirm?.bind(window);
+  const nativePrompt = window.prompt?.bind(window);
+  if (nativeAlert) window.alert = (message) => nativeAlert(corrigirTextoMojibakeAppBraga(message));
+  if (nativeConfirm) window.confirm = (message) => nativeConfirm(corrigirTextoMojibakeAppBraga(message));
+  if (nativePrompt) {
+    window.prompt = (message, defaultValue) => nativePrompt(
+      corrigirTextoMojibakeAppBraga(message),
+      corrigirTextoMojibakeAppBraga(defaultValue)
+    );
+  }
+})();
 
 function setText(id, value) {
   const node = el(id);
@@ -10903,7 +10940,7 @@ window.testarCamerasStockQr = async function(){
 };
 
 /* =========================
-   APP BRAGA v1.30.3 â€” DIAGNÃ“STICO + UX SEGURO
+   APP BRAGA v1.30.5 â€” DIAGNÃ“STICO + UX SEGURO
    NÃ£o altera autenticaÃ§Ã£o, roles ou estrutura Firebase.
 ========================= */
 (function(){
