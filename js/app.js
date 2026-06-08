@@ -26,7 +26,7 @@ if(typeof firebase !== "undefined"){
 
 }
 
-const APP_VERSION = "1.25.1";
+const APP_VERSION = "1.28.0";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
 
 
@@ -6432,7 +6432,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
 /* ===== AUTO UPDATE PRO FINAL ===== */
 const APP_REMOTE_BASE = "https://picafern-commits.github.io/App-Tablet/";
-const APP_VERSION_URL = APP_REMOTE_BASE + "version.json?t=" + Date.now();
+function appVersionUrlAppBraga() {
+  return APP_REMOTE_BASE + "version.json?t=" + Date.now();
+}
 
 async function registarServiceWorkerAppBraga() {
   try {
@@ -6454,7 +6456,7 @@ async function verificarAtualizacao() {
 
     await registarServiceWorkerAppBraga();
 
-    const res = await fetch(APP_VERSION_URL, {
+    const res = await fetch(appVersionUrlAppBraga(), {
       cache: "no-store",
       headers: {
         "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -6503,7 +6505,7 @@ function mostrarAvisoAtualizacaoDisponivel(novaVersao) {
     </div>
     <div class="update-actions">
       <button class="ghost-btn" onclick="fecharAvisoAtualizacao()">Continuar</button>
-      <button class="primary-btn" onclick="atualizarAppObrigatorio()">Atualizar agora</button>
+      <button class="primary-btn" onclick="atualizarAppObrigatorio('${String(novaVersao).replace(/'/g, "\\'")}')">Atualizar agora</button>
     </div>
   `;
 }
@@ -6517,13 +6519,27 @@ function fecharAvisoAtualizacao() {
   document.body.style.overflow = "";
 }
 
+async function ativarServiceWorkerNovoAppBraga() {
+  if (!("serviceWorker" in navigator)) return;
+  const regs = await navigator.serviceWorker.getRegistrations();
+  await Promise.all(regs.map(async (reg) => {
+    try {
+      await reg.update?.();
+      if (reg.waiting) reg.waiting.postMessage({ type: "SKIP_WAITING" });
+    } catch (error) {
+      console.error("Erro a ativar service worker novo:", error);
+    }
+  }));
+}
+
 async function limparCacheAtualizacaoAppBraga() {
   try {
+    await ativarServiceWorkerNovoAppBraga();
     if ("serviceWorker" in navigator) {
       const regs = await navigator.serviceWorker.getRegistrations();
       await Promise.all(regs.map((reg) => {
         if (reg.waiting) reg.waiting.postMessage({ type: "SKIP_WAITING" });
-        return reg.unregister();
+        return Promise.resolve();
       }));
     }
   } catch (error) {
@@ -6540,18 +6556,19 @@ async function limparCacheAtualizacaoAppBraga() {
   }
 }
 
-async function atualizarAppObrigatorio() {
+async function atualizarAppObrigatorio(novaVersao = "") {
   const box = document.getElementById("updateBoxAppBraga");
+  const versaoDestino = String(novaVersao || box?.dataset.version || APP_VERSION || Date.now()).trim();
   if (box) {
     box.innerHTML = `
       <div class="update-title">A atualizar...</div>
-      <div class="update-subtitle">A limpar cache e a carregar a versao mais recente da app.</div>
+      <div class="update-subtitle">A limpar cache e a carregar a versao ${versaoDestino} da app.</div>
     `;
   }
 
   deleteCookieAppBraga("appUpdateDismissedVersion");
   const targetUrl = new URL(window.location.href);
-  targetUrl.searchParams.set("v", APP_VERSION);
+  targetUrl.searchParams.set("v", versaoDestino);
   targetUrl.searchParams.set("update", String(Date.now()));
   const target = targetUrl.toString();
   const currentBefore = window.location.href;
