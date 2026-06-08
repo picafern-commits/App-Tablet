@@ -9,7 +9,7 @@
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/style.css?v=1.30.0">
+  <link rel="stylesheet" href="../css/style.css?v=1.30.1">
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
   <link rel="stylesheet" href="../css/app-theme-pro.css?v=theme-pro-1">
   <link rel="stylesheet" href="../css/enterprise/ops.css?v=ops-8">
@@ -35,7 +35,6 @@
   </div>
 
 <a href="index.html">Dashboard</a>
-	<a href="equipamento.html">Ficha Equipamento</a>
 <a href="add-toner.html" class="active">Adicionar Toner</a>
 <a href="stock.html">Stock</a>
 <a href="historico.html">Historico</a>
@@ -48,7 +47,7 @@
 <a href="portas.html">Portas Rede</a>
 <a href="radios.html">Rádios</a>
 <a href="informacoes.html">Informações</a>
-<a href="diagnostico.html">Diagnóstico</a>
+<a href="diagnostico.html">🩺 Diagnóstico</a>
 <a href="config.html">Configurações</a>
 </aside>
 
@@ -69,17 +68,12 @@
     <div class="card-actions" style="margin-bottom:14px;">
       <button type="button" class="primary-btn" onclick="abrirOCR()">Ler Folha Toner</button>
       <button type="button" class="secondary-btn" onclick="startScanner()">Ler QR / Câmara</button>
-      <button type="button" class="secondary-btn" onclick="testarCamaraAdicionarToner()">Testar Câmara</button>
       <input id="ocrInput" type="file" accept="image/*" capture="environment" style="display:none;" onchange="processarOCRInput(event)">
     </div>
 
     <div id="reader" class="scanner-box"></div>
     <div id="ocrStatus" class="ocr-status" style="display:none;"></div>
-    <div id="scannerHealthBox" class="scanner-health-box">
-      <div><span>Câmara</span><strong id="scannerCameraState">Por testar</strong></div>
-      <div><span>Último QR/SDS</span><strong id="scannerLastRead">Sem leitura</strong></div>
-      <div><span>OCR</span><strong id="scannerOcrState">Pronto</strong></div>
-    </div>
+
   </div>
 
   <div id="serial3Box" class="barcode-learn-box" style="display:none;">
@@ -158,7 +152,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<script src="../js/app.js?v=1.30.0"></script>
+<script src="../js/app.js?v=1.30.1"></script>
 <script src="../js/systems/equipment/equipment-models.js?v=equipment-2"></script>
 <script src="../js/systems/global-search/global-search.js?v=global-search-2"></script>
   <script src="../js/core/helpers.js"></script>

@@ -12,7 +12,7 @@
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/style.css?v=1.30.0">
+  <link rel="stylesheet" href="../css/style.css?v=1.30.1">
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
   <link rel="stylesheet" href="../css/app-theme-pro.css?v=theme-pro-1">
   <link rel="stylesheet" href="../css/enterprise/ops.css?v=ops-8">
@@ -37,7 +37,6 @@
     </div>
   </div>
 	<a href="index.html" class="active">Dashboard</a>
-	<a href="equipamento.html">Ficha Equipamento</a>
 	<a href="add-toner.html">Adicionar Toner</a>
 	<a href="stock.html">Stock</a>
 	<a href="historico.html">Histórico</a>
@@ -50,7 +49,7 @@
 	<a href="portas.html">Portas Rede</a>
 	<a href="radios.html">Rádios</a>
 	<a href="informacoes.html">Informações</a>
-	<a href="diagnostico.html">Diagnóstico</a>
+	<a href="diagnostico.html">🩺 Diagnóstico</a>
 <a href="config.html">Configurações</a>
 </aside>
 
@@ -59,6 +58,16 @@
     <div class="page-hero-title">Dashboard</div>
 	<span class="status-pill">Sistema Online</span>
   </div>
+
+  <section class="dashboard-fullwidth">
+    <div class="dashboard-panel featured-panel">
+      <div class="panel-title-row">
+        <h2>Equipamentos em Destaque</h2>
+      </div>
+      <div id="listaDashboardStock" class="equipment-grid"></div>
+    </div>
+</section>
+
   <section class="enterprise-metrics">
     <div class="metric-card metric-blue">
       <span>Total de Equipamentos</span>
@@ -81,40 +90,12 @@
       <small>Estado operacional</small>
     </div>
   </section>
-
-  
-  <section class="enterprise-metrics dashboard-live-metrics" id="dashboardLiveMetrics">
-    <div class="metric-card"><span>Toners adicionados hoje</span><strong id="dashTonersHoje">0</strong><small>Entradas no stock</small></div>
-    <div class="metric-card"><span>Toners usados esta semana</span><strong id="dashTonersSemana">0</strong><small>Movidos para histórico</small></div>
-    <div class="metric-card"><span>Etiquetas recentes</span><strong id="dashEtiquetasRecentes">0</strong><small>Últimos 7 dias</small></div>
-    <div class="metric-card"><span>Sistema</span><strong id="dashHealthMini">OK</strong><small id="dashHealthMiniText">Sem erros críticos</small></div>
-  </section>
-
-  <section class="dashboard-fullwidth dashboard-ops-grid">
-    <div class="dashboard-panel">
-      <div class="panel-title-row"><h2>Últimas Etiquetas Criadas</h2></div>
-      <div id="dashUltimasEtiquetas" class="mini-feed-list"></div>
-    </div>
-    <div class="dashboard-panel">
-      <div class="panel-title-row"><h2>Manutenções / Impressoras</h2></div>
-      <div id="dashManutencoesPendentes" class="mini-feed-list"></div>
-    </div>
-  </section>
-
-  <section class="dashboard-fullwidth">
-    <div class="dashboard-panel featured-panel">
-      <div class="panel-title-row">
-        <h2>Equipamentos em Destaque</h2>
-      </div>
-      <div id="listaDashboardStock" class="equipment-grid"></div>
-    </div>
-</section>
-
+</main>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<script src="../js/app.js?v=1.30.0"></script>
+<script src="../js/app.js?v=1.30.1"></script>
 <script src="../js/systems/equipment/equipment-models.js?v=equipment-2"></script>
 <script src="../js/systems/global-search/global-search.js?v=global-search-2"></script>
 
@@ -124,7 +105,6 @@
   <script src="../js/iphone-force-final.js?v=iphone-sidebar-slide-1"></script>
 <script src="../js/enterprise/ops.js?v=ops-10"></script>
 <script src="../js/systems/backup/local-backup.js?v=backup-2"></script>
-<script src="../js/systems/personal-tools.js?v=personal-2"></script>
 
 <script src="../js/iphone-sidebar-final.js?v=iphone-sidebar-final-1"></script>
 </body>

@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.30.0";
+const APP_VERSION = "1.30.1";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
 
 
@@ -7072,8 +7072,7 @@ function getEquipmentFichaHrefAppBraga(tipo, item = {}, index = 0, localPrefix =
 }
 
 function equipmentFichaLinkAppBraga(tipo, item = {}, index = 0, localPrefix = "local", label = "Ver ficha", className = "secondary-btn") {
-  const href = getEquipmentFichaHrefAppBraga(tipo, item, index, localPrefix);
-  return `<a class="${className}" href="${href}" onclick="event.stopPropagation()">${escapeHtmlAppBraga(label)}</a>`;
+  return "";
 }
 
 function imprimirUser(user) {
@@ -10827,7 +10826,7 @@ window.testarCamerasStockQr = async function(){
 };
 
 /* =========================
-   APP BRAGA v1.30.0 — DIAGNÓSTICO + UX SEGURO
+   APP BRAGA v1.30.1 — DIAGNÓSTICO + UX SEGURO
    Não altera autenticação, roles ou estrutura Firebase.
 ========================= */
 (function(){
@@ -10908,50 +10907,14 @@ window.testarCamerasStockQr = async function(){
   }
   window.atualizarDashboardUtilAppBraga = atualizarDashboardUtilAppBraga;
 
-  async function testarCamaraAdicionarToner(){
-    const state = document.getElementById("scannerCameraState");
-    if(state) state.textContent = "A testar...";
-    try{
-      if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error("Este dispositivo/navegador não disponibiliza câmara à página.");
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
-      stream.getTracks().forEach(t => t.stop());
-      if(state) state.textContent = "Câmara OK";
-      if(typeof mostrarMensagem === "function") mostrarMensagem("Câmara OK.", "sucesso");
-      addLog("info", "scanner", "Teste de câmara OK");
-    } catch(e){
-      if(state) state.textContent = "Sem permissão / erro";
-      addLog("error", "scanner", e.message || e);
-      if(typeof mostrarMensagem === "function") mostrarMensagem(`Erro na câmara: ${e.message || e}`, "erro");
-    }
-  }
-  window.testarCamaraAdicionarToner = testarCamaraAdicionarToner;
-
-  function setLastRead(text){
-    const val = String(text || "").trim(); if(!val) return;
-    try{ localStorage.setItem(LAST_READ_KEY, val); }catch(e){}
-    setTxt("scannerLastRead", val.length > 32 ? val.slice(0,32) + "..." : val);
-  }
-  document.addEventListener("DOMContentLoaded", () => { const last = localStorage.getItem(LAST_READ_KEY); if(last) setTxt("scannerLastRead", last.length > 32 ? last.slice(0,32)+"..." : last); });
-
   setTimeout(() => {
     if(typeof window.processarTextoLidoStable === "function") return;
     const oldProc = window.processarOCRInput;
     if(typeof oldProc === "function"){
       window.processarOCRInput = async function(ev){
         setTxt("scannerOcrState", "A ler...");
-        try{ const r = await oldProc.apply(this, arguments); setTxt("scannerOcrState", "Lido"); const sds = document.getElementById("sdsRef")?.value; if(sds) setLastRead(sds); return r; }
+        try{ const r = await oldProc.apply(this, arguments); setTxt("scannerOcrState", "Lido"); return r; }
         catch(e){ setTxt("scannerOcrState", "Erro"); addLog("error", "ocr", e.message || e); throw e; }
-      };
-    }
-    const oldStart = window.startScanner;
-    if(typeof oldStart === "function"){
-      window.startScanner = async function(){ setTxt("scannerCameraState", "A abrir..."); try{ const r = await oldStart.apply(this, arguments); setTxt("scannerCameraState", "Ligada"); return r; } catch(e){ setTxt("scannerCameraState", "Erro"); addLog("error", "scanner", e.message || e); throw e; } };
-    }
-    const oldDisponivel = window.disponivel;
-    if(typeof oldDisponivel === "function"){
-      window.disponivel = async function(){
-        try{ const r = await oldDisponivel.apply(this, arguments); addLog("info", "stock", "Tentativa de adicionar toner concluída"); return r; }
-        catch(e){ addLog("error", "stock", e.message || e); if(typeof mostrarMensagem === "function") mostrarMensagem(`Erro ao adicionar toner: ${e.message || e}`, "erro"); }
       };
     }
     const oldGerar = window.gerarWordEtiquetaFromForm;
