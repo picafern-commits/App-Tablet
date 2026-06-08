@@ -956,3 +956,47 @@ input[type="submit"] {
   .sidebar .enterprise-window-actions { gap: 8px !important; }
   .sidebar .enterprise-window-btn { font-size: 10.5px !important; padding: 0 7px !important; }
 }
+
+.sidebar .enterprise-window-actions {
+  display: none !important;
+}
+
+.main > .enterprise-window-actions,
+main > .enterprise-window-actions {
+  width: min(420px, 100%) !important;
+  align-self: flex-end !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 10px !important;
+  margin: 0 0 2px auto !important;
+  padding: 8px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  border-radius: 18px !important;
+  background: rgba(255,255,255,.045) !important;
+  box-shadow: 0 16px 38px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+
+.main > .enterprise-window-actions .enterprise-window-btn,
+main > .enterprise-window-actions .enterprise-window-btn {
+  min-height: 42px !important;
+  border-radius: 13px !important;
+  font-size: 12px !important;
+}
+
+.main > .enterprise-window-actions .enterprise-window-btn[data-enterprise-hide]::before,
+main > .enterprise-window-actions .enterprise-window-btn[data-enterprise-hide]::before {
+  content: "\2199" !important;
+}
+
+.main > .enterprise-window-actions .enterprise-window-btn[data-enterprise-close]::before,
+main > .enterprise-window-actions .enterprise-window-btn[data-enterprise-close]::before {
+  content: "\2715" !important;
+}
+
+@media (max-width: 680px) {
+  .main > .enterprise-window-actions,
+  main > .enterprise-window-actions {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+}

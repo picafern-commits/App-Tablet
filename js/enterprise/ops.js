@@ -35,6 +35,8 @@
     "portas.html": "\u25A7",
     "radios.html": "\u25CC",
     "informacoes.html": "\u24D8",
+    "tarefas.html": "\u2713",
+    "diagnostico.html": "\u26A1",
     "config.html": "\u2699"
   };
 
@@ -204,26 +206,19 @@
 
   function setupElectronSidebarActions() {
     const sidebar = document.querySelector(".sidebar");
-    if (!sidebar || !window.electronAPI?.closeApp) return;
-    sidebar.querySelectorAll("[data-enterprise-displays], [data-enterprise-display-select], [data-enterprise-move-display], [data-enterprise-display-status]").forEach((node) => node.remove());
-    const existingActions = sidebar.querySelector(".enterprise-window-actions");
-    if (existingActions) {
-      if (!existingActions.querySelector("[data-enterprise-hide]")) {
-        existingActions.insertAdjacentHTML("beforeend", `<button class="secondary-btn enterprise-window-btn" type="button" data-enterprise-hide>Segundo plano</button>`);
-      }
-      if (!existingActions.querySelector("[data-enterprise-close]")) {
-        existingActions.insertAdjacentHTML("beforeend", `<button class="secondary-btn enterprise-window-btn enterprise-window-close" type="button" data-enterprise-close>Fechar APP</button>`);
-      }
-      bindElectronWindowButtons(existingActions);
-      return;
-    }
+    if (!window.electronAPI?.closeApp) return;
+    sidebar?.querySelectorAll(".enterprise-window-actions, [data-enterprise-displays], [data-enterprise-display-select], [data-enterprise-move-display], [data-enterprise-display-status]").forEach((node) => node.remove());
+    const main = document.querySelector("main, .main");
+    if (!main) return;
+    const existingActions = document.querySelector(".enterprise-window-actions");
+    if (existingActions) return bindElectronWindowButtons(existingActions);
     const actions = document.createElement("div");
     actions.className = "enterprise-window-actions";
     actions.innerHTML = `
       <button class="secondary-btn enterprise-window-btn" type="button" data-enterprise-hide>Segundo plano</button>
       <button class="secondary-btn enterprise-window-btn enterprise-window-close" type="button" data-enterprise-close>Fechar APP</button>
     `;
-    sidebar.appendChild(actions);
+    main.prepend(actions);
     bindElectronWindowButtons(actions);
   }
 
