@@ -1,4 +1,4 @@
-﻿
+
 window.usersData = window.usersData || [];
 window.pistolasData = window.pistolasData || [];
 window.portasData = window.portasData || [];
@@ -595,50 +595,60 @@ async function disponivel() {
   const data = el("data");
   const lote = el("lote");
   const sdsRef = el("sdsRef");
+
+  if (!equipamento || !cor) {
+    mostrarMensagem("Formulario de toner incompleto.", "erro");
+    return;
+  }
+
+  const eq = String(equipamento.value || "").trim();
+  const loc = String(localizacao ? localizacao.value : "").trim();
+  const corValue = String(cor.value || "").trim();
+  const dataValue = String(data ? data.value : "").trim();
+  const dataFolhaValue = String((el("dataFolha") && el("dataFolha").value) || "").trim();
+  const loteValue = String(lote ? lote.value : "").trim();
+  const sdsRefValue = String(sdsRef ? sdsRef.value : "").trim().toUpperCase();
   const codigoEtiqueta = getCodigoEtiquetaAtualAppBraga();
 
-  if (!equipamento || !cor) return;
-
-  const eq = equipamento.value;
-  const loc = localizacao ? localizacao.value : "";
-  const corValue = cor.value;
-  const dataValue = data ? data.value : "";
-  const loteValue = lote ? lote.value : "";
-  const sdsRefValue = sdsRef ? sdsRef.value.trim() : "";
-
   if (!eq || !corValue) {
-    mostrarMensagem("Preenche o equipamento e a cor.", "erro");
+    mostrarMensagem("Preenche o equipamento e a cor antes de adicionar ao stock.", "erro");
     return;
   }
 
   try {
     const id = await gerarID();
-
-    await db.collection("stock").add({
+    const registoStock = {
       idInterno: id,
       equipamento: eq,
-      localizacao: loc || "Sem LocalizaÃ§Ã£o",
+      localizacao: loc || "Sem Localização",
       cor: corValue,
       data: dataValue || "Sem Data",
-      dataFolha: (el("dataFolha") && el("dataFolha").value) || "Sem Data da Folha",
+      dataFolha: dataFolhaValue || "Sem Data da Folha",
       lote: loteValue || "",
       sdsRef: sdsRefValue || "",
       codigoEtiqueta,
       codigoScan: buildPayloadQrTonerAppBraga(codigoEtiqueta),
       estado: "stock",
       created: new Date()
-    });
+    };
+
+    await db.collection("stock").add(registoStock);
 
     await logActivityApp("stock-add", "Toner adicionado", `${id} - ${eq} - ${corValue}`, {
       idInterno: id,
       equipamento: eq,
       cor: corValue,
-      localizacao: loc || "Sem LocalizaÃ§Ã£o",
+      localizacao: loc || "Sem Localização",
       sdsRef: sdsRefValue || "",
       codigoEtiqueta
     });
 
-    const etiquetaGerada = await gerarWordEtiquetaFromForm(true);
+    let etiquetaGerada = false;
+    try {
+      etiquetaGerada = await gerarWordEtiquetaFromForm(true);
+    } catch (etqError) {
+      console.warn("Toner guardado, mas a etiqueta nao foi gerada:", etqError);
+    }
 
     equipamento.value = "";
     if (localizacao) localizacao.value = "";
@@ -652,14 +662,16 @@ async function disponivel() {
     mostrarMensagem(
       etiquetaGerada
         ? "Toner adicionado ao stock e etiqueta gerada."
-        : "Toner adicionado ao stock, mas a etiqueta nao foi gerada.",
-      etiquetaGerada ? "sucesso" : "erro"
+        : "Toner adicionado ao stock. A etiqueta pode ser gerada depois em Etiquetas Word.",
+      "sucesso"
     );
   } catch (error) {
     console.error(error);
-    mostrarMensagem("Erro ao adicionar toner.", "erro");
+    mostrarMensagem("Erro ao adicionar toner ao stock. Verifica a ligação e tenta novamente.", "erro");
   }
 }
+
+window.disponivel = disponivel;
 
 db.collection("stock").onSnapshot(snap => {
   notificarAlteracaoRealtimeApp("stock", snap);
@@ -5848,6 +5860,28 @@ function montarTextoLocalizacaoStable(item) {
   return `${item.serie} - ${item.armazem} - ${item.localizacao}`;
 }
 
+function definirValorSelectSeguroStable(id, valor) {
+  const node = el(id);
+  if (!node || valor === undefined || valor === null) return false;
+
+  const valorTxt = String(valor).trim();
+  if (!valorTxt) {
+    node.value = "";
+    return true;
+  }
+
+  const existe = Array.from(node.options || []).some(opt => opt.value === valorTxt);
+  if (!existe && node.tagName === "SELECT") {
+    const opt = document.createElement("option");
+    opt.value = valorTxt;
+    opt.textContent = valorTxt;
+    node.appendChild(opt);
+  }
+
+  node.value = valorTxt;
+  return node.value === valorTxt;
+}
+
 function procurarImpressoraPorUltimos3DigitosStable(final3) {
   const alvo = String(final3 || "").trim().toUpperCase();
   if (alvo.length !== 3) return null;
@@ -5946,8 +5980,8 @@ function extrairDadosEtiquetaOCRStable(texto) {
 function aplicarDadosOCRNoFormularioStable(dados) {
   if (!dados) return false;
 
-  if (dados.equipamento && el("equipamento")) el("equipamento").value = dados.equipamento;
-  if (dados.cor && el("cor")) el("cor").value = dados.cor;
+  if (dados.equipamento) definirValorSelectSeguroStable("equipamento", dados.equipamento);
+  if (dados.cor) definirValorSelectSeguroStable("cor", dados.cor);
 
   if (el("dataFolha")) {
     el("dataFolha").value = dados.dataFolha || "";
@@ -5965,7 +5999,7 @@ function aplicarDadosOCRNoFormularioStable(dados) {
   if (dados.serie && el("localizacao")) {
     const printer = impressorasData.find(p => p.serie === dados.serie);
     if (printer) {
-      el("localizacao").value = montarTextoLocalizacaoStable(printer);
+      definirValorSelectSeguroStable("localizacao", montarTextoLocalizacaoStable(printer));
     }
   } else if (dados.equipamento || dados.cor) {
     abrirSerie3DigitosStable();
@@ -6109,8 +6143,9 @@ async function processarOCRInputStable(event) {
       dados.serie ? `SÃ©rie: ${dados.serie}` : ""
     ].filter(Boolean).join(" | ");
 
-    mostrarOCRStatusStable(resumo || "A folha foi lida, mas nÃ£o encontrei dados suficientes.");
-    mostrarMensagem(ok ? "Folha lida com sucesso." : "NÃ£o encontrei dados suficientes na folha.", ok ? "sucesso" : "erro");
+    const faltaLocalizacao = ok && el("localizacao") && !el("localizacao").value;
+    mostrarOCRStatusStable((resumo || "A folha foi lida, mas nÃ£o encontrei dados suficientes.") + (faltaLocalizacao ? " | Falta selecionar/localizar a impressora." : ""));
+    mostrarMensagem(faltaLocalizacao ? "Folha lida. Confirma os 3 últimos dígitos da série ou escolhe a localização." : (ok ? "Folha lida com sucesso." : "Não encontrei dados suficientes na folha."), ok ? "sucesso" : "erro");
   } catch (e) {
     console.error("Erro OCR:", e);
     mostrarOCRStatusStable("Erro ao ler a folha.");
@@ -6133,7 +6168,7 @@ function confirmarSerie3DigitosStable() {
   }
 
   if (el("localizacao")) {
-    el("localizacao").value = montarTextoLocalizacaoStable(printer);
+    definirValorSelectSeguroStable("localizacao", montarTextoLocalizacaoStable(printer));
   }
 
   fecharSerie3DigitosStable();
