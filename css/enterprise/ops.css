@@ -445,11 +445,12 @@ input[type="submit"] {
 
 /* Visual upgrade pack: typed cards, modals and density modes */
 .enterprise-window-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+  gap: 10px;
   margin-top: auto;
-  padding: 14px 10px 0;
+  padding: 16px 10px 0;
 }
 
 .sidebar [data-enterprise-displays],
@@ -461,12 +462,74 @@ input[type="submit"] {
 
 .enterprise-window-btn {
   width: 100%;
-  min-height: 40px;
+  min-height: 46px;
+  display: inline-flex !important;
+  align-items: center;
   justify-content: center;
-  border-color: color-mix(in srgb, var(--theme-accent, #ef4444) 30%, var(--border, #2b3444)) !important;
-  background: color-mix(in srgb, var(--panel, #17191d) 88%, var(--theme-accent, #ef4444) 12%) !important;
+  gap: 7px;
+  padding: 0 10px !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.035)),
+    color-mix(in srgb, var(--panel, #17191d) 86%, var(--theme-accent, #2563eb) 14%) !important;
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.13) !important;
   color: var(--text, #f8fafc) !important;
   white-space: nowrap;
+  letter-spacing: -.02em;
+  font-size: 11.5px !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease, filter .16s ease;
+}
+
+.enterprise-window-btn::before {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 16px;
+  font-size: 14px;
+  opacity: .94;
+}
+
+.enterprise-window-btn[data-enterprise-hide]::before {
+  content: "↙";
+}
+
+.enterprise-window-btn[data-enterprise-close]::before {
+  content: "✕";
+}
+
+.enterprise-window-btn:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--theme-accent, #2563eb) 48%, rgba(255,255,255,.18)) !important;
+  box-shadow:
+    0 18px 42px rgba(0,0,0,.34),
+    0 0 0 4px color-mix(in srgb, var(--theme-accent, #2563eb) 14%, transparent),
+    inset 0 1px 0 rgba(255,255,255,.18) !important;
+}
+
+.enterprise-window-btn:active {
+  transform: translateY(0) scale(.98);
+}
+
+.enterprise-window-close {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.03)),
+    linear-gradient(135deg, rgba(239,68,68,.32), rgba(127,29,29,.26)) !important;
+  border-color: rgba(248,113,113,.30) !important;
+}
+
+.enterprise-window-close:hover {
+  border-color: rgba(248,113,113,.55) !important;
+  box-shadow:
+    0 18px 42px rgba(0,0,0,.34),
+    0 0 0 4px rgba(239,68,68,.13),
+    inset 0 1px 0 rgba(255,255,255,.18) !important;
 }
 
 .enterprise-window-select {
@@ -768,11 +831,94 @@ input[type="submit"] {
 
 @media (max-width: 768px) {
   .enterprise-window-actions {
+    grid-template-columns: 1fr 1fr;
     margin-top: 18px;
     padding: 14px 0 calc(16px + env(safe-area-inset-bottom));
   }
 
   .enterprise-window-btn {
-    min-height: 44px;
+    min-height: 46px;
+    font-size: 11px !important;
   }
+}
+
+@media (max-width: 390px) {
+  .enterprise-window-actions {
+    gap: 8px;
+  }
+
+  .enterprise-window-btn {
+    padding: 0 8px !important;
+    font-size: 10.5px !important;
+  }
+}
+
+
+/* ===== APP BRAGA v1.30.3 — Botões Electron lado a lado PRO ===== */
+.sidebar .enterprise-window-actions {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 10px !important;
+  margin-top: auto !important;
+  padding: 16px 10px 0 !important;
+}
+
+.sidebar .enterprise-window-btn {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 46px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  padding: 0 9px !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255,255,255,.13) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.105), rgba(255,255,255,.035)), rgba(255,255,255,.045) !important;
+  box-shadow: 0 14px 34px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.14) !important;
+  color: #f8fafc !important;
+  font-size: 11.2px !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  letter-spacing: -.03em !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease, background .16s ease !important;
+}
+
+.sidebar .enterprise-window-btn::before {
+  width: 16px !important;
+  height: 16px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 16px !important;
+  font-size: 14px !important;
+  opacity: .95 !important;
+}
+
+.sidebar .enterprise-window-btn[data-enterprise-hide]::before { content: "↙" !important; }
+.sidebar .enterprise-window-btn[data-enterprise-close]::before { content: "✕" !important; }
+
+.sidebar .enterprise-window-btn:hover {
+  transform: translateY(-1px) !important;
+  border-color: rgba(96,165,250,.45) !important;
+  box-shadow: 0 18px 42px rgba(0,0,0,.36), 0 0 0 4px rgba(37,99,235,.13), inset 0 1px 0 rgba(255,255,255,.18) !important;
+}
+
+.sidebar .enterprise-window-close {
+  background: linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.035)), linear-gradient(135deg, rgba(239,68,68,.30), rgba(127,29,29,.24)) !important;
+  border-color: rgba(248,113,113,.32) !important;
+  color: #fee2e2 !important;
+}
+
+.sidebar .enterprise-window-close:hover {
+  border-color: rgba(248,113,113,.58) !important;
+  box-shadow: 0 18px 42px rgba(0,0,0,.36), 0 0 0 4px rgba(239,68,68,.14), inset 0 1px 0 rgba(255,255,255,.18) !important;
+}
+
+@media (max-width: 390px) {
+  .sidebar .enterprise-window-actions { gap: 8px !important; }
+  .sidebar .enterprise-window-btn { font-size: 10.5px !important; padding: 0 7px !important; }
 }
