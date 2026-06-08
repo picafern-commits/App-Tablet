@@ -14,19 +14,25 @@ const firebaseConfig = {
   appId: "1:1004492465437:web:6a745933c51fc17b04adf4"
 };
 
-if(typeof firebase !== "undefined"){
+var db = window.db || null;
 
-  if(!firebase.apps.length){
-    firebase.initializeApp(firebaseConfig);
+if (typeof firebase !== "undefined") {
+  try {
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    db = firebase.firestore();
+    window.db = db;
+    if (firebase.firestore && firebase.firestore.FieldValue) {
+      window.appBragaServerTimestamp = firebase.firestore.FieldValue.serverTimestamp;
+    }
+  } catch (error) {
+    console.error("Erro ao iniciar Firebase:", error);
+    db = window.db || null;
   }
-
-  const db = firebase.firestore();
-
-  window.db = db;
-
 }
 
-const APP_VERSION = "1.29.0";
+const APP_VERSION = "1.29.3";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
 
 
@@ -150,7 +156,28 @@ function extrairCodigoEtiquetaTonerAppBraga(texto) {
 }
 
 function buildPayloadQrTonerAppBraga(codigo) {
-  return `APPBRAGA:TONER:${codigo}`;
+  const clean = String(codigo || "").trim().toUpperCase() || gerarCodigoEtiquetaTonerAppBraga();
+  return `APPBRAGA:TONER:${clean}`;
+}
+
+function sanitizeFirestorePayloadAppBraga(value) {
+  if (value === undefined) return null;
+  if (value === null) return null;
+  if (value instanceof Date) return value;
+  if (Array.isArray(value)) return value.map(sanitizeFirestorePayloadAppBraga).filter(v => v !== undefined);
+  if (typeof value === "object") {
+    const out = {};
+    Object.keys(value).forEach((key) => {
+      const v = sanitizeFirestorePayloadAppBraga(value[key]);
+      if (v !== undefined) out[key] = v;
+    });
+    return out;
+  }
+  return value;
+}
+
+function getDbAppBraga() {
+  return window.db || db || null;
 }
 
 function dataUrlToUint8ArrayAppBraga(dataUrl) {
@@ -533,13 +560,28 @@ function limparFormularioManutencao() {
 }
 
 async function gerarID() {
-  const ref = db.collection("config").doc("contador");
-  return db.runTransaction(async t => {
-    const doc = await t.get(ref);
-    const n = doc.exists ? ({ firebaseId: doc.id, ...doc.data() }).valor + 1 : 1;
-    t.set(ref, { valor: n });
-    return "TON-" + String(n).padStart(4, "0");
-  });
+  const database = getDbAppBraga();
+  if (!database || !database.collection || !database.runTransaction) {
+    const fallback = Number(localStorage.getItem("appBraga_toner_counter_fallback") || "0") + 1;
+    localStorage.setItem("appBraga_toner_counter_fallback", String(fallback));
+    return "TON-" + String(fallback).padStart(4, "0");
+  }
+
+  const ref = database.collection("config").doc("contador");
+  try {
+    return await database.runTransaction(async (t) => {
+      const doc = await t.get(ref);
+      const atual = doc.exists ? Number((doc.data() || {}).valor || 0) : 0;
+      const n = atual + 1;
+      t.set(ref, { valor: n, updatedAt: new Date() }, { merge: true });
+      return "TON-" + String(n).padStart(4, "0");
+    });
+  } catch (error) {
+    console.error("Erro ao gerar ID no Firestore:", error);
+    const fallback = Number(localStorage.getItem("appBraga_toner_counter_fallback") || "0") + 1;
+    localStorage.setItem("appBraga_toner_counter_fallback", String(fallback));
+    return "TON-LOCAL-" + String(fallback).padStart(4, "0");
+  }
 }
 
 function formatTonerIdCounterAppBraga(value) {
@@ -595,9 +637,17 @@ async function disponivel() {
   const data = el("data");
   const lote = el("lote");
   const sdsRef = el("sdsRef");
+  const dataFolha = el("dataFolha");
+  const codigoInput = el("codigoEtiqueta");
 
   if (!equipamento || !cor) {
-    mostrarMensagem("Formulario de toner incompleto.", "erro");
+    mostrarMensagem("Sistema de adicionar toner não encontrou o formulário.", "erro");
+    return;
+  }
+
+  const database = getDbAppBraga();
+  if (!database || !database.collection) {
+    mostrarMensagem("Firebase indisponível. Liga a internet e volta a tentar.", "erro");
     return;
   }
 
@@ -605,75 +655,77 @@ async function disponivel() {
   const loc = String(localizacao ? localizacao.value : "").trim();
   const corValue = String(cor.value || "").trim();
   const dataValue = String(data ? data.value : "").trim();
-  const dataFolhaValue = String((el("dataFolha") && el("dataFolha").value) || "").trim();
-  const loteValue = String(lote ? lote.value : "").trim();
+  const dataFolhaValue = String(dataFolha ? dataFolha.value : "").trim();
+  const loteValue = String(lote ? lote.value : "").trim().toUpperCase();
   const sdsRefValue = String(sdsRef ? sdsRef.value : "").trim().toUpperCase();
-  const codigoEtiqueta = getCodigoEtiquetaAtualAppBraga();
+  const codigoEtiqueta = String(getCodigoEtiquetaAtualAppBraga() || "").trim().toUpperCase();
 
   if (!eq || !corValue) {
-    mostrarMensagem("Preenche o equipamento e a cor antes de adicionar ao stock.", "erro");
+    mostrarMensagem("Preenche o equipamento e a cor.", "erro");
     return;
   }
 
   try {
     const id = await gerarID();
-    const registoStock = {
+    const payload = sanitizeFirestorePayloadAppBraga({
       idInterno: id,
       equipamento: eq,
       localizacao: loc || "Sem Localização",
       cor: corValue,
-      data: dataValue || "Sem Data",
-      dataFolha: dataFolhaValue || "Sem Data da Folha",
+      data: dataValue || new Date().toISOString().slice(0, 10),
+      dataFolha: dataFolhaValue || "",
       lote: loteValue || "",
-      sdsRef: sdsRefValue || "",
+      sdsRef: /^S\d{7,12}$/.test(sdsRefValue) ? sdsRefValue : sdsRefValue,
       codigoEtiqueta,
       codigoScan: buildPayloadQrTonerAppBraga(codigoEtiqueta),
       estado: "stock",
-      created: new Date()
-    };
+      origem: "adicionar-toner",
+      created: new Date(),
+      createdAtMs: Date.now()
+    });
 
-    await db.collection("stock").add(registoStock);
+    const ref = await database.collection("stock").add(payload);
 
-    await logActivityApp("stock-add", "Toner adicionado", `${id} - ${eq} - ${corValue}`, {
+    logActivityApp("stock-add", "Toner adicionado", `${id} - ${eq} - ${corValue}`, {
       idInterno: id,
       equipamento: eq,
       cor: corValue,
-      localizacao: loc || "Sem Localização",
-      sdsRef: sdsRefValue || "",
-      codigoEtiqueta
-    });
+      localizacao: payload.localizacao,
+      sdsRef: payload.sdsRef || "",
+      codigoEtiqueta,
+      stockDocId: ref.id
+    }).catch(() => false);
 
     let etiquetaGerada = false;
     try {
       etiquetaGerada = await gerarWordEtiquetaFromForm(true);
-    } catch (etqError) {
-      console.warn("Toner guardado, mas a etiqueta nao foi gerada:", etqError);
+    } catch (etiquetaError) {
+      console.warn("Toner guardado, mas a etiqueta automática falhou:", etiquetaError);
     }
 
     equipamento.value = "";
     if (localizacao) localizacao.value = "";
     cor.value = "";
     if (data) data.value = "";
-    if (el("dataFolha")) el("dataFolha").value = "";
+    if (dataFolha) dataFolha.value = "";
     if (lote) lote.value = "";
     if (sdsRef) sdsRef.value = "";
-    prepararCodigoEtiquetaTonerAppBraga(true);
+    if (codigoInput) prepararCodigoEtiquetaTonerAppBraga(true);
 
     mostrarMensagem(
       etiquetaGerada
         ? "Toner adicionado ao stock e etiqueta gerada."
-        : "Toner adicionado ao stock. A etiqueta pode ser gerada depois em Etiquetas Word.",
+        : "Toner adicionado ao stock. A etiqueta ficou disponível para gerar manualmente.",
       "sucesso"
     );
   } catch (error) {
-    console.error(error);
-    mostrarMensagem("Erro ao adicionar toner ao stock. Verifica a ligação e tenta novamente.", "erro");
+    console.error("Erro ao adicionar toner:", error);
+    const detalhe = error && (error.message || error.code) ? ` (${error.message || error.code})` : "";
+    mostrarMensagem(`Erro ao adicionar toner${detalhe}`, "erro");
   }
 }
 
-window.disponivel = disponivel;
-
-db.collection("stock").onSnapshot(snap => {
+if (getDbAppBraga()) getDbAppBraga().collection("stock").onSnapshot(snap => {
   notificarAlteracaoRealtimeApp("stock", snap);
   stockGlobal = [];
   setText("countStock", snap.size);
@@ -5857,29 +5909,11 @@ function preencherDataAtualSeVaziaStable() {
 }
 
 function montarTextoLocalizacaoStable(item) {
-  return `${item.serie} - ${item.armazem} - ${item.localizacao}`;
-}
-
-function definirValorSelectSeguroStable(id, valor) {
-  const node = el(id);
-  if (!node || valor === undefined || valor === null) return false;
-
-  const valorTxt = String(valor).trim();
-  if (!valorTxt) {
-    node.value = "";
-    return true;
-  }
-
-  const existe = Array.from(node.options || []).some(opt => opt.value === valorTxt);
-  if (!existe && node.tagName === "SELECT") {
-    const opt = document.createElement("option");
-    opt.value = valorTxt;
-    opt.textContent = valorTxt;
-    node.appendChild(opt);
-  }
-
-  node.value = valorTxt;
-  return node.value === valorTxt;
+  if (!item) return "Sem Localização";
+  const serie = String(item.serie || "").trim();
+  const armazem = String(item.armazem || "Braga").trim();
+  const local = String(item.localizacao || item.local || "Sem Localização").trim();
+  return [serie, armazem, local].filter(Boolean).join(" - ");
 }
 
 function procurarImpressoraPorUltimos3DigitosStable(final3) {
@@ -5977,11 +6011,42 @@ function extrairDadosEtiquetaOCRStable(texto) {
   };
 }
 
+function setSelectValueAppBraga(selectEl, value) {
+  if (!selectEl) return;
+  const clean = String(value || "").trim();
+  if (!clean) {
+    selectEl.value = "";
+    return;
+  }
+  const exists = Array.from(selectEl.options || []).some(opt => opt.value === clean);
+  if (!exists) {
+    const opt = document.createElement("option");
+    opt.value = clean;
+    opt.textContent = clean;
+    selectEl.appendChild(opt);
+  }
+  selectEl.value = clean;
+}
+
+function carregarLocalizacoesImpressorasNoFormularioAppBraga() {
+  const select = el("localizacao");
+  if (!select || !Array.isArray(impressorasData)) return;
+  impressorasData.forEach((printer) => {
+    const value = montarTextoLocalizacaoStable(printer);
+    if (value && !Array.from(select.options || []).some(opt => opt.value === value)) {
+      const opt = document.createElement("option");
+      opt.value = value;
+      opt.textContent = value;
+      select.appendChild(opt);
+    }
+  });
+}
+
 function aplicarDadosOCRNoFormularioStable(dados) {
   if (!dados) return false;
 
-  if (dados.equipamento) definirValorSelectSeguroStable("equipamento", dados.equipamento);
-  if (dados.cor) definirValorSelectSeguroStable("cor", dados.cor);
+  if (dados.equipamento && el("equipamento")) el("equipamento").value = dados.equipamento;
+  if (dados.cor && el("cor")) el("cor").value = dados.cor;
 
   if (el("dataFolha")) {
     el("dataFolha").value = dados.dataFolha || "";
@@ -5999,7 +6064,7 @@ function aplicarDadosOCRNoFormularioStable(dados) {
   if (dados.serie && el("localizacao")) {
     const printer = impressorasData.find(p => p.serie === dados.serie);
     if (printer) {
-      definirValorSelectSeguroStable("localizacao", montarTextoLocalizacaoStable(printer));
+      setSelectValueAppBraga(el("localizacao"), montarTextoLocalizacaoStable(printer));
     }
   } else if (dados.equipamento || dados.cor) {
     abrirSerie3DigitosStable();
@@ -6143,9 +6208,8 @@ async function processarOCRInputStable(event) {
       dados.serie ? `SÃ©rie: ${dados.serie}` : ""
     ].filter(Boolean).join(" | ");
 
-    const faltaLocalizacao = ok && el("localizacao") && !el("localizacao").value;
-    mostrarOCRStatusStable((resumo || "A folha foi lida, mas nÃ£o encontrei dados suficientes.") + (faltaLocalizacao ? " | Falta selecionar/localizar a impressora." : ""));
-    mostrarMensagem(faltaLocalizacao ? "Folha lida. Confirma os 3 últimos dígitos da série ou escolhe a localização." : (ok ? "Folha lida com sucesso." : "Não encontrei dados suficientes na folha."), ok ? "sucesso" : "erro");
+    mostrarOCRStatusStable(resumo || "A folha foi lida, mas nÃ£o encontrei dados suficientes.");
+    mostrarMensagem(ok ? "Folha lida com sucesso." : "NÃ£o encontrei dados suficientes na folha.", ok ? "sucesso" : "erro");
   } catch (e) {
     console.error("Erro OCR:", e);
     mostrarOCRStatusStable("Erro ao ler a folha.");
@@ -6168,7 +6232,7 @@ function confirmarSerie3DigitosStable() {
   }
 
   if (el("localizacao")) {
-    definirValorSelectSeguroStable("localizacao", montarTextoLocalizacaoStable(printer));
+    setSelectValueAppBraga(el("localizacao"), montarTextoLocalizacaoStable(printer));
   }
 
   fecharSerie3DigitosStable();
@@ -6181,6 +6245,13 @@ window.abrirOCR = abrirOCRStable;
 window.processarOCRInput = processarOCRInputStable;
 window.confirmarSerie3Digitos = confirmarSerie3DigitosStable;
 window.fecharSerie3Digitos = fecharSerie3DigitosStable;
+document.addEventListener("DOMContentLoaded", () => {
+  if (el("localizacao") && el("equipamento") && el("cor")) {
+    prepararCodigoEtiquetaTonerAppBraga(false);
+    carregarLocalizacoesImpressorasNoFormularioAppBraga();
+    preencherDataAtualSeVaziaStable();
+  }
+});
 
 
 /* =========================
@@ -8172,10 +8243,11 @@ function montarPayloadEtiquetaPartilhada(extra = {}) {
 }
 
 async function guardarEtiquetaPartilhada(extra = {}) {
-  if (!db || !db.collection) return null;
+  const database = getDbAppBraga();
+  if (!database || !database.collection) return null;
   try {
-    const payload = montarPayloadEtiquetaPartilhada(extra);
-    const ref = await db.collection("etiquetasWord").add(payload);
+    const payload = sanitizeFirestorePayloadAppBraga(montarPayloadEtiquetaPartilhada(extra));
+    const ref = await database.collection("etiquetasWord").add(payload);
     return { idDoc: ref.id, ...payload };
   } catch (e) {
     console.error("Erro ao guardar etiqueta partilhada:", e);
