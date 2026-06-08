@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.29.3";
+const APP_VERSION = "1.30.0";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
 
 
@@ -10825,3 +10825,191 @@ window.testarCamerasStockQr = async function(){
     return [];
   }
 };
+
+/* =========================
+   APP BRAGA v1.30.0 — DIAGNÓSTICO + UX SEGURO
+   Não altera autenticação, roles ou estrutura Firebase.
+========================= */
+(function(){
+  const LOG_KEY = "appBraga_diagnosticLogs_v1";
+  const LAST_READ_KEY = "appBraga_lastScannerRead";
+  const LAST_LABEL_KEY = "appBraga_lastEtiquetaWordPayload";
+  const MAX_LOGS = 80;
+
+  function nowText(){ try { return new Date().toLocaleString("pt-PT"); } catch(e){ return String(new Date()); } }
+  function readLogs(){ try { return JSON.parse(localStorage.getItem(LOG_KEY) || "[]"); } catch(e){ return []; } }
+  function writeLogs(logs){ try { localStorage.setItem(LOG_KEY, JSON.stringify((logs || []).slice(0, MAX_LOGS))); } catch(e){} }
+  function addLog(level, source, message, extra){
+    const item = { time: nowText(), level: level || "info", source: source || "app", message: String(message || ""), extra: extra ? String(extra).slice(0,900) : "" };
+    const logs = readLogs(); logs.unshift(item); writeLogs(logs);
+    try { atualizarLogsDiagnosticoAppBraga(); } catch(e){}
+  }
+  window.appBragaAddDiagnosticLog = addLog;
+
+  const oldError = console.error;
+  console.error = function(){
+    try { addLog("error", "console", Array.from(arguments).map(a => a && a.message ? a.message : String(a)).join(" | ")); } catch(e){}
+    return oldError.apply(console, arguments);
+  };
+  const oldWarn = console.warn;
+  console.warn = function(){
+    try { addLog("warn", "console", Array.from(arguments).map(a => a && a.message ? a.message : String(a)).join(" | ")); } catch(e){}
+    return oldWarn.apply(console, arguments);
+  };
+  window.addEventListener("error", e => addLog("error", "window", e.message || "Erro JS", `${e.filename || ""}:${e.lineno || ""}`));
+  window.addEventListener("unhandledrejection", e => addLog("error", "promise", e.reason && e.reason.message ? e.reason.message : String(e.reason || "Promise rejeitada")));
+
+  function setTxt(id, value){ const n = document.getElementById(id); if(n) n.textContent = value; }
+  function toDateMs(v){
+    if(!v) return 0;
+    if(typeof v === "number") return v;
+    if(v && typeof v.toDate === "function") return v.toDate().getTime();
+    if(v instanceof Date) return v.getTime();
+    const t = Date.parse(String(v)); return Number.isFinite(t) ? t : 0;
+  }
+  function startOfToday(){ const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); }
+  function startOfWeek(){ const d = new Date(); const day = d.getDay() || 7; d.setDate(d.getDate() - day + 1); d.setHours(0,0,0,0); return d.getTime(); }
+  function esc(s){ return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c])); }
+
+  async function getCollectionArray(name){
+    const database = (typeof getDbAppBraga === "function" ? getDbAppBraga() : (window.db || window.firebase?.firestore?.()));
+    if(!database || !database.collection) return [];
+    const snap = await database.collection(name).get();
+    const arr = []; snap.forEach(doc => arr.push({idDoc: doc.id, ...doc.data()})); return arr;
+  }
+
+  async function atualizarDashboardUtilAppBraga(){
+    if(!document.getElementById("dashTonersHoje")) return;
+    try{
+      const [stock, historico, etiquetas, manutencoes, impressoras] = await Promise.all([
+        getCollectionArray("stock").catch(()=>[]), getCollectionArray("historico").catch(()=>[]), getCollectionArray("etiquetasWord").catch(()=>[]), getCollectionArray("manutencoes").catch(()=>[]), getCollectionArray("impressoras").catch(()=>[])
+      ]);
+      const today = startOfToday(), week = startOfWeek(), seven = Date.now() - 7*86400000;
+      const createdMs = x => toDateMs(x.createdAtMs || x.created || x.createdAt || x.data || x.dataScan || x.dataFolha);
+      setTxt("dashTonersHoje", stock.filter(x => createdMs(x) >= today).length);
+      setTxt("dashTonersSemana", historico.filter(x => createdMs(x) >= week).length);
+      setTxt("dashEtiquetasRecentes", etiquetas.filter(x => createdMs(x) >= seven).length);
+      const logs = readLogs(); const critical = logs.filter(x => x.level === "error" && Date.now() - Date.parse((x.time||"").replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$3-$2-$1')) < 86400000).length;
+      setTxt("dashHealthMini", critical ? "Atenção" : "OK");
+      setTxt("dashHealthMiniText", critical ? `${critical} erro(s) nas últimas leituras` : "Sem erros críticos");
+      const etHost = document.getElementById("dashUltimasEtiquetas");
+      if(etHost){
+        const list = etiquetas.sort((a,b)=>createdMs(b)-createdMs(a)).slice(0,5);
+        etHost.innerHTML = list.length ? list.map(t => `<div class="mini-feed-item"><div><strong>${esc(t.localCurto || t.localizacao || t.serie || "Etiqueta")}</strong><span>${esc(t.serie || t.codigoEtiqueta || "-")}</span></div><small>${esc(t.dataEtiqueta || t.data || "")}</small></div>`).join("") : `<div class="mini-feed-item"><span>Sem etiquetas recentes</span></div>`;
+      }
+      const mHost = document.getElementById("dashManutencoesPendentes");
+      if(mHost){
+        const pend = manutencoes.filter(x => !/fechad|conclu|resolvid|ok/i.test(String(x.estado || x.status || ""))).slice(0,4);
+        const impProblem = impressoras.filter(x => /erro|avaria|baixo|offline|manut/i.test(String(x.estado || x.status || x.obs || ""))).slice(0,3);
+        const rows = [...pend.map(x=>({a:x.impressora||x.equipamento||"Manutenção", b:x.estado||x.status||"Pendente"})), ...impProblem.map(x=>({a:x.nome||x.modelo||x.localizacao||"Impressora", b:x.estado||x.status||"Atenção"}))].slice(0,5);
+        mHost.innerHTML = rows.length ? rows.map(x => `<div class="mini-feed-item"><strong>${esc(x.a)}</strong><small>${esc(x.b)}</small></div>`).join("") : `<div class="mini-feed-item"><span>Sem pendências detetadas</span></div>`;
+      }
+    } catch(e){ addLog("error", "dashboard", e.message || e); }
+  }
+  window.atualizarDashboardUtilAppBraga = atualizarDashboardUtilAppBraga;
+
+  async function testarCamaraAdicionarToner(){
+    const state = document.getElementById("scannerCameraState");
+    if(state) state.textContent = "A testar...";
+    try{
+      if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error("Este dispositivo/navegador não disponibiliza câmara à página.");
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+      stream.getTracks().forEach(t => t.stop());
+      if(state) state.textContent = "Câmara OK";
+      if(typeof mostrarMensagem === "function") mostrarMensagem("Câmara OK.", "sucesso");
+      addLog("info", "scanner", "Teste de câmara OK");
+    } catch(e){
+      if(state) state.textContent = "Sem permissão / erro";
+      addLog("error", "scanner", e.message || e);
+      if(typeof mostrarMensagem === "function") mostrarMensagem(`Erro na câmara: ${e.message || e}`, "erro");
+    }
+  }
+  window.testarCamaraAdicionarToner = testarCamaraAdicionarToner;
+
+  function setLastRead(text){
+    const val = String(text || "").trim(); if(!val) return;
+    try{ localStorage.setItem(LAST_READ_KEY, val); }catch(e){}
+    setTxt("scannerLastRead", val.length > 32 ? val.slice(0,32) + "..." : val);
+  }
+  document.addEventListener("DOMContentLoaded", () => { const last = localStorage.getItem(LAST_READ_KEY); if(last) setTxt("scannerLastRead", last.length > 32 ? last.slice(0,32)+"..." : last); });
+
+  setTimeout(() => {
+    if(typeof window.processarTextoLidoStable === "function") return;
+    const oldProc = window.processarOCRInput;
+    if(typeof oldProc === "function"){
+      window.processarOCRInput = async function(ev){
+        setTxt("scannerOcrState", "A ler...");
+        try{ const r = await oldProc.apply(this, arguments); setTxt("scannerOcrState", "Lido"); const sds = document.getElementById("sdsRef")?.value; if(sds) setLastRead(sds); return r; }
+        catch(e){ setTxt("scannerOcrState", "Erro"); addLog("error", "ocr", e.message || e); throw e; }
+      };
+    }
+    const oldStart = window.startScanner;
+    if(typeof oldStart === "function"){
+      window.startScanner = async function(){ setTxt("scannerCameraState", "A abrir..."); try{ const r = await oldStart.apply(this, arguments); setTxt("scannerCameraState", "Ligada"); return r; } catch(e){ setTxt("scannerCameraState", "Erro"); addLog("error", "scanner", e.message || e); throw e; } };
+    }
+    const oldDisponivel = window.disponivel;
+    if(typeof oldDisponivel === "function"){
+      window.disponivel = async function(){
+        try{ const r = await oldDisponivel.apply(this, arguments); addLog("info", "stock", "Tentativa de adicionar toner concluída"); return r; }
+        catch(e){ addLog("error", "stock", e.message || e); if(typeof mostrarMensagem === "function") mostrarMensagem(`Erro ao adicionar toner: ${e.message || e}`, "erro"); }
+      };
+    }
+    const oldGerar = window.gerarWordEtiquetaFromForm;
+    if(typeof oldGerar === "function"){
+      window.gerarWordEtiquetaFromForm = async function(){
+        const payload = (typeof extrairDadosEtiquetaWord === "function") ? extrairDadosEtiquetaWord() : null;
+        const ok = await oldGerar.apply(this, arguments);
+        if(ok && payload){ try{ localStorage.setItem(LAST_LABEL_KEY, JSON.stringify(payload)); }catch(e){} addLog("info", "etiqueta", `Etiqueta gerada: ${payload.codigoEtiqueta || payload.serie || "sem código"}`); }
+        return ok;
+      };
+    }
+  }, 800);
+
+  async function reimprimirUltimaEtiquetaWord(){
+    try{
+      let payload = null;
+      try{ payload = JSON.parse(localStorage.getItem(LAST_LABEL_KEY) || "null"); }catch(e){}
+      if(!payload){
+        const arr = await getCollectionArray("etiquetasWord");
+        payload = arr.sort((a,b)=>toDateMs(b.created || b.createdAtMs)-toDateMs(a.created || a.createdAtMs))[0];
+      }
+      if(!payload) return typeof mostrarMensagem === "function" && mostrarMensagem("Ainda não existe uma etiqueta para reimprimir.", "erro");
+      if(typeof gerarWordEtiquetaPartilhada === "function") await gerarWordEtiquetaPartilhada(payload, { saveRecord:false, silent:false });
+      else if(typeof gerarWordEtiquetaFromForm === "function") await gerarWordEtiquetaFromForm(false);
+      addLog("info", "etiqueta", "Reimpressão da última etiqueta");
+    } catch(e){ addLog("error", "etiqueta", e.message || e); if(typeof mostrarMensagem === "function") mostrarMensagem("Erro ao reimprimir a última etiqueta.", "erro"); }
+  }
+  window.reimprimirUltimaEtiquetaWord = reimprimirUltimaEtiquetaWord;
+
+  function card(label, value, status){ return `<div class="diagnostic-card ${esc(status||"")}"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`; }
+  async function executarDiagnosticoAppBraga(){
+    const checks = [];
+    checks.push(["Versão", (typeof APP_VERSION !== "undefined" ? APP_VERSION : "1.30.0"), "ok"]);
+    checks.push(["Rede", navigator.onLine ? "Online" : "Offline", navigator.onLine ? "ok" : "warn"]);
+    checks.push(["Firebase", window.firebase ? "Carregado" : "Não carregado", window.firebase ? "ok" : "error"]);
+    checks.push(["Firestore", (typeof getDbAppBraga === "function" && getDbAppBraga()) ? "Disponível" : "Indisponível", (typeof getDbAppBraga === "function" && getDbAppBraga()) ? "ok" : "error"]);
+    checks.push(["Câmara", (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ? "Suportada" : "Não suportada", (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ? "ok" : "warn"]);
+    checks.push(["Scanner QR", typeof Html5Qrcode !== "undefined" ? "Biblioteca OK" : "Biblioteca ausente", typeof Html5Qrcode !== "undefined" ? "ok" : "warn"]);
+    checks.push(["OCR", typeof Tesseract !== "undefined" ? "Biblioteca OK" : "Biblioteca ausente", typeof Tesseract !== "undefined" ? "ok" : "warn"]);
+    checks.push(["Word/Etiquetas", typeof docx !== "undefined" ? "Biblioteca OK" : "Biblioteca ausente", typeof docx !== "undefined" ? "ok" : "warn"]);
+    checks.push(["Cache local", (()=>{try{localStorage.setItem("__test","1");localStorage.removeItem("__test");return "OK"}catch(e){return "Bloqueada"}})(), "ok"]);
+    const host = document.getElementById("diagnosticGrid"); if(host) host.innerHTML = checks.map(x => card(x[0],x[1],x[2])).join("");
+    atualizarLogsDiagnosticoAppBraga(); addLog("info", "diagnóstico", "Verificação executada");
+  }
+  window.executarDiagnosticoAppBraga = executarDiagnosticoAppBraga;
+
+  function atualizarLogsDiagnosticoAppBraga(){
+    const host = document.getElementById("diagnosticLogs"); if(!host) return;
+    const logs = readLogs();
+    host.innerHTML = logs.length ? logs.map(l => `<div class="diagnostic-log-item ${esc(l.level)}"><span class="log-time">${esc(l.time)} · ${esc(l.level)} · ${esc(l.source)}</span>${esc(l.message)}${l.extra ? "\n"+esc(l.extra) : ""}</div>`).join("") : `<div class="diagnostic-log-item">Sem erros registados.</div>`;
+  }
+  window.atualizarLogsDiagnosticoAppBraga = atualizarLogsDiagnosticoAppBraga;
+  function limparLogsDiagnosticoAppBraga(){ writeLogs([]); atualizarLogsDiagnosticoAppBraga(); if(typeof mostrarMensagem === "function") mostrarMensagem("Logs limpos.", "sucesso"); }
+  window.limparLogsDiagnosticoAppBraga = limparLogsDiagnosticoAppBraga;
+
+  document.addEventListener("DOMContentLoaded", () => {
+    atualizarDashboardUtilAppBraga();
+    if(document.getElementById("diagnosticGrid")) setTimeout(executarDiagnosticoAppBraga, 500);
+    setInterval(atualizarDashboardUtilAppBraga, 60000);
+  });
+})();
