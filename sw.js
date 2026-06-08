@@ -1,4 +1,4 @@
-const APP_BRAGA_SW = "app-braga-runtime-v40";
+const APP_BRAGA_SW = "app-braga-runtime-v42";
 const APP_BRAGA_FIREBASE_CONFIG = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
   authDomain: "toner-manager-756c4.firebaseapp.com",
@@ -57,6 +57,7 @@ const APP_SHELL = [
   "./index.html",
   "./html/index.html",
   "./html/computadores.html",
+  "./html/equipamento.html",
   "./html/impressoras.html",
   "./html/radios.html",
   "./html/stock.html",
@@ -65,12 +66,17 @@ const APP_SHELL = [
   "./css/autozitania-bragalis.css",
   "./css/app-theme-pro.css",
   "./css/enterprise/ops.css",
+  "./css/systems/equipment.css",
+  "./css/systems/global-search.css",
   "./css/systems/personal-tools.css",
   "./css/iphone-force-final.css",
   "./css/iphone-sidebar-final.css",
   "./js/app.js",
   "./js/app-theme-pro.js",
   "./js/enterprise/ops.js",
+  "./js/systems/equipment/equipment-models.js",
+  "./js/systems/equipment/equipment-detail.js",
+  "./js/systems/global-search/global-search.js",
   "./js/systems/backup/local-backup.js",
   "./js/systems/personal-tools.js",
   "./js/core/helpers.js",
