@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.30.7";
+const APP_VERSION = "1.30.8";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
 
 
@@ -1938,10 +1938,15 @@ function notificationPermissionApp() {
   return Notification.permission;
 }
 
-async function pedirPermissaoNotificacoesApp() {
+async function pedirPermissaoNotificacoesApp(options = {}) {
+  const shouldRegisterDevice = options.registerDevice !== false;
   if (window.electronAPI?.showNotification) {
     await guardarConfigNotificacoesApp({ notificationEnabled: true });
-    await enviarNotificacaoApp("App Braga", "NotificaÃƒÂ§ÃƒÂµes ativas no Electron.", "test-electron", { force: true });
+    if (shouldRegisterDevice) {
+      await registarDispositivoPushApp(false, { skipPermission: true });
+    } else {
+      await enviarNotificacaoApp("App Braga", "NotificaÃƒÂ§ÃƒÂµes ativas no Electron.", "test-electron", { force: true });
+    }
     return;
   }
 
@@ -1955,7 +1960,11 @@ async function pedirPermissaoNotificacoesApp() {
     if (permission === "granted") {
       await registarServiceWorkerAppBraga();
       await guardarConfigNotificacoesApp({ notificationEnabled: true });
-      await enviarNotificacaoApp("App Braga", "NotificaÃƒÂ§ÃƒÂµes ativas neste dispositivo.", "test-web", { force: true });
+      if (shouldRegisterDevice) {
+        await registarDispositivoPushApp(false, { skipPermission: true });
+      } else {
+        await enviarNotificacaoApp("App Braga", "NotificaÃƒÂ§ÃƒÂµes ativas neste dispositivo.", "test-web", { force: true });
+      }
     } else {
       mostrarMensagem("PermissÃƒÂ£o de notificaÃƒÂ§ÃƒÂµes recusada.", "erro");
     }
@@ -2600,6 +2609,37 @@ function renderResumoDispositivosNotificacoesApp(items = []) {
   setNotificationServiceText("notifyActiveDevicesDetail", activeItems.length ? remoteText : "Sem dispositivos registados");
 }
 
+function atualizarDiagnosticoDispositivoNotificacoesApp(items = []) {
+  const activeItems = items.filter((item) => item.active !== false);
+  const currentItem = activeItems.find((item) => item.id === appNotificationState.restoredTokenDocId ||
+    (appNotificationState.fcmToken && item.token === appNotificationState.fcmToken) ||
+    (appNotificationState.pushSubscriptionEndpoint && (item.endpoint === appNotificationState.pushSubscriptionEndpoint || item.pushSubscription?.endpoint === appNotificationState.pushSubscriptionEndpoint)));
+  const permission = notificationPermissionApp();
+  const isIos = isIosAppBraga();
+  const isStandalone = isStandalonePwaAppBraga();
+  const hasRemotePush = !!(currentItem?.token || currentItem?.pushSubscription?.endpoint || currentItem?.source === "electron-native");
+  const hasStandardPush = !!currentItem?.pushSubscription?.endpoint;
+  const parts = [
+    `Permissao: ${permission}`,
+    `Push: ${webPushDisponivelApp() ? "disponivel" : "indisponivel"}`,
+    `PWA: ${isStandalone ? "sim" : "nao"}`
+  ];
+
+  if (currentItem) {
+    parts.push(hasRemotePush ? "registo remoto OK" : "registo apenas local");
+  } else if (permission === "granted" || permission === "electron") {
+    parts.push("carrega em Reparar registo");
+  }
+
+  if (isIos && !isStandalone) {
+    parts.push("iPhone: abrir pelo icone do ecra principal");
+  } else if (isIos && !hasStandardPush) {
+    parts.push("iPhone: falta Web Push standard neste dispositivo");
+  }
+
+  setNotificationDeviceDiagnostic(parts.join(" | "));
+}
+
 async function atualizarEstadoNotificacoesApp(showMessage = false) {
   const service = document.getElementById("notifyServiceStatus");
   if (!service) return;
@@ -2609,10 +2649,16 @@ async function atualizarEstadoNotificacoesApp(showMessage = false) {
     const doc = await window.db.collection("config").doc("cloudNotifications").get().catch(() => null);
     const data = doc?.exists ? doc.data() || {} : null;
     if (!data) return false;
+    const standardReady = data.standardWebPushReady !== false;
     setNotificationServiceText("notifyServiceStatus", "Cloud Functions", "ok");
     setNotificationServiceText("notifyServiceDetail", data.lastRunAt ? `Ultimo envio: ${formatTimestampApp(data.lastRunAt)}` : "Ativo no Firebase");
-    setNotificationServiceText("notifyCredentialsStatus", data.standardWebPushReady === false ? "FCM OK" : "OK", data.standardWebPushReady === false ? "warn" : "ok");
-    setNotificationServiceText("notifyCredentialsDetail", `Firebase ${data.region || "europe-west1"} - enviados: ${data.lastSent ?? 0} - falhas: ${data.lastFailed ?? 0}`);
+    setNotificationServiceText("notifyCredentialsStatus", standardReady ? "Web Push OK" : "Falta Web Push", standardReady ? "ok" : "bad");
+    setNotificationServiceText("notifyCredentialsDetail", standardReady
+      ? `Firebase ${data.region || "europe-west1"} - enviados: ${data.lastSent ?? 0} - falhas: ${data.lastFailed ?? 0}`
+      : "Firebase sem secrets VAPID privadas: iPhone nao recebe push remoto.");
+    if (!standardReady && isIosAppBraga()) {
+      setNotificationDeviceDiagnostic("iPhone precisa de Web Push standard: configurar secrets VAPID privadas nas Cloud Functions.");
+    }
     return true;
   }
 
@@ -2649,6 +2695,7 @@ function renderDispositivosNotificacoesApp(items = []) {
   });
   const activeItems = Array.from(uniqueMap.values());
   renderResumoDispositivosNotificacoesApp(activeItems);
+  atualizarDiagnosticoDispositivoNotificacoesApp(activeItems);
   atualizarEstadoNotificacoesApp(false);
 
   if (!activeItems.length) {
@@ -2792,7 +2839,7 @@ async function registarDispositivoLocalNotificacoesApp(source = "web-local") {
   mostrarMensagem("Push remoto indisponivel; notificacoes locais ativadas.");
 }
 
-async function registarDispositivoPushApp(forceReset = false) {
+async function registarDispositivoPushApp(forceReset = false, options = {}) {
   try {
     if (!window.db || !window.db.collection) throw new Error("Firestore indisponivel.");
     const vapidKey = resolveVapidPublicKeyApp(document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "");
@@ -2827,7 +2874,9 @@ async function registarDispositivoPushApp(forceReset = false) {
     }
 
     await guardarConfigNotificacoesApp({ notificationEnabled: true, notificationVapidKey: vapidKey });
-    await pedirPermissaoNotificacoesApp();
+    if (!options.skipPermission) {
+      await pedirPermissaoNotificacoesApp({ registerDevice: false });
+    }
     if (!("Notification" in window) || Notification.permission !== "granted") return;
 
     if (!webPushDisponivelApp()) {

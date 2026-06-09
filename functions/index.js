@@ -209,16 +209,25 @@ async function broadcast(title, body, data = {}) {
   const canStandardWebPush = configureWebPush();
   let sent = 0;
   let failed = 0;
+  let fcmTargets = 0;
+  let standardWebPushTargets = 0;
 
   for (const item of devices) {
     try {
       if (item.token) {
+        fcmTargets += 1;
         await sendFcm(item, title, body, data);
         sent += 1;
       }
-      if (item.pushSubscription?.endpoint && canStandardWebPush) {
-        await sendStandardWebPush(item, title, body, data);
-        sent += 1;
+      if (item.pushSubscription?.endpoint) {
+        standardWebPushTargets += 1;
+        if (canStandardWebPush) {
+          await sendStandardWebPush(item, title, body, data);
+          sent += 1;
+        } else {
+          failed += 1;
+          logger.warn("Web Push standard sem VAPID secrets", { id: item.id, source: item.source });
+        }
       }
     } catch (error) {
       failed += 1;
@@ -235,6 +244,9 @@ async function broadcast(title, body, data = {}) {
     lastEvent: data.event || data.collection || "manual",
     lastSent: sent,
     lastFailed: failed,
+    lastDeviceCount: devices.length,
+    lastFcmTargets: fcmTargets,
+    lastStandardWebPushTargets: standardWebPushTargets,
     lastRunAt: Date.now(),
     standardWebPushReady: canStandardWebPush
   });
@@ -244,6 +256,9 @@ async function broadcast(title, body, data = {}) {
     body,
     sent,
     failed,
+    deviceCount: devices.length,
+    fcmTargets,
+    standardWebPushTargets,
     event: data.event || data.collection || "manual",
     collection: data.collection || "",
     targetUrl: data.url || APP_URL
