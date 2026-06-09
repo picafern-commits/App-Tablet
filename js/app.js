@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.31.1";
+const APP_VERSION = "1.31.2";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
 
 
@@ -107,6 +107,15 @@ const appNotificationState = {
   devicesUnsubscribe: null,
   restoreRunning: false,
   restoredTokenDocId: ""
+};
+
+const electronPushBridgeState = {
+  started: false,
+  startedAt: 0,
+  devices: [],
+  unsubscribeDevices: null,
+  unsubscribeRequests: null,
+  processing: new Set()
 };
 
 const APP_ROLE_LABELS = {
@@ -1930,6 +1939,9 @@ function aplicarConfigNotificacoesApp(config = {}) {
   iniciarMonitorNotificacoesApp();
   carregarDispositivosNotificacoesApp(false);
   restaurarRegistoPushAtualApp();
+  if (window.electronAPI?.sendWebPushBroadcast && document.getElementById("notifyServiceStatus")) {
+    iniciarPontePushElectronApp(false);
+  }
 }
 
 function notificationPermissionApp() {
@@ -2223,6 +2235,117 @@ async function obterDispositivoAtualNotificacoesApp() {
   return current || fallback;
 }
 
+function getDispositivosPushRemotoElectronApp() {
+  const sorted = [...electronPushBridgeState.devices]
+    .filter((item) => item.active !== false)
+    .filter((item) => item.pushSubscription?.endpoint)
+    .sort((a, b) => normalizeTimestampApp(b.updatedAt || b.createdAt) - normalizeTimestampApp(a.updatedAt || a.createdAt));
+  const unique = new Map();
+  sorted.forEach((item) => {
+    const key = item.deviceKey || item.pushSubscription?.endpoint || item.id;
+    if (!unique.has(key)) unique.set(key, item);
+  });
+  return Array.from(unique.values());
+}
+
+async function processarPedidoPushElectronApp(doc) {
+  if (!doc?.exists || !window.db?.collection || !window.electronAPI?.sendWebPushBroadcast) return;
+  const requestId = doc.id;
+  if (electronPushBridgeState.processing.has(requestId)) return;
+  const fields = doc.data() || {};
+  if (fields.status && fields.status !== "created") return;
+  if (normalizeTimestampApp(fields.createdAt) && normalizeTimestampApp(fields.createdAt) < electronPushBridgeState.startedAt - 60000) return;
+
+  electronPushBridgeState.processing.add(requestId);
+  try {
+    await doc.ref.set({
+      status: "processing",
+      processingAt: Date.now(),
+      processedBy: "electron-client-bridge"
+    }, { merge: true });
+
+    const title = fields.title || "App Braga";
+    const body = fields.body || "Teste remoto de notificacao.";
+    const url = fields.url || "https://picafern-commits.github.io/App-Tablet/html/config.html";
+    let devices = getDispositivosPushRemotoElectronApp();
+    if (!devices.length) {
+      const tokensSnap = await window.db.collection("notificationTokens").get();
+      electronPushBridgeState.devices = [];
+      tokensSnap.forEach((tokenDoc) => electronPushBridgeState.devices.push({ id: tokenDoc.id, ...tokenDoc.data() }));
+      devices = getDispositivosPushRemotoElectronApp();
+    }
+    const result = await window.electronAPI.sendWebPushBroadcast({
+      title,
+      body,
+      devices,
+      data: {
+        collection: "notificationRequests",
+        event: fields.event || "manual-remote-test",
+        requestId,
+        url
+      }
+    });
+
+    const sent = Number(result?.sent || 0);
+    const failed = Number(result?.failed || 0);
+    await doc.ref.set({
+      status: sent > 0 ? "sent" : "failed",
+      sent,
+      failed,
+      standardWebPushReady: result?.standardWebPushReady !== false,
+      error: sent > 0 ? "" : (result?.error || "Ponte Electron nao enviou Web Push."),
+      finishedAt: Date.now(),
+      processedBy: "electron-client-bridge"
+    }, { merge: true });
+    await window.db.collection("config").doc("cloudNotifications").set({
+      provider: "electron-client-bridge",
+      region: "pc-local",
+      lastTitle: title,
+      lastBody: body,
+      lastEvent: fields.event || "manual-remote-test",
+      lastSent: sent,
+      lastFailed: failed,
+      lastDeviceCount: devices.length,
+      lastStandardWebPushTargets: devices.length,
+      standardWebPushReady: result?.standardWebPushReady !== false,
+      lastRunAt: Date.now(),
+      updatedAt: Date.now()
+    }, { merge: true });
+  } catch (error) {
+    console.error("Erro na ponte Electron Web Push:", error);
+    await doc.ref.set({
+      status: "failed",
+      error: error.message || String(error),
+      finishedAt: Date.now(),
+      processedBy: "electron-client-bridge"
+    }, { merge: true }).catch(() => {});
+  } finally {
+    electronPushBridgeState.processing.delete(requestId);
+  }
+}
+
+async function iniciarPontePushElectronApp(showMessage = false) {
+  if (!window.electronAPI?.sendWebPushBroadcast || !window.db?.collection) return false;
+  if (electronPushBridgeState.started) {
+    if (showMessage) mostrarMensagem("Ponte PC ja esta ligada.");
+    return true;
+  }
+  electronPushBridgeState.started = true;
+  electronPushBridgeState.startedAt = Date.now();
+  electronPushBridgeState.unsubscribeDevices = window.db.collection("notificationTokens").onSnapshot((snapshot) => {
+    electronPushBridgeState.devices = [];
+    snapshot.forEach((doc) => electronPushBridgeState.devices.push({ id: doc.id, ...doc.data() }));
+  }, (error) => console.error("Erro na ponte PC ao ler dispositivos:", error));
+  electronPushBridgeState.unsubscribeRequests = window.db.collection("notificationRequests").onSnapshot((snapshot) => {
+    snapshot.docChanges().forEach((change) => {
+      if (change.type === "added" || change.type === "modified") processarPedidoPushElectronApp(change.doc);
+    });
+  }, (error) => console.error("Erro na ponte PC ao ler pedidos:", error));
+  if (showMessage) mostrarMensagem("Ponte PC ligada. Este PC envia Web Push sem service-account.json.", "sucesso");
+  await atualizarEstadoNotificacoesApp(false);
+  return true;
+}
+
 async function aguardarResultadoPedidoPushRemotoApp(requestRef, startedAt) {
   const deadline = Date.now() + (window.electronAPI?.getPushWatcherStatus ? 45000 : 14000);
   while (Date.now() < deadline) {
@@ -2285,13 +2408,13 @@ async function testarPushRemotoNotificacoesApp() {
       createdAt: startedAt
     });
     setNotificationServiceText("notifyLastTestStatus", "Pedido criado", "warn");
-    setNotificationServiceText("notifyLastTestDetail", "A aguardar resposta das Cloud Functions");
+    setNotificationServiceText("notifyLastTestDetail", "A aguardar resposta do PC/servidor");
 
     const result = await aguardarResultadoPedidoPushRemotoApp(requestRef, startedAt);
     if (!result) {
       setNotificationServiceText("notifyLastTestStatus", "Sem resposta", "bad");
-      setNotificationServiceText("notifyLastTestDetail", "Pedido criado, mas as Cloud Functions nao responderam");
-      mostrarMensagem("Pedido criado, mas o servidor nao respondeu. Pode faltar publicar as Firebase Functions.", "erro");
+      setNotificationServiceText("notifyLastTestDetail", "Pedido criado, mas o PC/servidor nao respondeu");
+      mostrarMensagem("Pedido criado, mas nenhum PC/servidor respondeu. Liga o servico no PC de trabalho.", "erro");
       return;
     }
 
@@ -2732,6 +2855,14 @@ async function atualizarEstadoNotificacoesApp(showMessage = false) {
     if (!window.electronAPI?.getPushWatcherStatus && !window.electronAPI?.getNotificationStatus) return false;
     const status = (await window.electronAPI.getPushWatcherStatus?.().catch(() => null)) ||
       (await window.electronAPI.getNotificationStatus?.().catch(() => null))?.pushWatcher;
+    if (electronPushBridgeState.started) {
+      const bridgeStatus = await window.electronAPI.getPushWatcherStatus?.().catch(() => null);
+      setNotificationServiceText("notifyServiceStatus", "Ponte PC", "ok");
+      setNotificationServiceText("notifyServiceDetail", "Ativa nesta janela, sem service-account.json");
+      setNotificationServiceText("notifyCredentialsStatus", bridgeStatus?.webPushBridgeReady ? "Web Push OK" : "Falta VAPID", bridgeStatus?.webPushBridgeReady ? "ok" : "bad");
+      setNotificationServiceText("notifyCredentialsDetail", `${getDispositivosPushRemotoElectronApp().length} dispositivos Web Push standard`);
+      return true;
+    }
     if (!status) return false;
     if (status.running) {
       setNotificationServiceText("notifyServiceStatus", "Watcher PC", "ok");
@@ -2788,6 +2919,10 @@ async function atualizarEstadoNotificacoesApp(showMessage = false) {
 }
 
 async function ligarServicoNotificacoesApp() {
+  if (window.electronAPI?.sendWebPushBroadcast) {
+    await iniciarPontePushElectronApp(true);
+    return;
+  }
   if (window.electronAPI?.startPushWatcher) {
     const status = await window.electronAPI.startPushWatcher().catch((error) => ({ ok: false, error: error.message }));
     if (status?.running) {

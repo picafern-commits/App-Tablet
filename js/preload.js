@@ -13,6 +13,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onNotificationTested: (cb) => ipcRenderer.on("app:notification-tested", (_event, payload) => cb(payload)),
   startPushWatcher: () => ipcRenderer.invoke("app:push-watcher-start"),
   getPushWatcherStatus: () => ipcRenderer.invoke("app:push-watcher-status"),
+  sendWebPushBroadcast: (payload) => ipcRenderer.invoke("app:send-web-push-broadcast", payload),
   importServiceAccount: () => ipcRenderer.invoke("app:import-service-account"),
   getAppInfo: () => ipcRenderer.invoke("app:get-info"),
   setFullscreen: (value) => ipcRenderer.invoke("app:set-fullscreen", value),

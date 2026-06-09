@@ -133,6 +133,76 @@ function getPushWatcherReadiness() {
   };
 }
 
+function getWebPushRuntime() {
+  let webpush = null;
+  try {
+    webpush = require("web-push");
+  } catch {
+    webpush = null;
+  }
+  const env = buildPushWatcherEnv();
+  const publicKey = env.APP_BRAGA_VAPID_PUBLIC_KEY || "";
+  const privateKey = env.APP_BRAGA_VAPID_PRIVATE_KEY || "";
+  const subject = env.APP_BRAGA_VAPID_SUBJECT || "mailto:admin@appbraga.pt";
+  return {
+    webpush,
+    publicKey,
+    privateKey,
+    subject,
+    ready: !!(webpush && publicKey && privateKey)
+  };
+}
+
+async function sendWebPushBroadcastFromElectron(payload = {}) {
+  const runtime = getWebPushRuntime();
+  const devices = Array.isArray(payload.devices) ? payload.devices : [];
+  let sent = 0;
+  let failed = 0;
+  let standardWebPushTargets = 0;
+
+  if (!runtime.ready) {
+    return {
+      ok: false,
+      sent,
+      failed: devices.filter((item) => item?.pushSubscription?.endpoint).length,
+      standardWebPushTargets: devices.filter((item) => item?.pushSubscription?.endpoint).length,
+      standardWebPushReady: false,
+      error: runtime.webpush ? "Faltam VAPID keys locais" : "Modulo web-push nao instalado"
+    };
+  }
+
+  runtime.webpush.setVapidDetails(runtime.subject, runtime.publicKey, runtime.privateKey);
+  const title = String(payload.title || "App Braga");
+  const body = String(payload.body || "Notificacao App Braga");
+  const data = payload.data && typeof payload.data === "object" ? payload.data : {};
+
+  for (const item of devices) {
+    if (!item?.pushSubscription?.endpoint || item.active === false) continue;
+    standardWebPushTargets += 1;
+    try {
+      await runtime.webpush.sendNotification(item.pushSubscription, JSON.stringify({
+        title,
+        body,
+        tag: data.event || data.collection || "app-braga",
+        data
+      }));
+      sent += 1;
+    } catch (error) {
+      failed += 1;
+      appendPushWatcherLog(`Falhou Web Push via ponte Electron: ${error.message}`);
+    }
+  }
+
+  appendPushWatcherLog(`Ponte Electron Web Push: enviados=${sent} falhas=${failed} alvos=${standardWebPushTargets}`);
+  return {
+    ok: sent > 0,
+    sent,
+    failed,
+    standardWebPushTargets,
+    standardWebPushReady: true
+  };
+}
+
 function nodeRuntimeCandidates() {
   return [
     process.env.APP_BRAGA_NODE_PATH,
@@ -560,8 +630,11 @@ ipcMain.handle("app:push-watcher-start", async () => startPushWatcherAuto());
 ipcMain.handle("app:push-watcher-status", async () => ({
   ...pushWatcherStatus,
   ...getPushWatcherReadiness(),
+  webPushBridgeReady: getWebPushRuntime().ready,
   running: !!(pushWatcherProcess && !pushWatcherProcess.killed)
 }));
+
+ipcMain.handle("app:send-web-push-broadcast", async (_event, payload = {}) => sendWebPushBroadcastFromElectron(payload));
 
 ipcMain.handle("app:import-service-account", async () => {
   try {
