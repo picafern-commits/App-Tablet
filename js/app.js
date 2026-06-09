@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.31.9";
+const APP_VERSION = "1.32.0";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BE2xnhqmSPq85_kA6comGATxEseSoh8zY_EK_4NZsbiI1HJByjc1PgQqhTsUwPlr1ujuUSpSzp29AQeS1hnlHOQ";
 
 
@@ -1951,15 +1951,8 @@ function notificationPermissionApp() {
 
 async function pedirPermissaoNotificacoesApp(options = {}) {
   const shouldRegisterDevice = options.registerDevice !== false;
-  if (window.electronAPI?.showNotification) {
-    await guardarConfigNotificacoesApp({ notificationEnabled: true });
-    if (shouldRegisterDevice) {
-      await registarDispositivoPushApp(false, { skipPermission: true });
-    } else {
-      await enviarNotificacaoApp("App Braga", "NotificaÃƒÂ§ÃƒÂµes ativas no Electron.", "test-electron", { force: true });
-    }
-    return;
-  }
+  // Mesmo na app Electron, tentamos sempre registo Web Push real.
+  // O registo nativo do Windows só serve para teste local e não recebe com a app fechada.
 
   if (!("Notification" in window)) {
     mostrarMensagem("Este dispositivo nÃƒÂ£o suporta notificaÃƒÂ§ÃƒÂµes Web.", "erro");
@@ -2391,8 +2384,8 @@ async function testarPushRemotoNotificacoesApp() {
     if (isIosAppBraga() && !currentDevice?.pushSubscription?.endpoint) {
       throw new Error("O iPhone ainda nao criou Web Push standard. Carrega em Reparar registo e confirma que abriste pelo icone do ecra principal.");
     }
-    if (!currentDevice?.token && !currentDevice?.pushSubscription?.endpoint && currentDevice?.source !== "electron-native") {
-      throw new Error("Este dispositivo ainda nao tem registo remoto. Carrega em Reparar registo deste dispositivo.");
+    if (!currentDevice?.token && !currentDevice?.pushSubscription?.endpoint) {
+      throw new Error("Este dispositivo ainda nao tem token/endpoint Web Push remoto. Carrega em Reparar registo deste dispositivo.");
     }
 
     const startedAt = Date.now();
@@ -2426,7 +2419,7 @@ async function testarPushRemotoNotificacoesApp() {
     const resultError = result.error ? ` - ${result.error}` : "";
     setNotificationServiceText("notifyLastTestDetail", `Enviados: ${sent} - falhas: ${failed}${resultError}`);
     if (result.standardWebPushReady === false && isIosAppBraga()) {
-      setNotificationDeviceDiagnostic("Falta configurar VAPID privada no PC de trabalho para o iPhone receber Web Push.");
+      setNotificationDeviceDiagnostic("Falta configurar a VAPID privada nas Firebase Cloud Functions para o iPhone receber Web Push.");
     }
     mostrarMensagem(ok ? "Push remoto enviado pelo servidor." : (result.error || "O servidor respondeu, mas nao enviou push. Ve as credenciais Web Push."), ok ? "sucesso" : "erro");
   } catch (error) {
@@ -2543,7 +2536,6 @@ function carregarScriptAppBraga(src) {
 }
 
 async function garantirFirebaseMessagingApp() {
-  if (window.electronAPI?.showNotification) throw new Error("FCM Web Push e para Web/PWA; Electron usa notificacoes nativas.");
   if (!window.isSecureContext) throw new Error("Push Service precisa de HTTPS.");
   if (!("serviceWorker" in navigator)) throw new Error("Service Worker indisponivel neste dispositivo.");
   if (!("PushManager" in window)) throw new Error("Push Service indisponivel neste dispositivo/browser.");
@@ -3101,27 +3093,8 @@ async function registarDispositivoPushApp(forceReset = false, options = {}) {
     const vapidKey = resolveVapidPublicKeyApp(document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "");
     setNotificationDeviceDiagnostic(`Permissao: ${notificationPermissionApp()} | Push: ${webPushDisponivelApp() ? "disponivel" : "indisponivel"} | PWA: ${isStandalonePwaAppBraga() ? "sim" : "nao"} | iOS: ${isIosAppBraga() ? "sim" : "nao"}`);
 
-    if (window.electronAPI?.showNotification) {
-      await guardarConfigNotificacoesApp({ notificationEnabled: true, notificationVapidKey: vapidKey });
-      appNotificationState.restoredTokenDocId = "electron-native";
-      await window.db.collection("notificationTokens").doc("electron-native").set({
-        active: true,
-        source: "electron-native",
-        appVersion: APP_VERSION,
-        deviceKey: "pc-electron-native",
-        deviceName: "PC Electron",
-        deviceType: "pc-electron",
-        userAgent: navigator.userAgent,
-        platform: navigator.platform || "",
-        permission: "native",
-        updatedAt: Date.now(),
-        createdAt: Date.now()
-      }, { merge: true });
-      setNotificationTokenStatus("Electron nativo", "ok");
-      await enviarNotificacaoApp("App Braga", "Este PC ficou registado com notificacoes nativas.", "electron-register", { force: true });
-      mostrarMensagem("PC registado com notificacoes nativas.");
-      return;
-    }
+    // Nao fazemos return aqui no Electron: ele tambem precisa de um token/endpoint Web Push
+    // para receber pela cloud sem depender do PC ligado ou de watcher local.
 
     if (!vapidKey) {
       mostrarMensagem("Coloca primeiro a VAPID key do Firebase.", "erro");
