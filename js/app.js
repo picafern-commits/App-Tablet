@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.31.5";
+const APP_VERSION = "1.31.6";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
 
 
@@ -1941,9 +1941,6 @@ function aplicarConfigNotificacoesApp(config = {}) {
   iniciarMonitorNotificacoesApp();
   carregarDispositivosNotificacoesApp(false);
   restaurarRegistoPushAtualApp();
-  if (window.electronAPI?.sendWebPushBroadcast && document.getElementById("notifyServiceStatus")) {
-    iniciarPontePushElectronApp(false);
-  }
 }
 
 function notificationPermissionApp() {
@@ -2412,13 +2409,13 @@ async function testarPushRemotoNotificacoesApp() {
       createdAt: startedAt
     });
     setNotificationServiceText("notifyLastTestStatus", "Pedido criado", "warn");
-    setNotificationServiceText("notifyLastTestDetail", "A aguardar resposta do PC/servidor");
+    setNotificationServiceText("notifyLastTestDetail", "A aguardar resposta das Firebase Cloud Functions");
 
     const result = await aguardarResultadoPedidoPushRemotoApp(requestRef, startedAt);
     if (!result) {
       setNotificationServiceText("notifyLastTestStatus", "Sem resposta", "bad");
-      setNotificationServiceText("notifyLastTestDetail", "Pedido criado, mas o PC/servidor nao respondeu");
-      mostrarMensagem("Pedido criado, mas nenhum PC/servidor respondeu. Liga o servico no PC de trabalho.", "erro");
+      setNotificationServiceText("notifyLastTestDetail", "Pedido criado, mas as Cloud Functions nao responderam");
+      mostrarMensagem("Pedido criado, mas as Firebase Cloud Functions nao responderam. Confirma o deploy das Functions.", "erro");
       return;
     }
 
@@ -2924,21 +2921,7 @@ async function atualizarEstadoNotificacoesApp(showMessage = false) {
 }
 
 async function ligarServicoNotificacoesApp() {
-  if (window.electronAPI?.sendWebPushBroadcast) {
-    await iniciarPontePushElectronApp(true);
-    return;
-  }
-  if (window.electronAPI?.startPushWatcher) {
-    const status = await window.electronAPI.startPushWatcher().catch((error) => ({ ok: false, error: error.message }));
-    if (status?.running) {
-      mostrarMensagem("Watcher do PC ligado. Este PC volta a enviar notificacoes remotas.", "sucesso");
-    } else {
-      mostrarMensagem(status?.error || "Nao foi possivel ligar o watcher do PC.", "erro");
-    }
-    await atualizarEstadoNotificacoesApp(false);
-    return;
-  }
-  mostrarMensagem("O envio remoto corre nas Cloud Functions ou no PC/Electron com watcher ativo.", "sucesso");
+  mostrarMensagem("O envio remoto principal corre nas Firebase Cloud Functions.", "sucesso");
   await atualizarEstadoNotificacoesApp(false);
 }
 

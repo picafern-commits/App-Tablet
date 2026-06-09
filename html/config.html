@@ -282,11 +282,11 @@
         </div>
         <div class="notification-action-group">
           <div>
-            <h4>Envio pelo PC</h4>
-            <span>O PC de trabalho envia Web Push para os equipamentos.</span>
+            <h4>Envio remoto</h4>
+            <span>Firebase Cloud Functions envia para todos os dispositivos.</span>
           </div>
           <div class="config-actions-row compact">
-            <button class="primary-btn" type="button" onclick="ligarServicoNotificacoesApp()">Ligar Ponte PC</button>
+            <button class="primary-btn" type="button" onclick="ligarServicoNotificacoesApp()">Ver Cloud Functions</button>
             <button class="secondary-btn" type="button" onclick="testarPushRemotoNotificacoesApp()">Testar push remoto</button>
             <button class="secondary-btn" type="button" onclick="verificarAlertasNotificacoesApp(true)">Verificar alertas</button>
           </div>
@@ -295,22 +295,22 @@
 
       <div class="notification-vapid-panel">
         <div class="notification-block-title">
-          <h4>Credenciais Web Push</h4>
-          <span>Necessario para o iPhone receber notificacoes com a app fechada.</span>
+          <h4>Credenciais Cloud Functions</h4>
+          <span>As chaves privadas ficam nos secrets do GitHub/Firebase, nunca dentro da app.</span>
         </div>
-        <div class="notification-vapid-grid">
+        <div class="notification-vapid-grid notification-cloud-secrets">
           <label class="config-auth-field">
-            <span>VAPID public key</span>
+            <span>APP_BRAGA_VAPID_PUBLIC_KEY</span>
             <input id="notifyVapidPublicLocal" type="text" readonly placeholder="Usa a chave publica guardada na app">
           </label>
-          <label class="config-auth-field">
-            <span>VAPID private key neste PC</span>
-            <input id="notifyVapidPrivateKey" type="password" autocomplete="off" placeholder="Cola aqui a private key do Firebase">
-          </label>
-        </div>
-        <div class="config-actions-row compact">
-          <button class="primary-btn" type="button" onclick="configurarVapidPrivadaNotificacoesApp()">Guardar VAPID privada</button>
-          <button class="secondary-btn" type="button" onclick="toggleVapidPrivadaVisivelApp()">Mostrar/Ocultar</button>
+          <div class="notification-secret-status">
+            <strong>APP_BRAGA_VAPID_PRIVATE_KEY</strong>
+            <span>Tem de existir nos GitHub Secrets para o iPhone receber com a app fechada.</span>
+          </div>
+          <div class="notification-secret-status">
+            <strong>FIREBASE_SERVICE_ACCOUNT</strong>
+            <span>Usado pelo GitHub para publicar as Firebase Cloud Functions.</span>
+          </div>
         </div>
       </div>
 
@@ -365,7 +365,7 @@
           <div class="empty-state mini">A carregar dispositivos...</div>
         </div>
       </div>
-      <p class="section-subtitle notification-note">O iPhone recebe com a app fechada quando estiver instalado no ecra principal, registado com Web Push standard e a Ponte PC estiver ativa.</p>
+      <p class="section-subtitle notification-note">O iPhone recebe com a app fechada quando estiver instalado no ecra principal, registado com Web Push standard e as Firebase Cloud Functions estiverem publicadas.</p>
     </div>
 
     <div class="panel config-section config-section-backups">
@@ -418,7 +418,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<script src="../js/app.js?v=1.31.5"></script>
+<script src="../js/app.js?v=1.31.6"></script>
 <script src="../js/systems/equipment/equipment-models.js?v=equipment-3"></script>
 <script src="../js/systems/global-search/global-search.js?v=global-search-2"></script>
   <script src="../js/core/helpers.js"></script>

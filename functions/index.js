@@ -211,6 +211,7 @@ async function broadcast(title, body, data = {}) {
   let failed = 0;
   let fcmTargets = 0;
   let standardWebPushTargets = 0;
+  let lastError = "";
 
   for (const item of devices) {
     try {
@@ -226,11 +227,13 @@ async function broadcast(title, body, data = {}) {
           sent += 1;
         } else {
           failed += 1;
+          lastError = "Faltam secrets VAPID privadas nas Firebase Functions.";
           logger.warn("Web Push standard sem VAPID secrets", { id: item.id, source: item.source });
         }
       }
     } catch (error) {
       failed += 1;
+      lastError = error.message || String(error);
       logger.warn("Falhou envio push", { id: item.id, source: item.source, error: error.message });
       if (/UNREGISTERED|NotRegistered|not registered|registration-token-not-registered/i.test(error.message) || error.statusCode === 404 || error.statusCode === 410) {
         await markDeviceInactive(item, "push-unregistered");
@@ -247,6 +250,7 @@ async function broadcast(title, body, data = {}) {
     lastDeviceCount: devices.length,
     lastFcmTargets: fcmTargets,
     lastStandardWebPushTargets: standardWebPushTargets,
+    lastError,
     lastRunAt: Date.now(),
     standardWebPushReady: canStandardWebPush
   });

@@ -4,7 +4,13 @@ Com Blaze ativo, as notificacoes devem ser enviadas por Firebase Cloud Functions
 
 ## Secrets necessarios
 
-No PC com Firebase CLI autenticado:
+O caminho principal e pelo GitHub Actions. Configura estes GitHub Secrets no repositorio:
+
+- `FIREBASE_SERVICE_ACCOUNT`: JSON de uma service account do Google Cloud com permissao para publicar Firebase Functions.
+- `APP_BRAGA_VAPID_PUBLIC_KEY`: chave publica Web Push.
+- `APP_BRAGA_VAPID_PRIVATE_KEY`: chave privada Web Push.
+
+Opcionalmente, num PC com Firebase CLI autenticado:
 
 ```bash
 firebase functions:secrets:set APP_BRAGA_VAPID_PUBLIC_KEY
@@ -15,18 +21,14 @@ O assunto VAPID fica por defeito como `mailto:admin@appbraga.pt`.
 
 ## Deploy
 
-Automatico pelo GitHub Actions quando houver alteracoes em `functions/**`, desde que estes GitHub Secrets existam:
-
-- `FIREBASE_SERVICE_ACCOUNT`: JSON de uma service account do Google Cloud com permissao para publicar Firebase Functions.
-- `APP_BRAGA_VAPID_PUBLIC_KEY`: chave publica Web Push.
-- `APP_BRAGA_VAPID_PRIVATE_KEY`: chave privada Web Push.
+Automatico pelo GitHub Actions quando houver alteracoes em `functions/**`, `firebase.json`, `.firebaserc`, neste guia ou no workflow, desde que os GitHub Secrets existam.
 
 Tambem pode ser lancado manualmente no GitHub em **Actions > Deploy Firebase Functions > Run workflow**.
 
 Deploy manual num PC com Firebase CLI autenticado:
 
 ```bash
-cd "C:\Minhas Apps\AppBragaDesktop\AppBragaTeste-main"
+cd "C:\Users\pica-\Documents\Codex\2026-06-08\files-mentioned-by-the-user-app\work\App-Tablet-main\App-Tablet-main\App-Tablet"
 firebase deploy --only functions
 ```
 
@@ -51,6 +53,7 @@ Campos uteis:
 - `lastRunAt`
 - `lastSent`
 - `lastFailed`
+- `lastError`
 - `standardWebPushReady`
 - `provider`
 - `region`

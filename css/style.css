@@ -6184,6 +6184,34 @@ body.app-role-consulta .danger {
   min-width: 0 !important;
 }
 
+.notification-cloud-secrets {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+}
+
+.notification-secret-status {
+  display: grid !important;
+  align-content: start !important;
+  min-height: 76px !important;
+  padding: 11px 12px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  border-radius: 10px !important;
+  background: rgba(255,255,255,.045) !important;
+}
+
+.notification-secret-status strong {
+  color: var(--text, #f8fafc) !important;
+  font-size: 12px !important;
+  letter-spacing: 0 !important;
+  word-break: break-word !important;
+}
+
+.notification-secret-status span {
+  margin-top: 5px !important;
+  color: var(--muted, var(--app-muted)) !important;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+}
+
 .notification-service-grid {
   display: grid !important;
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)) !important;
