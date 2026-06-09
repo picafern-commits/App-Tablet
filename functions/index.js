@@ -264,7 +264,7 @@ async function broadcast(title, body, data = {}) {
     targetUrl: data.url || APP_URL
   });
 
-  return { sent, failed };
+  return { sent, failed, standardWebPushReady: canStandardWebPush };
 }
 
 exports.onNotificationRequestCreated = onDocumentCreated({
@@ -272,16 +272,37 @@ exports.onNotificationRequestCreated = onDocumentCreated({
   secrets: [VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY]
 }, async (event) => {
   const data = event.data?.data() || {};
+  const requestRef = event.data?.ref;
+  await requestRef?.set({
+    status: "processing",
+    processingAt: Date.now()
+  }, { merge: true });
   await writeAudit("notification-test-request", {
     requestId: event.params.requestId,
     title: data.title || "App Braga",
     event: data.event || "manual-remote-test"
   });
-  await broadcast(data.title || "App Braga", data.body || "Teste remoto de notificacao.", {
-    event: data.event || "manual-remote-test",
-    requestId: event.params.requestId,
-    url: data.url || "https://picafern-commits.github.io/App-Tablet/html/config.html"
-  });
+  try {
+    const result = await broadcast(data.title || "App Braga", data.body || "Teste remoto de notificacao.", {
+      event: data.event || "manual-remote-test",
+      requestId: event.params.requestId,
+      url: data.url || "https://picafern-commits.github.io/App-Tablet/html/config.html"
+    });
+    await requestRef?.set({
+      status: result.sent > 0 ? "sent" : "failed",
+      sent: result.sent,
+      failed: result.failed,
+      standardWebPushReady: result.standardWebPushReady,
+      finishedAt: Date.now()
+    }, { merge: true });
+  } catch (error) {
+    await requestRef?.set({
+      status: "failed",
+      error: error.message || String(error),
+      finishedAt: Date.now()
+    }, { merge: true });
+    throw error;
+  }
 });
 
 exports.onPrinterWritten = onDocumentWritten({

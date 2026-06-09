@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.30.8";
+const APP_VERSION = "1.30.9";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
 
 
@@ -2205,21 +2205,105 @@ async function testarNotificacaoApp() {
   mostrarMensagem(ok ? "Notificacao de teste enviada." : "Ativa as permissoes de notificacoes primeiro.", ok ? "sucesso" : "erro");
 }
 
+async function obterDispositivoAtualNotificacoesApp() {
+  if (!window.db?.collection) return null;
+  const snapshot = await window.db.collection("notificationTokens").get();
+  let fallback = null;
+  let current = null;
+  snapshot.forEach((doc) => {
+    const item = { id: doc.id, ...doc.data() };
+    if (item.active === false) return;
+    const sameDevice = item.deviceKey === getNotificationDeviceKeyApp();
+    const sameToken = appNotificationState.fcmToken && item.token === appNotificationState.fcmToken;
+    const sameEndpoint = appNotificationState.pushSubscriptionEndpoint &&
+      (item.endpoint === appNotificationState.pushSubscriptionEndpoint || item.pushSubscription?.endpoint === appNotificationState.pushSubscriptionEndpoint);
+    if (sameEndpoint || sameToken || item.id === appNotificationState.restoredTokenDocId) current = item;
+    if (!fallback && sameDevice) fallback = item;
+  });
+  return current || fallback;
+}
+
+async function aguardarResultadoPedidoPushRemotoApp(requestRef, startedAt) {
+  const deadline = Date.now() + 14000;
+  while (Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 1400));
+    const requestDoc = await requestRef.get().catch(() => null);
+    const requestData = requestDoc?.exists ? requestDoc.data() || {} : {};
+    if (requestData.status === "sent" || requestData.status === "failed") return requestData;
+
+    const cloudDoc = await window.db.collection("config").doc("cloudNotifications").get().catch(() => null);
+    const cloudData = cloudDoc?.exists ? cloudDoc.data() || {} : null;
+    if (cloudData && normalizeTimestampApp(cloudData.lastRunAt) >= startedAt) {
+      return {
+        status: Number(cloudData.lastSent || 0) > 0 ? "sent" : "failed",
+        sent: cloudData.lastSent || 0,
+        failed: cloudData.lastFailed || 0,
+        standardWebPushReady: cloudData.standardWebPushReady
+      };
+    }
+  }
+  return null;
+}
+
 async function testarPushRemotoNotificacoesApp() {
   try {
     if (!window.db?.collection) throw new Error("Firestore indisponivel.");
-    await window.db.collection("notificationRequests").add({
+    setNotificationServiceText("notifyLastTestStatus", "A preparar", "warn");
+    setNotificationServiceText("notifyLastTestDetail", "A confirmar registo deste dispositivo");
+
+    if (!window.electronAPI?.showNotification) {
+      if (!("Notification" in window)) throw new Error("Este dispositivo nao suporta notificacoes Web.");
+      if (Notification.permission !== "granted") {
+        await pedirPermissaoNotificacoesApp();
+      } else {
+        await registarDispositivoPushApp(true, { skipPermission: true });
+      }
+    }
+
+    const currentDevice = await obterDispositivoAtualNotificacoesApp();
+    if (isIosAppBraga() && !isStandalonePwaAppBraga()) {
+      throw new Error("No iPhone tens de abrir a APP pelo icone do ecra principal para receber push.");
+    }
+    if (isIosAppBraga() && !currentDevice?.pushSubscription?.endpoint) {
+      throw new Error("O iPhone ainda nao criou Web Push standard. Carrega em Reparar registo e confirma que abriste pelo icone do ecra principal.");
+    }
+    if (!currentDevice?.token && !currentDevice?.pushSubscription?.endpoint && currentDevice?.source !== "electron-native") {
+      throw new Error("Este dispositivo ainda nao tem registo remoto. Carrega em Reparar registo deste dispositivo.");
+    }
+
+    const startedAt = Date.now();
+    const requestRef = await window.db.collection("notificationRequests").add({
       title: "App Braga",
       body: "Teste remoto Web Push recebido. Este teste tambem funciona com a app fechada.",
       url: "https://picafern-commits.github.io/App-Tablet/html/config.html",
       event: "manual-remote-test",
+      requestedDeviceDocId: currentDevice?.id || "",
+      requestedDeviceSource: currentDevice?.source || "",
       requestedFrom: getNotificationDeviceTypeApp(),
       requestedUserAgent: navigator.userAgent || "",
-      createdAt: Date.now()
+      status: "created",
+      createdAt: startedAt
     });
-    setNotificationServiceText("notifyLastTestStatus", "Pedido enviado", "warn");
-    setNotificationServiceText("notifyLastTestDetail", "Aguarda o watcher enviar o push remoto");
-    mostrarMensagem("Pedido de push remoto criado. O watcher tem de estar ativo no PC/servidor.");
+    setNotificationServiceText("notifyLastTestStatus", "Pedido criado", "warn");
+    setNotificationServiceText("notifyLastTestDetail", "A aguardar resposta das Cloud Functions");
+
+    const result = await aguardarResultadoPedidoPushRemotoApp(requestRef, startedAt);
+    if (!result) {
+      setNotificationServiceText("notifyLastTestStatus", "Sem resposta", "bad");
+      setNotificationServiceText("notifyLastTestDetail", "Pedido criado, mas as Cloud Functions nao responderam");
+      mostrarMensagem("Pedido criado, mas o servidor nao respondeu. Pode faltar publicar as Firebase Functions.", "erro");
+      return;
+    }
+
+    const sent = Number(result.sent || 0);
+    const failed = Number(result.failed || 0);
+    const ok = result.status === "sent" && sent > 0;
+    setNotificationServiceText("notifyLastTestStatus", ok ? "Enviado" : "Falhou", ok ? "ok" : "bad");
+    setNotificationServiceText("notifyLastTestDetail", `Enviados: ${sent} - falhas: ${failed}`);
+    if (result.standardWebPushReady === false && isIosAppBraga()) {
+      setNotificationDeviceDiagnostic("Firebase sem Web Push standard: falta configurar VAPID privada e publicar as Functions.");
+    }
+    mostrarMensagem(ok ? "Push remoto enviado pelo servidor." : "O servidor respondeu, mas nao enviou push. Ve as credenciais Web Push.", ok ? "sucesso" : "erro");
   } catch (error) {
     console.error("Erro no teste remoto push:", error);
     setNotificationServiceText("notifyLastTestStatus", "Falhou", "bad");
@@ -2706,7 +2790,7 @@ function renderDispositivosNotificacoesApp(items = []) {
   host.innerHTML = activeItems.map((item) => {
     const isCurrent = item.id === appNotificationState.restoredTokenDocId ||
       (appNotificationState.fcmToken && item.token === appNotificationState.fcmToken) ||
-      (appNotificationState.pushSubscriptionEndpoint && item.endpoint === appNotificationState.pushSubscriptionEndpoint);
+      (appNotificationState.pushSubscriptionEndpoint && (item.endpoint === appNotificationState.pushSubscriptionEndpoint || item.pushSubscription?.endpoint === appNotificationState.pushSubscriptionEndpoint));
     const device = labelDispositivoNotificacaoApp(item);
     const permission = item.permission || "sem dados";
     const mode = labelMetodoNotificacaoApp(item);
