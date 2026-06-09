@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.30.9";
+const APP_VERSION = "1.31.0";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
 
 
@@ -2224,7 +2224,7 @@ async function obterDispositivoAtualNotificacoesApp() {
 }
 
 async function aguardarResultadoPedidoPushRemotoApp(requestRef, startedAt) {
-  const deadline = Date.now() + 14000;
+  const deadline = Date.now() + (window.electronAPI?.getPushWatcherStatus ? 45000 : 14000);
   while (Date.now() < deadline) {
     await new Promise((resolve) => setTimeout(resolve, 1400));
     const requestDoc = await requestRef.get().catch(() => null);
@@ -2728,6 +2728,33 @@ async function atualizarEstadoNotificacoesApp(showMessage = false) {
   const service = document.getElementById("notifyServiceStatus");
   if (!service) return;
 
+  async function renderElectronWatcherStatus() {
+    if (!window.electronAPI?.getPushWatcherStatus && !window.electronAPI?.getNotificationStatus) return false;
+    const status = (await window.electronAPI.getPushWatcherStatus?.().catch(() => null)) ||
+      (await window.electronAPI.getNotificationStatus?.().catch(() => null))?.pushWatcher;
+    if (!status) return false;
+    if (status.running) {
+      setNotificationServiceText("notifyServiceStatus", "Watcher PC", "ok");
+      setNotificationServiceText("notifyServiceDetail", `Ativo desde ${status.startedAt ? formatTimestampApp(status.startedAt) : "agora"}`);
+      setNotificationServiceText("notifyCredentialsStatus", status.vapidReady ? "Web Push OK" : "Falta VAPID", status.vapidReady ? "ok" : "bad");
+      setNotificationServiceText("notifyCredentialsDetail", status.serviceAccountReady ? "PC a enviar notificacoes remotas" : "Falta service-account.json");
+      return true;
+    }
+    if (status.mode && status.mode !== "parado") {
+      setNotificationServiceText("notifyServiceStatus", "Watcher parado", "warn");
+      setNotificationServiceText("notifyServiceDetail", status.error || "PC nao esta a enviar push remoto");
+      setNotificationServiceText("notifyCredentialsStatus", status.vapidReady ? "VAPID OK" : "Falta VAPID", status.vapidReady ? "ok" : "bad");
+      setNotificationServiceText("notifyCredentialsDetail", status.serviceAccountReady ? "Service account OK" : "Falta service-account.json");
+      return true;
+    }
+    return false;
+  }
+
+  if (await renderElectronWatcherStatus()) {
+    if (showMessage) mostrarMensagem("Estado do watcher do PC atualizado.");
+    return;
+  }
+
   async function renderCloudFunctionsStatus() {
     if (!window.db?.collection) return false;
     const doc = await window.db.collection("config").doc("cloudNotifications").get().catch(() => null);
@@ -2761,7 +2788,17 @@ async function atualizarEstadoNotificacoesApp(showMessage = false) {
 }
 
 async function ligarServicoNotificacoesApp() {
-  mostrarMensagem("O envio remoto corre nas Cloud Functions. Usa Testar push remoto para validar.", "sucesso");
+  if (window.electronAPI?.startPushWatcher) {
+    const status = await window.electronAPI.startPushWatcher().catch((error) => ({ ok: false, error: error.message }));
+    if (status?.running) {
+      mostrarMensagem("Watcher do PC ligado. Este PC volta a enviar notificacoes remotas.", "sucesso");
+    } else {
+      mostrarMensagem(status?.error || "Nao foi possivel ligar o watcher do PC.", "erro");
+    }
+    await atualizarEstadoNotificacoesApp(false);
+    return;
+  }
+  mostrarMensagem("O envio remoto corre nas Cloud Functions ou no PC/Electron com watcher ativo.", "sucesso");
   await atualizarEstadoNotificacoesApp(false);
 }
 
