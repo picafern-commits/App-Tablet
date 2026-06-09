@@ -6135,6 +6135,55 @@ body.app-role-consulta .danger {
   background: rgba(255,255,255,.035) !important;
 }
 
+.notification-settings-block,
+.notification-vapid-panel,
+.notification-action-group {
+  display: grid !important;
+  gap: 12px !important;
+  margin-top: 14px !important;
+  padding: 14px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  border-radius: 12px !important;
+  background: rgba(255,255,255,.035) !important;
+}
+
+.notification-block-title {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+}
+
+.notification-block-title h4,
+.notification-action-group h4 {
+  margin: 0 !important;
+  color: var(--text, #f8fafc) !important;
+  font-size: 15px !important;
+}
+
+.notification-block-title span,
+.notification-action-group span {
+  color: var(--muted, var(--app-muted)) !important;
+  font-size: 12px !important;
+}
+
+.notification-actions-layout {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  margin-top: 14px !important;
+}
+
+.notification-vapid-grid {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr) !important;
+  gap: 12px !important;
+}
+
+.notification-vapid-panel input {
+  min-width: 0 !important;
+}
+
 .notification-service-grid {
   display: grid !important;
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)) !important;
@@ -6178,6 +6227,13 @@ body.app-role-consulta .danger {
   }
   .etiquetas-bulk-actions button {
     flex: 1 1 100% !important;
+  }
+  .notification-actions-layout,
+  .notification-vapid-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .notification-block-title {
+    display: grid !important;
   }
 }
 

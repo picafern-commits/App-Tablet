@@ -9,3 +9,4 @@ service-account*.json
 desktop-settings.json
 npm-debug.log*
 *.log
+.npm-cache/

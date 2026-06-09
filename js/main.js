@@ -4,6 +4,7 @@ const path = require("path");
 const fs = require("fs");
 const http = require("http");
 const https = require("https");
+const crypto = require("crypto");
 const snmp = require("net-snmp");
 
 let win;
@@ -134,23 +135,144 @@ function getPushWatcherReadiness() {
 }
 
 function getWebPushRuntime() {
-  let webpush = null;
-  try {
-    webpush = require("web-push");
-  } catch {
-    webpush = null;
-  }
   const env = buildPushWatcherEnv();
   const publicKey = env.APP_BRAGA_VAPID_PUBLIC_KEY || "";
   const privateKey = env.APP_BRAGA_VAPID_PRIVATE_KEY || "";
   const subject = env.APP_BRAGA_VAPID_SUBJECT || "mailto:admin@appbraga.pt";
   return {
-    webpush,
     publicKey,
     privateKey,
     subject,
-    ready: !!(webpush && publicKey && privateKey)
+    ready: !!(publicKey && privateKey)
   };
+}
+
+function base64UrlToBuffer(value) {
+  const input = String(value || "").replace(/-/g, "+").replace(/_/g, "/");
+  const padded = `${input}${"=".repeat((4 - input.length % 4) % 4)}`;
+  return Buffer.from(padded, "base64");
+}
+
+function bufferToBase64Url(value) {
+  return Buffer.from(value)
+    .toString("base64")
+    .replace(/=/g, "")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
+}
+
+function hkdfExpand(prk, info, length) {
+  const infoBuffer = Buffer.isBuffer(info) ? info : Buffer.from(String(info), "utf8");
+  const blocks = [];
+  let previous = Buffer.alloc(0);
+  let counter = 1;
+  while (Buffer.concat(blocks).length < length) {
+    previous = crypto
+      .createHmac("sha256", prk)
+      .update(Buffer.concat([previous, infoBuffer, Buffer.from([counter])]))
+      .digest();
+    blocks.push(previous);
+    counter += 1;
+  }
+  return Buffer.concat(blocks).subarray(0, length);
+}
+
+function createVapidJwt(endpoint, runtime) {
+  const vapidPrivate = base64UrlToBuffer(runtime.privateKey);
+  const vapidEcdh = crypto.createECDH("prime256v1");
+  vapidEcdh.setPrivateKey(vapidPrivate);
+  const vapidPublic = vapidEcdh.getPublicKey(null, "uncompressed");
+  const jwk = {
+    kty: "EC",
+    crv: "P-256",
+    d: bufferToBase64Url(vapidPrivate),
+    x: bufferToBase64Url(vapidPublic.subarray(1, 33)),
+    y: bufferToBase64Url(vapidPublic.subarray(33, 65))
+  };
+  const keyObject = crypto.createPrivateKey({ key: jwk, format: "jwk" });
+  const aud = new URL(endpoint).origin;
+  const header = bufferToBase64Url(Buffer.from(JSON.stringify({ typ: "JWT", alg: "ES256" })));
+  const claims = bufferToBase64Url(Buffer.from(JSON.stringify({
+    aud,
+    exp: Math.floor(Date.now() / 1000) + 12 * 60 * 60,
+    sub: runtime.subject
+  })));
+  const unsigned = `${header}.${claims}`;
+  const signature = crypto.sign("sha256", Buffer.from(unsigned), {
+    key: keyObject,
+    dsaEncoding: "ieee-p1363"
+  });
+  return {
+    token: `${unsigned}.${bufferToBase64Url(signature)}`,
+    publicKey: bufferToBase64Url(vapidPublic)
+  };
+}
+
+function encryptWebPushPayload(subscription, payload) {
+  const receiverPublic = base64UrlToBuffer(subscription.keys?.p256dh);
+  const receiverAuth = base64UrlToBuffer(subscription.keys?.auth);
+  if (receiverPublic.length !== 65 || !receiverAuth.length) {
+    throw new Error("Subscricao Web Push invalida neste dispositivo.");
+  }
+
+  const localEcdh = crypto.createECDH("prime256v1");
+  localEcdh.generateKeys();
+  const senderPublic = localEcdh.getPublicKey(null, "uncompressed");
+  const sharedSecret = localEcdh.computeSecret(receiverPublic);
+  const authPrk = crypto.createHmac("sha256", receiverAuth).update(sharedSecret).digest();
+  const keyInfo = Buffer.concat([
+    Buffer.from("WebPush: info\0", "utf8"),
+    receiverPublic,
+    senderPublic
+  ]);
+  const ikm = hkdfExpand(authPrk, keyInfo, 32);
+  const salt = crypto.randomBytes(16);
+  const prk = crypto.createHmac("sha256", salt).update(ikm).digest();
+  const cek = hkdfExpand(prk, "Content-Encoding: aes128gcm\0", 16);
+  const nonce = hkdfExpand(prk, "Content-Encoding: nonce\0", 12);
+  const plaintext = Buffer.concat([Buffer.from(JSON.stringify(payload), "utf8"), Buffer.from([0x02])]);
+  const cipher = crypto.createCipheriv("aes-128-gcm", cek, nonce);
+  const encrypted = Buffer.concat([cipher.update(plaintext), cipher.final(), cipher.getAuthTag()]);
+  const header = Buffer.alloc(21 + senderPublic.length);
+  salt.copy(header, 0);
+  header.writeUInt32BE(4096, 16);
+  header.writeUInt8(senderPublic.length, 20);
+  senderPublic.copy(header, 21);
+  return Buffer.concat([header, encrypted]);
+}
+
+function postWebPushNative(subscription, title, body, data, runtime) {
+  return new Promise((resolve, reject) => {
+    const endpoint = String(subscription.endpoint || "");
+    if (!endpoint) return reject(new Error("Endpoint Web Push vazio."));
+    const payload = { title, body, tag: data.event || data.collection || "app-braga", data };
+    const encrypted = encryptWebPushPayload(subscription, payload);
+    const vapid = createVapidJwt(endpoint, runtime);
+    const url = new URL(endpoint);
+    const req = https.request({
+      method: "POST",
+      hostname: url.hostname,
+      path: `${url.pathname}${url.search || ""}`,
+      headers: {
+        TTL: "2419200",
+        Urgency: "normal",
+        "Content-Encoding": "aes128gcm",
+        "Content-Type": "application/octet-stream",
+        "Content-Length": encrypted.length,
+        Authorization: `vapid t=${vapid.token}, k=${vapid.publicKey}`
+      }
+    }, (res) => {
+      let raw = "";
+      res.on("data", (chunk) => { raw += chunk.toString("utf8"); });
+      res.on("end", () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) resolve({ ok: true, statusCode: res.statusCode });
+        else reject(new Error(`Push endpoint respondeu ${res.statusCode}: ${raw || res.statusMessage || ""}`));
+      });
+    });
+    req.on("error", reject);
+    req.write(encrypted);
+    req.end();
+  });
 }
 
 function writeLocalPushEnvFile(values = {}) {
@@ -186,11 +308,10 @@ async function sendWebPushBroadcastFromElectron(payload = {}) {
       failed: devices.filter((item) => item?.pushSubscription?.endpoint).length,
       standardWebPushTargets: devices.filter((item) => item?.pushSubscription?.endpoint).length,
       standardWebPushReady: false,
-      error: runtime.webpush ? "Faltam VAPID keys locais" : "Modulo web-push nao instalado"
+      error: "Faltam VAPID keys locais"
     };
   }
 
-  runtime.webpush.setVapidDetails(runtime.subject, runtime.publicKey, runtime.privateKey);
   const title = String(payload.title || "App Braga");
   const body = String(payload.body || "Notificacao App Braga");
   const data = payload.data && typeof payload.data === "object" ? payload.data : {};
@@ -199,12 +320,7 @@ async function sendWebPushBroadcastFromElectron(payload = {}) {
     if (!item?.pushSubscription?.endpoint || item.active === false) continue;
     standardWebPushTargets += 1;
     try {
-      await runtime.webpush.sendNotification(item.pushSubscription, JSON.stringify({
-        title,
-        body,
-        tag: data.event || data.collection || "app-braga",
-        data
-      }));
+      await postWebPushNative(item.pushSubscription, title, body, data, runtime);
       sent += 1;
     } catch (error) {
       failed += 1;

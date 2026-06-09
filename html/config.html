@@ -238,7 +238,12 @@
         <button class="primary-btn" type="button" onclick="pedirPermissaoNotificacoesApp()">Ativar notificaÃ§Ãµes</button>
       </div>
 
-      <div class="config-form-grid">
+      <div class="notification-settings-block">
+        <div class="notification-block-title">
+          <h4>Alertas</h4>
+          <span>Escolhe que avisos a app deve enviar.</span>
+        </div>
+        <div class="config-form-grid">
         <label class="switch-row config-field-inline"><input type="checkbox" id="notifyEnabled" onchange="guardarConfigNotificacoesApp()"> <span>Sistema ativo</span></label>
         <label class="switch-row config-field-inline"><input type="checkbox" id="notifyTonerZero" onchange="guardarConfigNotificacoesApp()"> <span>Toner a 0%</span></label>
         <label class="switch-row config-field-inline"><input type="checkbox" id="notifyTonerLow25" onchange="guardarConfigNotificacoesApp()"> <span>Toner chega a 25%</span></label>
@@ -260,19 +265,55 @@
           <span>Firebase Web Push VAPID key</span>
           <input id="notifyVapidKey" type="text" placeholder="Chave Web Push do Firebase" onchange="guardarConfigNotificacoesApp()">
         </label>
+        </div>
       </div>
 
-      <div class="config-actions-row">
-        <button id="fullscreenToggleBtn" class="secondary-btn" type="button" onclick="entrarFullscreenApp()">Entrar em fullscreen</button>
-        <button class="secondary-btn" type="button" onclick="testarNotificacaoApp()">Testar notificaÃ§Ã£o</button>
-        <button class="secondary-btn" type="button" onclick="testarPushRemotoNotificacoesApp()">Testar push remoto</button>
-        <button class="secondary-btn" type="button" onclick="verificarAlertasNotificacoesApp(true)">Verificar alertas agora</button>
-        <button class="secondary-btn" type="button" onclick="registarDispositivoPushApp()">Registar este dispositivo</button>
-        <button class="secondary-btn" type="button" onclick="registarDispositivoPushApp(true)">Reparar registo deste dispositivo</button>
-        <button class="secondary-btn" type="button" onclick="atualizarEstadoNotificacoesApp(true)">Diagnosticar dispositivo</button>
-        <button class="secondary-btn" type="button" onclick="configurarVapidPrivadaNotificacoesApp()">Configurar VAPID privada</button>
-        <button class="secondary-btn" type="button" onclick="importarServiceAccountNotificacoesApp()">Importar service-account</button>
+      <div class="notification-actions-layout">
+        <div class="notification-action-group">
+          <div>
+            <h4>Este dispositivo</h4>
+            <span>Permissao e registo do iPhone, tablet ou PC.</span>
+          </div>
+          <div class="config-actions-row compact">
+            <button class="primary-btn" type="button" onclick="registarDispositivoPushApp(true)">Reparar registo</button>
+            <button class="secondary-btn" type="button" onclick="testarNotificacaoApp()">Teste local</button>
+            <button class="secondary-btn" type="button" onclick="atualizarEstadoNotificacoesApp(true)">Diagnosticar</button>
+          </div>
+        </div>
+        <div class="notification-action-group">
+          <div>
+            <h4>Envio pelo PC</h4>
+            <span>O PC de trabalho envia Web Push para os equipamentos.</span>
+          </div>
+          <div class="config-actions-row compact">
+            <button class="primary-btn" type="button" onclick="ligarServicoNotificacoesApp()">Ligar Ponte PC</button>
+            <button class="secondary-btn" type="button" onclick="testarPushRemotoNotificacoesApp()">Testar push remoto</button>
+            <button class="secondary-btn" type="button" onclick="verificarAlertasNotificacoesApp(true)">Verificar alertas</button>
+          </div>
+        </div>
       </div>
+
+      <div class="notification-vapid-panel">
+        <div class="notification-block-title">
+          <h4>Credenciais Web Push</h4>
+          <span>Necessario para o iPhone receber notificacoes com a app fechada.</span>
+        </div>
+        <div class="notification-vapid-grid">
+          <label class="config-auth-field">
+            <span>VAPID public key</span>
+            <input id="notifyVapidPublicLocal" type="text" readonly placeholder="Usa a chave publica guardada na app">
+          </label>
+          <label class="config-auth-field">
+            <span>VAPID private key neste PC</span>
+            <input id="notifyVapidPrivateKey" type="password" autocomplete="off" placeholder="Cola aqui a private key do Firebase">
+          </label>
+        </div>
+        <div class="config-actions-row compact">
+          <button class="primary-btn" type="button" onclick="configurarVapidPrivadaNotificacoesApp()">Guardar VAPID privada</button>
+          <button class="secondary-btn" type="button" onclick="toggleVapidPrivadaVisivelApp()">Mostrar/Ocultar</button>
+        </div>
+      </div>
+
       <div class="notification-token-status">
         <span>Estado deste dispositivo</span>
         <strong id="notifyTokenStatus">Ainda nÃ£o registado</strong>
@@ -324,12 +365,7 @@
           <div class="empty-state mini">A carregar dispositivos...</div>
         </div>
       </div>
-      <p class="section-subtitle notification-note">Web, iPhone e Android usam Web Push/FCM com permissÃ£o do sistema. O envio remoto corre nas Firebase Cloud Functions.</p>
-      <div class="health-card">
-        <span>Envio remoto</span>
-        <strong>Firebase Cloud Functions</strong>
-        <p class="section-subtitle">Este Ã© o serviÃ§o principal de notificaÃ§Ãµes da APP.</p>
-      </div>
+      <p class="section-subtitle notification-note">O iPhone recebe com a app fechada quando estiver instalado no ecra principal, registado com Web Push standard e a Ponte PC estiver ativa.</p>
     </div>
 
     <div class="panel config-section config-section-backups">
@@ -382,7 +418,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<script src="../js/app.js?v=1.31.3"></script>
+<script src="../js/app.js?v=1.31.5"></script>
 <script src="../js/systems/equipment/equipment-models.js?v=equipment-3"></script>
 <script src="../js/systems/global-search/global-search.js?v=global-search-2"></script>
   <script src="../js/core/helpers.js"></script>

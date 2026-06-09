@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.31.3";
+const APP_VERSION = "1.31.5";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
 
 
@@ -1935,6 +1935,8 @@ function aplicarConfigNotificacoesApp(config = {}) {
     vapid.value = appNotificationState.vapidKey;
     vapid.placeholder = "Public key Web Push ja configurada";
   }
+  const vapidLocal = document.getElementById("notifyVapidPublicLocal");
+  if (vapidLocal) vapidLocal.value = appNotificationState.vapidKey;
 
   iniciarMonitorNotificacoesApp();
   carregarDispositivosNotificacoesApp(false);
@@ -2960,7 +2962,8 @@ async function configurarVapidPrivadaNotificacoesApp() {
     return;
   }
   const publicKey = resolveVapidPublicKeyApp(document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "");
-  const privateKey = window.prompt("Cola aqui a VAPID private key do Firebase Web Push:");
+  const input = document.getElementById("notifyVapidPrivateKey");
+  const privateKey = String(input?.value || "").trim();
   if (!privateKey) return;
   const result = await window.electronAPI.setPushVapidKeys({
     publicKey,
@@ -2972,9 +2975,16 @@ async function configurarVapidPrivadaNotificacoesApp() {
     return;
   }
   setNotificationDeviceDiagnostic(`VAPID privada guardada neste PC. Ficheiro local: ${result.path}`);
+  if (input) input.value = "";
   mostrarMensagem("VAPID privada configurada neste PC.", "sucesso");
   await iniciarPontePushElectronApp(false);
   await atualizarEstadoNotificacoesApp(true);
+}
+
+function toggleVapidPrivadaVisivelApp() {
+  const input = document.getElementById("notifyVapidPrivateKey");
+  if (!input) return;
+  input.type = input.type === "password" ? "text" : "password";
 }
 
 function renderDispositivosNotificacoesApp(items = []) {
@@ -5740,6 +5750,7 @@ window.atualizarEstadoNotificacoesApp = atualizarEstadoNotificacoesApp;
 window.ligarServicoNotificacoesApp = ligarServicoNotificacoesApp;
 window.importarServiceAccountNotificacoesApp = importarServiceAccountNotificacoesApp;
 window.configurarVapidPrivadaNotificacoesApp = configurarVapidPrivadaNotificacoesApp;
+window.toggleVapidPrivadaVisivelApp = toggleVapidPrivadaVisivelApp;
 window.desbloquearAppComPin = desbloquearAppComPin;
 window.desbloquearAppComBiometria = desbloquearAppComBiometria;
 window.entrarFullscreenApp = entrarFullscreenApp;
