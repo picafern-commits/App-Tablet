@@ -245,7 +245,7 @@ function postWebPushNative(subscription, title, body, data, runtime) {
   return new Promise((resolve, reject) => {
     const endpoint = String(subscription.endpoint || "");
     if (!endpoint) return reject(new Error("Endpoint Web Push vazio."));
-    const payload = { title, body, tag: data.event || data.collection || "app-braga", data };
+    const payload = { title, body, tag: data.tag || data.requestId || data.event || data.collection || "app-braga", data };
     const encrypted = encryptWebPushPayload(subscription, payload);
     const vapid = createVapidJwt(endpoint, runtime);
     const url = new URL(endpoint);
@@ -300,6 +300,7 @@ async function sendWebPushBroadcastFromElectron(payload = {}) {
   let sent = 0;
   let failed = 0;
   let standardWebPushTargets = 0;
+  let lastError = "";
 
   if (!runtime.ready) {
     return {
@@ -324,6 +325,7 @@ async function sendWebPushBroadcastFromElectron(payload = {}) {
       sent += 1;
     } catch (error) {
       failed += 1;
+      lastError = error.message || String(error);
       appendPushWatcherLog(`Falhou Web Push via ponte Electron: ${error.message}`);
     }
   }
@@ -334,7 +336,8 @@ async function sendWebPushBroadcastFromElectron(payload = {}) {
     sent,
     failed,
     standardWebPushTargets,
-    standardWebPushReady: true
+    standardWebPushReady: true,
+    error: sent > 0 ? "" : (lastError || "Nenhum dispositivo Web Push recebeu o envio.")
   };
 }
 

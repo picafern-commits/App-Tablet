@@ -2284,6 +2284,7 @@ async function processarPedidoPushElectronApp(doc) {
         collection: "notificationRequests",
         event: fields.event || "manual-remote-test",
         requestId,
+        tag: `manual-remote-test-${requestId}`,
         url
       }
     });
@@ -2295,7 +2296,7 @@ async function processarPedidoPushElectronApp(doc) {
       sent,
       failed,
       standardWebPushReady: result?.standardWebPushReady !== false,
-      error: sent > 0 ? "" : (result?.error || "Ponte Electron nao enviou Web Push."),
+      error: result?.error || "",
       finishedAt: Date.now(),
       processedBy: "electron-client-bridge"
     }, { merge: true });
@@ -2307,6 +2308,7 @@ async function processarPedidoPushElectronApp(doc) {
       lastEvent: fields.event || "manual-remote-test",
       lastSent: sent,
       lastFailed: failed,
+      lastError: result?.error || "",
       lastDeviceCount: devices.length,
       lastStandardWebPushTargets: devices.length,
       standardWebPushReady: result?.standardWebPushReady !== false,
