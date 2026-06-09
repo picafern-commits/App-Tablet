@@ -30,6 +30,16 @@ if (-not $env:GOOGLE_APPLICATION_CREDENTIALS) {
     (Join-Path (Split-Path $root -Parent) "firebase-service-account.json"),
     (Join-Path $env:APPDATA "app-braga\service-account.json"),
     (Join-Path $env:APPDATA "App Braga\service-account.json"),
+    (Join-Path ([Environment]::GetFolderPath("MyDocuments")) "App Braga\service-account.json"),
+    (Join-Path ([Environment]::GetFolderPath("MyDocuments")) "AppBraga\service-account.json"),
+    (Join-Path ([Environment]::GetFolderPath("MyDocuments")) "service-account.json"),
+    (Join-Path ([Environment]::GetFolderPath("Desktop")) "service-account.json"),
+    (Join-Path $env:USERPROFILE "Downloads\service-account.json"),
+    (Join-Path ([Environment]::GetFolderPath("MyDocuments")) "App Braga\firebase-service-account.json"),
+    (Join-Path ([Environment]::GetFolderPath("MyDocuments")) "AppBraga\firebase-service-account.json"),
+    (Join-Path ([Environment]::GetFolderPath("MyDocuments")) "firebase-service-account.json"),
+    (Join-Path ([Environment]::GetFolderPath("Desktop")) "firebase-service-account.json"),
+    (Join-Path $env:USERPROFILE "Downloads\firebase-service-account.json"),
     "C:\Minhas Apps\AppBragaDesktop\service-account.json",
     "C:\Minhas Apps\AppBragaDesktop\AppBragaTeste-main\service-account.json"
   )
@@ -43,7 +53,7 @@ if (-not $env:GOOGLE_APPLICATION_CREDENTIALS) {
 
 if (-not $env:GOOGLE_APPLICATION_CREDENTIALS -or -not (Test-Path -LiteralPath $env:GOOGLE_APPLICATION_CREDENTIALS)) {
   Write-Host "Falta o service-account.json do Firebase." -ForegroundColor Yellow
-  Write-Host "Guarda-o em C:\Minhas Apps\AppBragaDesktop\service-account.json ou define GOOGLE_APPLICATION_CREDENTIALS." -ForegroundColor Yellow
+  Write-Host "Guarda-o em Documentos\App Braga\service-account.json, Downloads\service-account.json ou define GOOGLE_APPLICATION_CREDENTIALS." -ForegroundColor Yellow
   exit 1
 }
 

@@ -62,10 +62,17 @@ function pushEnvCandidates() {
   const appRoot = path.join(__dirname, "..");
   const parentRoot = path.resolve(appRoot, "..");
   const roaming = app.getPath("appData");
+  const documents = app.getPath("documents");
+  const downloads = app.getPath("downloads");
+  const desktop = app.getPath("desktop");
   return [
     path.join(app.getPath("userData"), ".env.push.local.ps1"),
     path.join(roaming, "app-braga", ".env.push.local.ps1"),
     path.join(roaming, "App Braga", ".env.push.local.ps1"),
+    path.join(documents, "App Braga", ".env.push.local.ps1"),
+    path.join(documents, "AppBraga", ".env.push.local.ps1"),
+    path.join(downloads, ".env.push.local.ps1"),
+    path.join(desktop, ".env.push.local.ps1"),
     path.join(appRoot, ".env.push.local.ps1"),
     path.join(parentRoot, ".env.push.local.ps1"),
     path.join(process.cwd(), ".env.push.local.ps1"),
@@ -78,11 +85,24 @@ function serviceAccountCandidates() {
   const appRoot = path.join(__dirname, "..");
   const parentRoot = path.resolve(appRoot, "..");
   const roaming = app.getPath("appData");
+  const documents = app.getPath("documents");
+  const downloads = app.getPath("downloads");
+  const desktop = app.getPath("desktop");
   return [
     process.env.GOOGLE_APPLICATION_CREDENTIALS,
     path.join(app.getPath("userData"), "service-account.json"),
     path.join(roaming, "app-braga", "service-account.json"),
     path.join(roaming, "App Braga", "service-account.json"),
+    path.join(documents, "App Braga", "service-account.json"),
+    path.join(documents, "AppBraga", "service-account.json"),
+    path.join(documents, "service-account.json"),
+    path.join(downloads, "service-account.json"),
+    path.join(desktop, "service-account.json"),
+    path.join(documents, "App Braga", "firebase-service-account.json"),
+    path.join(documents, "AppBraga", "firebase-service-account.json"),
+    path.join(documents, "firebase-service-account.json"),
+    path.join(downloads, "firebase-service-account.json"),
+    path.join(desktop, "firebase-service-account.json"),
     path.join(appRoot, "service-account.json"),
     path.join(parentRoot, "service-account.json"),
     path.join(process.cwd(), "service-account.json"),
