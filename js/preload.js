@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   startPushWatcher: () => ipcRenderer.invoke("app:push-watcher-start"),
   getPushWatcherStatus: () => ipcRenderer.invoke("app:push-watcher-status"),
   sendWebPushBroadcast: (payload) => ipcRenderer.invoke("app:send-web-push-broadcast", payload),
+  setPushVapidKeys: (payload) => ipcRenderer.invoke("app:set-push-vapid-keys", payload),
   importServiceAccount: () => ipcRenderer.invoke("app:import-service-account"),
   getAppInfo: () => ipcRenderer.invoke("app:get-info"),
   setFullscreen: (value) => ipcRenderer.invoke("app:set-fullscreen", value),

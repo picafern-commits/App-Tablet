@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.31.2";
+const APP_VERSION = "1.31.3";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
 
 
@@ -2422,11 +2422,12 @@ async function testarPushRemotoNotificacoesApp() {
     const failed = Number(result.failed || 0);
     const ok = result.status === "sent" && sent > 0;
     setNotificationServiceText("notifyLastTestStatus", ok ? "Enviado" : "Falhou", ok ? "ok" : "bad");
-    setNotificationServiceText("notifyLastTestDetail", `Enviados: ${sent} - falhas: ${failed}`);
+    const resultError = result.error ? ` - ${result.error}` : "";
+    setNotificationServiceText("notifyLastTestDetail", `Enviados: ${sent} - falhas: ${failed}${resultError}`);
     if (result.standardWebPushReady === false && isIosAppBraga()) {
-      setNotificationDeviceDiagnostic("Firebase sem Web Push standard: falta configurar VAPID privada e publicar as Functions.");
+      setNotificationDeviceDiagnostic("Falta configurar VAPID privada no PC de trabalho para o iPhone receber Web Push.");
     }
-    mostrarMensagem(ok ? "Push remoto enviado pelo servidor." : "O servidor respondeu, mas nao enviou push. Ve as credenciais Web Push.", ok ? "sucesso" : "erro");
+    mostrarMensagem(ok ? "Push remoto enviado pelo servidor." : (result.error || "O servidor respondeu, mas nao enviou push. Ve as credenciais Web Push."), ok ? "sucesso" : "erro");
   } catch (error) {
     console.error("Erro no teste remoto push:", error);
     setNotificationServiceText("notifyLastTestStatus", "Falhou", "bad");
@@ -2950,6 +2951,29 @@ async function importarServiceAccountNotificacoesApp() {
   }
   setNotificationDeviceDiagnostic(`Service account importada para: ${result.path}`);
   mostrarMensagem("Service account importada. A ligar o watcher do PC.", "sucesso");
+  await atualizarEstadoNotificacoesApp(true);
+}
+
+async function configurarVapidPrivadaNotificacoesApp() {
+  if (!window.electronAPI?.setPushVapidKeys) {
+    mostrarMensagem("A app desktop instalada precisa de atualizar para guardar a VAPID privada.", "erro");
+    return;
+  }
+  const publicKey = resolveVapidPublicKeyApp(document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "");
+  const privateKey = window.prompt("Cola aqui a VAPID private key do Firebase Web Push:");
+  if (!privateKey) return;
+  const result = await window.electronAPI.setPushVapidKeys({
+    publicKey,
+    privateKey,
+    subject: "mailto:admin@appbraga.pt"
+  }).catch((error) => ({ ok: false, error: error.message }));
+  if (!result?.ok) {
+    mostrarMensagem(result?.error || "Nao foi possivel guardar a VAPID privada.", "erro");
+    return;
+  }
+  setNotificationDeviceDiagnostic(`VAPID privada guardada neste PC. Ficheiro local: ${result.path}`);
+  mostrarMensagem("VAPID privada configurada neste PC.", "sucesso");
+  await iniciarPontePushElectronApp(false);
   await atualizarEstadoNotificacoesApp(true);
 }
 
@@ -5715,6 +5739,7 @@ window.bloquearAppAgora = bloquearAppAgora;
 window.atualizarEstadoNotificacoesApp = atualizarEstadoNotificacoesApp;
 window.ligarServicoNotificacoesApp = ligarServicoNotificacoesApp;
 window.importarServiceAccountNotificacoesApp = importarServiceAccountNotificacoesApp;
+window.configurarVapidPrivadaNotificacoesApp = configurarVapidPrivadaNotificacoesApp;
 window.desbloquearAppComPin = desbloquearAppComPin;
 window.desbloquearAppComBiometria = desbloquearAppComBiometria;
 window.entrarFullscreenApp = entrarFullscreenApp;

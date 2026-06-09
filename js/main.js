@@ -153,6 +153,25 @@ function getWebPushRuntime() {
   };
 }
 
+function writeLocalPushEnvFile(values = {}) {
+  const publicKey = String(values.publicKey || "").trim();
+  const privateKey = String(values.privateKey || "").trim();
+  const subject = String(values.subject || "mailto:admin@appbraga.pt").trim();
+  if (!publicKey || publicKey.length < 80) throw new Error("VAPID public key invalida.");
+  if (!privateKey || privateKey.length < 30) throw new Error("VAPID private key invalida.");
+
+  const target = path.join(app.getPath("userData"), ".env.push.local.ps1");
+  const lines = [
+    `$env:APP_BRAGA_VAPID_PUBLIC_KEY="${publicKey.replace(/"/g, '\\"')}"`,
+    `$env:APP_BRAGA_VAPID_PRIVATE_KEY="${privateKey.replace(/"/g, '\\"')}"`,
+    `$env:APP_BRAGA_VAPID_SUBJECT="${subject.replace(/"/g, '\\"')}"`
+  ];
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, `${lines.join("\n")}\n`, "utf8");
+  appendPushWatcherLog(`VAPID keys locais atualizadas em ${target}`);
+  return target;
+}
+
 async function sendWebPushBroadcastFromElectron(payload = {}) {
   const runtime = getWebPushRuntime();
   const devices = Array.isArray(payload.devices) ? payload.devices : [];
@@ -635,6 +654,20 @@ ipcMain.handle("app:push-watcher-status", async () => ({
 }));
 
 ipcMain.handle("app:send-web-push-broadcast", async (_event, payload = {}) => sendWebPushBroadcastFromElectron(payload));
+
+ipcMain.handle("app:set-push-vapid-keys", async (_event, payload = {}) => {
+  try {
+    const target = writeLocalPushEnvFile(payload);
+    return {
+      ok: true,
+      path: target,
+      status: getPushWatcherReadiness(),
+      webPushBridgeReady: getWebPushRuntime().ready
+    };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
+});
 
 ipcMain.handle("app:import-service-account", async () => {
   try {
