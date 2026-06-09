@@ -4,17 +4,17 @@ const admin = require("firebase-admin");
 const webpush = require("web-push");
 const { onDocumentCreated, onDocumentWritten } = require("firebase-functions/v2/firestore");
 const { setGlobalOptions } = require("firebase-functions/v2/options");
-const { defineSecret } = require("firebase-functions/params");
 const logger = require("firebase-functions/logger");
 
 admin.initializeApp();
 setGlobalOptions({ region: "europe-west1", maxInstances: 10 });
 
-const VAPID_PUBLIC_KEY = defineSecret("APP_BRAGA_VAPID_PUBLIC_KEY");
-const VAPID_PRIVATE_KEY = defineSecret("APP_BRAGA_VAPID_PRIVATE_KEY");
+function envValue(name) {
+  return String(process.env[name] || "").trim();
+}
 
 const APP_URL = "https://picafern-commits.github.io/App-Tablet/html/index.html";
-const VAPID_SUBJECT = "mailto:admin@appbraga.pt";
+const VAPID_SUBJECT = envValue("APP_BRAGA_VAPID_SUBJECT") || "mailto:admin@appbraga.pt";
 const CONFIG_DOC = "config/cloudNotifications";
 
 function normalizePercentValue(value) {
@@ -143,8 +143,8 @@ async function markDeviceInactive(item, reason) {
 }
 
 function configureWebPush() {
-  const publicKey = String(VAPID_PUBLIC_KEY.value() || "").trim();
-  const privateKey = String(VAPID_PRIVATE_KEY.value() || "").trim();
+  const publicKey = envValue("APP_BRAGA_VAPID_PUBLIC_KEY");
+  const privateKey = envValue("APP_BRAGA_VAPID_PRIVATE_KEY");
   if (!publicKey || !privateKey) return false;
   webpush.setVapidDetails(VAPID_SUBJECT, publicKey, privateKey);
   return true;
@@ -272,8 +272,7 @@ async function broadcast(title, body, data = {}) {
 }
 
 exports.onNotificationRequestCreated = onDocumentCreated({
-  document: "notificationRequests/{requestId}",
-  secrets: [VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY]
+  document: "notificationRequests/{requestId}"
 }, async (event) => {
   const data = event.data?.data() || {};
   const requestRef = event.data?.ref;
@@ -310,8 +309,7 @@ exports.onNotificationRequestCreated = onDocumentCreated({
 });
 
 exports.onPrinterWritten = onDocumentWritten({
-  document: "printers/{printerId}",
-  secrets: [VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY]
+  document: "printers/{printerId}"
 }, async (event) => {
   if (!event.data?.before.exists || !event.data?.after.exists) return;
   const config = await getNotificationConfig();
@@ -390,8 +388,7 @@ exports.onPrinterWritten = onDocumentWritten({
 });
 
 exports.onStockWritten = onDocumentWritten({
-  document: "stock/{stockId}",
-  secrets: [VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY]
+  document: "stock/{stockId}"
 }, async (event) => {
   if (!event.data?.after.exists) return;
   const config = await getNotificationConfig();
@@ -410,8 +407,7 @@ exports.onStockWritten = onDocumentWritten({
 });
 
 exports.onManutencaoWritten = onDocumentWritten({
-  document: "manutencoes/{manutencaoId}",
-  secrets: [VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY]
+  document: "manutencoes/{manutencaoId}"
 }, async (event) => {
   if (!event.data?.after.exists) return;
   const config = await getNotificationConfig();
@@ -433,8 +429,7 @@ exports.onManutencaoWritten = onDocumentWritten({
 });
 
 exports.onRadioWeeklyRecordCreated = onDocumentCreated({
-  document: "radioWeeklyRecords/{recordId}",
-  secrets: [VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY]
+  document: "radioWeeklyRecords/{recordId}"
 }, async (event) => {
   const config = await getNotificationConfig();
   if (config.notificationEnabled === false || config.notifyRadios !== true) return;

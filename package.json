@@ -1,6 +1,6 @@
 {
   "name": "app-braga",
-  "version": "1.31.8",
+  "version": "1.31.9",
   "description": "App Braga - gestao de toners e computadores",
   "main": "js/main.js",
   "author": "Ricardo Fernandes",
@@ -11,10 +11,6 @@
     "pack": "electron-builder --dir",
     "setup": "electron-builder --win nsis",
     "dist": "electron-builder --win nsis",
-    "push:watch": "node tools/web-push-watch.js",
-    "push:test": "node tools/web-push-watch.js --test",
-    "push:watch:local": "powershell -ExecutionPolicy Bypass -File tools/start-push-local.ps1",
-    "push:test:local": "powershell -ExecutionPolicy Bypass -File tools/start-push-local.ps1 -Test",
     "functions:lint": "npm --prefix functions run lint",
     "functions:deploy": "firebase deploy --only functions"
   },
@@ -33,7 +29,6 @@
       "html/**/*",
       "css/**/*",
       "js/**/*",
-      "tools/**/*",
       "img/**/*",
       "assets/**/*",
       "manifest.json",
@@ -59,7 +54,6 @@
     }
   },
   "dependencies": {
-    "net-snmp": "^3.26.0",
-    "web-push": "^3.6.7"
+    "net-snmp": "^3.26.0"
   }
 }

@@ -1,5 +1,4 @@
 const { app, BrowserWindow, shell, ipcMain, Tray, Menu, Notification, screen, dialog } = require("electron");
-const { spawn } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 const http = require("http");
@@ -9,8 +8,16 @@ const snmp = require("net-snmp");
 
 let win;
 let tray;
-let pushWatcherProcess = null;
-let pushWatcherStatus = { ok: false, running: false, mode: "parado", error: "", startedAt: null, logFile: "" };
+const pushWatcherStatus = {
+  ok: true,
+  running: false,
+  mode: "cloud-functions",
+  error: "",
+  startedAt: null,
+  logFile: "",
+  cloudOnly: true,
+  message: "Envio remoto nas Firebase Cloud Functions. Este PC nao precisa de Node.js nem de watcher local."
+};
 app.isQuitting = false;
 
 const APP_REMOTE_URL = "https://picafern-commits.github.io/App-Tablet/html/index.html";
@@ -341,83 +348,7 @@ async function sendWebPushBroadcastFromElectron(payload = {}) {
   };
 }
 
-function nodeRuntimeCandidates() {
-  return [
-    process.env.APP_BRAGA_NODE_PATH,
-    process.env.NODE_EXE,
-    "C:\\Program Files\\nodejs\\node.exe",
-    "C:\\Program Files (x86)\\nodejs\\node.exe"
-  ].filter(Boolean);
-}
-
-function getNodeRuntimePath() {
-  return nodeRuntimeCandidates().find((candidate) => {
-    try {
-      return fs.existsSync(candidate);
-    } catch {
-      return false;
-    }
-  }) || "";
-}
-
-function markPushWatcherStopped(reason, mode = "parado", readiness = getPushWatcherReadiness()) {
-  pushWatcherStatus = {
-    ok: false,
-    running: false,
-    mode,
-    error: reason || "",
-    startedAt: null,
-    ...readiness
-  };
-  if (reason) appendPushWatcherLog(reason);
-  return pushWatcherStatus;
-}
-
 function startPushWatcherAuto() {
-  if (pushWatcherProcess && !pushWatcherProcess.killed) return pushWatcherStatus;
-  const watcherPath = path.join(__dirname, "..", "tools", "web-push-watch.js");
-  const env = buildPushWatcherEnv();
-  const readiness = getPushWatcherReadiness();
-  const nodeRuntime = getNodeRuntimePath();
-
-  if (!fs.existsSync(watcherPath)) {
-    return markPushWatcherStopped("Watcher indisponivel", "erro", readiness);
-  }
-  if (!nodeRuntime) {
-    return markPushWatcherStopped("Este PC recebe notificacoes, mas nao envia porque nao tem Node.js.", "recetor-sem-node", readiness);
-  }
-  if (!env.GOOGLE_APPLICATION_CREDENTIALS || !fs.existsSync(env.GOOGLE_APPLICATION_CREDENTIALS)) {
-    return markPushWatcherStopped("Falta service-account.json", "sem-service-account", readiness);
-  }
-  if (!env.APP_BRAGA_VAPID_PUBLIC_KEY || !env.APP_BRAGA_VAPID_PRIVATE_KEY) {
-    return markPushWatcherStopped("Faltam VAPID keys locais", "sem-vapid", readiness);
-  }
-
-  try {
-    pushWatcherProcess = spawn(nodeRuntime, [watcherPath], {
-      cwd: path.join(__dirname, ".."),
-      env,
-      windowsHide: true,
-      stdio: ["ignore", "pipe", "pipe"]
-    });
-  } catch (error) {
-    return markPushWatcherStopped(`Erro ao iniciar watcher: ${error.message}`, "erro", readiness);
-  }
-
-  pushWatcherStatus = { ok: true, running: true, mode: "electron-auto", error: "", startedAt: new Date().toISOString(), pid: pushWatcherProcess.pid, ...readiness };
-  appendPushWatcherLog("Watcher iniciado pelo Electron.");
-  pushWatcherProcess.stdout.on("data", (chunk) => appendPushWatcherLog(chunk.toString("utf8").trim()));
-  pushWatcherProcess.stderr.on("data", (chunk) => appendPushWatcherLog(`ERRO: ${chunk.toString("utf8").trim()}`));
-  pushWatcherProcess.on("error", (error) => {
-    markPushWatcherStopped(`Erro ao iniciar watcher: ${error.message}`, error.code === "ENOENT" ? "recetor-sem-node" : "erro", readiness);
-    pushWatcherProcess = null;
-  });
-  pushWatcherProcess.on("exit", (code) => {
-    if (pushWatcherStatus.mode === "recetor-sem-node") return;
-    pushWatcherStatus = { ...pushWatcherStatus, ok: false, running: false, mode: "parado", error: `Watcher terminou com codigo ${code}` };
-    appendPushWatcherLog(pushWatcherStatus.error);
-    pushWatcherProcess = null;
-  });
   return pushWatcherStatus;
 }
 
@@ -710,7 +641,6 @@ ipcMain.handle("printer:get-toner-snmp", async (_event, ip) => {
 app.whenReady().then(() => {
   createWindow();
   createTray();
-  startPushWatcherAuto();
   app.on("activate", () => {
     mostrarJanelaPrincipal();
   });
@@ -763,14 +693,9 @@ ipcMain.handle("app:notification-status", async () => ({
   pushWatcher: pushWatcherStatus
 }));
 
-ipcMain.handle("app:push-watcher-start", async () => startPushWatcherAuto());
+ipcMain.handle("app:push-watcher-start", async () => pushWatcherStatus);
 
-ipcMain.handle("app:push-watcher-status", async () => ({
-  ...pushWatcherStatus,
-  ...getPushWatcherReadiness(),
-  webPushBridgeReady: getWebPushRuntime().ready,
-  running: !!(pushWatcherProcess && !pushWatcherProcess.killed)
-}));
+ipcMain.handle("app:push-watcher-status", async () => pushWatcherStatus);
 
 ipcMain.handle("app:send-web-push-broadcast", async (_event, payload = {}) => sendWebPushBroadcastFromElectron(payload));
 
@@ -809,8 +734,7 @@ ipcMain.handle("app:import-service-account", async () => {
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.copyFileSync(source, target);
     appendPushWatcherLog(`Service account importada para ${target}`);
-    const status = startPushWatcherAuto();
-    return { ok: true, path: target, projectId: parsed.project_id || "", status };
+    return { ok: true, path: target, projectId: parsed.project_id || "", status: pushWatcherStatus };
   } catch (error) {
     return { ok: false, error: error.message };
   }
@@ -948,9 +872,6 @@ ipcMain.handle("backup:open-folder", async () => {
 
 app.on("before-quit", () => {
   app.isQuitting = true;
-  try {
-    if (pushWatcherProcess && !pushWatcherProcess.killed) pushWatcherProcess.kill();
-  } catch {}
 });
 
 app.on("window-all-closed", () => {
