@@ -6271,3 +6271,47 @@ body.app-role-consulta .danger {
 /* v1.30.3 clean dashboard/sidebar */
 #personalToolsDashboard{display:none!important;}
 .sidebar a[href="equipamento.html"]{display:none!important;}
+
+
+/* ===== APP BRAGA v1.31.8 — Dashboard tarefas + equipamentos abaixo dos contadores ===== */
+.dashboard-shell .enterprise-metrics{
+  margin-bottom:18px;
+}
+.dashboard-tasks-only{
+  margin:0 0 20px 0;
+}
+.dashboard-task-panel{
+  border:1px solid rgba(255,255,255,.12);
+  background:linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.035));
+  box-shadow:0 20px 60px rgba(0,0,0,.18);
+}
+.dashboard-task-panel .personal-panel-head{
+  align-items:center;
+}
+.dashboard-task-panel .personal-panel-head h2{
+  margin:0;
+}
+.dashboard-task-panel .personal-panel-head p{
+  margin:4px 0 0;
+  color:var(--muted);
+}
+.dashboard-task-list{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+.dashboard-task-list .personal-row{
+  min-height:68px;
+  border-radius:18px;
+}
+.dashboard-task-list .empty-state{
+  grid-column:1/-1;
+}
+.dashboard-shell .dashboard-fullwidth{
+  margin-top:0;
+}
+@media (max-width:900px){
+  .dashboard-task-list{
+    grid-template-columns:1fr;
+  }
+}

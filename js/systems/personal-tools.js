@@ -1,4 +1,4 @@
-﻿(function () {
+(function () {
   "use strict";
 
   const DB_NAME = "app-braga-offline-queue";
@@ -126,67 +126,47 @@
   function dashboardRoot() {
     if (!isDashboard()) return null;
     let root = document.getElementById("personalToolsDashboard");
-    if (root) return root;
     const main = document.querySelector("main");
-    const target = document.querySelector(".dashboard-fullwidth") || document.getElementById("listaDashboardStock")?.closest("section");
     if (!main) return null;
-    root = document.createElement("section");
-    root.id = "personalToolsDashboard";
-    root.className = "personal-dashboard";
-    root.innerHTML = `
-      <section class="personal-grid personal-morning" id="personalMorning"></section>
-      <section class="personal-panel personal-workshop">
-        <div class="personal-panel-head">
-          <div>
-            <h2>Modo Armazem</h2>
-            <p>Atalhos grandes para trabalho rapido no tablet.</p>
-          </div>
-        </div>
-        <div class="personal-shortcuts">
-          <a href="add-toner.html">Scan toner</a>
-          <a href="stock.html">Stock</a>
-          <a href="impressoras.html">Impressoras criticas</a>
-          <a href="radios.html">Radios semanais</a>
-          <button type="button" data-personal-open-equipment>Notas / fotos</button>
-          <button type="button" data-personal-export>Exportar resumo</button>
-        </div>
-      </section>
-      <section class="personal-grid">
-        <div class="personal-panel">
+
+    if (!root) {
+      root = document.createElement("section");
+      root.id = "personalToolsDashboard";
+      root.className = "personal-dashboard dashboard-tasks-only";
+      root.innerHTML = `
+        <section class="personal-panel dashboard-task-panel">
           <div class="personal-panel-head">
-            <h2>Tarefas</h2>
-            <button type="button" class="secondary-btn" data-personal-add-task>Adicionar</button>
+            <div>
+              <h2>Tarefas</h2>
+              <p>As tarefas abertas ficam aqui para nao te esqueceres.</p>
+            </div>
+            <a href="tarefas.html" class="secondary-btn">Ver todas</a>
           </div>
-          <div id="personalTaskList" class="personal-list"></div>
-        </div>
-        <div class="personal-panel">
-          <div class="personal-panel-head">
-            <h2>Relatorio semanal</h2>
-            <button type="button" class="secondary-btn" data-personal-weekly>Gerar</button>
-          </div>
-          <div id="personalWeeklySummary" class="personal-list"></div>
-        </div>
-      </section>
-      <section class="personal-grid">
-        <div class="personal-panel">
-          <div class="personal-panel-head">
-            <h2>Manutencao preventiva</h2>
-            <span class="status-pill">90 dias</span>
-          </div>
-          <div id="personalPreventiveList" class="personal-list"></div>
-        </div>
-        <div class="personal-panel">
-          <div class="personal-panel-head">
-            <h2>Offline</h2>
-            <button type="button" class="secondary-btn" data-personal-sync>Sincronizar</button>
-          </div>
-          <div id="personalOfflineStatus" class="personal-list"></div>
-        </div>
-      </section>
-    `;
-    if (target?.parentNode) target.parentNode.insertBefore(root, target.nextSibling);
-    else main.appendChild(root);
-    bindDashboard(root);
+          <div id="personalTaskList" class="personal-list personal-task-list dashboard-task-list"></div>
+        </section>
+      `;
+      const metrics = document.querySelector(".enterprise-metrics");
+      if (metrics?.parentNode) metrics.parentNode.insertBefore(root, metrics.nextSibling);
+      else main.appendChild(root);
+    } else if (!root.dataset.dashboardReady) {
+      root.classList.add("dashboard-tasks-only");
+      if (!root.querySelector("#personalTaskList")) {
+        root.innerHTML = `
+          <section class="personal-panel dashboard-task-panel">
+            <div class="personal-panel-head">
+              <div>
+                <h2>Tarefas</h2>
+                <p>As tarefas abertas ficam aqui para nao te esqueceres.</p>
+              </div>
+              <a href="tarefas.html" class="secondary-btn">Ver todas</a>
+            </div>
+            <div id="personalTaskList" class="personal-list personal-task-list dashboard-task-list"></div>
+          </section>
+        `;
+      }
+    }
+
+    root.dataset.dashboardReady = "1";
     return root;
   }
   function tasksPageRoot() {
