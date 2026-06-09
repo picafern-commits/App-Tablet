@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.31.0";
+const APP_VERSION = "1.31.1";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
 
 
@@ -2802,6 +2802,22 @@ async function ligarServicoNotificacoesApp() {
   await atualizarEstadoNotificacoesApp(false);
 }
 
+async function importarServiceAccountNotificacoesApp() {
+  if (!window.electronAPI?.importServiceAccount) {
+    mostrarMensagem("A app desktop instalada precisa de atualizar para importar automaticamente o service-account.json.", "erro");
+    return;
+  }
+  const result = await window.electronAPI.importServiceAccount().catch((error) => ({ ok: false, error: error.message }));
+  if (result?.canceled) return;
+  if (!result?.ok) {
+    mostrarMensagem(result?.error || "Nao foi possivel importar o service-account.json.", "erro");
+    return;
+  }
+  setNotificationDeviceDiagnostic(`Service account importada para: ${result.path}`);
+  mostrarMensagem("Service account importada. A ligar o watcher do PC.", "sucesso");
+  await atualizarEstadoNotificacoesApp(true);
+}
+
 function renderDispositivosNotificacoesApp(items = []) {
   const host = document.getElementById("notifyDevicesList");
   if (!host) return;
@@ -5563,6 +5579,7 @@ window.removerBiometriaApp = removerBiometriaApp;
 window.bloquearAppAgora = bloquearAppAgora;
 window.atualizarEstadoNotificacoesApp = atualizarEstadoNotificacoesApp;
 window.ligarServicoNotificacoesApp = ligarServicoNotificacoesApp;
+window.importarServiceAccountNotificacoesApp = importarServiceAccountNotificacoesApp;
 window.desbloquearAppComPin = desbloquearAppComPin;
 window.desbloquearAppComBiometria = desbloquearAppComBiometria;
 window.entrarFullscreenApp = entrarFullscreenApp;

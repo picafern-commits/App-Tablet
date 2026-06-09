@@ -563,6 +563,34 @@ ipcMain.handle("app:push-watcher-status", async () => ({
   running: !!(pushWatcherProcess && !pushWatcherProcess.killed)
 }));
 
+ipcMain.handle("app:import-service-account", async () => {
+  try {
+    if (!win || win.isDestroyed()) return { ok: false, error: "Janela indisponivel" };
+    const result = await dialog.showOpenDialog(win, {
+      title: "Selecionar service-account.json",
+      properties: ["openFile"],
+      filters: [{ name: "Firebase service account", extensions: ["json"] }]
+    });
+    if (result.canceled || !result.filePaths?.[0]) return { ok: false, canceled: true };
+
+    const source = result.filePaths[0];
+    const raw = fs.readFileSync(source, "utf8");
+    const parsed = JSON.parse(raw);
+    if (!parsed.client_email || !parsed.private_key) {
+      return { ok: false, error: "Este JSON nao parece ser uma service account do Firebase." };
+    }
+
+    const target = path.join(app.getPath("userData"), "service-account.json");
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.copyFileSync(source, target);
+    appendPushWatcherLog(`Service account importada para ${target}`);
+    const status = startPushWatcherAuto();
+    return { ok: true, path: target, projectId: parsed.project_id || "", status };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
+});
+
 ipcMain.handle("app:notification-dialog-test", async () => {
   if (!win || win.isDestroyed()) return { ok: false, error: "Janela indisponivel" };
   await dialog.showMessageBox(win, {
