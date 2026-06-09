@@ -1,0 +1,63 @@
+name: Deploy Firebase Functions
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "functions/**"
+      - "firebase.json"
+      - ".firebaserc"
+      - ".github/workflows/deploy-firebase-functions.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: firebase-functions
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Install functions dependencies
+        run: npm ci --prefix functions
+
+      - name: Sync Web Push secrets
+        env:
+          VAPID_PUBLIC: ${{ secrets.APP_BRAGA_VAPID_PUBLIC_KEY }}
+          VAPID_PRIVATE: ${{ secrets.APP_BRAGA_VAPID_PRIVATE_KEY }}
+        run: |
+          if [ -n "$VAPID_PUBLIC" ] && [ -n "$VAPID_PRIVATE" ]; then
+            printf "%s" "$VAPID_PUBLIC" > vapid_public.txt
+            printf "%s" "$VAPID_PRIVATE" > vapid_private.txt
+            firebase functions:secrets:set APP_BRAGA_VAPID_PUBLIC_KEY --data-file vapid_public.txt --project toner-manager-756c4
+            firebase functions:secrets:set APP_BRAGA_VAPID_PRIVATE_KEY --data-file vapid_private.txt --project toner-manager-756c4
+            rm -f vapid_public.txt vapid_private.txt
+          else
+            echo "VAPID secrets not configured in GitHub; keeping existing Firebase secret values."
+          fi
+
+      - name: Deploy functions
+        run: firebase deploy --only functions --project toner-manager-756c4

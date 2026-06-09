@@ -15,6 +15,16 @@ O assunto VAPID fica por defeito como `mailto:admin@appbraga.pt`.
 
 ## Deploy
 
+Automatico pelo GitHub Actions quando houver alteracoes em `functions/**`, desde que estes GitHub Secrets existam:
+
+- `FIREBASE_SERVICE_ACCOUNT`: JSON de uma service account do Google Cloud com permissao para publicar Firebase Functions.
+- `APP_BRAGA_VAPID_PUBLIC_KEY`: chave publica Web Push.
+- `APP_BRAGA_VAPID_PRIVATE_KEY`: chave privada Web Push.
+
+Tambem pode ser lancado manualmente no GitHub em **Actions > Deploy Firebase Functions > Run workflow**.
+
+Deploy manual num PC com Firebase CLI autenticado:
+
 ```bash
 cd "C:\Minhas Apps\AppBragaDesktop\AppBragaTeste-main"
 firebase deploy --only functions
