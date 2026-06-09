@@ -35,7 +35,7 @@
     "portas.html": "\u25A7",
     "radios.html": "\u25CC",
     "informacoes.html": "\u24D8",
-    "tarefas.html": "\u2713",
+    "tarefas.html": "\u25A8",
     "diagnostico.html": "\u26A1",
     "config.html": "\u2699"
   };
@@ -197,6 +197,31 @@
       link.dataset.enterpriseCloseBound = "1";
       link.addEventListener("click", close);
     });
+
+    if (!document.body.dataset.enterpriseSidebarSwipe) {
+      document.body.dataset.enterpriseSidebarSwipe = "1";
+      let startX = 0;
+      let startY = 0;
+      let tracking = false;
+      document.addEventListener("touchstart", (event) => {
+        const touch = event.touches?.[0];
+        if (!touch) return;
+        startX = touch.clientX;
+        startY = touch.clientY;
+        tracking = startX <= 28 || sidebar.classList.contains("app-open");
+      }, { passive: true });
+      document.addEventListener("touchend", (event) => {
+        if (!tracking) return;
+        const touch = event.changedTouches?.[0];
+        tracking = false;
+        if (!touch) return;
+        const dx = touch.clientX - startX;
+        const dy = Math.abs(touch.clientY - startY);
+        if (dy > 80 || Math.abs(dx) < 68 || Math.abs(dx) < dy * 1.25) return;
+        if (dx > 0 && startX <= 34) open();
+        if (dx < 0 && sidebar.classList.contains("app-open")) close();
+      }, { passive: true });
+    }
   }
 
   function setupSearchShell() {

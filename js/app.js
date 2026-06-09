@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.30.6";
+const APP_VERSION = "1.30.7";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
 
 
@@ -10940,7 +10940,7 @@ window.testarCamerasStockQr = async function(){
 };
 
 /* =========================
-   APP BRAGA v1.30.6 â€” DIAGNÃ“STICO + UX SEGURO
+   APP BRAGA v1.30.7 â€” DIAGNÃ“STICO + UX SEGURO
    NÃ£o altera autenticaÃ§Ã£o, roles ou estrutura Firebase.
 ========================= */
 (function(){
