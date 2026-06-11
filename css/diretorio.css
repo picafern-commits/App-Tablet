@@ -60,3 +60,60 @@
 .diretorio-table a{color:#00e5ff!important;}
 .diretorio-table td:first-child,.diretorio-table td:nth-child(2){color:#fff!important;}
 /* ===== END APP BRAGA V1.32.9 ===== */
+
+/* ===== APP BRAGA V1.33.0 - DIRETORIO POR ARMAZEM ===== */
+.diretorio-filtros{
+  grid-template-columns: 1.45fr .9fr .9fr .9fr auto !important;
+  background: linear-gradient(145deg, rgba(15,23,42,.94), rgba(15,23,42,.76)) !important;
+  border: 1px solid rgba(255,255,255,.11) !important;
+  box-shadow: 0 18px 45px rgba(0,0,0,.22) !important;
+}
+.diretorio-stats.stats-grid{grid-template-columns:repeat(4,minmax(0,1fr));}
+.diretorio-warehouse{
+  overflow:hidden;
+  border-radius:24px;
+  background:linear-gradient(145deg, rgba(9,15,30,.96), rgba(14,25,48,.92));
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 24px 60px rgba(0,0,0,.32);
+}
+.diretorio-warehouse + .diretorio-warehouse{margin-top:18px;}
+.diretorio-warehouse-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:18px 20px;
+  cursor:pointer;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(0,229,255,.20), transparent 34%),
+    linear-gradient(135deg, rgba(37,99,235,.24), rgba(255,255,255,.035));
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+.diretorio-warehouse-title{display:flex;align-items:center;gap:12px;color:#fff;font-size:20px;font-weight:950;letter-spacing:-.02em;}
+.warehouse-icon{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;border-radius:14px;background:rgba(0,229,255,.16);border:1px solid rgba(0,229,255,.25);box-shadow:inset 0 1px 0 rgba(255,255,255,.13);}
+.diretorio-warehouse-meta{display:flex;align-items:center;gap:12px;color:rgba(255,255,255,.72);font-weight:850;}
+.diretorio-warehouse-body{padding:14px;display:flex;flex-direction:column;gap:12px;}
+.diretorio-warehouse.collapsed .diretorio-warehouse-body{display:none;}
+.diretorio-warehouse.collapsed .diretorio-warehouse-head .diretorio-chevron{transform:rotate(-90deg);}
+.diretorio-section{border-radius:18px!important;background:rgba(255,255,255,.055)!important;border:1px solid rgba(255,255,255,.10)!important;box-shadow:none!important;}
+.diretorio-section-head{padding:14px 16px!important;background:linear-gradient(135deg, rgba(255,255,255,.075), rgba(255,255,255,.025))!important;}
+.diretorio-subsection-head .diretorio-section-title{font-size:16px!important;}
+.dir-section-dot{color:#00e5ff;font-weight:950;}
+.diretorio-section.collapsed .diretorio-table-wrap{display:none!important;}
+.diretorio-section.collapsed .diretorio-section-head .diretorio-chevron{transform:rotate(-90deg);}
+.diretorio-count{background:linear-gradient(135deg,#00e5ff,#2563eb)!important;color:#06111f!important;box-shadow:0 8px 18px rgba(0,229,255,.16);}
+.diretorio-table-wrap{border-radius:0 0 18px 18px;}
+.diretorio-table th:first-child,.diretorio-table td:first-child{width:122px;}
+.diretorio-modal .form-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+.diretorio-modal label.full-width{grid-column:1 / -1;}
+@media (max-width:1100px){
+  .diretorio-filtros{grid-template-columns:1fr 1fr!important;}
+  .diretorio-stats.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media (max-width:620px){
+  .diretorio-filtros{grid-template-columns:1fr!important;}
+  .diretorio-stats.stats-grid{grid-template-columns:1fr!important;}
+  .diretorio-warehouse-head{align-items:flex-start;flex-direction:column;}
+  .diretorio-modal .form-grid{grid-template-columns:1fr;}
+}
+/* ===== END APP BRAGA V1.33.0 ===== */

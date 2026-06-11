@@ -9,13 +9,13 @@
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/style.css?v=1.32.9">
+  <link rel="stylesheet" href="../css/style.css?v=1.33.0">
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
   <link rel="stylesheet" href="../css/app-theme-pro.css?v=theme-pro-1">
   <link rel="stylesheet" href="../css/enterprise/ops.css?v=ops-12">
   <link rel="stylesheet" href="../css/systems/personal-tools.css?v=personal-4">
   <link rel="stylesheet" href="../css/systems/global-search.css?v=global-search-2">
-  <link rel="stylesheet" href="../css/diretorio.css?v=1.32.9">
+  <link rel="stylesheet" href="../css/diretorio.css?v=1.33.0">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="App Braga">
@@ -99,7 +99,7 @@
   <div class="page-hero diretorio-hero">
     <div>
       <div class="page-hero-title">Diretório de Contactos</div>
-      <p class="directory-subtitle">Lista telefónica interna da empresa, organizada por secção e local.</p>
+      <p class="directory-subtitle">Lista telefónica interna da empresa, organizada por armazém e secção.</p>
     </div>
     <span class="status-pill" id="diretorioEstado">A carregar...</span>
   </div>
@@ -118,7 +118,11 @@
   <section class="diretorio-filtros panel">
     <label>
       <span>Pesquisa geral</span>
-      <input id="diretorioPesquisa" type="text" placeholder="Nome, email, telefone, secção ou local..." oninput="renderDiretorio()">
+      <input id="diretorioPesquisa" type="text" placeholder="Nome, email, telefone, armazém ou secção..." oninput="renderDiretorio()">
+    </label>
+    <label>
+      <span>Armazém</span>
+      <select id="diretorioFiltroArmazem" onchange="renderDiretorio()"><option value="">Todos</option></select>
     </label>
     <label>
       <span>Secção</span>
@@ -133,6 +137,7 @@
 
   <section class="diretorio-stats stats-grid">
     <div class="stat-card"><span>Total Contactos</span><strong id="diretorioTotal">0</strong></div>
+    <div class="stat-card"><span>Armazéns</span><strong id="diretorioArmazens">0</strong></div>
     <div class="stat-card"><span>Secções</span><strong id="diretorioSeccoes">0</strong></div>
     <div class="stat-card"><span>Com Telemóvel</span><strong id="diretorioTelemoveis">0</strong></div>
   </section>
@@ -150,12 +155,13 @@
     </div>
     <div class="form-grid">
       <label><span>Nome</span><input id="dirNome" type="text" placeholder="Nome do contacto"></label>
+      <label><span>Armazém</span><input id="dirArmazem" type="text" placeholder="Braga, Pêro Pinheiro, Armazém 1..."></label>
       <label><span>Secção</span><input id="dirSeccao" type="text" placeholder="Administração, Logística..."></label>
       <label><span>Extensão</span><input id="dirExtensao" type="text" placeholder="51 000"></label>
       <label><span>Telefone</span><input id="dirTelefone" type="tel" placeholder="253 000 000"></label>
       <label><span>Telemóvel</span><input id="dirTelemovel" type="tel" placeholder="9xx xxx xxx"></label>
       <label><span>Email</span><input id="dirEmail" type="email" placeholder="nome@empresa.pt"></label>
-      <label><span>Local / Empresa</span><input id="dirLocal" type="text" placeholder="Braga, Armazém, Loja..."></label>
+      <label><span>Local / Empresa</span><input id="dirLocal" type="text" placeholder="Empresa, piso, zona ou observação de local..."></label>
       <label class="full-width"><span>Observações</span><textarea id="dirObs" rows="3" placeholder="Notas internas"></textarea></label>
     </div>
     <div class="card-actions" style="margin-top:14px;">
@@ -168,11 +174,11 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="../js/app.js?v=1.32.9"></script>
+<script src="../js/app.js?v=1.33.0"></script>
 <script src="../js/systems/equipment/equipment-models.js?v=equipment-3"></script>
 <script src="../js/systems/global-search/global-search.js?v=global-search-2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="../js/diretorio.js?v=1.32.9"></script>
+<script src="../js/diretorio.js?v=1.33.0"></script>
 <script src="../js/core/helpers.js"></script>
 <script src="../js/iphone-force-final.js?v=iphone-sidebar-slide-1"></script>
 <script src="../js/enterprise/ops.js?v=ops-12"></script>

@@ -1,17 +1,21 @@
-
-// ===== DIRETORIO TELEFONICO APP BRAGA V1.32.5 =====
+// ===== DIRETORIO TELEFONICO APP BRAGA V1.33.0 - ARMAZEM > SECCAO =====
 (function(){
   const COLLECTION = 'diretorioTelefonico';
   let contactos = [];
   let contactoEditId = null;
   let unsubscribe = null;
-  let collapsed = new Set();
+  let collapsedArmazens = new Set();
+  let collapsedSecoes = new Set();
 
   const $ = (id) => document.getElementById(id);
   const norm = (v) => String(v || '').trim();
   const lower = (v) => norm(v).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   const esc = (v) => String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
   const telHref = (v) => norm(v).replace(/[^0-9+]/g,'');
+  const cleanKey = (v) => String(v || '').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
+
+  function armazemDe(c){ return norm(c.armazem || c.armazém || c.warehouse || c.local) || 'Sem Armazém'; }
+  function seccaoDe(c){ return norm(c.seccao || c.secção || c.departamento) || 'Sem Secção'; }
 
   function setEstado(text, ok=true){
     const el = $('diretorioEstado');
@@ -23,12 +27,13 @@
   function getValores(){
     return {
       nome: norm($('dirNome')?.value),
+      armazem: norm($('dirArmazem')?.value) || norm($('dirLocal')?.value) || 'Sem Armazém',
       seccao: norm($('dirSeccao')?.value) || 'Sem Secção',
       extensao: norm($('dirExtensao')?.value),
       telefone: norm($('dirTelefone')?.value),
       telemovel: norm($('dirTelemovel')?.value),
       email: norm($('dirEmail')?.value),
-      local: norm($('dirLocal')?.value) || 'Sem Local',
+      local: norm($('dirLocal')?.value),
       observacoes: norm($('dirObs')?.value),
       updatedAtMs: Date.now()
     };
@@ -36,6 +41,7 @@
 
   function preencherModal(c={}){
     if($('dirNome')) $('dirNome').value = c.nome || '';
+    if($('dirArmazem')) $('dirArmazem').value = armazemDe(c) === 'Sem Armazém' ? '' : armazemDe(c);
     if($('dirSeccao')) $('dirSeccao').value = c.seccao || '';
     if($('dirExtensao')) $('dirExtensao').value = c.extensao || '';
     if($('dirTelefone')) $('dirTelefone').value = c.telefone || '';
@@ -46,13 +52,20 @@
   }
 
   function atualizarFiltros(){
+    const selArm = $('diretorioFiltroArmazem');
     const selSec = $('diretorioFiltroSeccao');
     const selLoc = $('diretorioFiltroLocal');
     if(!selSec || !selLoc) return;
+    const currentArm = selArm?.value || '';
     const currentSec = selSec.value;
     const currentLoc = selLoc.value;
-    const seccoes = [...new Set(contactos.map(c => norm(c.seccao) || 'Sem Secção'))].sort((a,b)=>a.localeCompare(b,'pt',{numeric:true}));
-    const locais = [...new Set(contactos.map(c => norm(c.local) || 'Sem Local'))].sort((a,b)=>a.localeCompare(b,'pt',{numeric:true}));
+    const armazens = [...new Set(contactos.map(armazemDe))].sort((a,b)=>a.localeCompare(b,'pt',{numeric:true}));
+    const seccoes = [...new Set(contactos.map(seccaoDe))].sort((a,b)=>a.localeCompare(b,'pt',{numeric:true}));
+    const locais = [...new Set(contactos.map(c => norm(c.local) || armazemDe(c) || 'Sem Local'))].sort((a,b)=>a.localeCompare(b,'pt',{numeric:true}));
+    if(selArm){
+      selArm.innerHTML = '<option value="">Todos</option>' + armazens.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
+      selArm.value = currentArm;
+    }
     selSec.innerHTML = '<option value="">Todas</option>' + seccoes.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
     selLoc.innerHTML = '<option value="">Todos</option>' + locais.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
     selSec.value = currentSec;
@@ -61,38 +74,50 @@
 
   function filtrados(){
     const q = lower($('diretorioPesquisa')?.value || '');
+    const arm = lower($('diretorioFiltroArmazem')?.value || '');
     const sec = lower($('diretorioFiltroSeccao')?.value || '');
     const loc = lower($('diretorioFiltroLocal')?.value || '');
     return contactos.filter(c => {
-      const blob = lower([c.nome,c.extensao,c.telefone,c.telemovel,c.email,c.seccao,c.local,c.observacoes].join(' '));
+      const armVal = armazemDe(c);
+      const secVal = seccaoDe(c);
+      const locVal = norm(c.local) || armVal;
+      const blob = lower([c.nome,c.extensao,c.telefone,c.telemovel,c.email,secVal,armVal,locVal,c.observacoes].join(' '));
       if(q && !blob.includes(q)) return false;
-      if(sec && lower(c.seccao) !== sec) return false;
-      if(loc && lower(c.local) !== loc) return false;
+      if(arm && lower(armVal) !== arm) return false;
+      if(sec && lower(secVal) !== sec) return false;
+      if(loc && lower(locVal) !== loc) return false;
       return true;
     });
   }
 
-  function agrupar(lista){
-    const groups = new Map();
+  function agruparArmazemSecao(lista){
+    const armazens = new Map();
     lista.forEach(c => {
-      const key = norm(c.seccao) || 'Sem Secção';
-      if(!groups.has(key)) groups.set(key, []);
-      groups.get(key).push(c);
+      const arm = armazemDe(c);
+      const sec = seccaoDe(c);
+      if(!armazens.has(arm)) armazens.set(arm, new Map());
+      const secMap = armazens.get(arm);
+      if(!secMap.has(sec)) secMap.set(sec, []);
+      secMap.get(sec).push(c);
     });
-    for(const arr of groups.values()){
-      arr.sort((a,b)=> String(a.nome||'').localeCompare(String(b.nome||''),'pt',{numeric:true}));
+    for(const secMap of armazens.values()){
+      for(const arr of secMap.values()) arr.sort((a,b)=> String(a.nome||'').localeCompare(String(b.nome||''),'pt',{numeric:true}));
     }
-    return [...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0],'pt',{numeric:true}));
+    return [...armazens.entries()].sort((a,b)=>a[0].localeCompare(b[0],'pt',{numeric:true}));
   }
+
+  function secaoKey(arm, sec){ return `${arm}||${sec}`; }
 
   window.renderDiretorio = function(){
     atualizarFiltros();
     const list = filtrados();
     const total = $('diretorioTotal');
+    const armazens = $('diretorioArmazens');
     const seccoes = $('diretorioSeccoes');
     const telemoveis = $('diretorioTelemoveis');
     if(total) total.textContent = list.length;
-    if(seccoes) seccoes.textContent = new Set(list.map(c => norm(c.seccao)||'Sem Secção')).size;
+    if(armazens) armazens.textContent = new Set(list.map(armazemDe)).size;
+    if(seccoes) seccoes.textContent = new Set(list.map(c => `${armazemDe(c)}|${seccaoDe(c)}`)).size;
     if(telemoveis) telemoveis.textContent = list.filter(c => norm(c.telemovel)).length;
 
     const container = $('diretorioLista');
@@ -102,19 +127,31 @@
       return;
     }
 
-    container.innerHTML = agrupar(list).map(([sec, arr]) => {
-      const isCollapsed = collapsed.has(sec);
-      return `<article class="diretorio-section ${isCollapsed ? 'collapsed' : ''}" data-sec="${esc(sec)}">
-        <div class="diretorio-section-head" onclick="toggleDiretorioSecao('${esc(sec).replace(/'/g,'\\&#39;')}')">
-          <div class="diretorio-section-title"><span>☎</span><span>${esc(sec)}</span><span class="diretorio-count">${arr.length}</span></div>
-          <div class="diretorio-chevron">⌄</div>
+    container.innerHTML = agruparArmazemSecao(list).map(([arm, secMap]) => {
+      const allContacts = [...secMap.values()].flat();
+      const armCollapsed = collapsedArmazens.has(arm);
+      const sectionsHtml = [...secMap.entries()].sort((a,b)=>a[0].localeCompare(b[0],'pt',{numeric:true})).map(([sec, arr]) => {
+        const key = secaoKey(arm, sec);
+        const secCollapsed = collapsedSecoes.has(key);
+        return `<article class="diretorio-section ${secCollapsed ? 'collapsed' : ''}" data-arm="${esc(arm)}" data-sec="${esc(sec)}">
+          <div class="diretorio-section-head diretorio-subsection-head" onclick="toggleDiretorioSecao('${esc(arm).replace(/'/g,'\\&#39;')}','${esc(sec).replace(/'/g,'\\&#39;')}')">
+            <div class="diretorio-section-title"><span class="dir-section-dot">▸</span><span>${esc(sec)}</span><span class="diretorio-count">${arr.length}</span></div>
+            <div class="diretorio-chevron">⌄</div>
+          </div>
+          <div class="diretorio-table-wrap">
+            <table class="diretorio-table">
+              <thead><tr><th>Ações</th><th>Nome</th><th>Extensão</th><th>Telefone</th><th>Telemóvel</th><th>Email</th><th>Local</th><th>Obs.</th></tr></thead>
+              <tbody>${arr.map(c => rowHtml(c)).join('')}</tbody>
+            </table>
+          </div>
+        </article>`;
+      }).join('');
+      return `<article class="diretorio-warehouse ${armCollapsed ? 'collapsed' : ''}" data-arm="${esc(arm)}">
+        <div class="diretorio-warehouse-head" onclick="toggleDiretorioArmazem('${esc(arm).replace(/'/g,'\\&#39;')}')">
+          <div class="diretorio-warehouse-title"><span class="warehouse-icon">📍</span><span>${esc(arm)}</span><span class="diretorio-count">${allContacts.length}</span></div>
+          <div class="diretorio-warehouse-meta"><span>${secMap.size} secções</span><span class="diretorio-chevron">⌄</span></div>
         </div>
-        <div class="diretorio-table-wrap">
-          <table class="diretorio-table">
-            <thead><tr><th>Ações</th><th>Nome</th><th>Extensão</th><th>Telefone</th><th>Telemóvel</th><th>Email</th><th>Local</th><th>Obs.</th></tr></thead>
-            <tbody>${arr.map(c => rowHtml(c)).join('')}</tbody>
-          </table>
-        </div>
+        <div class="diretorio-warehouse-body">${sectionsHtml}</div>
       </article>`;
     }).join('');
   };
@@ -134,19 +171,39 @@
       <td>${phone ? `<a href="tel:${esc(phone)}">${esc(c.telefone)}</a>` : '<span class="dir-muted">-</span>'}</td>
       <td>${mobile ? `<a href="tel:${esc(mobile)}">${esc(c.telemovel)}</a>` : '<span class="dir-muted">-</span>'}</td>
       <td>${email ? `<a href="mailto:${esc(email)}">${esc(email)}</a>` : '<span class="dir-muted">-</span>'}</td>
-      <td>${esc(c.local || '-')}</td>
+      <td>${esc(c.local || armazemDe(c) || '-')}</td>
       <td>${esc(c.observacoes || '-')}</td>
     </tr>`;
   }
 
-  window.toggleDiretorioSecao = function(sec){
-    const val = String(sec || '').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
-    if(collapsed.has(val)) collapsed.delete(val); else collapsed.add(val);
+  window.toggleDiretorioArmazem = function(arm){
+    const val = cleanKey(arm);
+    if(collapsedArmazens.has(val)) collapsedArmazens.delete(val); else collapsedArmazens.add(val);
     window.renderDiretorio();
   };
-  window.expandirDiretorio = function(){ collapsed.clear(); window.renderDiretorio(); };
-  window.colapsarDiretorio = function(){ contactos.forEach(c=>collapsed.add(norm(c.seccao)||'Sem Secção')); window.renderDiretorio(); };
-  window.limparFiltrosDiretorio = function(){ if($('diretorioPesquisa')) $('diretorioPesquisa').value=''; if($('diretorioFiltroSeccao')) $('diretorioFiltroSeccao').value=''; if($('diretorioFiltroLocal')) $('diretorioFiltroLocal').value=''; window.renderDiretorio(); };
+
+  window.toggleDiretorioSecao = function(arm, sec){
+    const key = secaoKey(cleanKey(arm), cleanKey(sec));
+    if(collapsedSecoes.has(key)) collapsedSecoes.delete(key); else collapsedSecoes.add(key);
+    window.renderDiretorio();
+  };
+
+  window.expandirDiretorio = function(){ collapsedArmazens.clear(); collapsedSecoes.clear(); window.renderDiretorio(); };
+  window.colapsarDiretorio = function(){
+    contactos.forEach(c=>{
+      const arm = armazemDe(c), sec = seccaoDe(c);
+      collapsedArmazens.add(arm);
+      collapsedSecoes.add(secaoKey(arm, sec));
+    });
+    window.renderDiretorio();
+  };
+  window.limparFiltrosDiretorio = function(){
+    if($('diretorioPesquisa')) $('diretorioPesquisa').value='';
+    if($('diretorioFiltroArmazem')) $('diretorioFiltroArmazem').value='';
+    if($('diretorioFiltroSeccao')) $('diretorioFiltroSeccao').value='';
+    if($('diretorioFiltroLocal')) $('diretorioFiltroLocal').value='';
+    window.renderDiretorio();
+  };
 
   window.abrirModalDiretorio = function(id){
     contactoEditId = id || null;
@@ -195,7 +252,7 @@
   window.copiarContactoDiretorio = async function(id){
     const c = contactos.find(x => String(x.firebaseId) === String(id));
     if(!c) return;
-    const txt = `${c.nome || ''}\nExt: ${c.extensao || '-'}\nTelefone: ${c.telefone || '-'}\nTelemóvel: ${c.telemovel || '-'}\nEmail: ${c.email || '-'}\nLocal: ${c.local || '-'}`;
+    const txt = `${c.nome || ''}\nArmazém: ${armazemDe(c)}\nSecção: ${seccaoDe(c)}\nExt: ${c.extensao || '-'}\nTelefone: ${c.telefone || '-'}\nTelemóvel: ${c.telemovel || '-'}\nEmail: ${c.email || '-'}\nLocal: ${c.local || '-'}`;
     try{
       await navigator.clipboard.writeText(txt);
       setEstado('Contacto copiado');
@@ -204,12 +261,7 @@
     }
   };
 
-
-
-  function normalizarCabecalho(v){
-    return lower(v).replace(/[^a-z0-9]/g,'');
-  }
-
+  function normalizarCabecalho(v){ return lower(v).replace(/[^a-z0-9]/g,''); }
   function valorPorCabecalho(row, aliases){
     for(const [k, v] of Object.entries(row || {})){
       const nk = normalizarCabecalho(k);
@@ -219,14 +271,17 @@
   }
 
   function contactoDeLinha(row){
+    const armazem = valorPorCabecalho(row, ['armazem','armazém','warehouse','localarmazem','localarmazém','site','filial']) || valorPorCabecalho(row, ['local','empresa','loja','localizacao','localização','morada']) || 'Sem Armazém';
+    const local = valorPorCabecalho(row, ['local','empresa','loja','localizacao','localização','morada','zona','piso']) || '';
     const c = {
       nome: valorPorCabecalho(row, ['nome','contacto','colaborador','pessoa','funcionario','funcionaria','utilizador','user']),
-      seccao: valorPorCabecalho(row, ['seccao','secao','departamento','area','equipa','grupo','categoria']) || 'Sem Secção',
-      extensao: valorPorCabecalho(row, ['extensao','ext','ramal','interno','numeroextensao','nramal']),
+      armazem,
+      seccao: valorPorCabecalho(row, ['seccao','secao','secção','departamento','area','equipa','grupo','categoria']) || 'Sem Secção',
+      extensao: valorPorCabecalho(row, ['extensao','extensão','ext','ramal','interno','numeroextensao','nramal']),
       telefone: valorPorCabecalho(row, ['telefone','telf','tel','telefonefixo','fixo','numero','contactotelefonico']),
-      telemovel: valorPorCabecalho(row, ['telemovel','telemóvel','movel','movel','tlm','mobile','gsm','contactomovel','contactomovel']),
+      telemovel: valorPorCabecalho(row, ['telemovel','telemóvel','movel','móvel','tlm','mobile','gsm','contactomovel','contactomóvel']),
       email: valorPorCabecalho(row, ['email','mail','correio','correioeletronico','e-mail']),
-      local: valorPorCabecalho(row, ['local','empresa','loja','armazem','armazém','localizacao','localização','morada']) || 'Sem Local',
+      local,
       observacoes: valorPorCabecalho(row, ['observacoes','observações','obs','notas','nota','descricao','descrição']),
       updatedAtMs: Date.now(),
       origemImportacao: 'excel'
@@ -263,11 +318,11 @@
     const novos = rows.map(contactoDeLinha).filter(Boolean);
     if(!novos.length){ alert('Não encontrei contactos válidos no ficheiro. Confirma se existe uma coluna Nome.'); return; }
     if(!window.db?.collection) throw new Error('Firebase indisponível.');
-    const msg = `Foram encontrados ${novos.length} contactos.\n\nA importação vai adicionar contactos novos e atualizar contactos existentes com o mesmo Nome + Secção.\n\nQueres continuar?`;
+    const msg = `Foram encontrados ${novos.length} contactos.\n\nA importação vai adicionar contactos novos e atualizar contactos existentes com o mesmo Nome + Armazém + Secção.\n\nQueres continuar?`;
     if(!confirm(msg)) return;
     setEstado('A importar...');
 
-    const existentes = new Map(contactos.map(c => [lower(`${c.nome}|${c.seccao}`), c.firebaseId]));
+    const existentes = new Map(contactos.map(c => [lower(`${c.nome}|${armazemDe(c)}|${seccaoDe(c)}`), c.firebaseId]));
     let batch = window.db.batch();
     let ops = 0, adicionados = 0, atualizados = 0;
     async function commitIfNeeded(force=false){
@@ -279,7 +334,7 @@
     }
 
     for(const c of novos){
-      const key = lower(`${c.nome}|${c.seccao}`);
+      const key = lower(`${c.nome}|${armazemDe(c)}|${seccaoDe(c)}`);
       const existingId = existentes.get(key);
       if(existingId){
         batch.update(window.db.collection(COLLECTION).doc(String(existingId)), c);
@@ -333,25 +388,24 @@
 
   window.descarregarModeloDiretorio = function(){
     const rows = [
-      ['Nome','Secção','Extensão','Telefone','Telemóvel','Email','Local','Observações'],
-      ['Exemplo Contacto','Logística','51000','253000000','912345678','exemplo@empresa.pt','Braga','Nota interna']
+      ['Nome','Armazém','Secção','Extensão','Telefone','Telemóvel','Email','Local','Observações'],
+      ['Exemplo Contacto','Braga','Logística','51000','253000000','912345678','exemplo@empresa.pt','Piso 1','Nota interna']
     ];
     const csv = rows.map(r => r.map(v => `"${String(v ?? '').replace(/"/g,'""')}"`).join(';')).join('\n');
     const blob = new Blob(['\ufeff' + csv], {type:'text/csv;charset=utf-8'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'modelo-diretorio-telefonico.csv'; a.click();
+    a.href = url; a.download = 'modelo-diretorio-por-armazem.csv'; a.click();
     URL.revokeObjectURL(url);
   };
 
-
   window.exportarDiretorioCSV = function(){
-    const rows = [['Nome','Secção','Extensão','Telefone','Telemóvel','Email','Local','Observações'], ...filtrados().map(c => [c.nome,c.seccao,c.extensao,c.telefone,c.telemovel,c.email,c.local,c.observacoes])];
+    const rows = [['Nome','Armazém','Secção','Extensão','Telefone','Telemóvel','Email','Local','Observações'], ...filtrados().map(c => [c.nome,armazemDe(c),seccaoDe(c),c.extensao,c.telefone,c.telemovel,c.email,c.local,c.observacoes])];
     const csv = rows.map(r => r.map(v => `"${String(v ?? '').replace(/"/g,'""')}"`).join(';')).join('\n');
     const blob = new Blob(['\ufeff' + csv], {type:'text/csv;charset=utf-8'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'diretorio-telefonico-app-braga.csv'; a.click();
+    a.href = url; a.download = 'diretorio-telefonico-por-armazem.csv'; a.click();
     URL.revokeObjectURL(url);
   };
 
@@ -365,7 +419,7 @@
     unsubscribe = window.db.collection(COLLECTION).onSnapshot((snap)=>{
       contactos = [];
       snap.forEach(doc => contactos.push({firebaseId: doc.id, ...doc.data()}));
-      contactos.sort((a,b)=> String(a.seccao||'').localeCompare(String(b.seccao||''),'pt',{numeric:true}) || String(a.nome||'').localeCompare(String(b.nome||''),'pt',{numeric:true}));
+      contactos.sort((a,b)=> armazemDe(a).localeCompare(armazemDe(b),'pt',{numeric:true}) || seccaoDe(a).localeCompare(seccaoDe(b),'pt',{numeric:true}) || String(a.nome||'').localeCompare(String(b.nome||''),'pt',{numeric:true}));
       localStorage.setItem('appBraga_diretorio_cache', JSON.stringify(contactos));
       setEstado(`${contactos.length} contactos`);
       window.renderDiretorio();
