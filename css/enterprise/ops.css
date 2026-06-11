@@ -1204,7 +1204,7 @@ main > .enterprise-window-actions .enterprise-window-btn[data-enterprise-close]:
 }
 
 
-/* ===== APP BRAGA V1.32.7 - SIDEBAR ICON CARDS PRO ===== */
+/* ===== APP BRAGA V1.32.9 - SIDEBAR ICON CARDS PRO ===== */
 .sidebar-pro-groups .sidebar-nav-pro a[data-icon]{
   min-height:46px !important;
   gap:12px !important;
@@ -1284,4 +1284,4 @@ main > .enterprise-window-actions .enterprise-window-btn[data-enterprise-close]:
   background:linear-gradient(145deg, rgba(250,204,21,.22), rgba(251,146,60,.12));
   border:1px solid rgba(250,204,21,.18);
 }
-/* ===== END APP BRAGA V1.32.7 - SIDEBAR ICON CARDS PRO ===== */
+/* ===== END APP BRAGA V1.32.9 - SIDEBAR ICON CARDS PRO ===== */

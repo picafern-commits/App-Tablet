@@ -6315,3 +6315,32 @@ body.app-role-consulta .danger {
     grid-template-columns:1fr;
   }
 }
+
+
+/* ===== APP BRAGA V1.32.9 - SIDEBAR FAVORITOS + LIMPEZA VISUAL ===== */
+.sidebar-favorites .sidebar-section-title{display:flex;align-items:center;gap:8px;justify-content:space-between;margin-bottom:8px;}
+.sidebar-fav-edit{margin-left:auto;width:34px;height:30px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.055);color:#e5f7ff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s ease;}
+.sidebar-fav-edit:hover{transform:translateY(-1px);background:rgba(0,214,255,.15);border-color:rgba(0,214,255,.35);}
+.sidebar-fav-list{display:grid;gap:6px;}
+.sidebar-fav-list .empty-favs{font-size:12px;color:rgba(255,255,255,.58);padding:8px 10px;border:1px dashed rgba(255,255,255,.14);border-radius:12px;}
+.sidebar-fav-manage-overlay{position:fixed;inset:0;z-index:99999;background:rgba(2,6,23,.66);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:24px;}
+.sidebar-fav-manage-card{width:min(620px,96vw);max-height:88vh;overflow:auto;border-radius:24px;background:linear-gradient(145deg,rgba(15,23,42,.98),rgba(8,13,22,.98));border:1px solid rgba(255,255,255,.12);box-shadow:0 28px 90px rgba(0,0,0,.45);padding:22px;color:#fff;}
+.sidebar-fav-manage-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px;}
+.sidebar-fav-manage-head h3{margin:0;font-size:22px;}
+.sidebar-fav-manage-head p{margin:4px 0 0;color:rgba(255,255,255,.64);}
+.sidebar-fav-close{width:38px;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff;cursor:pointer;font-size:18px;}
+.sidebar-fav-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0 18px;}
+.sidebar-fav-option{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:rgba(255,255,255,.045);cursor:pointer;}
+.sidebar-fav-option input{width:18px;height:18px;accent-color:#06d6ff;}
+.sidebar-fav-option span:last-child{font-weight:850;}
+.sidebar-fav-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;}
+.sidebar a[data-icon]::before,.sidebar-group-toggle .sidebar-group-icon{width:28px!important;height:28px!important;min-width:28px!important;border-radius:10px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;background:linear-gradient(145deg,rgba(255,255,255,.10),rgba(255,255,255,.035))!important;border:1px solid rgba(255,255,255,.11)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.1)!important;font-size:15px!important;}
+.sidebar a.active[data-icon]::before{background:linear-gradient(135deg,rgba(6,214,255,.35),rgba(37,99,235,.35))!important;border-color:rgba(6,214,255,.45)!important;}
+.enterprise-sidebar-window-actions{margin-top:auto;padding:12px 0 4px;display:grid;grid-template-columns:1fr 1fr;gap:10px;position:sticky;bottom:0;background:linear-gradient(180deg,rgba(12,12,14,0),rgba(12,12,14,.95) 28%);}
+.enterprise-sidebar-window-actions button{height:46px;border-radius:15px;border:1px solid rgba(255,255,255,.14);background:linear-gradient(145deg,rgba(255,255,255,.10),rgba(255,255,255,.035));color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 14px 30px rgba(0,0,0,.22);transition:.18s ease;font-size:19px;}
+.enterprise-sidebar-window-actions button:hover{transform:translateY(-1px);border-color:rgba(6,214,255,.38);background:linear-gradient(145deg,rgba(6,214,255,.18),rgba(37,99,235,.12));}
+.enterprise-sidebar-window-actions .enterprise-window-close:hover{border-color:rgba(248,113,113,.45);background:linear-gradient(145deg,rgba(248,113,113,.22),rgba(127,29,29,.2));}
+.enterprise-window-actions{display:none!important;}
+.printer-card::after,.radio-card::after,.pistol-card::after,.network-card::after,.user-card::after,.pc-card::after,.card::after,.panel::after,.reference-panel::after{content:none!important;display:none!important;}
+@media(max-width:720px){.sidebar-fav-grid{grid-template-columns:1fr}.enterprise-sidebar-window-actions{grid-template-columns:1fr 1fr}}
+/* ===== END APP BRAGA V1.32.9 ===== */

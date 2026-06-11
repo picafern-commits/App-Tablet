@@ -232,18 +232,16 @@
   function setupElectronSidebarActions() {
     const sidebar = document.querySelector(".sidebar");
     if (!window.electronAPI?.closeApp) return;
-    sidebar?.querySelectorAll(".enterprise-window-actions, [data-enterprise-displays], [data-enterprise-display-select], [data-enterprise-move-display], [data-enterprise-display-status]").forEach((node) => node.remove());
-    const main = document.querySelector("main, .main");
-    if (!main) return;
-    const existingActions = document.querySelector(".enterprise-window-actions");
-    if (existingActions) return bindElectronWindowButtons(existingActions);
+    document.querySelectorAll(".enterprise-window-actions").forEach((node) => node.remove());
+    sidebar?.querySelectorAll(".enterprise-sidebar-window-actions, [data-enterprise-displays], [data-enterprise-display-select], [data-enterprise-move-display], [data-enterprise-display-status]").forEach((node) => node.remove());
+    if (!sidebar) return;
     const actions = document.createElement("div");
-    actions.className = "enterprise-window-actions";
+    actions.className = "enterprise-sidebar-window-actions";
     actions.innerHTML = `
-      <button class="secondary-btn enterprise-window-btn" type="button" data-enterprise-hide>Segundo plano</button>
-      <button class="secondary-btn enterprise-window-btn enterprise-window-close" type="button" data-enterprise-close>Fechar APP</button>
+      <button class="enterprise-window-btn" type="button" data-enterprise-hide title="Segundo plano" aria-label="Segundo plano">⏸</button>
+      <button class="enterprise-window-btn enterprise-window-close" type="button" data-enterprise-close title="Fechar App" aria-label="Fechar App">⏻</button>
     `;
-    main.prepend(actions);
+    sidebar.appendChild(actions);
     bindElectronWindowButtons(actions);
   }
 

@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.32.7";
+const APP_VERSION = "1.32.9";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BE2xnhqmSPq85_kA6comGATxEseSoh8zY_EK_4NZsbiI1HJByjc1PgQqhTsUwPlr1ujuUSpSzp29AQeS1hnlHOQ";
 
 
@@ -11372,7 +11372,7 @@ window.testarCamerasStockQr = async function(){
   });
 })();
 
-/* ===== APP BRAGA V1.32.7 - SIDEBAR GROUPS STATE FIX ===== */
+/* ===== APP BRAGA V1.32.9 - SIDEBAR GROUPS STATE FIX ===== */
 (function(){
   const STORAGE_KEY = "appBraga.sidebar.groups.open";
   const LEGACY_KEYS = [
@@ -11483,4 +11483,112 @@ window.testarCamerasStockQr = async function(){
   setTimeout(setupSidebarGroups, 500);
   setTimeout(setupSidebarGroups, 1200);
 })();
-/* ===== END APP BRAGA V1.32.7 - SIDEBAR GROUPS STATE FIX ===== */
+/* ===== END APP BRAGA V1.32.9 - SIDEBAR GROUPS STATE FIX ===== */
+
+/* ===== APP BRAGA V1.32.9 - FAVORITOS EDITAVEIS SIDEBAR ===== */
+(function(){
+  const STORAGE_KEY = "appBraga.sidebar.favoritos.v1329";
+  const DEFAULT_FAVS = ["index.html", "stock.html", "diretorio.html", "impressoras.html"];
+  const PAGES = [
+    { href:"index.html", label:"Dashboard", icon:"🏠" },
+    { href:"add-toner.html", label:"Adicionar Toner", icon:"➕" },
+    { href:"stock.html", label:"Stock", icon:"📦" },
+    { href:"historico.html", label:"Histórico", icon:"🧾" },
+    { href:"tarefas.html", label:"Tarefas", icon:"✅" },
+    { href:"etiquetas-word.html", label:"Etiquetas Word", icon:"🏷️" },
+    { href:"impressoras.html", label:"Impressoras", icon:"🖨️" },
+    { href:"manutencao-impressoras.html", label:"Manutenção Impressoras", icon:"🛠️" },
+    { href:"computadores.html", label:"Computadores", icon:"💻" },
+    { href:"pistolas.html", label:"Pistolas CK65", icon:"📟" },
+    { href:"radios.html", label:"Rádios", icon:"📡" },
+    { href:"portas.html", label:"Portas Rede", icon:"🔌" },
+    { href:"diretorio.html", label:"Diretório", icon:"☎️" },
+    { href:"informacoes.html", label:"Informações", icon:"ℹ️" },
+    { href:"users.html", label:"Users", icon:"👥" },
+    { href:"diagnostico.html", label:"Diagnóstico", icon:"🩺" },
+    { href:"config.html", label:"Configurações", icon:"⚙️" }
+  ];
+  function safeGetFavs(){
+    try{
+      const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+      if(Array.isArray(parsed)) return parsed.filter(Boolean);
+    }catch(e){}
+    return DEFAULT_FAVS.slice();
+  }
+  function saveFavs(list){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify([...new Set(list)])); }catch(e){}
+  }
+  function currentFile(){
+    const p = (location.pathname || "").split("/").pop() || "index.html";
+    return p === "" ? "index.html" : p;
+  }
+  function linkFor(page){
+    const a = document.createElement("a");
+    a.href = page.href;
+    a.dataset.icon = page.icon;
+    if(currentFile() === page.href) a.classList.add("active");
+    a.innerHTML = `<span class="sidebar-link-text">${page.label}</span>`;
+    return a;
+  }
+  function renderFavorites(){
+    const section = document.querySelector(".sidebar-favorites");
+    if(!section) return;
+    const favs = safeGetFavs();
+    const pages = favs.map(h => PAGES.find(p => p.href === h)).filter(Boolean);
+    section.innerHTML = `
+      <div class="sidebar-section-title">
+        <span><span>⭐</span><strong> Favoritos</strong></span>
+        <button class="sidebar-fav-edit" type="button" title="Editar favoritos" aria-label="Editar favoritos">✦</button>
+      </div>
+      <div class="sidebar-fav-list"></div>
+    `;
+    const list = section.querySelector(".sidebar-fav-list");
+    if(!pages.length){
+      list.innerHTML = '<div class="empty-favs">Sem favoritos. Carrega em ✦ para escolher.</div>';
+    }else{
+      pages.forEach(p => list.appendChild(linkFor(p)));
+    }
+    section.querySelector(".sidebar-fav-edit")?.addEventListener("click", openFavModal);
+  }
+  function openFavModal(){
+    document.querySelector(".sidebar-fav-manage-overlay")?.remove();
+    const selected = new Set(safeGetFavs());
+    const overlay = document.createElement("div");
+    overlay.className = "sidebar-fav-manage-overlay";
+    overlay.innerHTML = `
+      <div class="sidebar-fav-manage-card" role="dialog" aria-modal="true" aria-label="Editar favoritos">
+        <div class="sidebar-fav-manage-head">
+          <div><h3>Editar favoritos</h3><p>Escolhe as páginas que queres sempre no topo da sidebar.</p></div>
+          <button class="sidebar-fav-close" type="button" aria-label="Fechar">×</button>
+        </div>
+        <div class="sidebar-fav-grid">
+          ${PAGES.map(p => `
+            <label class="sidebar-fav-option">
+              <input type="checkbox" value="${p.href}" ${selected.has(p.href) ? "checked" : ""}>
+              <span>${p.icon}</span><span>${p.label}</span>
+            </label>`).join("")}
+        </div>
+        <div class="sidebar-fav-actions">
+          <button class="secondary-btn" type="button" data-fav-reset>Repor padrão</button>
+          <button class="secondary-btn" type="button" data-fav-cancel>Cancelar</button>
+          <button class="primary-btn" type="button" data-fav-save>Guardar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const close = () => overlay.remove();
+    overlay.querySelector(".sidebar-fav-close")?.addEventListener("click", close);
+    overlay.querySelector("[data-fav-cancel]")?.addEventListener("click", close);
+    overlay.addEventListener("click", (e)=>{ if(e.target === overlay) close(); });
+    overlay.querySelector("[data-fav-reset]")?.addEventListener("click", ()=>{
+      saveFavs(DEFAULT_FAVS); close(); renderFavorites();
+    });
+    overlay.querySelector("[data-fav-save]")?.addEventListener("click", ()=>{
+      const list = Array.from(overlay.querySelectorAll("input[type='checkbox']:checked")).map(i => i.value);
+      saveFavs(list); close(); renderFavorites();
+    });
+  }
+  function init(){ renderFavorites(); }
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+})();
+/* ===== END APP BRAGA V1.32.9 - FAVORITOS EDITAVEIS SIDEBAR ===== */

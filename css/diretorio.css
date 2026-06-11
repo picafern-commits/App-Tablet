@@ -47,3 +47,16 @@
   .diretorio-section-head { padding: 14px; }
   .diretorio-section-title { font-size: 16px; }
 }
+
+
+/* ===== APP BRAGA V1.32.9 - DIRETORIO DARK ROW FIX ===== */
+.diretorio-table-wrap{background:rgba(8,13,24,.96)!important;}
+.diretorio-table{color:#f8fafc!important;background:#0b1220!important;}
+.diretorio-table th{background:#101a2d!important;color:#f8fafc!important;border-bottom:1px solid rgba(255,255,255,.08)!important;}
+.diretorio-table td{color:#eef6ff!important;border-bottom:1px solid rgba(255,255,255,.08)!important;background:transparent!important;}
+.diretorio-table tbody tr:nth-child(odd) td{background:#0f172a!important;}
+.diretorio-table tbody tr:nth-child(even) td{background:#111c30!important;}
+.diretorio-table tbody tr:hover td{background:#172642!important;}
+.diretorio-table a{color:#00e5ff!important;}
+.diretorio-table td:first-child,.diretorio-table td:nth-child(2){color:#fff!important;}
+/* ===== END APP BRAGA V1.32.9 ===== */
