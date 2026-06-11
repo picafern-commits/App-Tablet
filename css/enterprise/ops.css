@@ -1001,7 +1001,7 @@ main > .enterprise-window-actions .enterprise-window-btn[data-enterprise-close]:
   }
 }
 
-/* ===== APP BRAGA V1.32.6 - SIDEBAR GROUPS PRO ===== */
+/* ===== APP BRAGA V1.32.5 - SIDEBAR GROUPS PRO ===== */
 .sidebar-pro-groups {
   padding-bottom: 14px !important;
 }
@@ -1186,7 +1186,7 @@ main > .enterprise-window-actions .enterprise-window-btn[data-enterprise-close]:
     margin: 0 0 14px 0 !important;
   }
 }
-/* ===== END APP BRAGA V1.32.6 - SIDEBAR GROUPS PRO ===== */
+/* ===== END APP BRAGA V1.32.5 - SIDEBAR GROUPS PRO ===== */
 
 /* Animation reliability for grouped sidebar links */
 .sidebar-group-links {
@@ -1202,3 +1202,86 @@ main > .enterprise-window-actions .enterprise-window-btn[data-enterprise-close]:
   max-height: 520px !important;
   opacity: 1 !important;
 }
+
+
+/* ===== APP BRAGA V1.32.7 - SIDEBAR ICON CARDS PRO ===== */
+.sidebar-pro-groups .sidebar-nav-pro a[data-icon]{
+  min-height:46px !important;
+  gap:12px !important;
+  border-radius:16px !important;
+  padding-left:10px !important;
+  padding-right:12px !important;
+  transition:transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease !important;
+}
+.sidebar-pro-groups .sidebar-nav-pro a[data-icon]::before{
+  width:32px !important;
+  height:32px !important;
+  min-width:32px !important;
+  display:inline-grid !important;
+  place-items:center !important;
+  content:attr(data-icon) !important;
+  font-size:17px !important;
+  line-height:1 !important;
+  border-radius:13px !important;
+  color:#eaf7ff !important;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255,255,255,.26), transparent 32%),
+    linear-gradient(145deg, rgba(37,99,235,.62), rgba(6,182,212,.28)) !important;
+  border:1px solid rgba(255,255,255,.14) !important;
+  box-shadow:0 10px 24px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.16) !important;
+  filter:none !important;
+}
+.sidebar-pro-groups .sidebar-nav-pro a[data-icon]:hover{
+  transform:translateX(2px) !important;
+  background:linear-gradient(135deg, rgba(37,99,235,.18), rgba(6,182,212,.10)) !important;
+  border-color:rgba(34,211,238,.24) !important;
+}
+.sidebar-pro-groups .sidebar-nav-pro a[data-icon]:hover::before{
+  transform:scale(1.04) !important;
+  box-shadow:0 12px 28px rgba(6,182,212,.18), inset 0 1px 0 rgba(255,255,255,.20) !important;
+}
+.sidebar-pro-groups .sidebar-nav-pro a[data-icon].active::before,
+.sidebar-pro-groups .sidebar-nav-pro a[data-icon][aria-current="page"]::before{
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255,255,255,.35), transparent 34%),
+    linear-gradient(145deg, rgba(34,211,238,.95), rgba(37,99,235,.86)) !important;
+  color:#ffffff !important;
+  border-color:rgba(255,255,255,.24) !important;
+  box-shadow:0 14px 32px rgba(6,182,212,.28), inset 0 1px 0 rgba(255,255,255,.24) !important;
+}
+.sidebar-pro-groups .sidebar-link-text{
+  font-weight:900 !important;
+  letter-spacing:-.01em !important;
+}
+.sidebar-pro-groups .sidebar-group-toggle{
+  min-height:46px !important;
+  border-radius:16px !important;
+}
+.sidebar-pro-groups .sidebar-group-icon{
+  width:32px !important;
+  height:32px !important;
+  min-width:32px !important;
+  border-radius:13px !important;
+  font-size:17px !important;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255,255,255,.22), transparent 34%),
+    linear-gradient(145deg, rgba(15,23,42,.92), rgba(37,99,235,.36)) !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  box-shadow:0 10px 24px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.12) !important;
+}
+.sidebar-pro-groups .sidebar-group.is-open .sidebar-group-icon{
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255,255,255,.30), transparent 34%),
+    linear-gradient(145deg, rgba(34,211,238,.78), rgba(37,99,235,.62)) !important;
+  box-shadow:0 12px 28px rgba(6,182,212,.18), inset 0 1px 0 rgba(255,255,255,.18) !important;
+}
+.sidebar-pro-groups .sidebar-section-title span{
+  width:26px;
+  height:26px;
+  display:inline-grid;
+  place-items:center;
+  border-radius:10px;
+  background:linear-gradient(145deg, rgba(250,204,21,.22), rgba(251,146,60,.12));
+  border:1px solid rgba(250,204,21,.18);
+}
+/* ===== END APP BRAGA V1.32.7 - SIDEBAR ICON CARDS PRO ===== */

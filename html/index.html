@@ -12,10 +12,10 @@
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/style.css?v=1.32.6">
+  <link rel="stylesheet" href="../css/style.css?v=1.32.7">
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
   <link rel="stylesheet" href="../css/app-theme-pro.css?v=theme-pro-1">
-  <link rel="stylesheet" href="../css/enterprise/ops.css?v=ops-10">
+  <link rel="stylesheet" href="../css/enterprise/ops.css?v=ops-11">
   <link rel="stylesheet" href="../css/systems/personal-tools.css?v=personal-4">
   <link rel="stylesheet" href="../css/systems/global-search.css?v=global-search-2">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -98,44 +98,27 @@
   </nav>
 </aside>
 
-<main class="main dashboard-shell dashboard-app-panel">
-  <section class="dashboard-callcenter-hero">
-    <div>
-      <div class="dashboard-eyebrow">Centro operacional</div>
-      <h1>📊 Painel de Aplicações</h1>
-      <p>Acesso rápido às ferramentas da App Braga.</p>
-    </div>
-    <span class="status-pill">Sistema Online</span>
-  </section>
+<main class="main dashboard-shell">
+  <div class="page-hero">
+    <div class="page-hero-title">Dashboard</div>
+	<span class="status-pill">Sistema Online</span>
+  </div>
 
-  <section class="dashboard-fullwidth dashboard-featured-sticky">
-    <div class="dashboard-panel featured-panel featured-panel-premium">
-      <div class="panel-title-row featured-title-row">
-        <div>
-          <span class="dashboard-eyebrow">Sempre visível</span>
-          <h2>⭐ Equipamentos em Destaque</h2>
-        </div>
-        <a href="impressoras.html" class="secondary-btn featured-manage-btn">Ver impressoras</a>
-      </div>
-      <div id="listaDashboardStock" class="equipment-grid featured-equipment-grid"></div>
-    </div>
-  </section>
-
-  <section class="enterprise-metrics dashboard-metrics-clean">
+  <section class="enterprise-metrics">
     <div class="metric-card metric-blue">
       <span>Total de Equipamentos</span>
       <strong id="dashTotalEquipamentos">0</strong>
-      <small>Inventário ativo</small>
+      <small>Inventario ativo</small>
     </div>
     <div class="metric-card metric-green">
       <span>Stock Total Toners</span>
       <strong id="dashStockTotal">0</strong>
-      <small>Toners disponíveis</small>
+      <small>Toners disponÃ­veis</small>
     </div>
     <div class="metric-card metric-accent">
-      <span>Manutenções a Decorrer</span>
+      <span>ManutenÃ§Ãµes a Decorrer</span>
       <strong id="dashTicketsAbertos">0</strong>
-      <small>Manutenções pendentes</small>
+      <small>ManutenÃ§Ãµes pendentes</small>
     </div>
     <div class="metric-card metric-purple">
       <span>Impressoras OK</span>
@@ -144,23 +127,11 @@
     </div>
   </section>
 
-  <section class="dashboard-app-grid" aria-label="Acesso rápido">
-    <a class="dashboard-app-card" href="add-toner.html"><span>➕</span><strong>Adicionar Toner</strong><small>Registar novo toner</small></a>
-    <a class="dashboard-app-card" href="stock.html"><span>📦</span><strong>Stock</strong><small>Toners disponíveis</small></a>
-    <a class="dashboard-app-card" href="historico.html"><span>🧾</span><strong>Histórico</strong><small>Movimentos e usados</small></a>
-    <a class="dashboard-app-card" href="etiquetas-word.html"><span>🏷️</span><strong>Etiquetas Word</strong><small>Impressão e modelos</small></a>
-    <a class="dashboard-app-card" href="impressoras.html"><span>🖨️</span><strong>Impressoras</strong><small>Estado dos equipamentos</small></a>
-    <a class="dashboard-app-card" href="manutencao-impressoras.html"><span>🛠️</span><strong>Manutenção</strong><small>Intervenções pendentes</small></a>
-    <a class="dashboard-app-card" href="computadores.html"><span>💻</span><strong>Computadores</strong><small>Parque informático</small></a>
-    <a class="dashboard-app-card" href="diretorio.html"><span>☎️</span><strong>Diretório</strong><small>Lista telefónica</small></a>
-    <a class="dashboard-app-card" href="portas.html"><span>🔌</span><strong>Portas Rede</strong><small>Infraestrutura</small></a>
-  </section>
-
   <section id="personalToolsDashboard" class="personal-dashboard dashboard-tasks-only">
-    <section class="personal-panel dashboard-task-panel dashboard-task-panel-clean">
+    <section class="personal-panel dashboard-task-panel">
       <div class="personal-panel-head">
         <div>
-          <h2>✅ Tarefas</h2>
+          <h2>Tarefas</h2>
           <p>As tarefas abertas ficam aqui para não te esqueceres.</p>
         </div>
         <a href="tarefas.html" class="secondary-btn">Ver todas</a>
@@ -168,12 +139,21 @@
       <div id="personalTaskList" class="personal-list personal-task-list dashboard-task-list"></div>
     </section>
   </section>
+
+  <section class="dashboard-fullwidth">
+    <div class="dashboard-panel featured-panel">
+      <div class="panel-title-row">
+        <h2>Equipamentos em Destaque</h2>
+      </div>
+      <div id="listaDashboardStock" class="equipment-grid"></div>
+    </div>
+  </section>
 </main>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<script src="../js/app.js?v=1.32.6"></script>
+<script src="../js/app.js?v=1.32.7"></script>
 <script src="../js/systems/equipment/equipment-models.js?v=equipment-3"></script>
 <script src="../js/systems/global-search/global-search.js?v=global-search-2"></script>
 

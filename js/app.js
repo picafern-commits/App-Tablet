@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.32.6";
+const APP_VERSION = "1.32.7";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BE2xnhqmSPq85_kA6comGATxEseSoh8zY_EK_4NZsbiI1HJByjc1PgQqhTsUwPlr1ujuUSpSzp29AQeS1hnlHOQ";
 
 
@@ -11372,7 +11372,7 @@ window.testarCamerasStockQr = async function(){
   });
 })();
 
-/* ===== APP BRAGA V1.32.6 - SIDEBAR GROUPS STATE FIX ===== */
+/* ===== APP BRAGA V1.32.7 - SIDEBAR GROUPS STATE FIX ===== */
 (function(){
   const STORAGE_KEY = "appBraga.sidebar.groups.open";
   const LEGACY_KEYS = [
@@ -11483,4 +11483,4 @@ window.testarCamerasStockQr = async function(){
   setTimeout(setupSidebarGroups, 500);
   setTimeout(setupSidebarGroups, 1200);
 })();
-/* ===== END APP BRAGA V1.32.6 - SIDEBAR GROUPS STATE FIX ===== */
+/* ===== END APP BRAGA V1.32.7 - SIDEBAR GROUPS STATE FIX ===== */

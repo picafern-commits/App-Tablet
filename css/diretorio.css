@@ -1,5 +1,5 @@
 
-/* ===== DIRETORIO TELEFONICO APP BRAGA V1.32.6 ===== */
+/* ===== DIRETORIO TELEFONICO APP BRAGA V1.32.5 ===== */
 .diretorio-page { max-width: 1360px; }
 .diretorio-hero { align-items: flex-start; gap: 18px; }
 .directory-subtitle { margin: 8px 0 0; color: rgba(255,255,255,.68); font-weight: 600; }
@@ -46,39 +46,4 @@
   .diretorio-actions { grid-template-columns: 1fr; }
   .diretorio-section-head { padding: 14px; }
   .diretorio-section-title { font-size: 16px; }
-}
-
-/* ===== APP BRAGA v1.32.6 — Diretório legível sem linhas brancas ===== */
-.diretorio-table-wrap{
-  background:rgba(2,6,23,.96) !important;
-  border-top:1px solid rgba(255,255,255,.08);
-}
-.diretorio-table{
-  color:#f8fafc !important;
-}
-.diretorio-table th{
-  background:#0f172a !important;
-  color:#e0f2fe !important;
-  border-bottom:1px solid rgba(34,211,238,.20);
-}
-.diretorio-table td{
-  color:#f8fafc !important;
-  border-bottom:1px solid rgba(148,163,184,.16) !important;
-  background:rgba(15,23,42,.92) !important;
-}
-.diretorio-table tr:nth-child(even) td{
-  background:rgba(30,41,59,.84) !important;
-}
-.diretorio-table tr:hover td{
-  background:rgba(8,47,73,.88) !important;
-}
-.diretorio-table a{
-  color:#22d3ee !important;
-}
-.diretorio-table .dir-muted,
-.dir-muted{
-  color:#cbd5e1 !important;
-}
-.diretorio-section{
-  background:rgba(15,23,42,.84) !important;
 }
