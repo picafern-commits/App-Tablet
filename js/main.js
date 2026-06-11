@@ -19,9 +19,15 @@ const pushWatcherStatus = {
   message: "Envio remoto nas Firebase Cloud Functions. Este PC nao precisa de Node.js nem de watcher local."
 };
 app.isQuitting = false;
+app.setName("App Braga");
 
 const APP_REMOTE_URL = "https://picafern-commits.github.io/App-Tablet/html/index.html";
 const APP_LOCAL_FALLBACK = path.join(__dirname, "..", "html", "index.html");
+const APP_ICON_ICO = path.join(__dirname, "..", "icon.ico");
+const APP_ICON_PNG = path.join(__dirname, "..", "icon-512.png");
+function getAppIconPath() {
+  return fs.existsSync(APP_ICON_ICO) ? APP_ICON_ICO : APP_ICON_PNG;
+}
 
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) app.quit();
@@ -418,7 +424,7 @@ function mostrarJanelaPrincipal() {
 function createTray() {
   if (tray) return;
 
-  tray = new Tray(path.join(__dirname, "..", "icon.ico"));
+  tray = new Tray(getAppIconPath());
   tray.setToolTip("App Braga");
   tray.setContextMenu(Menu.buildFromTemplate([
     { label: "Abrir App Braga", click: mostrarJanelaPrincipal },
@@ -446,7 +452,7 @@ function createWindow() {
     minHeight: 700,
     fullscreen: desktopSettings.fullscreen !== false,
     autoHideMenuBar: true,
-    icon: path.join(__dirname, "..", "icon.ico"),
+    icon: getAppIconPath(),
     backgroundColor: "#101114",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
@@ -660,7 +666,7 @@ ipcMain.handle("app:notify", async (_event, payload = {}) => {
         tray.displayBalloon({
           title,
           content: body,
-          icon: path.join(__dirname, "..", "icon.ico")
+          icon: getAppIconPath()
         });
         return { ok: true, mode: "tray-balloon" };
       }
@@ -670,7 +676,7 @@ ipcMain.handle("app:notify", async (_event, payload = {}) => {
     const notification = new Notification({
       title,
       body,
-      icon: path.join(__dirname, "..", "icon-192.png"),
+      icon: getAppIconPath(),
       silent: false
     });
     notification.show();
