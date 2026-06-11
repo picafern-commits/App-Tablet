@@ -1,5 +1,5 @@
 
-// ===== DIRETORIO TELEFONICO APP BRAGA V1.32.2 =====
+// ===== DIRETORIO TELEFONICO APP BRAGA V1.32.5 =====
 (function(){
   const COLLECTION = 'diretorioTelefonico';
   let contactos = [];
@@ -203,6 +203,147 @@
       prompt('Copia o contacto:', txt);
     }
   };
+
+
+
+  function normalizarCabecalho(v){
+    return lower(v).replace(/[^a-z0-9]/g,'');
+  }
+
+  function valorPorCabecalho(row, aliases){
+    for(const [k, v] of Object.entries(row || {})){
+      const nk = normalizarCabecalho(k);
+      if(aliases.includes(nk)) return norm(v);
+    }
+    return '';
+  }
+
+  function contactoDeLinha(row){
+    const c = {
+      nome: valorPorCabecalho(row, ['nome','contacto','colaborador','pessoa','funcionario','funcionaria','utilizador','user']),
+      seccao: valorPorCabecalho(row, ['seccao','secao','departamento','area','equipa','grupo','categoria']) || 'Sem Secção',
+      extensao: valorPorCabecalho(row, ['extensao','ext','ramal','interno','numeroextensao','nramal']),
+      telefone: valorPorCabecalho(row, ['telefone','telf','tel','telefonefixo','fixo','numero','contactotelefonico']),
+      telemovel: valorPorCabecalho(row, ['telemovel','telemóvel','movel','movel','tlm','mobile','gsm','contactomovel','contactomovel']),
+      email: valorPorCabecalho(row, ['email','mail','correio','correioeletronico','e-mail']),
+      local: valorPorCabecalho(row, ['local','empresa','loja','armazem','armazém','localizacao','localização','morada']) || 'Sem Local',
+      observacoes: valorPorCabecalho(row, ['observacoes','observações','obs','notas','nota','descricao','descrição']),
+      updatedAtMs: Date.now(),
+      origemImportacao: 'excel'
+    };
+    return c.nome ? c : null;
+  }
+
+  function parseCSV(text){
+    const lines = String(text || '').replace(/^\ufeff/, '').split(/\r?\n/).filter(l => l.trim());
+    if(!lines.length) return [];
+    const delimiter = (lines[0].match(/;/g)||[]).length >= (lines[0].match(/,/g)||[]).length ? ';' : ',';
+    const parseLine = (line) => {
+      const out = []; let cur = ''; let quoted = false;
+      for(let i=0;i<line.length;i++){
+        const ch = line[i];
+        if(ch === '"'){
+          if(quoted && line[i+1] === '"'){ cur += '"'; i++; }
+          else quoted = !quoted;
+        } else if(ch === delimiter && !quoted){ out.push(cur); cur = ''; }
+        else cur += ch;
+      }
+      out.push(cur);
+      return out.map(v => v.trim());
+    };
+    const headers = parseLine(lines[0]);
+    return lines.slice(1).map(line => {
+      const vals = parseLine(line); const obj = {};
+      headers.forEach((h,i)=> obj[h] = vals[i] || '');
+      return obj;
+    });
+  }
+
+  async function importarLinhasDiretorio(rows){
+    const novos = rows.map(contactoDeLinha).filter(Boolean);
+    if(!novos.length){ alert('Não encontrei contactos válidos no ficheiro. Confirma se existe uma coluna Nome.'); return; }
+    if(!window.db?.collection) throw new Error('Firebase indisponível.');
+    const msg = `Foram encontrados ${novos.length} contactos.\n\nA importação vai adicionar contactos novos e atualizar contactos existentes com o mesmo Nome + Secção.\n\nQueres continuar?`;
+    if(!confirm(msg)) return;
+    setEstado('A importar...');
+
+    const existentes = new Map(contactos.map(c => [lower(`${c.nome}|${c.seccao}`), c.firebaseId]));
+    let batch = window.db.batch();
+    let ops = 0, adicionados = 0, atualizados = 0;
+    async function commitIfNeeded(force=false){
+      if(ops >= 400 || (force && ops > 0)){
+        await batch.commit();
+        batch = window.db.batch();
+        ops = 0;
+      }
+    }
+
+    for(const c of novos){
+      const key = lower(`${c.nome}|${c.seccao}`);
+      const existingId = existentes.get(key);
+      if(existingId){
+        batch.update(window.db.collection(COLLECTION).doc(String(existingId)), c);
+        atualizados++;
+      } else {
+        c.createdAtMs = Date.now();
+        const ref = window.db.collection(COLLECTION).doc();
+        batch.set(ref, c);
+        existentes.set(key, ref.id);
+        adicionados++;
+      }
+      ops++;
+      await commitIfNeeded(false);
+    }
+    await commitIfNeeded(true);
+    setEstado(`Importado: ${adicionados} novos / ${atualizados} atualizados`);
+    alert(`Importação concluída.\n\nNovos: ${adicionados}\nAtualizados: ${atualizados}`);
+  }
+
+  window.abrirImportDiretorio = function(){
+    const input = $('diretorioExcelInput');
+    if(input){ input.value = ''; input.click(); }
+  };
+
+  window.importarDiretorioExcel = async function(event){
+    const file = event?.target?.files?.[0];
+    if(!file) return;
+    try{
+      setEstado('A ler ficheiro...');
+      const name = lower(file.name);
+      let rows = [];
+      if(name.endsWith('.csv')){
+        rows = parseCSV(await file.text());
+      } else {
+        if(!window.XLSX) throw new Error('Biblioteca de Excel não carregou. Confirma a ligação à internet e tenta novamente.');
+        const buffer = await file.arrayBuffer();
+        const workbook = XLSX.read(buffer, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        if(!sheetName) throw new Error('O ficheiro Excel não tem folhas.');
+        rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: '' });
+      }
+      await importarLinhasDiretorio(rows);
+    }catch(err){
+      console.error('Erro ao importar diretório:', err);
+      alert('Erro ao importar Excel: ' + (err?.message || err));
+      setEstado('Erro ao importar', false);
+    } finally {
+      if(event?.target) event.target.value = '';
+    }
+  };
+
+  window.descarregarModeloDiretorio = function(){
+    const rows = [
+      ['Nome','Secção','Extensão','Telefone','Telemóvel','Email','Local','Observações'],
+      ['Exemplo Contacto','Logística','51000','253000000','912345678','exemplo@empresa.pt','Braga','Nota interna']
+    ];
+    const csv = rows.map(r => r.map(v => `"${String(v ?? '').replace(/"/g,'""')}"`).join(';')).join('\n');
+    const blob = new Blob(['\ufeff' + csv], {type:'text/csv;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'modelo-diretorio-telefonico.csv'; a.click();
+    URL.revokeObjectURL(url);
+  };
+
 
   window.exportarDiretorioCSV = function(){
     const rows = [['Nome','Secção','Extensão','Telefone','Telemóvel','Email','Local','Observações'], ...filtrados().map(c => [c.nome,c.seccao,c.extensao,c.telefone,c.telemovel,c.email,c.local,c.observacoes])];

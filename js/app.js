@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.32.2";
+const APP_VERSION = "1.32.5";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BE2xnhqmSPq85_kA6comGATxEseSoh8zY_EK_4NZsbiI1HJByjc1PgQqhTsUwPlr1ujuUSpSzp29AQeS1hnlHOQ";
 
 
@@ -11372,13 +11372,28 @@ window.testarCamerasStockQr = async function(){
   });
 })();
 
-/* ===== APP BRAGA V1.32.2 - SIDEBAR GROUPS PRO ===== */
+/* ===== APP BRAGA V1.32.5 - SIDEBAR GROUPS STATE FIX ===== */
 (function(){
-  const STORAGE_KEY = "appBraga.sidebar.groups.open.v1322";
+  const STORAGE_KEY = "appBraga.sidebar.groups.open";
+  const LEGACY_KEYS = [
+    "appBraga.sidebar.groups.open.v1322",
+    "appBraga.sidebar.groups.open.v1324"
+  ];
+
+  function readJson(key){
+    try { return JSON.parse(localStorage.getItem(key) || "{}"); }
+    catch(e){ return {}; }
+  }
 
   function readState(){
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
-    catch(e){ return {}; }
+    let state = readJson(STORAGE_KEY);
+    if (!state || Object.keys(state).length === 0) {
+      for (const key of LEGACY_KEYS) {
+        const legacy = readJson(key);
+        if (legacy && Object.keys(legacy).length) { state = legacy; break; }
+      }
+    }
+    return state || {};
   }
 
   function writeState(state){
@@ -11391,14 +11406,27 @@ window.testarCamerasStockQr = async function(){
     return path.toLowerCase();
   }
 
+  function collectSidebarState(sidebar){
+    const next = {};
+    sidebar.querySelectorAll(".sidebar-group").forEach((group) => {
+      const key = group.dataset.sidebarGroup || "grupo";
+      next[key] = group.classList.contains("is-open");
+    });
+    return next;
+  }
+
+  function saveCurrentSidebarState(sidebar){
+    if (!sidebar) return;
+    writeState(collectSidebarState(sidebar));
+  }
+
   function setupSidebarGroups(){
     const sidebar = document.querySelector(".sidebar-pro-groups, aside.sidebar");
-    if (!sidebar || sidebar.dataset.sidebarGroupsReady === "1") return;
-    sidebar.dataset.sidebarGroupsReady = "1";
+    if (!sidebar) return;
 
     const activeFile = currentFile();
     sidebar.querySelectorAll("a[href]").forEach((link) => {
-      const href = (link.getAttribute("href") || "").split("?")[0].split("#")[0].toLowerCase();
+      const href = (link.getAttribute("href") || "").split("?")[0].split("#")[0].split("/").pop().toLowerCase();
       if (href === activeFile) {
         link.classList.add("active");
         link.setAttribute("aria-current", "page");
@@ -11410,7 +11438,7 @@ window.testarCamerasStockQr = async function(){
       const key = group.dataset.sidebarGroup || "grupo";
       const toggle = group.querySelector(".sidebar-group-toggle");
       const hasActive = !!group.querySelector("a.active, a[aria-current='page']");
-      const shouldOpen = state[key] !== undefined ? !!state[key] : (hasActive || group.dataset.defaultOpen === "1");
+      const shouldOpen = Object.prototype.hasOwnProperty.call(state, key) ? !!state[key] : (hasActive || group.dataset.defaultOpen === "1");
 
       function setOpen(open){
         group.classList.toggle("is-open", !!open);
@@ -11422,14 +11450,28 @@ window.testarCamerasStockQr = async function(){
       if (toggle && toggle.dataset.bound !== "1") {
         toggle.dataset.bound = "1";
         toggle.addEventListener("click", () => {
-          const next = !group.classList.contains("is-open");
-          setOpen(next);
-          const latest = readState();
-          latest[key] = next;
-          writeState(latest);
+          const nextOpen = !group.classList.contains("is-open");
+          setOpen(nextOpen);
+          saveCurrentSidebarState(sidebar);
         });
       }
     });
+
+    if (sidebar.dataset.sidebarGroupsReady !== "1") {
+      sidebar.dataset.sidebarGroupsReady = "1";
+
+      /* Guarda o estado real que o utilizador deixou antes de mudar de página. */
+      sidebar.addEventListener("click", (event) => {
+        const link = event.target.closest("a[href]");
+        if (link) saveCurrentSidebarState(sidebar);
+      }, true);
+
+      window.addEventListener("pagehide", () => saveCurrentSidebarState(sidebar));
+      window.addEventListener("beforeunload", () => saveCurrentSidebarState(sidebar));
+    }
+
+    /* Se ainda não existia estado guardado, grava o layout inicial desta página para as próximas. */
+    if (!localStorage.getItem(STORAGE_KEY)) saveCurrentSidebarState(sidebar);
   }
 
   if (document.readyState === "loading") {
@@ -11437,7 +11479,8 @@ window.testarCamerasStockQr = async function(){
   } else {
     setupSidebarGroups();
   }
-  setTimeout(setupSidebarGroups, 250);
-  setTimeout(setupSidebarGroups, 900);
+  setTimeout(setupSidebarGroups, 120);
+  setTimeout(setupSidebarGroups, 500);
+  setTimeout(setupSidebarGroups, 1200);
 })();
-/* ===== END APP BRAGA V1.32.2 - SIDEBAR GROUPS PRO ===== */
+/* ===== END APP BRAGA V1.32.5 - SIDEBAR GROUPS STATE FIX ===== */
