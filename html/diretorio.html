@@ -9,21 +9,21 @@
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/style.css?v=1.33.0">
+  <link rel="stylesheet" href="../css/style.css?v=1.33.2">
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
   <link rel="stylesheet" href="../css/app-theme-pro.css?v=theme-pro-1">
   <link rel="stylesheet" href="../css/enterprise/ops.css?v=ops-12">
   <link rel="stylesheet" href="../css/systems/personal-tools.css?v=personal-4">
   <link rel="stylesheet" href="../css/systems/global-search.css?v=global-search-2">
-  <link rel="stylesheet" href="../css/diretorio.css?v=1.33.0">
+  <link rel="stylesheet" href="../css/diretorio.css?v=1.33.2">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="App Braga">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="format-detection" content="telephone=no">
   <meta name="msapplication-tap-highlight" content="no">
-  <link rel="stylesheet" href="../css/iphone-force-final.css?v=iphone-sidebar-slide-1">
-  <link rel="stylesheet" href="../css/iphone-sidebar-final.css?v=iphone-sidebar-final-1">
+  <link rel="stylesheet" href="../css/iphone-force-final.css?v=safe-area-1.33.2">
+  <link rel="stylesheet" href="../css/iphone-sidebar-final.css?v=safe-area-1.33.2">
 </head>
 <body>
 <aside class="sidebar sidebar-pro-groups">
@@ -155,17 +155,20 @@
     </div>
     <div class="form-grid">
       <label><span>Nome</span><input id="dirNome" type="text" placeholder="Nome do contacto"></label>
-      <label><span>Armazém</span><input id="dirArmazem" type="text" placeholder="Braga, Pêro Pinheiro, Armazém 1..."></label>
-      <label><span>Secção</span><input id="dirSeccao" type="text" placeholder="Administração, Logística..."></label>
+      <label><span>Armazém</span><input id="dirArmazem" type="text" list="dirArmazensLista" placeholder="Braga, Pêro Pinheiro, Armazém 1..."></label>
+      <label><span>Secção</span><input id="dirSeccao" type="text" list="dirSeccoesLista" placeholder="Administração, Logística..."></label>
       <label><span>Extensão</span><input id="dirExtensao" type="text" placeholder="51 000"></label>
       <label><span>Telefone</span><input id="dirTelefone" type="tel" placeholder="253 000 000"></label>
       <label><span>Telemóvel</span><input id="dirTelemovel" type="tel" placeholder="9xx xxx xxx"></label>
       <label><span>Email</span><input id="dirEmail" type="email" placeholder="nome@empresa.pt"></label>
       <label><span>Local / Empresa</span><input id="dirLocal" type="text" placeholder="Empresa, piso, zona ou observação de local..."></label>
       <label class="full-width"><span>Observações</span><textarea id="dirObs" rows="3" placeholder="Notas internas"></textarea></label>
+      <datalist id="dirArmazensLista"></datalist>
+      <datalist id="dirSeccoesLista"></datalist>
     </div>
     <div class="card-actions" style="margin-top:14px;">
-      <button class="primary-btn" type="button" onclick="guardarContactoDiretorio()">Guardar</button>
+      <button class="primary-btn" type="button" onclick="guardarContactoDiretorio()">Guardar Alterações</button>
+      <button id="dirDeleteModalBtn" class="secondary-btn danger-outline" type="button" onclick="apagarContactoAtualDiretorio()" style="display:none;">Apagar</button>
       <button class="secondary-btn" type="button" onclick="fecharModalDiretorio()">Cancelar</button>
     </div>
   </div>
@@ -174,16 +177,16 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="../js/app.js?v=1.33.0"></script>
+<script src="../js/app.js?v=1.33.2"></script>
 <script src="../js/systems/equipment/equipment-models.js?v=equipment-3"></script>
 <script src="../js/systems/global-search/global-search.js?v=global-search-2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="../js/diretorio.js?v=1.33.0"></script>
+<script src="../js/diretorio.js?v=1.33.2"></script>
 <script src="../js/core/helpers.js"></script>
-<script src="../js/iphone-force-final.js?v=iphone-sidebar-slide-1"></script>
+<script src="../js/iphone-force-final.js?v=safe-area-1.33.2"></script>
 <script src="../js/enterprise/ops.js?v=ops-12"></script>
 <script src="../js/systems/backup/local-backup.js?v=backup-2"></script>
 <script src="../js/systems/personal-tools.js?v=personal-4"></script>
-<script src="../js/iphone-sidebar-final.js?v=iphone-sidebar-final-1"></script>
+<script src="../js/iphone-sidebar-final.js?v=safe-area-1.33.2"></script>
 </body>
 </html>

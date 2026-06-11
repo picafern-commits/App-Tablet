@@ -117,3 +117,19 @@
   .diretorio-modal .form-grid{grid-template-columns:1fr;}
 }
 /* ===== END APP BRAGA V1.33.0 ===== */
+
+
+/* ===== APP BRAGA V1.33.2 - DIRETORIO EDITAR/APAGAR CLEAN ===== */
+.diretorio-row-actions{justify-content:flex-start;min-width:126px;}
+.dir-icon-btn{transition:transform .16s ease, filter .16s ease, box-shadow .16s ease;}
+.dir-icon-btn:hover{transform:translateY(-1px);filter:brightness(1.08);}
+.diretorio-modal .card-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+#dirDeleteModalBtn{margin-left:auto;}
+.diretorio-modal input[list]{padding-right:34px;}
+@media (max-width:620px){
+  .diretorio-modal{width:calc(100vw - 22px)!important;max-height:calc(100dvh - 34px);overflow:auto;}
+  #dirDeleteModalBtn{margin-left:0;width:100%;}
+  .diretorio-modal .card-actions .primary-btn,
+  .diretorio-modal .card-actions .secondary-btn{width:100%;justify-content:center;}
+}
+/* ===== END APP BRAGA V1.33.2 ===== */

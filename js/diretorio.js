@@ -51,6 +51,19 @@
     if($('dirObs')) $('dirObs').value = c.observacoes || '';
   }
 
+  function preencherDatalistsDiretorio(){
+    const armazensLista = $('dirArmazensLista');
+    const seccoesLista = $('dirSeccoesLista');
+    if(armazensLista){
+      const vals = [...new Set(contactos.map(armazemDe).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt',{numeric:true}));
+      armazensLista.innerHTML = vals.map(v=>`<option value="${esc(v)}"></option>`).join('');
+    }
+    if(seccoesLista){
+      const vals = [...new Set(contactos.map(seccaoDe).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt',{numeric:true}));
+      seccoesLista.innerHTML = vals.map(v=>`<option value="${esc(v)}"></option>`).join('');
+    }
+  }
+
   function atualizarFiltros(){
     const selArm = $('diretorioFiltroArmazem');
     const selSec = $('diretorioFiltroSeccao');
@@ -111,6 +124,7 @@
   window.renderDiretorio = function(){
     atualizarFiltros();
     const list = filtrados();
+    preencherDatalistsDiretorio();
     const total = $('diretorioTotal');
     const armazens = $('diretorioArmazens');
     const seccoes = $('diretorioSeccoes');
@@ -209,13 +223,22 @@
     contactoEditId = id || null;
     const c = contactos.find(x => String(x.firebaseId) === String(id));
     preencherModal(c || {});
+    preencherDatalistsDiretorio();
     if($('modalDiretorioTitulo')) $('modalDiretorioTitulo').textContent = c ? 'Editar Contacto' : 'Novo Contacto';
+    const deleteBtn = $('dirDeleteModalBtn');
+    if(deleteBtn) deleteBtn.style.display = c ? 'inline-flex' : 'none';
     const modal = $('modalDiretorio');
     if(modal) modal.style.display = 'flex';
     setTimeout(()=> $('dirNome')?.focus(), 80);
   };
-  window.fecharModalDiretorio = function(){ const modal = $('modalDiretorio'); if(modal) modal.style.display='none'; contactoEditId=null; };
+  window.fecharModalDiretorio = function(){ const modal = $('modalDiretorio'); if(modal) modal.style.display='none'; const deleteBtn=$('dirDeleteModalBtn'); if(deleteBtn) deleteBtn.style.display='none'; contactoEditId=null; };
   window.editarContactoDiretorio = function(id){ window.abrirModalDiretorio(id); };
+  window.apagarContactoAtualDiretorio = async function(){
+    if(!contactoEditId) return;
+    const id = contactoEditId;
+    await window.apagarContactoDiretorio(id);
+    window.fecharModalDiretorio();
+  };
 
   window.guardarContactoDiretorio = async function(){
     try{
