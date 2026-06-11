@@ -1,4 +1,4 @@
-// ===== DIRETORIO TELEFONICO APP BRAGA V1.33.0 - ARMAZEM > SECCAO =====
+// ===== DIRETORIO TELEFONICO APP BRAGA V1.33.3 - ARMAZEM > SECCAO + ENCODING FIX =====
 (function(){
   const COLLECTION = 'diretorioTelefonico';
   let contactos = [];
@@ -6,9 +6,37 @@
   let unsubscribe = null;
   let collapsedArmazens = new Set();
   let collapsedSecoes = new Set();
+  let encodingRepairRunning = false;
+
+  function fixTextoDiretorio(v){
+    let txt = String(v ?? '');
+    if(!txt) return txt;
+
+    // Corrige variações comuns de encoding/importação para Autozitânia.
+    // Exemplos vistos: Autozit�nia, AutozitÃ¢nia, Autozitania.
+    txt = txt
+      .replace(/Autozit\uFFFDnia/gi, 'Autozitânia')
+      .replace(/AutozitÃ¢nia/gi, 'Autozitânia')
+      .replace(/AutozitÃ£nia/gi, 'Autozitânia')
+      .replace(/Autozit(?:a|â|ã)nia/gi, 'Autozitânia')
+      .replace(/Autozit\?nia/gi, 'Autozitânia');
+
+    // Pequenas correções genéricas de mojibake que costumam vir de Excel/CSV.
+    txt = txt
+      .replace(/Ã¡/g, 'á').replace(/Ã /g, 'à').replace(/Ã¢/g, 'â').replace(/Ã£/g, 'ã')
+      .replace(/Ã©/g, 'é').replace(/Ãª/g, 'ê')
+      .replace(/Ã­/g, 'í').replace(/Ã³/g, 'ó').replace(/Ã´/g, 'ô').replace(/Ãµ/g, 'õ')
+      .replace(/Ãº/g, 'ú').replace(/Ã§/g, 'ç')
+      .replace(/Ã/g, 'Á').replace(/Ã€/g, 'À').replace(/Ã‚/g, 'Â').replace(/Ãƒ/g, 'Ã')
+      .replace(/Ã‰/g, 'É').replace(/ÃŠ/g, 'Ê').replace(/Ã/g, 'Í')
+      .replace(/Ã“/g, 'Ó').replace(/Ã”/g, 'Ô').replace(/Ã•/g, 'Õ')
+      .replace(/Ãš/g, 'Ú').replace(/Ã‡/g, 'Ç');
+
+    return txt;
+  }
 
   const $ = (id) => document.getElementById(id);
-  const norm = (v) => String(v || '').trim();
+  const norm = (v) => fixTextoDiretorio(String(v || '').trim());
   const lower = (v) => norm(v).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   const esc = (v) => String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
   const telHref = (v) => norm(v).replace(/[^0-9+]/g,'');
@@ -16,6 +44,46 @@
 
   function armazemDe(c){ return norm(c.armazem || c.armazém || c.warehouse || c.local) || 'Sem Armazém'; }
   function seccaoDe(c){ return norm(c.seccao || c.secção || c.departamento) || 'Sem Secção'; }
+
+  function contactoNormalizado(c){
+    const out = {...(c || {})};
+    ['nome','armazem','armazém','warehouse','seccao','secção','departamento','local','observacoes','email'].forEach(k => {
+      if(out[k] !== undefined && out[k] !== null) out[k] = fixTextoDiretorio(out[k]);
+    });
+    return out;
+  }
+
+  function getEncodingPatch(c){
+    const patch = {};
+    ['nome','armazem','seccao','local','observacoes'].forEach(k => {
+      if(c && typeof c[k] === 'string'){
+        const fixed = fixTextoDiretorio(c[k]);
+        if(fixed !== c[k]) patch[k] = fixed;
+      }
+    });
+    return patch;
+  }
+
+  async function repararEncodingDiretorio(){
+    if(encodingRepairRunning || !window.db?.collection) return;
+    const comErro = contactos.map(c => ({c, patch:getEncodingPatch(c)})).filter(x => Object.keys(x.patch).length && x.c.firebaseId);
+    if(!comErro.length) return;
+    encodingRepairRunning = true;
+    try{
+      let batch = window.db.batch();
+      let ops = 0;
+      for(const item of comErro.slice(0, 450)){
+        batch.update(window.db.collection(COLLECTION).doc(String(item.c.firebaseId)), item.patch);
+        ops++;
+      }
+      if(ops) await batch.commit();
+      setEstado(`Corrigido encoding: ${ops}`);
+    }catch(err){
+      console.warn('Não foi possível corrigir encoding do diretório:', err);
+    }finally{
+      encodingRepairRunning = false;
+    }
+  }
 
   function setEstado(text, ok=true){
     const el = $('diretorioEstado');
@@ -162,7 +230,7 @@
       }).join('');
       return `<article class="diretorio-warehouse ${armCollapsed ? 'collapsed' : ''}" data-arm="${esc(arm)}">
         <div class="diretorio-warehouse-head" onclick="toggleDiretorioArmazem('${esc(arm).replace(/'/g,'\\&#39;')}')">
-          <div class="diretorio-warehouse-title"><span class="warehouse-icon">📍</span><span>${esc(arm)}</span><span class="diretorio-count">${allContacts.length}</span></div>
+          <div class="diretorio-warehouse-title"><span class="warehouse-icon" aria-hidden="true">🏢</span><span>${esc(arm)}</span><span class="diretorio-count">${allContacts.length}</span></div>
           <div class="diretorio-warehouse-meta"><span>${secMap.size} secções</span><span class="diretorio-chevron">⌄</span></div>
         </div>
         <div class="diretorio-warehouse-body">${sectionsHtml}</div>
@@ -171,6 +239,7 @@
   };
 
   function rowHtml(c){
+    c = contactoNormalizado(c);
     const phone = telHref(c.telefone);
     const mobile = telHref(c.telemovel);
     const email = norm(c.email);
@@ -390,7 +459,13 @@
       const name = lower(file.name);
       let rows = [];
       if(name.endsWith('.csv')){
-        rows = parseCSV(await file.text());
+        const buffer = await file.arrayBuffer();
+        let text = new TextDecoder('utf-8').decode(buffer);
+        // Se vier com caracteres inválidos, tenta Windows-1252, muito comum em CSV exportado pelo Excel.
+        if(text.includes('�')){
+          try{ text = new TextDecoder('windows-1252').decode(buffer); }catch(e){}
+        }
+        rows = parseCSV(text);
       } else {
         if(!window.XLSX) throw new Error('Biblioteca de Excel não carregou. Confirma a ligação à internet e tenta novamente.');
         const buffer = await file.arrayBuffer();
@@ -441,11 +516,12 @@
     setEstado('A carregar...');
     unsubscribe = window.db.collection(COLLECTION).onSnapshot((snap)=>{
       contactos = [];
-      snap.forEach(doc => contactos.push({firebaseId: doc.id, ...doc.data()}));
+      snap.forEach(doc => contactos.push(contactoNormalizado({firebaseId: doc.id, ...doc.data()})));
       contactos.sort((a,b)=> armazemDe(a).localeCompare(armazemDe(b),'pt',{numeric:true}) || seccaoDe(a).localeCompare(seccaoDe(b),'pt',{numeric:true}) || String(a.nome||'').localeCompare(String(b.nome||''),'pt',{numeric:true}));
       localStorage.setItem('appBraga_diretorio_cache', JSON.stringify(contactos));
       setEstado(`${contactos.length} contactos`);
       window.renderDiretorio();
+      setTimeout(repararEncodingDiretorio, 350);
     }, (err)=>{
       console.error('Erro realtime diretorio:', err);
       try{ contactos = JSON.parse(localStorage.getItem('appBraga_diretorio_cache') || '[]'); }catch(e){ contactos=[]; }
