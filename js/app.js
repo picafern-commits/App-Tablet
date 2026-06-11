@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.32.1";
+const APP_VERSION = "1.32.2";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BE2xnhqmSPq85_kA6comGATxEseSoh8zY_EK_4NZsbiI1HJByjc1PgQqhTsUwPlr1ujuUSpSzp29AQeS1hnlHOQ";
 
 
@@ -11371,3 +11371,73 @@ window.testarCamerasStockQr = async function(){
     setInterval(atualizarDashboardUtilAppBraga, 60000);
   });
 })();
+
+/* ===== APP BRAGA V1.32.2 - SIDEBAR GROUPS PRO ===== */
+(function(){
+  const STORAGE_KEY = "appBraga.sidebar.groups.open.v1322";
+
+  function readState(){
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
+    catch(e){ return {}; }
+  }
+
+  function writeState(state){
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state || {})); }
+    catch(e){}
+  }
+
+  function currentFile(){
+    const path = (location.pathname || "").split("/").pop() || "index.html";
+    return path.toLowerCase();
+  }
+
+  function setupSidebarGroups(){
+    const sidebar = document.querySelector(".sidebar-pro-groups, aside.sidebar");
+    if (!sidebar || sidebar.dataset.sidebarGroupsReady === "1") return;
+    sidebar.dataset.sidebarGroupsReady = "1";
+
+    const activeFile = currentFile();
+    sidebar.querySelectorAll("a[href]").forEach((link) => {
+      const href = (link.getAttribute("href") || "").split("?")[0].split("#")[0].toLowerCase();
+      if (href === activeFile) {
+        link.classList.add("active");
+        link.setAttribute("aria-current", "page");
+      }
+    });
+
+    const state = readState();
+    sidebar.querySelectorAll(".sidebar-group").forEach((group) => {
+      const key = group.dataset.sidebarGroup || "grupo";
+      const toggle = group.querySelector(".sidebar-group-toggle");
+      const hasActive = !!group.querySelector("a.active, a[aria-current='page']");
+      const shouldOpen = state[key] !== undefined ? !!state[key] : (hasActive || group.dataset.defaultOpen === "1");
+
+      function setOpen(open){
+        group.classList.toggle("is-open", !!open);
+        if (toggle) toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      }
+
+      setOpen(shouldOpen);
+
+      if (toggle && toggle.dataset.bound !== "1") {
+        toggle.dataset.bound = "1";
+        toggle.addEventListener("click", () => {
+          const next = !group.classList.contains("is-open");
+          setOpen(next);
+          const latest = readState();
+          latest[key] = next;
+          writeState(latest);
+        });
+      }
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupSidebarGroups);
+  } else {
+    setupSidebarGroups();
+  }
+  setTimeout(setupSidebarGroups, 250);
+  setTimeout(setupSidebarGroups, 900);
+})();
+/* ===== END APP BRAGA V1.32.2 - SIDEBAR GROUPS PRO ===== */

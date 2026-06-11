@@ -1,5 +1,5 @@
 
-// ===== DIRETORIO TELEFONICO APP BRAGA V1.32.1 =====
+// ===== DIRETORIO TELEFONICO APP BRAGA V1.32.2 =====
 (function(){
   const COLLECTION = 'diretorioTelefonico';
   let contactos = [];
