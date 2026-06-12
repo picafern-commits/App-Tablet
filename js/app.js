@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.34.1";
+const APP_VERSION = "1.35.1";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BE2xnhqmSPq85_kA6comGATxEseSoh8zY_EK_4NZsbiI1HJByjc1PgQqhTsUwPlr1ujuUSpSzp29AQeS1hnlHOQ";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "notificationCloudSettings";
@@ -2729,8 +2729,26 @@ async function registarFcmWebPushApp(vapidKey) {
   return { docId, token };
 }
 
+function isElectronRuntimeAppBraga() {
+  return !!(window.electronAPI || /electron/i.test(navigator.userAgent || ""));
+}
+
+function isHostedAppBraga() {
+  return /picafern-commits\.github\.io/i.test(location.hostname || "") || /^https:/i.test(location.protocol || "");
+}
+
 function webPushDisponivelApp() {
   return !!(window.isSecureContext && "serviceWorker" in navigator && "PushManager" in window);
+}
+
+function pushServiceLimitacaoConhecidaApp() {
+  if (isElectronRuntimeAppBraga()) {
+    return "Electron mostra PushManager, mas o Chromium embutido nao tem o servico Web Push da Google. Para receber com a app fechada no PC, instala a versao Web pelo Chrome/Edge como PWA.";
+  }
+  if (!isHostedAppBraga() && !/^localhost$|^127\.0\.0\.1$/.test(location.hostname || "")) {
+    return "Web Push deve ser registado pela versao publicada em HTTPS/GitHub Pages. Em rede local/IP pode falhar em alguns browsers.";
+  }
+  return "";
 }
 
 function isIosAppBraga() {
@@ -2764,6 +2782,66 @@ async function gravarDiagnosticoPushApp(data = {}) {
   } catch (error) {
     console.warn("Nao foi possivel gravar diagnostico push:", error);
   }
+}
+
+
+function setPushAdvancedRowApp(id, value, state = "") {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = value || "-";
+  el.className = state ? `health-status ${state}` : "health-status";
+}
+
+async function diagnosticarPushAvancadoApp(showMessage = true) {
+  const result = {
+    secureContext: !!window.isSecureContext,
+    serviceWorker: "serviceWorker" in navigator,
+    pushManager: "PushManager" in window,
+    notifications: "Notification" in window ? Notification.permission : "unsupported",
+    electron: isElectronRuntimeAppBraga(),
+    standalone: isStandalonePwaAppBraga(),
+    hosted: isHostedAppBraga(),
+    controller: !!navigator.serviceWorker?.controller,
+    scope: "-",
+    subscription: "-",
+    endpoint: "-",
+    limitation: pushServiceLimitacaoConhecidaApp(),
+    error: ""
+  };
+
+  try {
+    const registration = await registarServiceWorkerAppBraga();
+    const ready = registration || (navigator.serviceWorker ? await navigator.serviceWorker.ready : null);
+    if (ready) {
+      result.scope = ready.scope || "-";
+      result.controller = !!navigator.serviceWorker.controller;
+      if (ready.pushManager) {
+        const sub = await ready.pushManager.getSubscription();
+        result.subscription = sub?.endpoint ? "Criada" : "Sem subscription";
+        result.endpoint = sub?.endpoint ? `${sub.endpoint.slice(0, 42)}...` : "-";
+      }
+    }
+  } catch (error) {
+    result.error = error?.message || String(error);
+  }
+
+  setPushAdvancedRowApp("pushDiagSecure", result.secureContext ? "OK" : "Não seguro", result.secureContext ? "ok" : "bad");
+  setPushAdvancedRowApp("pushDiagSW", result.serviceWorker ? "OK" : "Indisponível", result.serviceWorker ? "ok" : "bad");
+  setPushAdvancedRowApp("pushDiagPM", result.pushManager ? "OK" : "Indisponível", result.pushManager ? "ok" : "bad");
+  setPushAdvancedRowApp("pushDiagPermission", result.notifications, result.notifications === "granted" ? "ok" : "warn");
+  setPushAdvancedRowApp("pushDiagRuntime", result.electron ? "Electron" : (result.standalone ? "PWA instalada" : "Browser"), result.electron ? "warn" : "ok");
+  setPushAdvancedRowApp("pushDiagScope", result.scope, result.scope !== "-" ? "ok" : "warn");
+  setPushAdvancedRowApp("pushDiagSubscription", result.subscription, result.subscription === "Criada" ? "ok" : "warn");
+  setPushAdvancedRowApp("pushDiagEndpoint", result.endpoint, result.endpoint !== "-" ? "ok" : "warn");
+
+  const detail = document.getElementById("pushDiagDetail");
+  if (detail) {
+    detail.textContent = result.error || result.limitation || "Ambiente preparado. Se ainda falhar, usa Reparar este dispositivo para recriar a subscription.";
+    detail.className = `push-diagnostic-detail ${result.error ? "bad" : (result.limitation ? "warn" : "ok")}`;
+  }
+  await gravarDiagnosticoPushApp({ advanced: result });
+  if (showMessage) mostrarMensagem(result.error ? "Diagnóstico push encontrou erro." : "Diagnóstico push atualizado.", result.error ? "erro" : "sucesso");
+  return result;
 }
 
 function getNotificationDeviceTypeApp() {
@@ -2926,8 +3004,10 @@ function labelDispositivoNotificacaoApp(item = {}) {
 
 function labelMetodoNotificacaoApp(item = {}) {
   if (item.source === "electron-native") return "Electron nativo";
+  if (item.pushSubscription?.endpoint && item.token) return "Web Push + FCM";
   if (item.pushSubscription?.endpoint) return "Web Push standard";
   if (item.token) return "Firebase FCM";
+  if (item.source === "electron-no-web-push") return "Electron sem Web Push";
   if (item.source === "web-local-no-push") return "Local sem push cloud";
   return item.source || "Registo local";
 }
@@ -3298,10 +3378,12 @@ function renderCloudDevicesNotificacoesApp(items = []) {
   });
   const activeItems = Array.from(uniqueMap.values());
   const webPushItems = activeItems.filter((item) => item.pushSubscription?.endpoint);
+  const fcmItems = activeItems.filter((item) => item.token);
+  const cloudReadyItems = activeItems.filter((item) => item.token || item.pushSubscription?.endpoint);
   setCloudNotificationTextApp("cloudDevicesStatus", `${activeItems.length} registados`, activeItems.length ? "ok" : "warn");
-  setCloudNotificationTextApp("cloudDevicesDetail", `${webPushItems.length} com Web Push standard pronto para cloud`);
-  if (activeItems.length && !webPushItems.length) {
-    setCloudNotificationDiagnosticApp("A cloud nao tem nenhum alvo Web Push standard. No Android/iPhone abre a app instalada e carrega em Reparar este dispositivo.", "warn");
+  setCloudNotificationTextApp("cloudDevicesDetail", `${cloudReadyItems.length} pronto(s) para cloud · Web Push: ${webPushItems.length} · FCM: ${fcmItems.length}`);
+  if (activeItems.length && !cloudReadyItems.length) {
+    setCloudNotificationDiagnosticApp("A cloud nao tem nenhum alvo remoto valido. Abre a APP em HTTPS/GitHub Pages no Chrome/Edge ou instala no ecra principal no Android/iPhone e carrega em Reparar este dispositivo.", "warn");
   }
 
   if (!activeItems.length) {
@@ -3318,7 +3400,7 @@ function renderCloudDevicesNotificacoesApp(items = []) {
     const mode = labelMetodoNotificacaoApp(item);
     const permission = item.permission || "sem dados";
     const updated = formatTimestampApp(item.updatedAt || item.createdAt);
-    const ready = !!item.pushSubscription?.endpoint;
+    const ready = !!(item.pushSubscription?.endpoint || item.token);
     return `
       <div class="notification-device-card ${isCurrent ? "is-current" : ""}">
         <div>
@@ -3472,11 +3554,13 @@ async function atualizarPaginaNotificacoesCloudApp(showMessage = false) {
   await carregarCloudNotificacoesApp();
   carregarDispositivosCloudNotificacoesApp(true);
   const current = await obterDispositivoAtualNotificacoesApp().catch(() => null);
-  if (current?.pushSubscription?.endpoint) {
-    setCloudNotificationDiagnosticApp("Este dispositivo esta registado com Web Push standard.", "ok");
+  if (current?.pushSubscription?.endpoint || current?.token) {
+    setCloudNotificationDiagnosticApp(`Este dispositivo esta registado para cloud (${labelMetodoNotificacaoApp(current)}).`, "ok");
   } else {
-    setCloudNotificationDiagnosticApp("Abre esta pagina no dispositivo e carrega em Reparar este dispositivo.", "warn");
+    const limitacao = pushServiceLimitacaoConhecidaApp();
+    setCloudNotificationDiagnosticApp(limitacao || "Abre esta pagina no dispositivo e carrega em Reparar este dispositivo.", "warn");
   }
+  await diagnosticarPushAvancadoApp(false).catch(() => null);
   if (showMessage) mostrarMensagem("Notificacoes atualizadas.", "sucesso");
 }
 
@@ -3668,7 +3752,11 @@ async function registarDispositivoPushApp(forceReset = false, options = {}) {
     if (code.includes("messaging/invalid-vapid-key")) friendly = "A VAPID key nao e valida. Confirma a chave Web Push no Firebase.";
     if (code.includes("messaging/token-subscribe-failed")) friendly = "Falhou a subscricao push. Confirma permissoes e a VAPID key.";
     if (message.toLowerCase().includes("push service")) {
-      await registarDispositivoLocalNotificacoesApp("web-local-no-push");
+      const source = isElectronRuntimeAppBraga() ? "electron-no-web-push" : "web-local-no-push";
+      await registarDispositivoLocalNotificacoesApp(source);
+      const limitacao = pushServiceLimitacaoConhecidaApp();
+      setNotificationDeviceDiagnostic(limitacao || friendly);
+      if (limitacao) mostrarMensagem(limitacao, "erro");
       return;
     }
     mostrarMensagem(friendly, "erro");
@@ -6185,6 +6273,7 @@ window.guardarIdentidadeDispositivoNotificacoesApp = guardarIdentidadeDispositiv
 window.repararDispositivoNotificacoesCloudApp = repararDispositivoNotificacoesCloudApp;
 window.testarCloudNotificacoesApp = testarCloudNotificacoesApp;
 window.atualizarPaginaNotificacoesCloudApp = atualizarPaginaNotificacoesCloudApp;
+window.diagnosticarPushAvancadoApp = diagnosticarPushAvancadoApp;
 window.verificarSistemasApp = verificarSistemasApp;
 window.adicionarInformacao = adicionarInformacao;
 window.selecionarInformacao = selecionarInformacao;
@@ -7451,13 +7540,21 @@ function appVersionUrlAppBraga() {
 
 async function registarServiceWorkerAppBraga() {
   try {
-    if (!("serviceWorker" in navigator)) return;
-    const swUrl = location.pathname.includes("/html/") ? "../sw.js" : "sw.js";
-    const registration = await navigator.serviceWorker.register(swUrl);
+    if (!("serviceWorker" in navigator)) return null;
+    const basePath = location.pathname.includes("/html/") ? "../" : "./";
+    const swUrl = `${basePath}sw.js?v=${encodeURIComponent(APP_VERSION)}`;
+    const registration = await navigator.serviceWorker.register(swUrl, { scope: basePath });
     await registration.update?.();
+    if (!navigator.serviceWorker.controller) {
+      await new Promise((resolve) => {
+        const timer = setTimeout(resolve, 900);
+        navigator.serviceWorker.addEventListener("controllerchange", () => { clearTimeout(timer); resolve(); }, { once: true });
+      });
+    }
     return registration;
   } catch (e) {
     console.error("Erro a registar service worker", e);
+    throw e;
   }
 }
 
