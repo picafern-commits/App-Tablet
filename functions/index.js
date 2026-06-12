@@ -106,16 +106,36 @@ function getUpdatedAt(item = {}) {
   return Number(value) || 0;
 }
 
+function normalizeWebPushSubscription(item = {}) {
+  const direct = item.pushSubscription && typeof item.pushSubscription === "object" ? item.pushSubscription : null;
+  const endpoint = String(direct?.endpoint || item.endpoint || "").trim();
+  const keys = direct?.keys || item.keys || {};
+  const p256dh = keys.p256dh || item.p256dh || item.publicKey || "";
+  const auth = keys.auth || item.auth || item.authSecret || "";
+  if (!endpoint) return null;
+  return {
+    endpoint,
+    expirationTime: direct?.expirationTime || null,
+    keys: { p256dh, auth }
+  };
+}
+
+function hasValidWebPushSubscription(item = {}) {
+  const sub = normalizeWebPushSubscription(item);
+  return !!(sub?.endpoint && sub?.keys?.p256dh && sub?.keys?.auth);
+}
+
 function uniqueActiveDevices(items) {
   const sorted = items
     .filter((item) => item.active !== false)
     .filter((item) => item.source !== "electron-native")
     .filter((item) => item.source !== "web-local-no-push")
-    .filter((item) => item.token || item.pushSubscription?.endpoint)
+    .filter((item) => item.token || hasValidWebPushSubscription(item))
+    .map((item) => ({ ...item, pushSubscription: normalizeWebPushSubscription(item) || item.pushSubscription }))
     .sort((a, b) => getUpdatedAt(b) - getUpdatedAt(a));
   const unique = new Map();
   sorted.forEach((item) => {
-    const key = item.pushSubscription?.endpoint || item.token || item.deviceKey || `${item.deviceType || ""}|${item.platform || ""}|${item.userAgent || item.id || ""}`;
+    const key = item.pushSubscription?.endpoint || item.endpoint || item.token || item.deviceKey || `${item.deviceType || ""}|${item.platform || ""}|${item.userAgent || item.id || ""}`;
     if (!unique.has(key)) unique.set(key, item);
   });
   return Array.from(unique.values());
@@ -211,10 +231,15 @@ async function sendFcm(item, title, body, data = {}) {
 }
 
 async function sendStandardWebPush(item, title, body, data = {}) {
-  await webpush.sendNotification(item.pushSubscription, JSON.stringify({
+  const subscription = normalizeWebPushSubscription(item);
+  if (!subscription?.endpoint || !subscription?.keys?.p256dh || !subscription?.keys?.auth) {
+    throw new Error("Web Push subscription incompleta: faltam endpoint/keys.");
+  }
+  await webpush.sendNotification(subscription, JSON.stringify({
     title,
     body,
     tag: data.event || data.collection || "app-braga",
+    requireInteraction: data.requireInteraction === "1" || data.requireInteraction === true,
     data: {
       url: data.url || APP_URL,
       ...data
@@ -244,8 +269,24 @@ async function writeAudit(action, data = {}) {
   }
 }
 
+async function writeNotificationHistory(data = {}) {
+  try {
+    await admin.firestore().collection("notificationHistory").add({
+      source: "firebase-functions",
+      createdAt: Date.now(),
+      ...data
+    });
+  } catch (error) {
+    logger.warn("Falhou escrita do historico de notificacoes", { error: error.message });
+  }
+}
+
 async function broadcast(title, body, data = {}) {
-  const devices = await getActiveNotificationDevices();
+  const allDevices = await getActiveNotificationDevices();
+  const excludeDeviceKey = data.excludeDeviceKey ? String(data.excludeDeviceKey) : "";
+  const devices = excludeDeviceKey
+    ? allDevices.filter((item) => String(item.deviceKey || "") !== excludeDeviceKey)
+    : allDevices;
   const webPushRuntime = await configureWebPush();
   const canStandardWebPush = webPushRuntime.ready === true;
   let sent = 0;
@@ -253,31 +294,41 @@ async function broadcast(title, body, data = {}) {
   let fcmTargets = 0;
   let standardWebPushTargets = 0;
   let lastError = "";
+  const sendErrors = [];
 
-  for (const item of devices) {
+  async function tryPush(item, method, sender) {
     try {
-      if (item.token) {
-        fcmTargets += 1;
-        await sendFcm(item, title, body, data);
-        sent += 1;
-      }
-      if (item.pushSubscription?.endpoint) {
-        standardWebPushTargets += 1;
-        if (canStandardWebPush) {
-          await sendStandardWebPush(item, title, body, data);
-          sent += 1;
-        } else {
-          failed += 1;
-          lastError = "Faltam credenciais VAPID na configuracao cloud.";
-          logger.warn("Web Push standard sem VAPID cloud", { id: item.id, source: item.source, credentialSource: webPushRuntime.source });
-        }
-      }
+      await sender();
+      sent += 1;
+      return true;
     } catch (error) {
       failed += 1;
-      lastError = error.message || String(error);
-      logger.warn("Falhou envio push", { id: item.id, source: item.source, error: error.message });
-      if (/UNREGISTERED|NotRegistered|not registered|registration-token-not-registered/i.test(error.message) || error.statusCode === 404 || error.statusCode === 410) {
+      const message = error?.message || String(error);
+      lastError = message;
+      sendErrors.push({ id: item.id, method, source: item.source || "", message });
+      logger.warn("Falhou envio push", { id: item.id, method, source: item.source, error: message });
+      if (/UNREGISTERED|NotRegistered|not registered|registration-token-not-registered/i.test(message) || error.statusCode === 404 || error.statusCode === 410) {
         await markDeviceInactive(item, "push-unregistered");
+      }
+      return false;
+    }
+  }
+
+  for (const item of devices) {
+    // Importante: uma falha no FCM não pode impedir o Web Push standard do mesmo dispositivo.
+    if (item.token) {
+      fcmTargets += 1;
+      await tryPush(item, "fcm", () => sendFcm(item, title, body, data));
+    }
+    if (hasValidWebPushSubscription(item)) {
+      standardWebPushTargets += 1;
+      if (canStandardWebPush) {
+        await tryPush(item, "standard-web-push", () => sendStandardWebPush(item, title, body, data));
+      } else {
+        failed += 1;
+        lastError = "Faltam credenciais VAPID na configuracao cloud.";
+        sendErrors.push({ id: item.id, method: "standard-web-push", source: item.source || "", message: lastError });
+        logger.warn("Web Push standard sem VAPID cloud", { id: item.id, source: item.source, credentialSource: webPushRuntime.source });
       }
     }
   }
@@ -301,9 +352,12 @@ async function broadcast(title, body, data = {}) {
     lastSent: sent,
     lastFailed: failed,
     lastDeviceCount: devices.length,
+    lastTotalDeviceCount: allDevices.length,
+    lastExcludedDeviceKey: excludeDeviceKey,
     lastFcmTargets: fcmTargets,
     lastStandardWebPushTargets: standardWebPushTargets,
     lastError,
+    lastErrors: sendErrors.slice(0, 10),
     lastRunAt: Date.now(),
     standardWebPushReady: canStandardWebPush,
     credentialSource: webPushRuntime.source,
@@ -317,12 +371,31 @@ async function broadcast(title, body, data = {}) {
     sent,
     failed,
     deviceCount: devices.length,
+    totalDeviceCount: allDevices.length,
+    excludedDeviceKey: excludeDeviceKey,
     fcmTargets,
     standardWebPushTargets,
     event: data.event || data.collection || "manual",
     collection: data.collection || "",
     targetUrl: data.url || APP_URL,
     credentialSource: webPushRuntime.source
+  });
+
+  await writeNotificationHistory({
+    title,
+    body,
+    sent,
+    failed,
+    deviceCount: devices.length,
+    fcmTargets,
+    standardWebPushTargets,
+    standardWebPushReady: canStandardWebPush,
+    credentialSource: webPushRuntime.source,
+    event: data.event || data.collection || "manual",
+    collection: data.collection || "",
+    targetUrl: data.url || APP_URL,
+    error: sent > 0 ? "" : lastError,
+    errors: sendErrors.slice(0, 10)
   });
 
   return {
@@ -332,7 +405,8 @@ async function broadcast(title, body, data = {}) {
     standardWebPushTargets,
     standardWebPushReady: canStandardWebPush,
     credentialSource: webPushRuntime.source,
-    error: sent > 0 ? "" : lastError
+    error: sent > 0 ? "" : lastError,
+    errors: sendErrors.slice(0, 10)
   };
 }
 
@@ -354,7 +428,10 @@ exports.onNotificationRequestCreated = onDocumentCreated({
     const result = await broadcast(data.title || "App Braga", data.body || "Teste remoto de notificacao.", {
       event: data.event || "manual-remote-test",
       requestId: event.params.requestId,
-      url: data.url || "https://picafern-commits.github.io/App-Tablet/html/config.html"
+      url: data.url || "https://picafern-commits.github.io/App-Tablet/html/notificacoes.html",
+      excludeDeviceKey: data.excludeDeviceKey || "",
+      requestedBy: data.requestedBy || "",
+      requireInteraction: data.requireInteraction === true ? "1" : ""
     });
     await requestRef?.set({
       status: result.sent > 0 ? "sent" : "failed",
@@ -364,6 +441,7 @@ exports.onNotificationRequestCreated = onDocumentCreated({
       standardWebPushTargets: result.standardWebPushTargets,
       credentialSource: result.credentialSource,
       error: result.error || "",
+      errors: result.errors || [],
       finishedAt: Date.now()
     }, { merge: true });
   } catch (error) {

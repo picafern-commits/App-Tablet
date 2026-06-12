@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.34.1";
+const APP_VERSION = "1.35.7";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BE2xnhqmSPq85_kA6comGATxEseSoh8zY_EK_4NZsbiI1HJByjc1PgQqhTsUwPlr1ujuUSpSzp29AQeS1hnlHOQ";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "notificationCloudSettings";
@@ -3489,6 +3489,55 @@ async function testarCloudNotificacoesApp() {
   }
 }
 
+async function enviarAlertaGeralNotificacoesApp() {
+  try {
+    if (!window.db?.collection) throw new Error("Firebase indisponível.");
+    const settings = await carregarCloudNotificacoesApp();
+    if (!settings || settings.enabled === false) throw new Error("Ativa primeiro as notificações cloud.");
+
+    const currentDevice = await obterDispositivoAtualNotificacoesApp().catch(() => null);
+    const deviceName = document.getElementById("cloudDeviceName")?.value || currentDevice?.deviceName || currentDevice?.name || labelDispositivoNotificacaoApp(currentDevice || {}) || "Dispositivo";
+    const messageInput = document.getElementById("cloudGeneralAlertMessage");
+    const customMessage = String(messageInput?.value || "").trim();
+    const startedAt = Date.now();
+    const body = customMessage || `Alerta geral enviado por ${deviceName}.`;
+
+    setCloudNotificationTextApp("cloudLastTestStatus", "A enviar alerta", "warn");
+    setCloudNotificationTextApp("cloudLastTestDetail", "Pedido criado na cloud para os outros dispositivos");
+
+    const requestRef = await window.db.collection("notificationRequests").add({
+      title: "🚨 Alerta geral - App Braga",
+      body,
+      tag: `alerta-geral-${startedAt}`,
+      url: "https://picafern-commits.github.io/App-Tablet/html/notificacoes.html",
+      source: "app-cloud-alert",
+      status: "created",
+      forceCloud: true,
+      requireInteraction: true,
+      createdAt: startedAt,
+      requestedBy: deviceName,
+      requestedFrom: getNotificationDeviceTypeApp(),
+      requestedDeviceKey: getNotificationDeviceKeyApp(),
+      requestedDeviceDocId: currentDevice?.id || "",
+      excludeDeviceKey: getNotificationDeviceKeyApp(),
+      alertType: "general"
+    });
+
+    const result = await aguardarResultadoPedidoPushRemotoApp(requestRef, startedAt);
+    const ok = result?.status === "sent" && Number(result.sent || 0) > 0;
+    setCloudNotificationTextApp("cloudLastTestStatus", ok ? "Alerta enviado" : "Alerta falhou", ok ? "ok" : "bad");
+    setCloudNotificationTextApp("cloudLastTestDetail", ok ? `${Number(result.sent || 0)} envio(s) para outros dispositivos` : (result?.error || "A cloud respondeu sem enviar push"));
+    mostrarMensagem(ok ? "Alerta geral enviado para os outros dispositivos." : (result?.error || "A cloud respondeu, mas não enviou o alerta."), ok ? "sucesso" : "erro");
+    if (messageInput) messageInput.value = "";
+    carregarDispositivosCloudNotificacoesApp(true);
+  } catch (error) {
+    setCloudNotificationTextApp("cloudLastTestStatus", "Erro", "bad");
+    setCloudNotificationTextApp("cloudLastTestDetail", error.message || "Alerta falhou");
+    setCloudNotificationDiagnosticApp(error.message || "Alerta geral falhou.", "bad");
+    mostrarMensagem(error.message || "Alerta geral falhou.", "erro");
+  }
+}
+
 async function atualizarPaginaNotificacoesCloudApp(showMessage = false) {
   if (!isPaginaNotificacoesCloudApp()) return;
   applyDeviceProfileFormApp();
@@ -6214,6 +6263,7 @@ window.guardarCloudNotificacoesApp = guardarCloudNotificacoesApp;
 window.guardarIdentidadeDispositivoNotificacoesApp = guardarIdentidadeDispositivoNotificacoesApp;
 window.repararDispositivoNotificacoesCloudApp = repararDispositivoNotificacoesCloudApp;
 window.testarCloudNotificacoesApp = testarCloudNotificacoesApp;
+window.enviarAlertaGeralNotificacoesApp = enviarAlertaGeralNotificacoesApp;
 window.atualizarPaginaNotificacoesCloudApp = atualizarPaginaNotificacoesCloudApp;
 window.verificarSistemasApp = verificarSistemasApp;
 window.adicionarInformacao = adicionarInformacao;
@@ -12042,6 +12092,7 @@ window.testarCamerasStockQr = async function(){
     { href:"informacoes.html", label:"Informações", icon:"ℹ️" },
     { href:"users.html", label:"Users", icon:"👥" },
     { href:"diagnostico.html", label:"Diagnóstico", icon:"🩺" },
+    { href:"notificacoes.html", label:"Notificações", icon:"🔔" },
     { href:"config.html", label:"Configurações", icon:"⚙️" }
   ];
   function safeGetFavs(){
@@ -12128,3 +12179,376 @@ window.testarCamerasStockQr = async function(){
   else init();
 })();
 /* ===== END APP BRAGA V1.33.4 - FAVORITOS EDITAVEIS SIDEBAR ===== */
+
+/* ===== APP BRAGA v1.35.6 - NOTIFICAÇÕES: ESTADO, HISTÓRICO E REPARAÇÃO ===== */
+function setPushDiagValueApp(id, text, state = "") {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text || "-";
+  el.classList.remove("ok", "warn", "bad");
+  if (state) el.classList.add(state);
+}
+
+async function obterPushSubscriptionAtualApp() {
+  try {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) return null;
+    await registarServiceWorkerAppBraga?.();
+    const registration = await navigator.serviceWorker.ready;
+    return await registration.pushManager.getSubscription();
+  } catch (error) {
+    console.warn("Diagnóstico push: sem subscription atual", error);
+    return null;
+  }
+}
+
+async function atualizarDiagnosticoPushAutomaticoApp() {
+  if (!/notificacoes\.html$/i.test(location.pathname || "")) return null;
+  const isSecure = !!window.isSecureContext;
+  const hasSw = "serviceWorker" in navigator;
+  const hasPush = "PushManager" in window;
+  const permission = "Notification" in window ? Notification.permission : "unsupported";
+  const env = window.electronAPI?.showNotification ? "Electron" : (isStandalonePwaAppBraga() ? "PWA instalada" : "Browser");
+  let subscription = null;
+  if (isSecure && hasSw && hasPush) subscription = await obterPushSubscriptionAtualApp();
+  const endpoint = subscription?.endpoint || appNotificationState.pushSubscriptionEndpoint || "";
+
+  setPushDiagValueApp("pushDiagServiceWorker", hasSw ? "OK" : "Falha", hasSw ? "ok" : "bad");
+  setPushDiagValueApp("pushDiagPushManager", hasPush ? "OK" : "Falha", hasPush ? "ok" : "bad");
+  setPushDiagValueApp("pushDiagPermission", permission, permission === "granted" ? "ok" : (permission === "denied" ? "bad" : "warn"));
+  setPushDiagValueApp("pushDiagEndpoint", endpoint ? "Criado" : "Sem endpoint", endpoint ? "ok" : "warn");
+  setPushDiagValueApp("pushDiagEnvironment", env, env === "Electron" ? "warn" : "ok");
+
+  if (window.electronAPI?.showNotification && !endpoint) {
+    setCloudNotificationDiagnosticApp("Electron não cria Web Push real neste ambiente. Para PC, usa a PWA instalada pelo Edge/Chrome.", "warn");
+  } else if (endpoint) {
+    setCloudNotificationDiagnosticApp("Este dispositivo tem endpoint Web Push. Se o teste falhar, o problema está na Cloud Function/Firestore.", "ok");
+  }
+  return { isSecure, hasSw, hasPush, permission, env, endpoint };
+}
+
+function getCloudDeviceReadinessApp(item = {}) {
+  const hasStandard = !!(item.pushSubscription?.endpoint || item.endpoint);
+  const hasFcm = !!item.token;
+  const active = item.active !== false;
+  const permission = item.permission || "sem dados";
+  const staleMs = Date.now() - normalizeTimestampApp(item.updatedAt || item.createdAt);
+  const stale = staleMs > 1000 * 60 * 60 * 24 * 30;
+  let state = "warn";
+  let label = "Reparar";
+  if (!active) { state = "bad"; label = "Inativo"; }
+  else if (hasStandard) { state = stale ? "warn" : "ok"; label = stale ? "Antigo" : "Web Push ativo"; }
+  else if (hasFcm) { state = stale ? "warn" : "ok"; label = stale ? "FCM antigo" : "FCM ativo"; }
+  else { state = "warn"; label = "Sem push cloud"; }
+  if (permission === "denied") { state = "bad"; label = "Bloqueado"; }
+  return { hasStandard, hasFcm, active, stale, state, label };
+}
+
+function getUniqueActiveCloudDevicesApp(items = []) {
+  const sorted = items
+    .filter((item) => item.active !== false)
+    .sort((a, b) => normalizeTimestampApp(b.updatedAt || b.createdAt) - normalizeTimestampApp(a.updatedAt || a.createdAt));
+  const map = new Map();
+  sorted.forEach((item) => {
+    const key = item.deviceKey || item.pushSubscription?.endpoint || item.endpoint || item.token || item.id;
+    if (!map.has(key)) map.set(key, item);
+  });
+  return Array.from(map.values());
+}
+
+function renderCloudDevicesNotificacoesApp(items = []) {
+  const host = document.getElementById("cloudDevicesList");
+  if (!host) return;
+  const activeItems = getUniqueActiveCloudDevicesApp(items);
+  const webPushItems = activeItems.filter((item) => item.pushSubscription?.endpoint || item.endpoint);
+  const remoteItems = activeItems.filter((item) => item.pushSubscription?.endpoint || item.endpoint || item.token);
+  setCloudNotificationTextApp("cloudDevicesStatus", `${activeItems.length} registados`, activeItems.length ? "ok" : "warn");
+  setCloudNotificationTextApp("cloudDevicesDetail", `${webPushItems.length} Web Push · ${remoteItems.length} remotos prontos`);
+
+  if (!activeItems.length) {
+    host.innerHTML = `<div class="empty-state mini">Ainda não há dispositivos registados.</div>`;
+    return;
+  }
+
+  host.innerHTML = `
+    <table class="notification-devices-pro-table">
+      <thead>
+        <tr><th>Dispositivo</th><th>Tipo</th><th>Push</th><th>Último contacto</th><th>Estado</th></tr>
+      </thead>
+      <tbody>
+        ${activeItems.map((item) => {
+          const readiness = getCloudDeviceReadinessApp(item);
+          const isCurrent = item.id === appNotificationState.restoredTokenDocId ||
+            (appNotificationState.fcmToken && item.token === appNotificationState.fcmToken) ||
+            (appNotificationState.pushSubscriptionEndpoint && (item.endpoint === appNotificationState.pushSubscriptionEndpoint || item.pushSubscription?.endpoint === appNotificationState.pushSubscriptionEndpoint));
+          const device = labelDispositivoNotificacaoApp(item);
+          const role = labelNotificationDeviceRoleApp(item.notificationDeviceRole || item.deviceRole || "");
+          const mode = labelMetodoNotificacaoApp(item);
+          const endpoint = item.pushSubscription?.endpoint || item.endpoint || item.token || "";
+          const updated = formatTimestampApp(item.updatedAt || item.createdAt);
+          return `
+            <tr class="${isCurrent ? "is-current" : ""}">
+              <td data-label="Dispositivo"><div class="notification-device-main"><strong>${escapeHtmlAppBraga(device)}${isCurrent ? " · Este" : ""}</strong><small>${escapeHtmlAppBraga(endpoint)}</small></div></td>
+              <td data-label="Tipo"><span class="notification-chip">${escapeHtmlAppBraga(role)}</span></td>
+              <td data-label="Push"><span class="notification-chip ${readiness.hasStandard ? "ok" : (readiness.hasFcm ? "ok" : "warn")}">${escapeHtmlAppBraga(mode)}</span></td>
+              <td data-label="Último contacto">${escapeHtmlAppBraga(updated)}</td>
+              <td data-label="Estado"><span class="notification-chip ${readiness.state}">${escapeHtmlAppBraga(readiness.label)}</span></td>
+            </tr>`;
+        }).join("")}
+      </tbody>
+    </table>`;
+
+  if (activeItems.length && !webPushItems.length) {
+    setCloudNotificationDiagnosticApp("Nenhum dispositivo tem Web Push standard. Instala como PWA e carrega em Guardar e reparar push.", "warn");
+  }
+}
+
+async function carregarDispositivosCloudNotificacoesApp(force = false) {
+  const host = document.getElementById("cloudDevicesList");
+  if (!host || !window.db?.collection) return;
+  try {
+    host.innerHTML = `<p class="muted">A carregar dispositivos...</p>`;
+    const snapshot = await window.db.collection("notificationTokens").get();
+    const items = [];
+    snapshot.forEach((doc) => items.push({ id: doc.id, ...doc.data() }));
+    renderCloudDevicesNotificacoesApp(items);
+    await atualizarDiagnosticoPushAutomaticoApp();
+    await carregarHistoricoNotificacoesCloudApp(false);
+  } catch (error) {
+    console.error("Erro ao carregar dispositivos cloud:", error);
+    host.innerHTML = `<div class="empty-state mini">Erro ao carregar dispositivos.</div>`;
+  }
+}
+
+async function repararTodosRegistosCloudNotificacoesApp() {
+  try {
+    if (!window.db?.collection) throw new Error("Firebase indisponível.");
+    const snapshot = await window.db.collection("notificationTokens").get();
+    const batch = window.db.batch();
+    const latestByKey = new Map();
+    const now = Date.now();
+    snapshot.forEach((doc) => {
+      const data = doc.data() || {};
+      const key = data.deviceKey || data.pushSubscription?.endpoint || data.endpoint || data.token || doc.id;
+      const current = latestByKey.get(key);
+      const updated = normalizeTimestampApp(data.updatedAt || data.createdAt);
+      if (!current || updated > current.updated) latestByKey.set(key, { doc, data, updated });
+    });
+    let disabled = 0;
+    snapshot.forEach((doc) => {
+      const data = doc.data() || {};
+      const key = data.deviceKey || data.pushSubscription?.endpoint || data.endpoint || data.token || doc.id;
+      const latest = latestByKey.get(key);
+      const hasRemote = !!(data.token || data.pushSubscription?.endpoint || data.endpoint);
+      const tooOld = normalizeTimestampApp(data.updatedAt || data.createdAt) && (now - normalizeTimestampApp(data.updatedAt || data.createdAt) > 1000 * 60 * 60 * 24 * 120);
+      if ((latest && latest.doc.id !== doc.id) || data.active === false || !hasRemote || tooOld) {
+        batch.set(doc.ref, { active: false, disabledAt: now, disabledReason: latest?.doc.id !== doc.id ? "duplicado-antigo" : (!hasRemote ? "sem-push-cloud" : "registo-antigo") }, { merge: true });
+        disabled += 1;
+      }
+    });
+    if (disabled) await batch.commit();
+    await repararDispositivoNotificacoesCloudApp();
+    setCloudNotificationDiagnosticApp(`Reparação concluída. ${disabled} registo(s) antigo(s) desativado(s).`, "ok");
+    await carregarDispositivosCloudNotificacoesApp(true);
+  } catch (error) {
+    setCloudNotificationDiagnosticApp(error.message || "Erro ao reparar registos cloud.", "bad");
+    mostrarMensagem(error.message || "Erro ao reparar registos cloud.", "erro");
+  }
+}
+
+async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
+  const host = document.getElementById("cloudNotificationsHistory");
+  if (!host || !window.db?.collection) return;
+  try {
+    const snap = await window.db.collection("notificationHistory").orderBy("createdAt", "desc").limit(12).get();
+    const items = [];
+    snap.forEach((doc) => items.push({ id: doc.id, ...doc.data() }));
+    if (!items.length) {
+      host.innerHTML = `<div class="empty-state mini">Ainda não há histórico de envios cloud.</div>`;
+      return;
+    }
+    host.innerHTML = items.map((item) => `
+      <div class="notification-history-item">
+        <div>
+          <strong>${escapeHtmlAppBraga(item.title || item.event || "Notificação")}</strong>
+          <small>${escapeHtmlAppBraga(item.body || "")} · ${escapeHtmlAppBraga(formatTimestampApp(item.createdAt || item.lastRunAt))}</small>
+          ${item.error ? `<small>Erro: ${escapeHtmlAppBraga(item.error)}</small>` : ""}
+        </div>
+        <div class="notification-history-stats">
+          <span class="notification-chip ${Number(item.sent || 0) > 0 ? "ok" : "warn"}">Enviadas: ${Number(item.sent || 0)}</span>
+          <span class="notification-chip ${Number(item.failed || 0) > 0 ? "bad" : "ok"}">Falhas: ${Number(item.failed || 0)}</span>
+          <span class="notification-chip">WebPush: ${Number(item.standardWebPushTargets || 0)}</span>
+          <span class="notification-chip">FCM: ${Number(item.fcmTargets || 0)}</span>
+        </div>
+      </div>`).join("");
+    if (showMessage) mostrarMensagem("Histórico atualizado.", "sucesso");
+  } catch (error) {
+    console.warn("Histórico notificationHistory indisponível, a tentar auditLogs", error);
+    try {
+      const snap = await window.db.collection("auditLogs").where("action", "==", "notification-broadcast").limit(12).get();
+      const items = [];
+      snap.forEach((doc) => items.push({ id: doc.id, ...doc.data() }));
+      items.sort((a, b) => normalizeTimestampApp(b.createdAt) - normalizeTimestampApp(a.createdAt));
+      host.innerHTML = items.length ? items.map((item) => `
+        <div class="notification-history-item">
+          <div><strong>${escapeHtmlAppBraga(item.title || item.event || "Notificação")}</strong><small>${escapeHtmlAppBraga(formatTimestampApp(item.createdAt))}</small></div>
+          <div class="notification-history-stats"><span class="notification-chip ok">Enviadas: ${Number(item.sent || 0)}</span><span class="notification-chip ${Number(item.failed || 0) ? "bad" : "ok"}">Falhas: ${Number(item.failed || 0)}</span></div>
+        </div>`).join("") : `<div class="empty-state mini">Sem histórico disponível.</div>`;
+    } catch (innerError) {
+      host.innerHTML = `<div class="empty-state mini">Erro ao carregar histórico.</div>`;
+    }
+  }
+}
+
+(function initNotificacoesPro1353(){
+  if (!/notificacoes\.html$/i.test(location.pathname || "")) return;
+  const run = () => {
+    atualizarDiagnosticoPushAutomaticoApp();
+    setTimeout(() => {
+      carregarHistoricoNotificacoesCloudApp(false);
+      carregarDispositivosCloudNotificacoesApp(true);
+    }, 900);
+  };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run);
+  else run();
+})();
+/* ===== END APP BRAGA v1.35.6 ===== */
+
+
+/* ===== APP BRAGA v1.35.8 - SIDEBAR COLAPSAVEL PRO ===== */
+(function(){
+  const STORAGE_KEY = "appBraga.sidebar.collapsed.v1357";
+  const DESKTOP_QUERY = "(min-width: 769px)";
+  const PAGE_ICONS = {
+    "index.html":"🏠", "add-toner.html":"➕", "stock.html":"📦", "historico.html":"🧾",
+    "tarefas.html":"✅", "scanner-ia.html":"📄", "etiquetas-word.html":"🏷️",
+    "impressoras.html":"🖨️", "manutencao-impressoras.html":"🛠️", "computadores.html":"💻",
+    "pistolas.html":"📟", "radios.html":"📡", "portas.html":"🔌", "diretorio.html":"☎️",
+    "informacoes.html":"ℹ️", "users.html":"👥", "diagnostico.html":"🩺", "notificacoes.html":"🔔",
+    "config.html":"⚙️"
+  };
+
+  function isDesktop(){ return window.matchMedia && window.matchMedia(DESKTOP_QUERY).matches; }
+  function readCollapsed(){ try { return localStorage.getItem(STORAGE_KEY) === "1"; } catch(e){ return false; } }
+  function saveCollapsed(value){ try { localStorage.setItem(STORAGE_KEY, value ? "1" : "0"); } catch(e){} }
+  function currentFile(){ return ((location.pathname || "").split("/").pop() || "index.html").toLowerCase(); }
+
+  function ensureIcons(sidebar){
+    const current = currentFile();
+    sidebar.querySelectorAll("a[href]").forEach((link) => {
+      const href = (link.getAttribute("href") || "").split("?")[0].split("#")[0].split("/").pop().toLowerCase();
+      if (PAGE_ICONS[href] && !link.dataset.icon) link.dataset.icon = PAGE_ICONS[href];
+      const text = (link.querySelector(".sidebar-link-text")?.textContent || link.textContent || "").replace(/\s+/g," ").trim();
+      if (text) link.setAttribute("title", text);
+      if (href === current) {
+        link.classList.add("active");
+        link.setAttribute("aria-current", "page");
+      }
+    });
+  }
+
+  function ensureCollapseButton(sidebar){
+    if (sidebar.querySelector(".sidebar-collapse-toggle")) return sidebar.querySelector(".sidebar-collapse-toggle");
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "sidebar-collapse-toggle";
+    button.setAttribute("aria-label", "Colapsar sidebar");
+    button.setAttribute("title", "Colapsar/expandir sidebar");
+    button.innerHTML = "‹";
+    const brand = sidebar.querySelector(".sidebar-brand-card, .premium-brand, .brand, .brand-block") || sidebar.firstElementChild;
+    if (brand && brand.classList && (brand.classList.contains("sidebar-brand-card") || brand.classList.contains("premium-brand") || brand.classList.contains("brand") || brand.classList.contains("brand-block"))) brand.appendChild(button);
+    else sidebar.insertBefore(button, sidebar.firstChild);
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const next = !document.body.classList.contains("sidebar-collapsed");
+      applyCollapsed(next, true);
+    });
+    return button;
+  }
+
+  function applyCollapsed(collapsed, persist){
+    const canCollapse = isDesktop();
+    document.body.classList.toggle("sidebar-collapsed", !!collapsed && canCollapse);
+    document.documentElement.classList.toggle("sidebar-collapsed", !!collapsed && canCollapse);
+    document.querySelectorAll(".sidebar-collapse-toggle").forEach((btn) => {
+      const active = !!collapsed && canCollapse;
+      btn.innerHTML = active ? "›" : "‹";
+      btn.setAttribute("aria-label", active ? "Expandir sidebar" : "Colapsar sidebar");
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+    if (persist) saveCollapsed(!!collapsed && canCollapse);
+  }
+
+  function init(){
+    const sidebar = document.querySelector(".sidebar-pro-groups, aside.sidebar, .sidebar");
+    if (!sidebar) return;
+    sidebar.classList.add("sidebar-pro-groups", "sidebar-collapsible-pro");
+    ensureIcons(sidebar);
+    ensureCollapseButton(sidebar);
+    applyCollapsed(readCollapsed(), false);
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+  window.addEventListener("pageshow", () => setTimeout(init, 40));
+  window.addEventListener("resize", () => setTimeout(() => applyCollapsed(readCollapsed(), false), 90));
+})();
+/* ===== END APP BRAGA v1.35.8 - SIDEBAR COLAPSAVEL PRO ===== */
+
+
+/* ===== APP BRAGA v1.35.8 - SIDEBAR COLLAPSE HARDENING ===== */
+(function(){
+  const KEY = "appBraga.sidebar.collapsed.v1358";
+  const OLD_KEYS = ["appBraga.sidebar.collapsed.v1357"];
+  function desktop(){ return !window.matchMedia || window.matchMedia("(min-width:769px)").matches; }
+  function read(){
+    try{
+      const v = localStorage.getItem(KEY);
+      if (v === "1" || v === "0") return v === "1";
+      for (const k of OLD_KEYS){ const old = localStorage.getItem(k); if (old === "1" || old === "0") return old === "1"; }
+    }catch(e){}
+    return false;
+  }
+  function save(v){ try{ localStorage.setItem(KEY, v ? "1" : "0"); }catch(e){} }
+  function getSidebar(){ return document.querySelector("aside.sidebar, .sidebar-pro-groups, .enterprise-sidebar, #sidebar"); }
+  function ensure(){
+    const sidebar = getSidebar();
+    if(!sidebar) return;
+    sidebar.classList.add("sidebar-pro-groups", "sidebar-collapsible-pro");
+    let btn = sidebar.querySelector(".sidebar-collapse-toggle");
+    if(!btn){
+      btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "sidebar-collapse-toggle";
+      btn.title = "Colapsar/expandir sidebar";
+      btn.setAttribute("aria-label", "Colapsar sidebar");
+      btn.textContent = "‹";
+      const brand = sidebar.querySelector(".premium-brand, .sidebar-brand-card, .brand, .brand-block") || sidebar.firstElementChild;
+      if(brand) brand.appendChild(btn); else sidebar.prepend(btn);
+    }
+    if(btn.dataset.collapseBound !== "1"){
+      btn.dataset.collapseBound = "1";
+      btn.addEventListener("click", function(ev){
+        ev.preventDefault(); ev.stopPropagation();
+        const next = !document.body.classList.contains("sidebar-collapsed");
+        apply(next, true);
+      }, true);
+    }
+    apply(read(), false);
+  }
+  function apply(collapsed, persist){
+    const active = !!collapsed && desktop();
+    document.body.classList.toggle("sidebar-collapsed", active);
+    document.documentElement.classList.toggle("sidebar-collapsed", active);
+    document.querySelectorAll(".sidebar-collapse-toggle").forEach(function(btn){
+      btn.textContent = active ? "›" : "‹";
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+      btn.setAttribute("aria-label", active ? "Expandir sidebar" : "Colapsar sidebar");
+    });
+    if(persist) save(active);
+  }
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", ensure); else ensure();
+  window.addEventListener("pageshow", function(){ setTimeout(ensure, 50); });
+  window.addEventListener("resize", function(){ setTimeout(function(){ apply(read(), false); }, 80); });
+})();
+/* ===== END APP BRAGA v1.35.8 ===== */
