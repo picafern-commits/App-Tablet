@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.35.1";
+const APP_VERSION = "1.35.3";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BE2xnhqmSPq85_kA6comGATxEseSoh8zY_EK_4NZsbiI1HJByjc1PgQqhTsUwPlr1ujuUSpSzp29AQeS1hnlHOQ";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "notificationCloudSettings";
@@ -2729,26 +2729,8 @@ async function registarFcmWebPushApp(vapidKey) {
   return { docId, token };
 }
 
-function isElectronRuntimeAppBraga() {
-  return !!(window.electronAPI || /electron/i.test(navigator.userAgent || ""));
-}
-
-function isHostedAppBraga() {
-  return /picafern-commits\.github\.io/i.test(location.hostname || "") || /^https:/i.test(location.protocol || "");
-}
-
 function webPushDisponivelApp() {
   return !!(window.isSecureContext && "serviceWorker" in navigator && "PushManager" in window);
-}
-
-function pushServiceLimitacaoConhecidaApp() {
-  if (isElectronRuntimeAppBraga()) {
-    return "Electron mostra PushManager, mas o Chromium embutido nao tem o servico Web Push da Google. Para receber com a app fechada no PC, instala a versao Web pelo Chrome/Edge como PWA.";
-  }
-  if (!isHostedAppBraga() && !/^localhost$|^127\.0\.0\.1$/.test(location.hostname || "")) {
-    return "Web Push deve ser registado pela versao publicada em HTTPS/GitHub Pages. Em rede local/IP pode falhar em alguns browsers.";
-  }
-  return "";
 }
 
 function isIosAppBraga() {
@@ -2782,66 +2764,6 @@ async function gravarDiagnosticoPushApp(data = {}) {
   } catch (error) {
     console.warn("Nao foi possivel gravar diagnostico push:", error);
   }
-}
-
-
-function setPushAdvancedRowApp(id, value, state = "") {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.textContent = value || "-";
-  el.className = state ? `health-status ${state}` : "health-status";
-}
-
-async function diagnosticarPushAvancadoApp(showMessage = true) {
-  const result = {
-    secureContext: !!window.isSecureContext,
-    serviceWorker: "serviceWorker" in navigator,
-    pushManager: "PushManager" in window,
-    notifications: "Notification" in window ? Notification.permission : "unsupported",
-    electron: isElectronRuntimeAppBraga(),
-    standalone: isStandalonePwaAppBraga(),
-    hosted: isHostedAppBraga(),
-    controller: !!navigator.serviceWorker?.controller,
-    scope: "-",
-    subscription: "-",
-    endpoint: "-",
-    limitation: pushServiceLimitacaoConhecidaApp(),
-    error: ""
-  };
-
-  try {
-    const registration = await registarServiceWorkerAppBraga();
-    const ready = registration || (navigator.serviceWorker ? await navigator.serviceWorker.ready : null);
-    if (ready) {
-      result.scope = ready.scope || "-";
-      result.controller = !!navigator.serviceWorker.controller;
-      if (ready.pushManager) {
-        const sub = await ready.pushManager.getSubscription();
-        result.subscription = sub?.endpoint ? "Criada" : "Sem subscription";
-        result.endpoint = sub?.endpoint ? `${sub.endpoint.slice(0, 42)}...` : "-";
-      }
-    }
-  } catch (error) {
-    result.error = error?.message || String(error);
-  }
-
-  setPushAdvancedRowApp("pushDiagSecure", result.secureContext ? "OK" : "Não seguro", result.secureContext ? "ok" : "bad");
-  setPushAdvancedRowApp("pushDiagSW", result.serviceWorker ? "OK" : "Indisponível", result.serviceWorker ? "ok" : "bad");
-  setPushAdvancedRowApp("pushDiagPM", result.pushManager ? "OK" : "Indisponível", result.pushManager ? "ok" : "bad");
-  setPushAdvancedRowApp("pushDiagPermission", result.notifications, result.notifications === "granted" ? "ok" : "warn");
-  setPushAdvancedRowApp("pushDiagRuntime", result.electron ? "Electron" : (result.standalone ? "PWA instalada" : "Browser"), result.electron ? "warn" : "ok");
-  setPushAdvancedRowApp("pushDiagScope", result.scope, result.scope !== "-" ? "ok" : "warn");
-  setPushAdvancedRowApp("pushDiagSubscription", result.subscription, result.subscription === "Criada" ? "ok" : "warn");
-  setPushAdvancedRowApp("pushDiagEndpoint", result.endpoint, result.endpoint !== "-" ? "ok" : "warn");
-
-  const detail = document.getElementById("pushDiagDetail");
-  if (detail) {
-    detail.textContent = result.error || result.limitation || "Ambiente preparado. Se ainda falhar, usa Reparar este dispositivo para recriar a subscription.";
-    detail.className = `push-diagnostic-detail ${result.error ? "bad" : (result.limitation ? "warn" : "ok")}`;
-  }
-  await gravarDiagnosticoPushApp({ advanced: result });
-  if (showMessage) mostrarMensagem(result.error ? "Diagnóstico push encontrou erro." : "Diagnóstico push atualizado.", result.error ? "erro" : "sucesso");
-  return result;
 }
 
 function getNotificationDeviceTypeApp() {
@@ -3004,10 +2926,8 @@ function labelDispositivoNotificacaoApp(item = {}) {
 
 function labelMetodoNotificacaoApp(item = {}) {
   if (item.source === "electron-native") return "Electron nativo";
-  if (item.pushSubscription?.endpoint && item.token) return "Web Push + FCM";
   if (item.pushSubscription?.endpoint) return "Web Push standard";
   if (item.token) return "Firebase FCM";
-  if (item.source === "electron-no-web-push") return "Electron sem Web Push";
   if (item.source === "web-local-no-push") return "Local sem push cloud";
   return item.source || "Registo local";
 }
@@ -3378,12 +3298,10 @@ function renderCloudDevicesNotificacoesApp(items = []) {
   });
   const activeItems = Array.from(uniqueMap.values());
   const webPushItems = activeItems.filter((item) => item.pushSubscription?.endpoint);
-  const fcmItems = activeItems.filter((item) => item.token);
-  const cloudReadyItems = activeItems.filter((item) => item.token || item.pushSubscription?.endpoint);
   setCloudNotificationTextApp("cloudDevicesStatus", `${activeItems.length} registados`, activeItems.length ? "ok" : "warn");
-  setCloudNotificationTextApp("cloudDevicesDetail", `${cloudReadyItems.length} pronto(s) para cloud · Web Push: ${webPushItems.length} · FCM: ${fcmItems.length}`);
-  if (activeItems.length && !cloudReadyItems.length) {
-    setCloudNotificationDiagnosticApp("A cloud nao tem nenhum alvo remoto valido. Abre a APP em HTTPS/GitHub Pages no Chrome/Edge ou instala no ecra principal no Android/iPhone e carrega em Reparar este dispositivo.", "warn");
+  setCloudNotificationTextApp("cloudDevicesDetail", `${webPushItems.length} com Web Push standard pronto para cloud`);
+  if (activeItems.length && !webPushItems.length) {
+    setCloudNotificationDiagnosticApp("A cloud nao tem nenhum alvo Web Push standard. No Android/iPhone abre a app instalada e carrega em Reparar este dispositivo.", "warn");
   }
 
   if (!activeItems.length) {
@@ -3400,7 +3318,7 @@ function renderCloudDevicesNotificacoesApp(items = []) {
     const mode = labelMetodoNotificacaoApp(item);
     const permission = item.permission || "sem dados";
     const updated = formatTimestampApp(item.updatedAt || item.createdAt);
-    const ready = !!(item.pushSubscription?.endpoint || item.token);
+    const ready = !!item.pushSubscription?.endpoint;
     return `
       <div class="notification-device-card ${isCurrent ? "is-current" : ""}">
         <div>
@@ -3554,13 +3472,11 @@ async function atualizarPaginaNotificacoesCloudApp(showMessage = false) {
   await carregarCloudNotificacoesApp();
   carregarDispositivosCloudNotificacoesApp(true);
   const current = await obterDispositivoAtualNotificacoesApp().catch(() => null);
-  if (current?.pushSubscription?.endpoint || current?.token) {
-    setCloudNotificationDiagnosticApp(`Este dispositivo esta registado para cloud (${labelMetodoNotificacaoApp(current)}).`, "ok");
+  if (current?.pushSubscription?.endpoint) {
+    setCloudNotificationDiagnosticApp("Este dispositivo esta registado com Web Push standard.", "ok");
   } else {
-    const limitacao = pushServiceLimitacaoConhecidaApp();
-    setCloudNotificationDiagnosticApp(limitacao || "Abre esta pagina no dispositivo e carrega em Reparar este dispositivo.", "warn");
+    setCloudNotificationDiagnosticApp("Abre esta pagina no dispositivo e carrega em Reparar este dispositivo.", "warn");
   }
-  await diagnosticarPushAvancadoApp(false).catch(() => null);
   if (showMessage) mostrarMensagem("Notificacoes atualizadas.", "sucesso");
 }
 
@@ -3752,11 +3668,7 @@ async function registarDispositivoPushApp(forceReset = false, options = {}) {
     if (code.includes("messaging/invalid-vapid-key")) friendly = "A VAPID key nao e valida. Confirma a chave Web Push no Firebase.";
     if (code.includes("messaging/token-subscribe-failed")) friendly = "Falhou a subscricao push. Confirma permissoes e a VAPID key.";
     if (message.toLowerCase().includes("push service")) {
-      const source = isElectronRuntimeAppBraga() ? "electron-no-web-push" : "web-local-no-push";
-      await registarDispositivoLocalNotificacoesApp(source);
-      const limitacao = pushServiceLimitacaoConhecidaApp();
-      setNotificationDeviceDiagnostic(limitacao || friendly);
-      if (limitacao) mostrarMensagem(limitacao, "erro");
+      await registarDispositivoLocalNotificacoesApp("web-local-no-push");
       return;
     }
     mostrarMensagem(friendly, "erro");
@@ -6273,7 +6185,6 @@ window.guardarIdentidadeDispositivoNotificacoesApp = guardarIdentidadeDispositiv
 window.repararDispositivoNotificacoesCloudApp = repararDispositivoNotificacoesCloudApp;
 window.testarCloudNotificacoesApp = testarCloudNotificacoesApp;
 window.atualizarPaginaNotificacoesCloudApp = atualizarPaginaNotificacoesCloudApp;
-window.diagnosticarPushAvancadoApp = diagnosticarPushAvancadoApp;
 window.verificarSistemasApp = verificarSistemasApp;
 window.adicionarInformacao = adicionarInformacao;
 window.selecionarInformacao = selecionarInformacao;
@@ -7540,21 +7451,13 @@ function appVersionUrlAppBraga() {
 
 async function registarServiceWorkerAppBraga() {
   try {
-    if (!("serviceWorker" in navigator)) return null;
-    const basePath = location.pathname.includes("/html/") ? "../" : "./";
-    const swUrl = `${basePath}sw.js?v=${encodeURIComponent(APP_VERSION)}`;
-    const registration = await navigator.serviceWorker.register(swUrl, { scope: basePath });
+    if (!("serviceWorker" in navigator)) return;
+    const swUrl = location.pathname.includes("/html/") ? "../sw.js" : "sw.js";
+    const registration = await navigator.serviceWorker.register(swUrl);
     await registration.update?.();
-    if (!navigator.serviceWorker.controller) {
-      await new Promise((resolve) => {
-        const timer = setTimeout(resolve, 900);
-        navigator.serviceWorker.addEventListener("controllerchange", () => { clearTimeout(timer); resolve(); }, { once: true });
-      });
-    }
     return registration;
   } catch (e) {
     console.error("Erro a registar service worker", e);
-    throw e;
   }
 }
 
@@ -12191,3 +12094,236 @@ window.testarCamerasStockQr = async function(){
   else init();
 })();
 /* ===== END APP BRAGA V1.33.4 - FAVORITOS EDITAVEIS SIDEBAR ===== */
+
+/* ===== APP BRAGA v1.35.3 - NOTIFICAÇÕES: ESTADO, HISTÓRICO E REPARAÇÃO ===== */
+function setPushDiagValueApp(id, text, state = "") {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text || "-";
+  el.classList.remove("ok", "warn", "bad");
+  if (state) el.classList.add(state);
+}
+
+async function obterPushSubscriptionAtualApp() {
+  try {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) return null;
+    await registarServiceWorkerAppBraga?.();
+    const registration = await navigator.serviceWorker.ready;
+    return await registration.pushManager.getSubscription();
+  } catch (error) {
+    console.warn("Diagnóstico push: sem subscription atual", error);
+    return null;
+  }
+}
+
+async function atualizarDiagnosticoPushAutomaticoApp() {
+  if (!/notificacoes\.html$/i.test(location.pathname || "")) return null;
+  const isSecure = !!window.isSecureContext;
+  const hasSw = "serviceWorker" in navigator;
+  const hasPush = "PushManager" in window;
+  const permission = "Notification" in window ? Notification.permission : "unsupported";
+  const env = window.electronAPI?.showNotification ? "Electron" : (isStandalonePwaAppBraga() ? "PWA instalada" : "Browser");
+  let subscription = null;
+  if (isSecure && hasSw && hasPush) subscription = await obterPushSubscriptionAtualApp();
+  const endpoint = subscription?.endpoint || appNotificationState.pushSubscriptionEndpoint || "";
+
+  setPushDiagValueApp("pushDiagServiceWorker", hasSw ? "OK" : "Falha", hasSw ? "ok" : "bad");
+  setPushDiagValueApp("pushDiagPushManager", hasPush ? "OK" : "Falha", hasPush ? "ok" : "bad");
+  setPushDiagValueApp("pushDiagPermission", permission, permission === "granted" ? "ok" : (permission === "denied" ? "bad" : "warn"));
+  setPushDiagValueApp("pushDiagEndpoint", endpoint ? "Criado" : "Sem endpoint", endpoint ? "ok" : "warn");
+  setPushDiagValueApp("pushDiagEnvironment", env, env === "Electron" ? "warn" : "ok");
+
+  if (window.electronAPI?.showNotification && !endpoint) {
+    setCloudNotificationDiagnosticApp("Electron não cria Web Push real neste ambiente. Para PC, usa a PWA instalada pelo Edge/Chrome.", "warn");
+  } else if (endpoint) {
+    setCloudNotificationDiagnosticApp("Este dispositivo tem endpoint Web Push. Se o teste falhar, o problema está na Cloud Function/Firestore.", "ok");
+  }
+  return { isSecure, hasSw, hasPush, permission, env, endpoint };
+}
+
+function getCloudDeviceReadinessApp(item = {}) {
+  const hasStandard = !!(item.pushSubscription?.endpoint || item.endpoint);
+  const hasFcm = !!item.token;
+  const active = item.active !== false;
+  const permission = item.permission || "sem dados";
+  const staleMs = Date.now() - normalizeTimestampApp(item.updatedAt || item.createdAt);
+  const stale = staleMs > 1000 * 60 * 60 * 24 * 30;
+  let state = "warn";
+  let label = "Reparar";
+  if (!active) { state = "bad"; label = "Inativo"; }
+  else if (hasStandard) { state = stale ? "warn" : "ok"; label = stale ? "Antigo" : "Web Push ativo"; }
+  else if (hasFcm) { state = stale ? "warn" : "ok"; label = stale ? "FCM antigo" : "FCM ativo"; }
+  else { state = "warn"; label = "Sem push cloud"; }
+  if (permission === "denied") { state = "bad"; label = "Bloqueado"; }
+  return { hasStandard, hasFcm, active, stale, state, label };
+}
+
+function getUniqueActiveCloudDevicesApp(items = []) {
+  const sorted = items
+    .filter((item) => item.active !== false)
+    .sort((a, b) => normalizeTimestampApp(b.updatedAt || b.createdAt) - normalizeTimestampApp(a.updatedAt || a.createdAt));
+  const map = new Map();
+  sorted.forEach((item) => {
+    const key = item.deviceKey || item.pushSubscription?.endpoint || item.endpoint || item.token || item.id;
+    if (!map.has(key)) map.set(key, item);
+  });
+  return Array.from(map.values());
+}
+
+function renderCloudDevicesNotificacoesApp(items = []) {
+  const host = document.getElementById("cloudDevicesList");
+  if (!host) return;
+  const activeItems = getUniqueActiveCloudDevicesApp(items);
+  const webPushItems = activeItems.filter((item) => item.pushSubscription?.endpoint || item.endpoint);
+  const remoteItems = activeItems.filter((item) => item.pushSubscription?.endpoint || item.endpoint || item.token);
+  setCloudNotificationTextApp("cloudDevicesStatus", `${activeItems.length} registados`, activeItems.length ? "ok" : "warn");
+  setCloudNotificationTextApp("cloudDevicesDetail", `${webPushItems.length} Web Push · ${remoteItems.length} remotos prontos`);
+
+  if (!activeItems.length) {
+    host.innerHTML = `<div class="empty-state mini">Ainda não há dispositivos registados.</div>`;
+    return;
+  }
+
+  host.innerHTML = `
+    <table class="notification-devices-pro-table">
+      <thead>
+        <tr><th>Dispositivo</th><th>Tipo</th><th>Push</th><th>Último contacto</th><th>Estado</th></tr>
+      </thead>
+      <tbody>
+        ${activeItems.map((item) => {
+          const readiness = getCloudDeviceReadinessApp(item);
+          const isCurrent = item.id === appNotificationState.restoredTokenDocId ||
+            (appNotificationState.fcmToken && item.token === appNotificationState.fcmToken) ||
+            (appNotificationState.pushSubscriptionEndpoint && (item.endpoint === appNotificationState.pushSubscriptionEndpoint || item.pushSubscription?.endpoint === appNotificationState.pushSubscriptionEndpoint));
+          const device = labelDispositivoNotificacaoApp(item);
+          const role = labelNotificationDeviceRoleApp(item.notificationDeviceRole || item.deviceRole || "");
+          const mode = labelMetodoNotificacaoApp(item);
+          const endpoint = item.pushSubscription?.endpoint || item.endpoint || item.token || "";
+          const updated = formatTimestampApp(item.updatedAt || item.createdAt);
+          return `
+            <tr class="${isCurrent ? "is-current" : ""}">
+              <td data-label="Dispositivo"><div class="notification-device-main"><strong>${escapeHtmlAppBraga(device)}${isCurrent ? " · Este" : ""}</strong><small>${escapeHtmlAppBraga(endpoint)}</small></div></td>
+              <td data-label="Tipo"><span class="notification-chip">${escapeHtmlAppBraga(role)}</span></td>
+              <td data-label="Push"><span class="notification-chip ${readiness.hasStandard ? "ok" : (readiness.hasFcm ? "ok" : "warn")}">${escapeHtmlAppBraga(mode)}</span></td>
+              <td data-label="Último contacto">${escapeHtmlAppBraga(updated)}</td>
+              <td data-label="Estado"><span class="notification-chip ${readiness.state}">${escapeHtmlAppBraga(readiness.label)}</span></td>
+            </tr>`;
+        }).join("")}
+      </tbody>
+    </table>`;
+
+  if (activeItems.length && !webPushItems.length) {
+    setCloudNotificationDiagnosticApp("Nenhum dispositivo tem Web Push standard. Instala como PWA e carrega em Guardar e reparar push.", "warn");
+  }
+}
+
+async function carregarDispositivosCloudNotificacoesApp(force = false) {
+  const host = document.getElementById("cloudDevicesList");
+  if (!host || !window.db?.collection) return;
+  try {
+    host.innerHTML = `<p class="muted">A carregar dispositivos...</p>`;
+    const snapshot = await window.db.collection("notificationTokens").get();
+    const items = [];
+    snapshot.forEach((doc) => items.push({ id: doc.id, ...doc.data() }));
+    renderCloudDevicesNotificacoesApp(items);
+    await atualizarDiagnosticoPushAutomaticoApp();
+    await carregarHistoricoNotificacoesCloudApp(false);
+  } catch (error) {
+    console.error("Erro ao carregar dispositivos cloud:", error);
+    host.innerHTML = `<div class="empty-state mini">Erro ao carregar dispositivos.</div>`;
+  }
+}
+
+async function repararTodosRegistosCloudNotificacoesApp() {
+  try {
+    if (!window.db?.collection) throw new Error("Firebase indisponível.");
+    const snapshot = await window.db.collection("notificationTokens").get();
+    const batch = window.db.batch();
+    const latestByKey = new Map();
+    const now = Date.now();
+    snapshot.forEach((doc) => {
+      const data = doc.data() || {};
+      const key = data.deviceKey || data.pushSubscription?.endpoint || data.endpoint || data.token || doc.id;
+      const current = latestByKey.get(key);
+      const updated = normalizeTimestampApp(data.updatedAt || data.createdAt);
+      if (!current || updated > current.updated) latestByKey.set(key, { doc, data, updated });
+    });
+    let disabled = 0;
+    snapshot.forEach((doc) => {
+      const data = doc.data() || {};
+      const key = data.deviceKey || data.pushSubscription?.endpoint || data.endpoint || data.token || doc.id;
+      const latest = latestByKey.get(key);
+      const hasRemote = !!(data.token || data.pushSubscription?.endpoint || data.endpoint);
+      const tooOld = normalizeTimestampApp(data.updatedAt || data.createdAt) && (now - normalizeTimestampApp(data.updatedAt || data.createdAt) > 1000 * 60 * 60 * 24 * 120);
+      if ((latest && latest.doc.id !== doc.id) || data.active === false || !hasRemote || tooOld) {
+        batch.set(doc.ref, { active: false, disabledAt: now, disabledReason: latest?.doc.id !== doc.id ? "duplicado-antigo" : (!hasRemote ? "sem-push-cloud" : "registo-antigo") }, { merge: true });
+        disabled += 1;
+      }
+    });
+    if (disabled) await batch.commit();
+    await repararDispositivoNotificacoesCloudApp();
+    setCloudNotificationDiagnosticApp(`Reparação concluída. ${disabled} registo(s) antigo(s) desativado(s).`, "ok");
+    await carregarDispositivosCloudNotificacoesApp(true);
+  } catch (error) {
+    setCloudNotificationDiagnosticApp(error.message || "Erro ao reparar registos cloud.", "bad");
+    mostrarMensagem(error.message || "Erro ao reparar registos cloud.", "erro");
+  }
+}
+
+async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
+  const host = document.getElementById("cloudNotificationsHistory");
+  if (!host || !window.db?.collection) return;
+  try {
+    const snap = await window.db.collection("notificationHistory").orderBy("createdAt", "desc").limit(12).get();
+    const items = [];
+    snap.forEach((doc) => items.push({ id: doc.id, ...doc.data() }));
+    if (!items.length) {
+      host.innerHTML = `<div class="empty-state mini">Ainda não há histórico de envios cloud.</div>`;
+      return;
+    }
+    host.innerHTML = items.map((item) => `
+      <div class="notification-history-item">
+        <div>
+          <strong>${escapeHtmlAppBraga(item.title || item.event || "Notificação")}</strong>
+          <small>${escapeHtmlAppBraga(item.body || "")} · ${escapeHtmlAppBraga(formatTimestampApp(item.createdAt || item.lastRunAt))}</small>
+          ${item.error ? `<small>Erro: ${escapeHtmlAppBraga(item.error)}</small>` : ""}
+        </div>
+        <div class="notification-history-stats">
+          <span class="notification-chip ${Number(item.sent || 0) > 0 ? "ok" : "warn"}">Enviadas: ${Number(item.sent || 0)}</span>
+          <span class="notification-chip ${Number(item.failed || 0) > 0 ? "bad" : "ok"}">Falhas: ${Number(item.failed || 0)}</span>
+          <span class="notification-chip">WebPush: ${Number(item.standardWebPushTargets || 0)}</span>
+          <span class="notification-chip">FCM: ${Number(item.fcmTargets || 0)}</span>
+        </div>
+      </div>`).join("");
+    if (showMessage) mostrarMensagem("Histórico atualizado.", "sucesso");
+  } catch (error) {
+    console.warn("Histórico notificationHistory indisponível, a tentar auditLogs", error);
+    try {
+      const snap = await window.db.collection("auditLogs").where("action", "==", "notification-broadcast").limit(12).get();
+      const items = [];
+      snap.forEach((doc) => items.push({ id: doc.id, ...doc.data() }));
+      items.sort((a, b) => normalizeTimestampApp(b.createdAt) - normalizeTimestampApp(a.createdAt));
+      host.innerHTML = items.length ? items.map((item) => `
+        <div class="notification-history-item">
+          <div><strong>${escapeHtmlAppBraga(item.title || item.event || "Notificação")}</strong><small>${escapeHtmlAppBraga(formatTimestampApp(item.createdAt))}</small></div>
+          <div class="notification-history-stats"><span class="notification-chip ok">Enviadas: ${Number(item.sent || 0)}</span><span class="notification-chip ${Number(item.failed || 0) ? "bad" : "ok"}">Falhas: ${Number(item.failed || 0)}</span></div>
+        </div>`).join("") : `<div class="empty-state mini">Sem histórico disponível.</div>`;
+    } catch (innerError) {
+      host.innerHTML = `<div class="empty-state mini">Erro ao carregar histórico.</div>`;
+    }
+  }
+}
+
+(function initNotificacoesPro1353(){
+  if (!/notificacoes\.html$/i.test(location.pathname || "")) return;
+  const run = () => {
+    atualizarDiagnosticoPushAutomaticoApp();
+    setTimeout(() => {
+      carregarHistoricoNotificacoesCloudApp(false);
+      carregarDispositivosCloudNotificacoesApp(true);
+    }, 900);
+  };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run);
+  else run();
+})();
+/* ===== END APP BRAGA v1.35.3 ===== */

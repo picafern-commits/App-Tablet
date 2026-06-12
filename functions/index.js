@@ -244,6 +244,18 @@ async function writeAudit(action, data = {}) {
   }
 }
 
+async function writeNotificationHistory(data = {}) {
+  try {
+    await admin.firestore().collection("notificationHistory").add({
+      source: "firebase-functions",
+      createdAt: Date.now(),
+      ...data
+    });
+  } catch (error) {
+    logger.warn("Falhou escrita do historico de notificacoes", { error: error.message });
+  }
+}
+
 async function broadcast(title, body, data = {}) {
   const devices = await getActiveNotificationDevices();
   const webPushRuntime = await configureWebPush();
@@ -323,6 +335,22 @@ async function broadcast(title, body, data = {}) {
     collection: data.collection || "",
     targetUrl: data.url || APP_URL,
     credentialSource: webPushRuntime.source
+  });
+
+  await writeNotificationHistory({
+    title,
+    body,
+    sent,
+    failed,
+    deviceCount: devices.length,
+    fcmTargets,
+    standardWebPushTargets,
+    standardWebPushReady: canStandardWebPush,
+    credentialSource: webPushRuntime.source,
+    event: data.event || data.collection || "manual",
+    collection: data.collection || "",
+    targetUrl: data.url || APP_URL,
+    error: sent > 0 ? "" : lastError
   });
 
   return {

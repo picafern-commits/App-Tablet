@@ -5,11 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Notificações - App Braga</title>
   <link rel="manifest" href="../manifest.json">
-  <link rel="stylesheet" href="../css/style.css?v=1.35.1">
-  <link rel="stylesheet" href="../css/app-theme-pro.css?v=theme-pro-1">
-  <link rel="stylesheet" href="../css/enterprise/ops.css?v=ops-12">
-  <link rel="stylesheet" href="../css/systems/personal-tools.css?v=personal-4">
-  <link rel="stylesheet" href="../css/systems/global-search.css?v=global-search-2">
+  <link rel="stylesheet" href="../css/style.css?v=1.35.3">
+  <link rel="stylesheet" href="../css/app-theme-pro.css">
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
   <link rel="stylesheet" href="../css/iphone-force-final.css?v=safe-area-1.33.4">
   <link rel="stylesheet" href="../css/iphone-sidebar-final.css?v=safe-area-1.33.4">
@@ -19,10 +16,10 @@
 <div class="app-sidebar-overlay"></div>
 
 <aside class="sidebar sidebar-pro-groups">
-  <div class="brand premium-brand">
-    <div class="brand-badge">BR</div>
+  <div class="sidebar-brand-card">
+    <div class="sidebar-brand-mark">AB</div>
     <div>
-      <h2>App Braga</h2>
+      <strong>App Braga</strong>
       <small class="sidebar-brand-subtitle">Centro operacional</small>
     </div>
   </div>
@@ -43,47 +40,50 @@
         <span class="sidebar-group-chevron">›</span>
       </button>
       <div class="sidebar-group-links">
-      <a href="add-toner.html" data-icon="➕"><span class="sidebar-link-text">Adicionar Toner</span></a>
-      <a href="historico.html" data-icon="🧾"><span class="sidebar-link-text">Histórico</span></a>
-      <a href="tarefas.html" data-icon="✅"><span class="sidebar-link-text">Tarefas</span></a>
-      <a href="scanner-ia.html" data-icon="📄"><span class="sidebar-link-text">Scanner IA</span></a>
-      <a href="etiquetas-word.html" data-icon="🏷️"><span class="sidebar-link-text">Etiquetas Word</span></a>
+        <a href="add-toner.html" data-icon="➕"><span class="sidebar-link-text">Adicionar Toner</span></a>
+        <a href="historico.html" data-icon="🧾"><span class="sidebar-link-text">Histórico</span></a>
+        <a href="tarefas.html" data-icon="✅"><span class="sidebar-link-text">Tarefas</span></a>
+        <a href="scanner-ia.html" data-icon="📄"><span class="sidebar-link-text">Scanner IA</span></a>
+        <a href="etiquetas-word.html" data-icon="🏷️"><span class="sidebar-link-text">Etiquetas Word</span></a>
       </div>
     </section>
+
     <section class="sidebar-group" data-sidebar-group="equipamentos">
       <button class="sidebar-group-toggle" type="button" aria-expanded="false">
         <span class="sidebar-group-left"><span class="sidebar-group-icon">🧰</span><span>Equipamentos</span></span>
         <span class="sidebar-group-chevron">›</span>
       </button>
       <div class="sidebar-group-links">
-      <a href="impressoras.html" data-icon="🖨️"><span class="sidebar-link-text">Impressoras</span></a>
-      <a href="manutencao-impressoras.html" data-icon="🛠️"><span class="sidebar-link-text">Manutenção Impressoras</span></a>
-      <a href="computadores.html" data-icon="💻"><span class="sidebar-link-text">Computadores</span></a>
-      <a href="pistolas.html" data-icon="📟"><span class="sidebar-link-text">Pistolas CK65</span></a>
-      <a href="radios.html" data-icon="📡"><span class="sidebar-link-text">Rádios</span></a>
+        <a href="impressoras.html" data-icon="🖨️"><span class="sidebar-link-text">Impressoras</span></a>
+        <a href="manutencao-impressoras.html" data-icon="🛠️"><span class="sidebar-link-text">Manutenção Impressoras</span></a>
+        <a href="computadores.html" data-icon="💻"><span class="sidebar-link-text">Computadores</span></a>
+        <a href="pistolas.html" data-icon="📟"><span class="sidebar-link-text">Pistolas CK65</span></a>
+        <a href="radios.html" data-icon="📡"><span class="sidebar-link-text">Rádios</span></a>
       </div>
     </section>
+
     <section class="sidebar-group" data-sidebar-group="infraestrutura">
       <button class="sidebar-group-toggle" type="button" aria-expanded="false">
         <span class="sidebar-group-left"><span class="sidebar-group-icon">🌐</span><span>Infraestrutura</span></span>
         <span class="sidebar-group-chevron">›</span>
       </button>
       <div class="sidebar-group-links">
-      <a href="portas.html" data-icon="🔌"><span class="sidebar-link-text">Portas Rede</span></a>
-      <a href="diretorio.html" data-icon="☎️"><span class="sidebar-link-text">Diretório</span></a>
-      <a href="informacoes.html" data-icon="ℹ️"><span class="sidebar-link-text">Informações</span></a>
+        <a href="portas.html" data-icon="🔌"><span class="sidebar-link-text">Portas Rede</span></a>
+        <a href="diretorio.html" data-icon="☎️"><span class="sidebar-link-text">Diretório</span></a>
+        <a href="informacoes.html" data-icon="ℹ️"><span class="sidebar-link-text">Informações</span></a>
       </div>
     </section>
-    <section class="sidebar-group" data-sidebar-group="administra-o">
+
+    <section class="sidebar-group" data-sidebar-group="administra-o" data-default-open="1">
       <button class="sidebar-group-toggle" type="button" aria-expanded="false">
         <span class="sidebar-group-left"><span class="sidebar-group-icon">⚙️</span><span>Administração</span></span>
         <span class="sidebar-group-chevron">›</span>
       </button>
       <div class="sidebar-group-links">
-      <a href="users.html" data-icon="👥"><span class="sidebar-link-text">Users</span></a>
-      <a href="diagnostico.html" data-icon="🩺"><span class="sidebar-link-text">Diagnóstico</span></a>
-      <a href="notificacoes.html" data-icon="🔔" class="active"><span class="sidebar-link-text">Notificações</span></a>
-      <a href="config.html" data-icon="⚙️"><span class="sidebar-link-text">Configurações</span></a>
+        <a href="users.html" data-icon="👥"><span class="sidebar-link-text">Users</span></a>
+        <a href="diagnostico.html" data-icon="🩺"><span class="sidebar-link-text">Diagnóstico</span></a>
+        <a href="notificacoes.html" data-icon="🔔" class="active"><span class="sidebar-link-text">Notificações</span></a>
+        <a href="config.html" data-icon="⚙️"><span class="sidebar-link-text">Configurações</span></a>
       </div>
     </section>
   </nav>
@@ -159,27 +159,6 @@
     </div>
   </section>
 
-  <section class="panel config-section notification-cloud-panel push-advanced-panel">
-    <div class="section-header">
-      <div>
-        <h3>Diagnóstico Push avançado</h3>
-        <p class="section-subtitle">Mostra se este ambiente consegue criar uma subscrição Web Push real.</p>
-      </div>
-      <button class="btn-secondary" type="button" onclick="diagnosticarPushAvancadoApp(true)">Diagnosticar Push</button>
-    </div>
-    <div class="push-diagnostic-grid">
-      <div><span>Contexto seguro</span><strong id="pushDiagSecure" class="health-status warn">A verificar</strong></div>
-      <div><span>Service Worker</span><strong id="pushDiagSW" class="health-status warn">A verificar</strong></div>
-      <div><span>PushManager</span><strong id="pushDiagPM" class="health-status warn">A verificar</strong></div>
-      <div><span>Permissão</span><strong id="pushDiagPermission" class="health-status warn">A verificar</strong></div>
-      <div><span>Ambiente</span><strong id="pushDiagRuntime" class="health-status warn">A verificar</strong></div>
-      <div><span>Scope SW</span><strong id="pushDiagScope" class="health-status warn">A verificar</strong></div>
-      <div><span>Subscription</span><strong id="pushDiagSubscription" class="health-status warn">A verificar</strong></div>
-      <div><span>Endpoint</span><strong id="pushDiagEndpoint" class="health-status warn">A verificar</strong></div>
-    </div>
-    <p id="pushDiagDetail" class="push-diagnostic-detail warn">Carrega em Diagnosticar Push antes de reparar o dispositivo.</p>
-  </section>
-
   <section class="panel config-section notification-cloud-panel">
     <div class="section-header">
       <div>
@@ -223,15 +202,38 @@
     <p class="section-subtitle" id="cloudNotificationDiagnostic">Depois de guardar, abre esta pagina em cada dispositivo e carrega em Reparar este dispositivo.</p>
   </section>
 
+  <section class="panel config-section notification-cloud-panel notification-devices-pro-panel">
+    <div class="section-header">
+      <div>
+        <h3>Estado dos dispositivos</h3>
+        <p class="section-subtitle">Mostra quem está pronto para receber Web Push mesmo com a app fechada.</p>
+      </div>
+      <button class="btn-secondary" type="button" onclick="repararTodosRegistosCloudNotificacoesApp()">Reparar registos cloud</button>
+    </div>
+
+    <div class="notification-health-grid" id="pushAutoDiagnosticGrid">
+      <div class="notification-health-card"><span>Service Worker</span><strong id="pushDiagServiceWorker">-</strong></div>
+      <div class="notification-health-card"><span>Push Manager</span><strong id="pushDiagPushManager">-</strong></div>
+      <div class="notification-health-card"><span>Permissões</span><strong id="pushDiagPermission">-</strong></div>
+      <div class="notification-health-card"><span>Endpoint local</span><strong id="pushDiagEndpoint">-</strong></div>
+      <div class="notification-health-card"><span>Ambiente</span><strong id="pushDiagEnvironment">-</strong></div>
+    </div>
+
+    <div id="cloudDevicesList" class="notification-devices-list notification-devices-table-wrap">
+      <p class="muted">A carregar dispositivos...</p>
+    </div>
+  </section>
+
   <section class="panel config-section notification-cloud-panel">
     <div class="section-header">
       <div>
-        <h3>Dispositivos registados</h3>
-        <p class="section-subtitle">So estes recebem notificacoes remotas da cloud.</p>
+        <h3>Histórico de notificações</h3>
+        <p class="section-subtitle">Últimos envios feitos pelas Firebase Cloud Functions.</p>
       </div>
+      <button class="btn-secondary" type="button" onclick="carregarHistoricoNotificacoesCloudApp(true)">Atualizar histórico</button>
     </div>
-    <div id="cloudDevicesList" class="notification-devices-list">
-      <p class="muted">A carregar dispositivos...</p>
+    <div id="cloudNotificationsHistory" class="notification-history-list">
+      <p class="muted">A carregar histórico...</p>
     </div>
   </section>
 </main>
@@ -239,7 +241,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="../js/app.js?v=1.35.1"></script>
+<script src="../js/app.js?v=1.35.3"></script>
 <script src="../js/app-theme-pro.js"></script>
 <script src="../js/iphone-force-final.js?v=safe-area-1.33.4"></script>
 <script src="../js/iphone-sidebar-final.js?v=safe-area-1.33.4"></script>
