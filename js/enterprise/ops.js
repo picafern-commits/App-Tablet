@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   "use strict";
 
   const COLLECTIONS = [
@@ -35,8 +35,6 @@
     "portas.html": "\u25A7",
     "radios.html": "\u25CC",
     "informacoes.html": "\u24D8",
-    "tarefas.html": "\u25A8",
-    "diagnostico.html": "\u26A1",
     "config.html": "\u2699"
   };
 
@@ -197,31 +195,6 @@
       link.dataset.enterpriseCloseBound = "1";
       link.addEventListener("click", close);
     });
-
-    if (!document.body.dataset.enterpriseSidebarSwipe) {
-      document.body.dataset.enterpriseSidebarSwipe = "1";
-      let startX = 0;
-      let startY = 0;
-      let tracking = false;
-      document.addEventListener("touchstart", (event) => {
-        const touch = event.touches?.[0];
-        if (!touch) return;
-        startX = touch.clientX;
-        startY = touch.clientY;
-        tracking = startX <= 28 || sidebar.classList.contains("app-open");
-      }, { passive: true });
-      document.addEventListener("touchend", (event) => {
-        if (!tracking) return;
-        const touch = event.changedTouches?.[0];
-        tracking = false;
-        if (!touch) return;
-        const dx = touch.clientX - startX;
-        const dy = Math.abs(touch.clientY - startY);
-        if (dy > 80 || Math.abs(dx) < 68 || Math.abs(dx) < dy * 1.25) return;
-        if (dx > 0 && startX <= 34) open();
-        if (dx < 0 && sidebar.classList.contains("app-open")) close();
-      }, { passive: true });
-    }
   }
 
   function setupSearchShell() {
@@ -231,15 +204,24 @@
 
   function setupElectronSidebarActions() {
     const sidebar = document.querySelector(".sidebar");
-    if (!window.electronAPI?.closeApp) return;
-    document.querySelectorAll(".enterprise-window-actions").forEach((node) => node.remove());
-    sidebar?.querySelectorAll(".enterprise-sidebar-window-actions, [data-enterprise-displays], [data-enterprise-display-select], [data-enterprise-move-display], [data-enterprise-display-status]").forEach((node) => node.remove());
-    if (!sidebar) return;
+    if (!sidebar || !window.electronAPI?.closeApp) return;
+    sidebar.querySelectorAll("[data-enterprise-displays], [data-enterprise-display-select], [data-enterprise-move-display], [data-enterprise-display-status]").forEach((node) => node.remove());
+    const existingActions = sidebar.querySelector(".enterprise-window-actions");
+    if (existingActions) {
+      if (!existingActions.querySelector("[data-enterprise-hide]")) {
+        existingActions.insertAdjacentHTML("beforeend", `<button class="secondary-btn enterprise-window-btn" type="button" data-enterprise-hide>Segundo plano</button>`);
+      }
+      if (!existingActions.querySelector("[data-enterprise-close]")) {
+        existingActions.insertAdjacentHTML("beforeend", `<button class="secondary-btn enterprise-window-btn enterprise-window-close" type="button" data-enterprise-close>Fechar App</button>`);
+      }
+      bindElectronWindowButtons(existingActions);
+      return;
+    }
     const actions = document.createElement("div");
-    actions.className = "enterprise-sidebar-window-actions";
+    actions.className = "enterprise-window-actions";
     actions.innerHTML = `
-      <button class="enterprise-window-btn" type="button" data-enterprise-hide title="Segundo plano" aria-label="Segundo plano">⏸</button>
-      <button class="enterprise-window-btn enterprise-window-close" type="button" data-enterprise-close title="Fechar App" aria-label="Fechar App">⏻</button>
+      <button class="secondary-btn enterprise-window-btn" type="button" data-enterprise-hide>Segundo plano</button>
+      <button class="secondary-btn enterprise-window-btn enterprise-window-close" type="button" data-enterprise-close>Fechar App</button>
     `;
     sidebar.appendChild(actions);
     bindElectronWindowButtons(actions);

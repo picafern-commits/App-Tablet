@@ -7,8 +7,6 @@
     ["add-toner.html", "Adicionar Toner"],
     ["stock.html", "Stock"],
     ["historico.html", "Historico"],
-    ["tarefas.html", "Tarefas"],
-    ["scanner-ia.html", "Scanner IA"],
     ["etiquetas-word.html", "Etiquetas Word"],
     ["impressoras.html", "Impressoras"],
     ["manutencao-impressoras.html", "Manutencao Impressoras"],
@@ -16,10 +14,8 @@
     ["users.html", "Users"],
     ["pistolas.html", "Pistolas CK65"],
     ["portas.html", "Portas Rede"],
-    ["diretorio.html", "Diretorio"],
     ["radios.html", "Radios"],
     ["informacoes.html", "Informacoes"],
-    ["diagnostico.html", "Diagnostico"],
     ["config.html", "Configuracoes"]
   ];
 

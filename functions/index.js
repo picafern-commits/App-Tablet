@@ -4,19 +4,18 @@ const admin = require("firebase-admin");
 const webpush = require("web-push");
 const { onDocumentCreated, onDocumentWritten } = require("firebase-functions/v2/firestore");
 const { setGlobalOptions } = require("firebase-functions/v2/options");
+const { defineSecret } = require("firebase-functions/params");
 const logger = require("firebase-functions/logger");
 
 admin.initializeApp();
 setGlobalOptions({ region: "europe-west1", maxInstances: 10 });
 
-function envValue(name) {
-  return String(process.env[name] || "").trim();
-}
+const VAPID_PUBLIC_KEY = defineSecret("APP_BRAGA_VAPID_PUBLIC_KEY");
+const VAPID_PRIVATE_KEY = defineSecret("APP_BRAGA_VAPID_PRIVATE_KEY");
 
 const APP_URL = "https://picafern-commits.github.io/App-Tablet/html/index.html";
-const VAPID_SUBJECT = envValue("APP_BRAGA_VAPID_SUBJECT") || "mailto:admin@appbraga.pt";
+const VAPID_SUBJECT = "mailto:admin@appbraga.pt";
 const CONFIG_DOC = "config/cloudNotifications";
-const CLOUD_SETTINGS_DOC = "config/notificationCloudSettings";
 
 function normalizePercentValue(value) {
   if (typeof value === "number" && Number.isFinite(value)) return Math.max(0, Math.min(100, Math.round(value)));
@@ -109,37 +108,39 @@ function getUpdatedAt(item = {}) {
 function uniqueActiveDevices(items) {
   const sorted = items
     .filter((item) => item.active !== false)
-    .filter((item) => item.source !== "electron-native")
-    .filter((item) => item.source !== "web-local-no-push")
     .filter((item) => item.token || item.pushSubscription?.endpoint)
     .sort((a, b) => getUpdatedAt(b) - getUpdatedAt(a));
-  const unique = new Map();
+
+  // Importante: um mesmo dispositivo pode ter 2 registos válidos:
+  // - FCM token
+  // - Web Push standard endpoint
+  // A versão antiga fazia dedupe por deviceKey e podia deitar fora um dos dois,
+  // deixando a cloud sem alvo real para enviar. Agora deduplicamos por alvo.
+  const seenTargets = new Set();
+  const result = [];
   sorted.forEach((item) => {
-    const key = item.pushSubscription?.endpoint || item.token || item.deviceKey || `${item.deviceType || ""}|${item.platform || ""}|${item.userAgent || item.id || ""}`;
-    if (!unique.has(key)) unique.set(key, item);
+    if (item.token) {
+      const target = `fcm:${item.token}`;
+      if (!seenTargets.has(target)) {
+        seenTargets.add(target);
+        result.push(item);
+      }
+    }
+    const endpoint = item.pushSubscription?.endpoint || item.endpoint;
+    if (endpoint) {
+      const target = `webpush:${endpoint}`;
+      if (!seenTargets.has(target)) {
+        seenTargets.add(target);
+        result.push(item);
+      }
+    }
   });
-  return Array.from(unique.values());
+  return result;
 }
 
 async function getNotificationConfig() {
-  const [layoutSnap, cloudSnap] = await Promise.all([
-    admin.firestore().doc("config/layout").get(),
-    admin.firestore().doc(CLOUD_SETTINGS_DOC).get()
-  ]);
-  const layout = layoutSnap.exists ? layoutSnap.data() || {} : {};
-  const cloud = cloudSnap.exists ? cloudSnap.data() || {} : {};
-  const alerts = cloud.alerts || {};
-  return {
-    ...layout,
-    ...cloud,
-    notificationEnabled: cloud.enabled ?? cloud.notificationEnabled ?? layout.notificationEnabled,
-    notifyTonerZero: alerts.tonerZero ?? layout.notifyTonerZero ?? layout.notificationTonerZero,
-    notifyTonerLow25: alerts.tonerLow25 ?? layout.notifyTonerLow25 ?? layout.notificationTonerLow25,
-    notifyTonerChange: alerts.tonerChange ?? layout.notifyTonerChange ?? layout.notificationTonerChange,
-    notifyStockMin: alerts.stockMin ?? layout.notifyStockMin ?? layout.notificationStockMin,
-    notifyMaintenance: alerts.maintenance ?? layout.notifyMaintenance ?? layout.notificationMaintenance,
-    notifyRadios: alerts.radios ?? layout.notifyRadios ?? layout.notificationRadios
-  };
+  const snap = await admin.firestore().doc("config/layout").get();
+  return snap.exists ? snap.data() || {} : {};
 }
 
 async function getActiveNotificationDevices() {
@@ -161,33 +162,12 @@ async function markDeviceInactive(item, reason) {
   }
 }
 
-async function configureWebPush() {
-  let cloud = {};
-  try {
-    const snap = await admin.firestore().doc(CLOUD_SETTINGS_DOC).get();
-    cloud = snap.exists ? snap.data() || {} : {};
-  } catch (error) {
-    logger.warn("Nao foi possivel ler configuracao cloud Web Push", { error: error.message });
-  }
-
-  const publicKey = String(cloud.vapidPublicKey || cloud.notificationVapidKey || envValue("APP_BRAGA_VAPID_PUBLIC_KEY") || "").trim();
-  const privateKey = String(cloud.vapidPrivateKey || envValue("APP_BRAGA_VAPID_PRIVATE_KEY") || "").trim();
-  const subject = String(cloud.vapidSubject || VAPID_SUBJECT || "mailto:admin@appbraga.pt").trim();
-  if (!publicKey || !privateKey) {
-    return {
-      ready: false,
-      source: cloud.vapidPublicKey || cloud.vapidPrivateKey ? "firestore-incomplete" : "missing",
-      publicKeyReady: !!publicKey,
-      privateKeyReady: !!privateKey
-    };
-  }
-  webpush.setVapidDetails(subject, publicKey, privateKey);
-  return {
-    ready: true,
-    source: cloud.vapidPrivateKey ? "firestore" : "environment",
-    publicKeyReady: true,
-    privateKeyReady: true
-  };
+function configureWebPush() {
+  const publicKey = String(VAPID_PUBLIC_KEY.value() || "").trim();
+  const privateKey = String(VAPID_PRIVATE_KEY.value() || "").trim();
+  if (!publicKey || !privateKey) return false;
+  webpush.setVapidDetails(VAPID_SUBJECT, publicKey, privateKey);
+  return true;
 }
 
 async function sendFcm(item, title, body, data = {}) {
@@ -244,168 +224,112 @@ async function writeAudit(action, data = {}) {
   }
 }
 
-async function writeNotificationHistory(data = {}) {
-  try {
-    await admin.firestore().collection("notificationHistory").add({
-      source: "firebase-functions",
-      createdAt: Date.now(),
-      ...data
-    });
-  } catch (error) {
-    logger.warn("Falhou escrita do historico de notificacoes", { error: error.message });
-  }
-}
-
 async function broadcast(title, body, data = {}) {
-  const devices = await getActiveNotificationDevices();
-  const webPushRuntime = await configureWebPush();
-  const canStandardWebPush = webPushRuntime.ready === true;
+  const allDevices = await getActiveNotificationDevices();
+  const canStandardWebPush = configureWebPush();
+  const excludeDeviceKey = data.excludeDeviceKey ? String(data.excludeDeviceKey) : "";
+  const devices = excludeDeviceKey
+    ? allDevices.filter((item) => String(item.deviceKey || "") !== excludeDeviceKey)
+    : allDevices;
   let sent = 0;
   let failed = 0;
-  let fcmTargets = 0;
-  let standardWebPushTargets = 0;
-  let lastError = "";
+  const errors = [];
 
-  for (const item of devices) {
+  async function trySend(item, method, fn) {
     try {
-      if (item.token) {
-        fcmTargets += 1;
-        await sendFcm(item, title, body, data);
-        sent += 1;
-      }
-      if (item.pushSubscription?.endpoint) {
-        standardWebPushTargets += 1;
-        if (canStandardWebPush) {
-          await sendStandardWebPush(item, title, body, data);
-          sent += 1;
-        } else {
-          failed += 1;
-          lastError = "Faltam credenciais VAPID na configuracao cloud.";
-          logger.warn("Web Push standard sem VAPID cloud", { id: item.id, source: item.source, credentialSource: webPushRuntime.source });
-        }
-      }
+      await fn();
+      sent += 1;
+      return true;
     } catch (error) {
       failed += 1;
-      lastError = error.message || String(error);
-      logger.warn("Falhou envio push", { id: item.id, source: item.source, error: error.message });
-      if (/UNREGISTERED|NotRegistered|not registered|registration-token-not-registered/i.test(error.message) || error.statusCode === 404 || error.statusCode === 410) {
+      const message = error?.message || String(error);
+      errors.push({ id: item.id, method, source: item.source || "", message });
+      logger.warn("Falhou envio push", { id: item.id, method, source: item.source, error: message });
+      if (/UNREGISTERED|NotRegistered|not registered|registration-token-not-registered/i.test(message) || error.statusCode === 404 || error.statusCode === 410) {
         await markDeviceInactive(item, "push-unregistered");
       }
+      return false;
     }
   }
 
-  if (sent <= 0 && !lastError) {
-    if (!devices.length) {
-      lastError = "Nao ha dispositivos ativos registados para receber push.";
-    } else if (standardWebPushTargets <= 0) {
-      lastError = "Nao ha nenhum dispositivo com Web Push standard. No iPhone/Android abre a app instalada e usa Reparar este dispositivo.";
-    } else if (!canStandardWebPush) {
-      lastError = "Faltam credenciais VAPID na configuracao cloud.";
-    } else {
-      lastError = "A cloud nao conseguiu enviar para nenhum dispositivo registado.";
+  for (const item of devices) {
+    // Não deixar uma falha FCM impedir o Web Push standard do mesmo dispositivo.
+    if (item.token) {
+      await trySend(item, "fcm", () => sendFcm(item, title, body, data));
+    }
+    if (item.pushSubscription?.endpoint && canStandardWebPush) {
+      await trySend(item, "standard-web-push", () => sendStandardWebPush(item, title, body, data));
     }
   }
 
-  await updateRuntimeStatus({
+  const status = {
     lastTitle: title,
     lastBody: body,
     lastEvent: data.event || data.collection || "manual",
     lastSent: sent,
     lastFailed: failed,
-    lastDeviceCount: devices.length,
-    lastFcmTargets: fcmTargets,
-    lastStandardWebPushTargets: standardWebPushTargets,
-    lastError,
+    lastTargets: devices.length,
+    lastExcludedDeviceKey: excludeDeviceKey || "",
     lastRunAt: Date.now(),
     standardWebPushReady: canStandardWebPush,
-    credentialSource: webPushRuntime.source,
-    publicKeyReady: webPushRuntime.publicKeyReady,
-    privateKeyReady: webPushRuntime.privateKeyReady
-  });
+    lastErrors: errors.slice(0, 10)
+  };
+
+  await updateRuntimeStatus(status);
 
   await writeAudit("notification-broadcast", {
     title,
     body,
     sent,
     failed,
-    deviceCount: devices.length,
-    fcmTargets,
-    standardWebPushTargets,
+    targets: devices.length,
+    excludedDeviceKey: excludeDeviceKey || "",
     event: data.event || data.collection || "manual",
     collection: data.collection || "",
     targetUrl: data.url || APP_URL,
-    credentialSource: webPushRuntime.source
+    errors: errors.slice(0, 10)
   });
 
-  await writeNotificationHistory({
-    title,
-    body,
-    sent,
-    failed,
-    deviceCount: devices.length,
-    fcmTargets,
-    standardWebPushTargets,
-    standardWebPushReady: canStandardWebPush,
-    credentialSource: webPushRuntime.source,
-    event: data.event || data.collection || "manual",
-    collection: data.collection || "",
-    targetUrl: data.url || APP_URL,
-    error: sent > 0 ? "" : lastError
-  });
-
-  return {
-    sent,
-    failed,
-    fcmTargets,
-    standardWebPushTargets,
-    standardWebPushReady: canStandardWebPush,
-    credentialSource: webPushRuntime.source,
-    error: sent > 0 ? "" : lastError
-  };
+  return { sent, failed, targets: devices.length, errors };
 }
 
 exports.onNotificationRequestCreated = onDocumentCreated({
-  document: "notificationRequests/{requestId}"
+  document: "notificationRequests/{requestId}",
+  secrets: [VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY]
 }, async (event) => {
   const data = event.data?.data() || {};
-  const requestRef = event.data?.ref;
-  await requestRef?.set({
-    status: "processing",
-    processingAt: Date.now()
-  }, { merge: true });
+  const requestId = event.params.requestId;
   await writeAudit("notification-test-request", {
-    requestId: event.params.requestId,
+    requestId,
     title: data.title || "App Braga",
-    event: data.event || "manual-remote-test"
+    event: data.event || "manual-remote-test",
+    requestedBy: data.requestedBy || ""
+  });
+  const result = await broadcast(data.title || "App Braga", data.body || "Teste remoto de notificacao.", {
+    event: data.event || "manual-remote-test",
+    requestId,
+    url: data.url || "https://picafern-commits.github.io/App-Tablet/html/config.html",
+    excludeDeviceKey: data.excludeDeviceKey || "",
+    requestedBy: data.requestedBy || "",
+    requireInteraction: data.requireInteraction === true ? "1" : ""
   });
   try {
-    const result = await broadcast(data.title || "App Braga", data.body || "Teste remoto de notificacao.", {
-      event: data.event || "manual-remote-test",
-      requestId: event.params.requestId,
-      url: data.url || "https://picafern-commits.github.io/App-Tablet/html/config.html"
-    });
-    await requestRef?.set({
-      status: result.sent > 0 ? "sent" : "failed",
+    await event.data.ref.set({
+      status: result.sent > 0 ? "sent" : "no-targets",
       sent: result.sent,
       failed: result.failed,
-      standardWebPushReady: result.standardWebPushReady,
-      standardWebPushTargets: result.standardWebPushTargets,
-      credentialSource: result.credentialSource,
-      error: result.error || "",
-      finishedAt: Date.now()
+      targets: result.targets,
+      errors: result.errors?.slice?.(0, 10) || [],
+      processedAt: Date.now()
     }, { merge: true });
   } catch (error) {
-    await requestRef?.set({
-      status: "failed",
-      error: error.message || String(error),
-      finishedAt: Date.now()
-    }, { merge: true });
-    throw error;
+    logger.warn("Nao foi possivel atualizar pedido de notificacao", { requestId, error: error.message });
   }
 });
 
 exports.onPrinterWritten = onDocumentWritten({
-  document: "printers/{printerId}"
+  document: "printers/{printerId}",
+  secrets: [VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY]
 }, async (event) => {
   if (!event.data?.before.exists || !event.data?.after.exists) return;
   const config = await getNotificationConfig();
@@ -484,7 +408,8 @@ exports.onPrinterWritten = onDocumentWritten({
 });
 
 exports.onStockWritten = onDocumentWritten({
-  document: "stock/{stockId}"
+  document: "stock/{stockId}",
+  secrets: [VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY]
 }, async (event) => {
   if (!event.data?.after.exists) return;
   const config = await getNotificationConfig();
@@ -503,7 +428,8 @@ exports.onStockWritten = onDocumentWritten({
 });
 
 exports.onManutencaoWritten = onDocumentWritten({
-  document: "manutencoes/{manutencaoId}"
+  document: "manutencoes/{manutencaoId}",
+  secrets: [VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY]
 }, async (event) => {
   if (!event.data?.after.exists) return;
   const config = await getNotificationConfig();
@@ -525,7 +451,8 @@ exports.onManutencaoWritten = onDocumentWritten({
 });
 
 exports.onRadioWeeklyRecordCreated = onDocumentCreated({
-  document: "radioWeeklyRecords/{recordId}"
+  document: "radioWeeklyRecords/{recordId}",
+  secrets: [VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY]
 }, async (event) => {
   const config = await getNotificationConfig();
   if (config.notificationEnabled === false || config.notifyRadios !== true) return;
