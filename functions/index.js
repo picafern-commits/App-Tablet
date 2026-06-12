@@ -3,6 +3,7 @@
 const admin = require("firebase-admin");
 const webpush = require("web-push");
 const { onDocumentCreated, onDocumentWritten } = require("firebase-functions/v2/firestore");
+const { onRequest } = require("firebase-functions/v2/https");
 const { setGlobalOptions } = require("firebase-functions/v2/options");
 const logger = require("firebase-functions/logger");
 
@@ -284,25 +285,39 @@ async function writeNotificationHistory(data = {}) {
 async function broadcast(title, body, data = {}) {
   const allDevices = await getActiveNotificationDevices();
   const excludeDeviceKey = data.excludeDeviceKey ? String(data.excludeDeviceKey) : "";
-  const devices = excludeDeviceKey
-    ? allDevices.filter((item) => String(item.deviceKey || "") !== excludeDeviceKey)
-    : allDevices;
+  const excludeDeviceId = data.excludeDeviceId ? String(data.excludeDeviceId) : "";
+  const devices = allDevices.filter((item) => {
+    if (excludeDeviceKey && String(item.deviceKey || "") === excludeDeviceKey) return false;
+    if (excludeDeviceId && String(item.id || "") === excludeDeviceId) return false;
+    return true;
+  });
   const webPushRuntime = await configureWebPush();
   const canStandardWebPush = webPushRuntime.ready === true;
   let sent = 0;
   let failed = 0;
+  let fcmSent = 0;
+  let fcmFailed = 0;
+  let standardWebPushSent = 0;
+  let standardWebPushFailed = 0;
   let fcmTargets = 0;
   let standardWebPushTargets = 0;
   let lastError = "";
+  const ignored = Math.max(0, allDevices.length - devices.length);
+  const sentDeviceIds = new Set();
   const sendErrors = [];
 
   async function tryPush(item, method, sender) {
     try {
       await sender();
       sent += 1;
+      sentDeviceIds.add(item.id || item.deviceKey || item.token || item.endpoint || item.pushSubscription?.endpoint || method);
+      if (method === "fcm") fcmSent += 1;
+      if (method === "standard-web-push") standardWebPushSent += 1;
       return true;
     } catch (error) {
       failed += 1;
+      if (method === "fcm") fcmFailed += 1;
+      if (method === "standard-web-push") standardWebPushFailed += 1;
       const message = error?.message || String(error);
       lastError = message;
       sendErrors.push({ id: item.id, method, source: item.source || "", message });
@@ -326,6 +341,7 @@ async function broadcast(title, body, data = {}) {
         await tryPush(item, "standard-web-push", () => sendStandardWebPush(item, title, body, data));
       } else {
         failed += 1;
+        standardWebPushFailed += 1;
         lastError = "Faltam credenciais VAPID na configuracao cloud.";
         sendErrors.push({ id: item.id, method: "standard-web-push", source: item.source || "", message: lastError });
         logger.warn("Web Push standard sem VAPID cloud", { id: item.id, source: item.source, credentialSource: webPushRuntime.source });
@@ -345,17 +361,44 @@ async function broadcast(title, body, data = {}) {
     }
   }
 
+  logger.info("Resumo envio notificacoes cloud", {
+    totalDevices: allDevices.length,
+    targetDevices: devices.length,
+    ignored,
+    sent,
+    sentDevices: sentDeviceIds.size,
+    failed,
+    fcmTargets,
+    fcmSent,
+    fcmFailed,
+    standardWebPushTargets,
+    standardWebPushSent,
+    standardWebPushFailed,
+    excludedDeviceKey: excludeDeviceKey,
+    excludedDeviceId: excludeDeviceId,
+    standardWebPushReady: canStandardWebPush,
+    credentialSource: webPushRuntime.source,
+    error: lastError
+  });
+
   await updateRuntimeStatus({
     lastTitle: title,
     lastBody: body,
     lastEvent: data.event || data.collection || "manual",
     lastSent: sent,
+    lastSentDevices: sentDeviceIds.size,
     lastFailed: failed,
     lastDeviceCount: devices.length,
     lastTotalDeviceCount: allDevices.length,
+    lastIgnored: ignored,
     lastExcludedDeviceKey: excludeDeviceKey,
+    lastExcludedDeviceId: excludeDeviceId,
     lastFcmTargets: fcmTargets,
+    lastFcmSent: fcmSent,
+    lastFcmFailed: fcmFailed,
     lastStandardWebPushTargets: standardWebPushTargets,
+    lastStandardWebPushSent: standardWebPushSent,
+    lastStandardWebPushFailed: standardWebPushFailed,
     lastError,
     lastErrors: sendErrors.slice(0, 10),
     lastRunAt: Date.now(),
@@ -369,12 +412,19 @@ async function broadcast(title, body, data = {}) {
     title,
     body,
     sent,
+    sentDevices: sentDeviceIds.size,
     failed,
     deviceCount: devices.length,
     totalDeviceCount: allDevices.length,
+    ignored,
     excludedDeviceKey: excludeDeviceKey,
+    excludedDeviceId: excludeDeviceId,
     fcmTargets,
+    fcmSent,
+    fcmFailed,
     standardWebPushTargets,
+    standardWebPushSent,
+    standardWebPushFailed,
     event: data.event || data.collection || "manual",
     collection: data.collection || "",
     targetUrl: data.url || APP_URL,
@@ -385,10 +435,17 @@ async function broadcast(title, body, data = {}) {
     title,
     body,
     sent,
+    sentDevices: sentDeviceIds.size,
     failed,
     deviceCount: devices.length,
+    totalDeviceCount: allDevices.length,
+    ignored,
     fcmTargets,
+    fcmSent,
+    fcmFailed,
     standardWebPushTargets,
+    standardWebPushSent,
+    standardWebPushFailed,
     standardWebPushReady: canStandardWebPush,
     credentialSource: webPushRuntime.source,
     event: data.event || data.collection || "manual",
@@ -400,15 +457,67 @@ async function broadcast(title, body, data = {}) {
 
   return {
     sent,
+    sentDevices: sentDeviceIds.size,
     failed,
+    ignored,
+    totalDevices: allDevices.length,
+    targetDevices: devices.length,
     fcmTargets,
+    fcmSent,
+    fcmFailed,
     standardWebPushTargets,
+    standardWebPushSent,
+    standardWebPushFailed,
     standardWebPushReady: canStandardWebPush,
     credentialSource: webPushRuntime.source,
     error: sent > 0 ? "" : lastError,
     errors: sendErrors.slice(0, 10)
   };
 }
+
+exports.sendPushAlert = onRequest({
+  cors: true
+}, async (req, res) => {
+  res.set("Access-Control-Allow-Origin", req.get("origin") || "*");
+  res.set("Vary", "Origin");
+  res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.set("Access-Control-Allow-Headers", "Content-Type");
+  if (req.method === "OPTIONS") {
+    res.status(204).send("");
+    return;
+  }
+  if (req.method !== "POST") {
+    res.status(405).json({ ok: false, error: "Metodo nao permitido. Usa POST." });
+    return;
+  }
+
+  try {
+    const payload = req.body && typeof req.body === "object" ? req.body : {};
+    const result = await broadcast(payload.title || "App Braga", payload.body || "Teste remoto de notificacao.", {
+      event: payload.event || payload.alertType || "manual-cloud-alert",
+      requestId: payload.requestId || "",
+      url: payload.url || "https://picafern-commits.github.io/App-Tablet/html/notificacoes.html",
+      excludeDeviceKey: payload.excludeDeviceKey || payload.requestedDeviceKey || "",
+      excludeDeviceId: payload.excludeDeviceId || payload.requestedDeviceDocId || "",
+      requestedBy: payload.requestedBy || "",
+      requestedFrom: payload.requestedFrom || "",
+      requireInteraction: payload.requireInteraction === true || payload.requireInteraction === "1" ? "1" : ""
+    });
+    res.status(result.sent > 0 ? 200 : 500).json({
+      ok: result.sent > 0,
+      ...result
+    });
+  } catch (error) {
+    logger.error("Falhou sendPushAlert", { error: error.message || String(error) });
+    res.status(500).json({
+      ok: false,
+      sent: 0,
+      failed: 0,
+      ignored: 0,
+      error: error.message || String(error)
+    });
+  }
+});
 
 exports.onNotificationRequestCreated = onDocumentCreated({
   document: "notificationRequests/{requestId}"
@@ -430,15 +539,25 @@ exports.onNotificationRequestCreated = onDocumentCreated({
       requestId: event.params.requestId,
       url: data.url || "https://picafern-commits.github.io/App-Tablet/html/notificacoes.html",
       excludeDeviceKey: data.excludeDeviceKey || "",
+      excludeDeviceId: data.excludeDeviceId || data.requestedDeviceDocId || "",
       requestedBy: data.requestedBy || "",
       requireInteraction: data.requireInteraction === true ? "1" : ""
     });
     await requestRef?.set({
       status: result.sent > 0 ? "sent" : "failed",
       sent: result.sent,
+      sentDevices: result.sentDevices,
       failed: result.failed,
+      ignored: result.ignored,
+      totalDevices: result.totalDevices,
+      targetDevices: result.targetDevices,
+      fcmTargets: result.fcmTargets,
+      fcmSent: result.fcmSent,
+      fcmFailed: result.fcmFailed,
       standardWebPushReady: result.standardWebPushReady,
       standardWebPushTargets: result.standardWebPushTargets,
+      standardWebPushSent: result.standardWebPushSent,
+      standardWebPushFailed: result.standardWebPushFailed,
       credentialSource: result.credentialSource,
       error: result.error || "",
       errors: result.errors || [],

@@ -1,4 +1,4 @@
-const APP_BRAGA_SW = "app-braga-runtime-v69";
+const APP_BRAGA_SW = "app-braga-runtime-v70";
 const APP_BRAGA_FIREBASE_CONFIG = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
   authDomain: "toner-manager-756c4.firebaseapp.com",
@@ -11,13 +11,19 @@ const APP_BRAGA_FIREBASE_CONFIG = {
 
 function appBragaNotificationOptions(payload = {}) {
   const data = payload.data || {};
+  const requireInteraction = data.requireInteraction === true ||
+    data.requireInteraction === "1" ||
+    data.requireInteraction === "true" ||
+    payload.requireInteraction === true ||
+    payload.requireInteraction === "1" ||
+    payload.requireInteraction === "true";
   return {
     body: payload.body || data.body || "",
     icon: data.icon || "./icon-192.png",
     badge: data.badge || "./icon-192.png",
     tag: payload.tag || data.tag || data.event || "app-braga-push",
     renotify: true,
-    requireInteraction: !!data.requireInteraction,
+    requireInteraction,
     data: {
       url: data.url || payload.url || "./index.html",
       ...data

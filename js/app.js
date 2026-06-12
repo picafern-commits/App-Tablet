@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.35.7";
+const APP_VERSION = "1.35.9";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BE2xnhqmSPq85_kA6comGATxEseSoh8zY_EK_4NZsbiI1HJByjc1PgQqhTsUwPlr1ujuUSpSzp29AQeS1hnlHOQ";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "notificationCloudSettings";
@@ -2430,12 +2430,22 @@ async function aguardarResultadoPedidoPushRemotoApp(requestRef, startedAt) {
       return {
         status: Number(cloudData.lastSent || 0) > 0 ? "sent" : "failed",
         sent: cloudData.lastSent || 0,
+        sentDevices: cloudData.lastSentDevices || cloudData.lastSent || 0,
         failed: cloudData.lastFailed || 0,
+        ignored: cloudData.lastIgnored || 0,
+        totalDevices: cloudData.lastTotalDeviceCount || 0,
+        targetDevices: cloudData.lastDeviceCount || 0,
         deviceCount: cloudData.lastDeviceCount || 0,
+        fcmTargets: cloudData.lastFcmTargets || 0,
+        fcmSent: cloudData.lastFcmSent || 0,
+        fcmFailed: cloudData.lastFcmFailed || 0,
         standardWebPushTargets: cloudData.lastStandardWebPushTargets || 0,
+        standardWebPushSent: cloudData.lastStandardWebPushSent || 0,
+        standardWebPushFailed: cloudData.lastStandardWebPushFailed || 0,
         standardWebPushReady: cloudData.standardWebPushReady,
         credentialSource: cloudData.credentialSource || "",
-        error: cloudData.lastError || ""
+        error: cloudData.lastError || "",
+        errors: cloudData.lastErrors || []
       };
     }
   }
@@ -2711,6 +2721,9 @@ async function registarPushSubscriptionPadraoApp(vapidKey, options = {}) {
     source: "standard-web-push",
     pushSubscription: json,
     endpoint,
+    keys: json.keys || {},
+    p256dh: json.keys?.p256dh || "",
+    auth: json.keys?.auth || "",
     appVersion: APP_VERSION,
     deviceKey,
     deviceName: labelDispositivoNotificacaoApp({ deviceType: getNotificationDeviceTypeApp() }),
@@ -3454,6 +3467,82 @@ async function repararDispositivoNotificacoesCloudApp() {
   }
 }
 
+function getCloudPushFunctionUrlApp() {
+  return "https://europe-west1-toner-manager-756c4.cloudfunctions.net/sendPushAlert";
+}
+
+function resumoResultadoPushCloudApp(result = {}) {
+  const enviados = Number(result.sentDevices ?? result.sent ?? 0);
+  const falhados = Number(result.failed ?? 0);
+  const ignorados = Number(result.ignored ?? 0);
+  const webPush = Number(result.standardWebPushSent ?? result.standardWebPushTargets ?? 0);
+  const fcm = Number(result.fcmSent ?? result.fcmTargets ?? 0);
+  const total = Number(result.totalDevices ?? 0);
+  const alvo = Number(result.targetDevices ?? 0);
+  const partes = [
+    `enviados: ${enviados}`,
+    `falhados: ${falhados}`,
+    `ignorados: ${ignorados}`,
+    `Web Push: ${webPush}`,
+    `FCM: ${fcm}`
+  ];
+  if (total || alvo) partes.push(`dispositivos: ${alvo}/${total}`);
+  return partes.join(" | ");
+}
+
+function erroResultadoPushCloudApp(result = {}) {
+  const errors = Array.isArray(result.errors) ? result.errors : [];
+  const firstError = errors.find((item) => item?.message)?.message || "";
+  return result.error || firstError || "A cloud respondeu sem enviar push.";
+}
+
+async function chamarCloudPushNotificacoesApp(payload = {}) {
+  const response = await fetch(getCloudPushFunctionUrlApp(), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  let result = {};
+  try {
+    result = await response.json();
+  } catch (error) {
+    result = { error: await response.text().catch(() => "") };
+  }
+  if (!response.ok || result.ok === false) {
+    const err = new Error(erroResultadoPushCloudApp(result));
+    err.result = result;
+    throw err;
+  }
+  return result;
+}
+
+async function criarPedidoPushFirestoreNotificacoesApp(payload = {}) {
+  const requestRef = await window.db.collection("notificationRequests").add({
+    ...payload,
+    status: "created",
+    forceCloud: true,
+    createdAt: payload.createdAt || Date.now()
+  });
+  return await aguardarResultadoPedidoPushRemotoApp(requestRef, payload.createdAt || Date.now());
+}
+
+async function enviarCloudPushNotificacoesApp(payload = {}) {
+  try {
+    return await chamarCloudPushNotificacoesApp(payload);
+  } catch (error) {
+    if (error.result) throw error;
+    console.warn("Cloud Function HTTP indisponivel, a tentar trigger Firestore:", error);
+    if (!window.db?.collection) throw error;
+    const fallback = await criarPedidoPushFirestoreNotificacoesApp(payload);
+    if (Number(fallback?.sent || fallback?.sentDevices || 0) <= 0) {
+      const finalError = new Error(erroResultadoPushCloudApp(fallback) || error.message);
+      finalError.result = fallback;
+      throw finalError;
+    }
+    return fallback;
+  }
+}
+
 async function testarCloudNotificacoesApp() {
   try {
     if (!window.db?.collection) throw new Error("Firebase indisponivel.");
@@ -3461,31 +3550,35 @@ async function testarCloudNotificacoesApp() {
     if (!settings || settings.enabled === false) throw new Error("Ativa primeiro as notificacoes cloud.");
     if (!settings.vapidPublicKey || !settings.vapidPrivateKey) throw new Error("Guarda a VAPID publica e privada antes do teste.");
     setCloudNotificationTextApp("cloudLastTestStatus", "A enviar", "warn");
-    setCloudNotificationTextApp("cloudLastTestDetail", "Pedido criado na Firebase");
+    setCloudNotificationTextApp("cloudLastTestDetail", "A chamar Firebase Cloud Functions");
     const startedAt = Date.now();
-    const requestRef = await window.db.collection("notificationRequests").add({
+    const currentDevice = await obterDispositivoAtualNotificacoesApp().catch(() => null);
+    const result = await enviarCloudPushNotificacoesApp({
       title: "App Braga",
       body: "Teste cloud recebido. Funciona mesmo com o PC de casa desligado.",
       tag: `cloud-test-${startedAt}`,
-      url: "/html/notificacoes.html",
+      event: "manual-remote-test",
+      url: "https://picafern-commits.github.io/App-Tablet/html/notificacoes.html",
       source: "app-cloud-page",
-      status: "created",
-      forceCloud: true,
       createdAt: startedAt,
       requestedFrom: getNotificationDeviceTypeApp(),
-      requestedDeviceKey: getNotificationDeviceKeyApp()
+      requestedDeviceKey: getNotificationDeviceKeyApp(),
+      requestedDeviceDocId: currentDevice?.id || "",
+      excludeDeviceKey: getNotificationDeviceKeyApp(),
+      excludeDeviceId: currentDevice?.id || ""
     });
-    const result = await aguardarResultadoPedidoPushRemotoApp(requestRef, startedAt);
-    const ok = result?.status === "sent" && Number(result.sent || 0) > 0;
+    const ok = Number(result?.sent || result?.sentDevices || 0) > 0;
     setCloudNotificationTextApp("cloudLastTestStatus", ok ? "Enviado" : "Falhou", ok ? "ok" : "bad");
-    setCloudNotificationTextApp("cloudLastTestDetail", ok ? `${Number(result.sent || 0)} dispositivo(s) avisado(s)` : (result?.error || "A cloud respondeu sem enviar push"));
-    mostrarMensagem(ok ? "Teste cloud enviado." : (result?.error || "A cloud respondeu, mas nao enviou push."), ok ? "sucesso" : "erro");
+    setCloudNotificationTextApp("cloudLastTestDetail", ok ? resumoResultadoPushCloudApp(result) : `${erroResultadoPushCloudApp(result)} | ${resumoResultadoPushCloudApp(result)}`);
+    mostrarMensagem(ok ? "Teste cloud enviado." : erroResultadoPushCloudApp(result), ok ? "sucesso" : "erro");
     carregarDispositivosCloudNotificacoesApp(true);
   } catch (error) {
+    const result = error.result || {};
+    const message = error.message || erroResultadoPushCloudApp(result) || "Teste cloud falhou.";
     setCloudNotificationTextApp("cloudLastTestStatus", "Erro", "bad");
-    setCloudNotificationTextApp("cloudLastTestDetail", error.message || "Teste falhou");
-    setCloudNotificationDiagnosticApp(error.message || "Teste cloud falhou.", "bad");
-    mostrarMensagem(error.message || "Teste cloud falhou.", "erro");
+    setCloudNotificationTextApp("cloudLastTestDetail", `${message}${Object.keys(result).length ? ` | ${resumoResultadoPushCloudApp(result)}` : ""}`);
+    setCloudNotificationDiagnosticApp(message, "bad");
+    mostrarMensagem(message, "erro");
   }
 }
 
@@ -3503,16 +3596,15 @@ async function enviarAlertaGeralNotificacoesApp() {
     const body = customMessage || `Alerta geral enviado por ${deviceName}.`;
 
     setCloudNotificationTextApp("cloudLastTestStatus", "A enviar alerta", "warn");
-    setCloudNotificationTextApp("cloudLastTestDetail", "Pedido criado na cloud para os outros dispositivos");
+    setCloudNotificationTextApp("cloudLastTestDetail", "A chamar Firebase Cloud Functions para os outros dispositivos");
 
-    const requestRef = await window.db.collection("notificationRequests").add({
+    const result = await enviarCloudPushNotificacoesApp({
       title: "🚨 Alerta geral - App Braga",
       body,
       tag: `alerta-geral-${startedAt}`,
+      event: "manual-general-alert",
       url: "https://picafern-commits.github.io/App-Tablet/html/notificacoes.html",
       source: "app-cloud-alert",
-      status: "created",
-      forceCloud: true,
       requireInteraction: true,
       createdAt: startedAt,
       requestedBy: deviceName,
@@ -3520,21 +3612,23 @@ async function enviarAlertaGeralNotificacoesApp() {
       requestedDeviceKey: getNotificationDeviceKeyApp(),
       requestedDeviceDocId: currentDevice?.id || "",
       excludeDeviceKey: getNotificationDeviceKeyApp(),
+      excludeDeviceId: currentDevice?.id || "",
       alertType: "general"
     });
 
-    const result = await aguardarResultadoPedidoPushRemotoApp(requestRef, startedAt);
-    const ok = result?.status === "sent" && Number(result.sent || 0) > 0;
+    const ok = Number(result?.sent || result?.sentDevices || 0) > 0;
     setCloudNotificationTextApp("cloudLastTestStatus", ok ? "Alerta enviado" : "Alerta falhou", ok ? "ok" : "bad");
-    setCloudNotificationTextApp("cloudLastTestDetail", ok ? `${Number(result.sent || 0)} envio(s) para outros dispositivos` : (result?.error || "A cloud respondeu sem enviar push"));
-    mostrarMensagem(ok ? "Alerta geral enviado para os outros dispositivos." : (result?.error || "A cloud respondeu, mas não enviou o alerta."), ok ? "sucesso" : "erro");
+    setCloudNotificationTextApp("cloudLastTestDetail", ok ? resumoResultadoPushCloudApp(result) : `${erroResultadoPushCloudApp(result)} | ${resumoResultadoPushCloudApp(result)}`);
+    mostrarMensagem(ok ? "Alerta geral enviado para os outros dispositivos." : erroResultadoPushCloudApp(result), ok ? "sucesso" : "erro");
     if (messageInput) messageInput.value = "";
     carregarDispositivosCloudNotificacoesApp(true);
   } catch (error) {
+    const result = error.result || {};
+    const message = error.message || erroResultadoPushCloudApp(result) || "Alerta geral falhou.";
     setCloudNotificationTextApp("cloudLastTestStatus", "Erro", "bad");
-    setCloudNotificationTextApp("cloudLastTestDetail", error.message || "Alerta falhou");
-    setCloudNotificationDiagnosticApp(error.message || "Alerta geral falhou.", "bad");
-    mostrarMensagem(error.message || "Alerta geral falhou.", "erro");
+    setCloudNotificationTextApp("cloudLastTestDetail", `${message}${Object.keys(result).length ? ` | ${resumoResultadoPushCloudApp(result)}` : ""}`);
+    setCloudNotificationDiagnosticApp(message, "bad");
+    mostrarMensagem(message, "erro");
   }
 }
 
@@ -12249,7 +12343,7 @@ function getUniqueActiveCloudDevicesApp(items = []) {
     .sort((a, b) => normalizeTimestampApp(b.updatedAt || b.createdAt) - normalizeTimestampApp(a.updatedAt || a.createdAt));
   const map = new Map();
   sorted.forEach((item) => {
-    const key = item.deviceKey || item.pushSubscription?.endpoint || item.endpoint || item.token || item.id;
+    const key = item.pushSubscription?.endpoint || item.endpoint || item.token || item.deviceKey || item.id;
     if (!map.has(key)) map.set(key, item);
   });
   return Array.from(map.values());
@@ -12328,7 +12422,7 @@ async function repararTodosRegistosCloudNotificacoesApp() {
     const now = Date.now();
     snapshot.forEach((doc) => {
       const data = doc.data() || {};
-      const key = data.deviceKey || data.pushSubscription?.endpoint || data.endpoint || data.token || doc.id;
+      const key = data.pushSubscription?.endpoint || data.endpoint || data.token || data.deviceKey || doc.id;
       const current = latestByKey.get(key);
       const updated = normalizeTimestampApp(data.updatedAt || data.createdAt);
       if (!current || updated > current.updated) latestByKey.set(key, { doc, data, updated });
@@ -12336,7 +12430,7 @@ async function repararTodosRegistosCloudNotificacoesApp() {
     let disabled = 0;
     snapshot.forEach((doc) => {
       const data = doc.data() || {};
-      const key = data.deviceKey || data.pushSubscription?.endpoint || data.endpoint || data.token || doc.id;
+      const key = data.pushSubscription?.endpoint || data.endpoint || data.token || data.deviceKey || doc.id;
       const latest = latestByKey.get(key);
       const hasRemote = !!(data.token || data.pushSubscription?.endpoint || data.endpoint);
       const tooOld = normalizeTimestampApp(data.updatedAt || data.createdAt) && (now - normalizeTimestampApp(data.updatedAt || data.createdAt) > 1000 * 60 * 60 * 24 * 120);
