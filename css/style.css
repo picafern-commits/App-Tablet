@@ -6240,6 +6240,100 @@ body.app-role-consulta .danger {
   font-size: 18px !important;
 }
 
+.notification-cloud-summary {
+  margin: 0 0 18px !important;
+}
+
+.notification-cloud-panel {
+  display: grid !important;
+  gap: 18px !important;
+  margin-bottom: 18px !important;
+}
+
+.notification-cloud-form {
+  align-items: end !important;
+}
+
+.notification-cloud-form input {
+  min-width: 0 !important;
+}
+
+.notification-cloud-toggle {
+  justify-content: flex-end !important;
+  white-space: nowrap !important;
+}
+
+.notification-rules-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+.notification-rules-grid .toggle-row,
+.notification-cloud-toggle,
+.notification-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.notification-rules-grid .toggle-row {
+  min-height: 46px !important;
+  padding: 10px 12px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  border-radius: 8px !important;
+  background: rgba(16,17,20,.50) !important;
+}
+
+.notification-actions {
+  flex-wrap: wrap !important;
+}
+
+.notification-devices-list {
+  display: grid !important;
+  gap: 10px !important;
+}
+
+.notification-device-card {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding: 12px 14px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  border-radius: 8px !important;
+  background: rgba(16,17,20,.72) !important;
+}
+
+.notification-device-card > div {
+  display: grid !important;
+  gap: 3px !important;
+  min-width: 0 !important;
+}
+
+.notification-device-card strong,
+.notification-device-card span,
+.notification-device-card small {
+  overflow-wrap: anywhere !important;
+}
+
+@media (max-width: 820px) {
+  .notification-rules-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .notification-rules-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .notification-device-card {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+  }
+}
+
 .config-actions-row.compact {
   width: auto !important;
   margin: 0 !important;

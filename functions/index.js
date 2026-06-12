@@ -16,6 +16,7 @@ function envValue(name) {
 const APP_URL = "https://picafern-commits.github.io/App-Tablet/html/index.html";
 const VAPID_SUBJECT = envValue("APP_BRAGA_VAPID_SUBJECT") || "mailto:admin@appbraga.pt";
 const CONFIG_DOC = "config/cloudNotifications";
+const CLOUD_SETTINGS_DOC = "config/notificationCloudSettings";
 
 function normalizePercentValue(value) {
   if (typeof value === "number" && Number.isFinite(value)) return Math.max(0, Math.min(100, Math.round(value)));
@@ -121,8 +122,24 @@ function uniqueActiveDevices(items) {
 }
 
 async function getNotificationConfig() {
-  const snap = await admin.firestore().doc("config/layout").get();
-  return snap.exists ? snap.data() || {} : {};
+  const [layoutSnap, cloudSnap] = await Promise.all([
+    admin.firestore().doc("config/layout").get(),
+    admin.firestore().doc(CLOUD_SETTINGS_DOC).get()
+  ]);
+  const layout = layoutSnap.exists ? layoutSnap.data() || {} : {};
+  const cloud = cloudSnap.exists ? cloudSnap.data() || {} : {};
+  const alerts = cloud.alerts || {};
+  return {
+    ...layout,
+    ...cloud,
+    notificationEnabled: cloud.enabled ?? cloud.notificationEnabled ?? layout.notificationEnabled,
+    notifyTonerZero: alerts.tonerZero ?? layout.notifyTonerZero ?? layout.notificationTonerZero,
+    notifyTonerLow25: alerts.tonerLow25 ?? layout.notifyTonerLow25 ?? layout.notificationTonerLow25,
+    notifyTonerChange: alerts.tonerChange ?? layout.notifyTonerChange ?? layout.notificationTonerChange,
+    notifyStockMin: alerts.stockMin ?? layout.notifyStockMin ?? layout.notificationStockMin,
+    notifyMaintenance: alerts.maintenance ?? layout.notifyMaintenance ?? layout.notificationMaintenance,
+    notifyRadios: alerts.radios ?? layout.notifyRadios ?? layout.notificationRadios
+  };
 }
 
 async function getActiveNotificationDevices() {
@@ -144,12 +161,33 @@ async function markDeviceInactive(item, reason) {
   }
 }
 
-function configureWebPush() {
-  const publicKey = envValue("APP_BRAGA_VAPID_PUBLIC_KEY");
-  const privateKey = envValue("APP_BRAGA_VAPID_PRIVATE_KEY");
-  if (!publicKey || !privateKey) return false;
-  webpush.setVapidDetails(VAPID_SUBJECT, publicKey, privateKey);
-  return true;
+async function configureWebPush() {
+  let cloud = {};
+  try {
+    const snap = await admin.firestore().doc(CLOUD_SETTINGS_DOC).get();
+    cloud = snap.exists ? snap.data() || {} : {};
+  } catch (error) {
+    logger.warn("Nao foi possivel ler configuracao cloud Web Push", { error: error.message });
+  }
+
+  const publicKey = String(cloud.vapidPublicKey || cloud.notificationVapidKey || envValue("APP_BRAGA_VAPID_PUBLIC_KEY") || "").trim();
+  const privateKey = String(cloud.vapidPrivateKey || envValue("APP_BRAGA_VAPID_PRIVATE_KEY") || "").trim();
+  const subject = String(cloud.vapidSubject || VAPID_SUBJECT || "mailto:admin@appbraga.pt").trim();
+  if (!publicKey || !privateKey) {
+    return {
+      ready: false,
+      source: cloud.vapidPublicKey || cloud.vapidPrivateKey ? "firestore-incomplete" : "missing",
+      publicKeyReady: !!publicKey,
+      privateKeyReady: !!privateKey
+    };
+  }
+  webpush.setVapidDetails(subject, publicKey, privateKey);
+  return {
+    ready: true,
+    source: cloud.vapidPrivateKey ? "firestore" : "environment",
+    publicKeyReady: true,
+    privateKeyReady: true
+  };
 }
 
 async function sendFcm(item, title, body, data = {}) {
@@ -208,7 +246,8 @@ async function writeAudit(action, data = {}) {
 
 async function broadcast(title, body, data = {}) {
   const devices = await getActiveNotificationDevices();
-  const canStandardWebPush = configureWebPush();
+  const webPushRuntime = await configureWebPush();
+  const canStandardWebPush = webPushRuntime.ready === true;
   let sent = 0;
   let failed = 0;
   let fcmTargets = 0;
@@ -229,8 +268,8 @@ async function broadcast(title, body, data = {}) {
           sent += 1;
         } else {
           failed += 1;
-          lastError = "Faltam credenciais VAPID no ambiente das Firebase Functions.";
-          logger.warn("Web Push standard sem VAPID no ambiente", { id: item.id, source: item.source });
+          lastError = "Faltam credenciais VAPID na configuracao cloud.";
+          logger.warn("Web Push standard sem VAPID cloud", { id: item.id, source: item.source, credentialSource: webPushRuntime.source });
         }
       }
     } catch (error) {
@@ -254,7 +293,10 @@ async function broadcast(title, body, data = {}) {
     lastStandardWebPushTargets: standardWebPushTargets,
     lastError,
     lastRunAt: Date.now(),
-    standardWebPushReady: canStandardWebPush
+    standardWebPushReady: canStandardWebPush,
+    credentialSource: webPushRuntime.source,
+    publicKeyReady: webPushRuntime.publicKeyReady,
+    privateKeyReady: webPushRuntime.privateKeyReady
   });
 
   await writeAudit("notification-broadcast", {
@@ -267,10 +309,19 @@ async function broadcast(title, body, data = {}) {
     standardWebPushTargets,
     event: data.event || data.collection || "manual",
     collection: data.collection || "",
-    targetUrl: data.url || APP_URL
+    targetUrl: data.url || APP_URL,
+    credentialSource: webPushRuntime.source
   });
 
-  return { sent, failed, standardWebPushReady: canStandardWebPush };
+  return {
+    sent,
+    failed,
+    fcmTargets,
+    standardWebPushTargets,
+    standardWebPushReady: canStandardWebPush,
+    credentialSource: webPushRuntime.source,
+    error: sent > 0 ? "" : lastError
+  };
 }
 
 exports.onNotificationRequestCreated = onDocumentCreated({
@@ -298,6 +349,9 @@ exports.onNotificationRequestCreated = onDocumentCreated({
       sent: result.sent,
       failed: result.failed,
       standardWebPushReady: result.standardWebPushReady,
+      standardWebPushTargets: result.standardWebPushTargets,
+      credentialSource: result.credentialSource,
+      error: result.error || "",
       finishedAt: Date.now()
     }, { merge: true });
   } catch (error) {

@@ -1,22 +1,36 @@
 # App Braga - Cloud Functions Notificacoes
 
-Com Blaze ativo, as notificacoes devem ser enviadas por Firebase Cloud Functions e nao por um PC local.
+O envio principal das notificacoes e a Firebase Cloud Functions. O PC de casa pode estar desligado; a cloud continua a enviar para os dispositivos registados.
 
-## Secrets necessarios
+## Configuracao dentro da app
 
-O caminho principal e pelo GitHub Actions. Configura estes GitHub Secrets no repositorio:
+As chaves Web Push sao configuradas na propria app:
 
-- `FIREBASE_SERVICE_ACCOUNT`: JSON de uma service account do Google Cloud com permissao para publicar Firebase Functions.
-- `APP_BRAGA_VAPID_PUBLIC_KEY`: chave publica Web Push.
-- `APP_BRAGA_VAPID_PRIVATE_KEY`: chave privada Web Push.
+1. Abrir `Notificacoes`.
+2. Colar a VAPID publica e a VAPID privada.
+3. Guardar Cloud.
+4. Abrir a mesma pagina em cada dispositivo e carregar em Reparar este dispositivo.
+5. Usar Testar Cloud.
 
-O assunto VAPID fica por defeito como `mailto:admin@appbraga.pt`.
+A configuracao fica em:
+
+```text
+config/notificationCloudSettings
+```
+
+Campos principais:
+
+- `enabled`
+- `vapidPublicKey`
+- `vapidPrivateKey`
+- `vapidSubject`
+- `alerts`
 
 ## Deploy
 
-Automatico pelo GitHub Actions quando houver alteracoes em `functions/**`, `firebase.json`, `.firebaserc`, neste guia ou no workflow, desde que os GitHub Secrets existam.
+O GitHub Actions continua a publicar as Cloud Functions, mas ja nao precisa dos secrets VAPID. O unico secret obrigatorio para deploy e:
 
-O workflow cria `functions/.env` apenas durante o deploy para passar as chaves VAPID as Cloud Functions. Nao usa Secret Manager, para evitar erro 403 em contas de servico sem permissao de Secret Manager.
+- `FIREBASE_SERVICE_ACCOUNT`: JSON de uma service account do Google Cloud com permissao para publicar Firebase Functions.
 
 Tambem pode ser lancado manualmente no GitHub em **Actions > Deploy Firebase Functions > Run workflow**.
 
@@ -24,18 +38,16 @@ Deploy manual num PC com Firebase CLI autenticado:
 
 ```bash
 cd "C:\Users\pica-\Documents\Codex\2026-06-08\files-mentioned-by-the-user-app\work\App-Tablet-main\App-Tablet-main\App-Tablet"
-set APP_BRAGA_VAPID_PUBLIC_KEY=cola_a_chave_publica
-set APP_BRAGA_VAPID_PRIVATE_KEY=cola_a_chave_privada
 firebase deploy --only functions
 ```
 
 ## Triggers incluidos
 
-- `notificationRequests/{requestId}`: teste remoto pela pagina Configuracoes.
-- `printers/{printerId}`: notifica quando toner passa de 0% para 95% ou mais.
+- `notificationRequests/{requestId}`: teste remoto pela pagina Notificacoes.
+- `printers/{printerId}`: notifica toner a 0%, toner a 25% e toner trocado.
 - `stock/{stockId}`: notifica alteracoes de stock.
 - `manutencoes/{manutencaoId}`: notifica manutencoes novas/alteradas.
-- `radioWeeklyRecords/{recordId}`: notifica novo registo semanal se `notifyRadios` estiver ativo.
+- `radioWeeklyRecords/{recordId}`: notifica novo registo semanal se radios estiver ativo.
 
 ## Estado
 
@@ -51,6 +63,9 @@ Campos uteis:
 - `lastSent`
 - `lastFailed`
 - `lastError`
+- `lastDeviceCount`
+- `lastStandardWebPushTargets`
 - `standardWebPushReady`
+- `credentialSource`
 - `provider`
 - `region`

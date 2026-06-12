@@ -32,9 +32,12 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.33.9";
+const APP_VERSION = "1.34.0";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BE2xnhqmSPq85_kA6comGATxEseSoh8zY_EK_4NZsbiI1HJByjc1PgQqhTsUwPlr1ujuUSpSzp29AQeS1hnlHOQ";
+const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "notificationCloudSettings";
+const APP_BRAGA_NOTIFICATION_CONFIG_COLLECTION = "config";
+const APP_BRAGA_DEFAULT_VAPID_SUBJECT = "mailto:admin@appbraga.pt";
 
 function garantirLinkNotificacoesSidebarApp() {
   const nav = document.querySelector(".sidebar-nav-pro");
@@ -2275,6 +2278,7 @@ async function processarPedidoPushElectronApp(doc) {
   const requestId = doc.id;
   if (electronPushBridgeState.processing.has(requestId)) return;
   const fields = doc.data() || {};
+  if (fields.forceCloud === true) return;
   const status = String(fields.status || "");
   const alreadyTriedByElectron = fields.electronFallbackTried === true || fields.processedBy === "electron-client-bridge";
   const canRetryFailedByCloud = status === "failed" && !alreadyTriedByElectron && Number(fields.sent || 0) <= 0;
@@ -2387,7 +2391,7 @@ async function aguardarResultadoPedidoPushRemotoApp(requestRef, startedAt) {
     const requestData = requestDoc?.exists ? requestDoc.data() || {} : {};
     if (requestData.status === "sent") return requestData;
     if (requestData.status === "failed") {
-      const electronCanRetry = !!window.electronAPI?.sendWebPushBroadcast && requestData.electronFallbackTried !== true;
+      const electronCanRetry = requestData.forceCloud !== true && !!window.electronAPI?.sendWebPushBroadcast && requestData.electronFallbackTried !== true;
       if (!electronCanRetry) return requestData;
     }
 
@@ -2401,6 +2405,7 @@ async function aguardarResultadoPedidoPushRemotoApp(requestRef, startedAt) {
         deviceCount: cloudData.lastDeviceCount || 0,
         standardWebPushTargets: cloudData.lastStandardWebPushTargets || 0,
         standardWebPushReady: cloudData.standardWebPushReady,
+        credentialSource: cloudData.credentialSource || "",
         error: cloudData.lastError || ""
       };
     }
@@ -3073,6 +3078,269 @@ function carregarDispositivosNotificacoesApp(force = false) {
   });
 }
 
+function isPaginaNotificacoesCloudApp() {
+  return /notificacoes\.html$/i.test(location.pathname || "");
+}
+
+function setCloudNotificationTextApp(id, text, statusClass = "") {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text || "";
+  if (statusClass) {
+    el.classList.remove("ok", "warn", "bad");
+    el.classList.add(statusClass);
+  }
+}
+
+function setCloudNotificationDiagnosticApp(text, type = "") {
+  const el = document.getElementById("cloudNotificationDiagnostic");
+  if (el) {
+    el.textContent = text || "";
+    el.classList.remove("ok", "warn", "bad");
+    if (type) el.classList.add(type);
+  }
+  if (text && typeof setNotificationDeviceDiagnostic === "function") setNotificationDeviceDiagnostic(text);
+}
+
+function cloudNotificationSettingsRefApp() {
+  if (!window.db?.collection) return null;
+  return window.db.collection(APP_BRAGA_NOTIFICATION_CONFIG_COLLECTION).doc(APP_BRAGA_NOTIFICATION_CLOUD_DOC);
+}
+
+function readCloudNotificationFormApp() {
+  const enabled = document.getElementById("cloudNotifyEnabled")?.checked === true;
+  return {
+    enabled,
+    notificationEnabled: enabled,
+    vapidPublicKey: resolveVapidPublicKeyApp(document.getElementById("cloudVapidPublic")?.value || appNotificationState.vapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || ""),
+    vapidPrivateKey: String(document.getElementById("cloudVapidPrivate")?.value || "").trim(),
+    vapidSubject: String(document.getElementById("cloudVapidSubject")?.value || APP_BRAGA_DEFAULT_VAPID_SUBJECT).trim() || APP_BRAGA_DEFAULT_VAPID_SUBJECT,
+    alerts: {
+      tonerZero: document.getElementById("cloudAlertTonerZero")?.checked !== false,
+      tonerLow25: document.getElementById("cloudAlertTonerLow")?.checked !== false,
+      tonerChange: document.getElementById("cloudAlertTonerChange")?.checked !== false,
+      stockMin: document.getElementById("cloudAlertStock")?.checked !== false,
+      maintenance: document.getElementById("cloudAlertMaintenance")?.checked !== false,
+      radios: document.getElementById("cloudAlertRadios")?.checked !== false
+    }
+  };
+}
+
+function applyCloudNotificationFormApp(settings = {}) {
+  const alerts = settings.alerts || {};
+  const setChecked = (id, value, fallback = true) => {
+    const el = document.getElementById(id);
+    if (el) el.checked = typeof value === "undefined" ? fallback : value === true;
+  };
+  setChecked("cloudNotifyEnabled", settings.enabled ?? settings.notificationEnabled, true);
+  const publicInput = document.getElementById("cloudVapidPublic");
+  const privateInput = document.getElementById("cloudVapidPrivate");
+  const subjectInput = document.getElementById("cloudVapidSubject");
+  if (publicInput) publicInput.value = settings.vapidPublicKey || settings.notificationVapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "";
+  if (privateInput) privateInput.value = settings.vapidPrivateKey ? String(settings.vapidPrivateKey) : "";
+  if (subjectInput) subjectInput.value = settings.vapidSubject || APP_BRAGA_DEFAULT_VAPID_SUBJECT;
+  setChecked("cloudAlertTonerZero", alerts.tonerZero ?? settings.notificationTonerZero, true);
+  setChecked("cloudAlertTonerLow", alerts.tonerLow25 ?? settings.notificationTonerLow25, true);
+  setChecked("cloudAlertTonerChange", alerts.tonerChange ?? settings.notificationTonerChange, true);
+  setChecked("cloudAlertStock", alerts.stockMin ?? settings.notificationStockMin, true);
+  setChecked("cloudAlertMaintenance", alerts.maintenance ?? settings.notificationMaintenance, true);
+  setChecked("cloudAlertRadios", alerts.radios ?? settings.notificationRadios, true);
+  appNotificationState.vapidKey = resolveVapidPublicKeyApp(settings.vapidPublicKey || settings.notificationVapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "");
+}
+
+function renderCloudDevicesNotificacoesApp(items = []) {
+  const host = document.getElementById("cloudDevicesList");
+  if (!host) return;
+  const sortedActive = items
+    .filter((item) => item.active !== false)
+    .sort((a, b) => normalizeTimestampApp(b.updatedAt || b.createdAt) - normalizeTimestampApp(a.updatedAt || a.createdAt));
+  const uniqueMap = new Map();
+  sortedActive.forEach((item) => {
+    const key = item.deviceKey || item.pushSubscription?.endpoint || item.token || item.id;
+    if (!uniqueMap.has(key)) uniqueMap.set(key, item);
+  });
+  const activeItems = Array.from(uniqueMap.values());
+  const webPushItems = activeItems.filter((item) => item.pushSubscription?.endpoint);
+  setCloudNotificationTextApp("cloudDevicesStatus", `${activeItems.length} registados`, activeItems.length ? "ok" : "warn");
+  setCloudNotificationTextApp("cloudDevicesDetail", `${webPushItems.length} com Web Push standard pronto para cloud`);
+
+  if (!activeItems.length) {
+    host.innerHTML = `<div class="empty-state mini">Ainda nao ha dispositivos registados.</div>`;
+    return;
+  }
+
+  host.innerHTML = activeItems.map((item) => {
+    const isCurrent = item.id === appNotificationState.restoredTokenDocId ||
+      (appNotificationState.fcmToken && item.token === appNotificationState.fcmToken) ||
+      (appNotificationState.pushSubscriptionEndpoint && (item.endpoint === appNotificationState.pushSubscriptionEndpoint || item.pushSubscription?.endpoint === appNotificationState.pushSubscriptionEndpoint));
+    const device = labelDispositivoNotificacaoApp(item);
+    const mode = labelMetodoNotificacaoApp(item);
+    const permission = item.permission || "sem dados";
+    const updated = formatTimestampApp(item.updatedAt || item.createdAt);
+    const ready = !!item.pushSubscription?.endpoint;
+    return `
+      <div class="notification-device-card ${isCurrent ? "is-current" : ""}">
+        <div>
+          <strong>${escapeHtmlAppBraga(device)}</strong>
+          <span>${escapeHtmlAppBraga(mode)} - ${escapeHtmlAppBraga(permission)}</span>
+          <small>Ultimo contacto: ${escapeHtmlAppBraga(updated)}</small>
+        </div>
+        <span class="health-status ${ready ? "ok" : "warn"}">${isCurrent ? "Este dispositivo" : (ready ? "Cloud pronto" : "Reparar")}</span>
+      </div>
+    `;
+  }).join("");
+}
+
+function carregarDispositivosCloudNotificacoesApp(force = false) {
+  const host = document.getElementById("cloudDevicesList");
+  if (!host || !window.db?.collection) return;
+  if (appNotificationState.devicesUnsubscribe && force) {
+    appNotificationState.devicesUnsubscribe();
+    appNotificationState.devicesUnsubscribe = null;
+  }
+  if (appNotificationState.devicesUnsubscribe) return;
+  appNotificationState.devicesUnsubscribe = window.db.collection("notificationTokens").onSnapshot((snapshot) => {
+    const items = [];
+    snapshot.forEach((doc) => items.push({ id: doc.id, ...doc.data() }));
+    renderCloudDevicesNotificacoesApp(items);
+  }, (error) => {
+    console.error("Erro ao carregar dispositivos cloud:", error);
+    host.innerHTML = `<div class="empty-state mini">Erro ao carregar dispositivos.</div>`;
+  });
+}
+
+async function carregarCloudNotificacoesApp() {
+  const ref = cloudNotificationSettingsRefApp();
+  if (!ref) {
+    setCloudNotificationTextApp("cloudNotifyStatus", "Sem Firebase", "bad");
+    setCloudNotificationDiagnosticApp("Firebase indisponivel nesta pagina.", "bad");
+    return null;
+  }
+  const doc = await ref.get();
+  const settings = doc.exists ? (doc.data() || {}) : {};
+  if (!doc.exists) {
+    settings.enabled = true;
+    settings.vapidPublicKey = APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY;
+    settings.vapidSubject = APP_BRAGA_DEFAULT_VAPID_SUBJECT;
+    settings.alerts = { tonerZero: true, tonerLow25: true, tonerChange: true, stockMin: true, maintenance: true, radios: true };
+  }
+  applyCloudNotificationFormApp(settings);
+  const hasPublic = !!resolveVapidPublicKeyApp(settings.vapidPublicKey || settings.notificationVapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "");
+  const hasPrivate = !!String(settings.vapidPrivateKey || "").trim();
+  setCloudNotificationTextApp("cloudNotifyStatus", settings.enabled === false ? "Desligado" : "Ativo", settings.enabled === false ? "warn" : "ok");
+  setCloudNotificationTextApp("cloudNotifyDetail", "Envio principal: Firebase Cloud Functions");
+  setCloudNotificationTextApp("cloudCredentialsStatus", hasPublic && hasPrivate ? "Completas" : "Falta chave", hasPublic && hasPrivate ? "ok" : "bad");
+  setCloudNotificationTextApp("cloudCredentialsDetail", hasPrivate ? "VAPID privada guardada na Firebase" : "Guarda a VAPID privada nesta pagina");
+  return settings;
+}
+
+async function guardarCloudNotificacoesApp() {
+  try {
+    const ref = cloudNotificationSettingsRefApp();
+    if (!ref) throw new Error("Firebase indisponivel.");
+    const form = readCloudNotificationFormApp();
+    if (!form.vapidPublicKey) throw new Error("Cola a VAPID publica.");
+    if (!form.vapidPrivateKey) throw new Error("Cola a VAPID privada.");
+    const payload = {
+      ...form,
+      updatedAt: Date.now(),
+      updatedByDevice: getNotificationDeviceTypeApp(),
+      updatedByKey: getNotificationDeviceKeyApp(),
+      appVersion: APP_VERSION
+    };
+    await ref.set(payload, { merge: true });
+    await guardarConfigNotificacoesApp({
+      notificationEnabled: form.enabled,
+      notificationVapidKey: form.vapidPublicKey,
+      notifyTonerZero: form.alerts.tonerZero,
+      notifyTonerLow25: form.alerts.tonerLow25,
+      notifyTonerChange: form.alerts.tonerChange,
+      notifyStockMin: form.alerts.stockMin,
+      notifyMaintenance: form.alerts.maintenance,
+      notifyRadios: form.alerts.radios
+    });
+    appNotificationState.vapidKey = form.vapidPublicKey;
+    setCloudNotificationDiagnosticApp("Cloud guardada. Agora regista cada dispositivo nesta pagina.", "ok");
+    mostrarMensagem("Configuracao cloud guardada.", "sucesso");
+    await carregarCloudNotificacoesApp();
+  } catch (error) {
+    setCloudNotificationDiagnosticApp(error.message || "Erro ao guardar cloud.", "bad");
+    mostrarMensagem(error.message || "Erro ao guardar cloud.", "erro");
+  }
+}
+
+async function repararDispositivoNotificacoesCloudApp() {
+  try {
+    const settings = await carregarCloudNotificacoesApp();
+    const vapidKey = resolveVapidPublicKeyApp(settings?.vapidPublicKey || document.getElementById("cloudVapidPublic")?.value || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "");
+    if (!vapidKey) throw new Error("Guarda primeiro a VAPID publica.");
+    await registarDispositivoPushApp(true, { vapidKey });
+    setCloudNotificationDiagnosticApp("Dispositivo reparado/registado para a cloud.", "ok");
+    carregarDispositivosCloudNotificacoesApp(true);
+  } catch (error) {
+    setCloudNotificationDiagnosticApp(error.message || "Erro ao reparar dispositivo.", "bad");
+    mostrarMensagem(error.message || "Erro ao reparar dispositivo.", "erro");
+  }
+}
+
+async function testarCloudNotificacoesApp() {
+  try {
+    if (!window.db?.collection) throw new Error("Firebase indisponivel.");
+    const settings = await carregarCloudNotificacoesApp();
+    if (!settings || settings.enabled === false) throw new Error("Ativa primeiro as notificacoes cloud.");
+    if (!settings.vapidPublicKey || !settings.vapidPrivateKey) throw new Error("Guarda a VAPID publica e privada antes do teste.");
+    setCloudNotificationTextApp("cloudLastTestStatus", "A enviar", "warn");
+    setCloudNotificationTextApp("cloudLastTestDetail", "Pedido criado na Firebase");
+    const startedAt = Date.now();
+    const requestRef = await window.db.collection("notificationRequests").add({
+      title: "App Braga",
+      body: "Teste cloud recebido. Funciona mesmo com o PC de casa desligado.",
+      tag: `cloud-test-${startedAt}`,
+      url: "/html/notificacoes.html",
+      source: "app-cloud-page",
+      status: "created",
+      forceCloud: true,
+      createdAt: startedAt,
+      requestedFrom: getNotificationDeviceTypeApp(),
+      requestedDeviceKey: getNotificationDeviceKeyApp()
+    });
+    const result = await aguardarResultadoPedidoPushRemotoApp(requestRef, startedAt);
+    const ok = result?.status === "sent" && Number(result.sent || 0) > 0;
+    setCloudNotificationTextApp("cloudLastTestStatus", ok ? "Enviado" : "Falhou", ok ? "ok" : "bad");
+    setCloudNotificationTextApp("cloudLastTestDetail", ok ? `${Number(result.sent || 0)} dispositivo(s) avisado(s)` : (result?.error || "A cloud respondeu sem enviar push"));
+    mostrarMensagem(ok ? "Teste cloud enviado." : (result?.error || "A cloud respondeu, mas nao enviou push."), ok ? "sucesso" : "erro");
+    carregarDispositivosCloudNotificacoesApp(true);
+  } catch (error) {
+    setCloudNotificationTextApp("cloudLastTestStatus", "Erro", "bad");
+    setCloudNotificationTextApp("cloudLastTestDetail", error.message || "Teste falhou");
+    setCloudNotificationDiagnosticApp(error.message || "Teste cloud falhou.", "bad");
+    mostrarMensagem(error.message || "Teste cloud falhou.", "erro");
+  }
+}
+
+async function atualizarPaginaNotificacoesCloudApp(showMessage = false) {
+  if (!isPaginaNotificacoesCloudApp()) return;
+  if (!window.db?.collection) {
+    setCloudNotificationTextApp("cloudNotifyStatus", "Sem Firebase", "bad");
+    setTimeout(() => atualizarPaginaNotificacoesCloudApp(showMessage), 700);
+    return;
+  }
+  await carregarCloudNotificacoesApp();
+  carregarDispositivosCloudNotificacoesApp(true);
+  const current = await obterDispositivoAtualNotificacoesApp().catch(() => null);
+  if (current?.pushSubscription?.endpoint) {
+    setCloudNotificationDiagnosticApp("Este dispositivo esta registado com Web Push standard.", "ok");
+  } else {
+    setCloudNotificationDiagnosticApp("Abre esta pagina no dispositivo e carrega em Reparar este dispositivo.", "warn");
+  }
+  if (showMessage) mostrarMensagem("Notificacoes atualizadas.", "sucesso");
+}
+
+function inicializarPaginaNotificacoesCloudApp() {
+  if (!isPaginaNotificacoesCloudApp()) return;
+  atualizarPaginaNotificacoesCloudApp(false);
+}
+
 async function restaurarRegistoPushAtualApp() {
   if (appNotificationState.restoreRunning || !window.db?.collection) return;
   appNotificationState.restoreRunning = true;
@@ -3170,7 +3438,7 @@ async function registarDispositivoLocalNotificacoesApp(source = "web-local") {
 async function registarDispositivoPushApp(forceReset = false, options = {}) {
   try {
     if (!window.db || !window.db.collection) throw new Error("Firestore indisponivel.");
-    const vapidKey = resolveVapidPublicKeyApp(document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "");
+    const vapidKey = resolveVapidPublicKeyApp(options.vapidKey || document.getElementById("cloudVapidPublic")?.value || document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "");
     setNotificationDeviceDiagnostic(`Permissao: ${notificationPermissionApp()} | Push: ${webPushDisponivelApp() ? "disponivel" : "indisponivel"} | PWA: ${isStandalonePwaAppBraga() ? "sim" : "nao"} | iOS: ${isIosAppBraga() ? "sim" : "nao"}`);
 
     // Nao fazemos return aqui no Electron: ele tambem precisa de um token/endpoint Web Push
@@ -5712,6 +5980,7 @@ document.addEventListener("DOMContentLoaded", initRadiosPage);
 document.addEventListener("DOMContentLoaded", initInformacoesPage);
 document.addEventListener("DOMContentLoaded", initResolucaoApp);
 document.addEventListener("DOMContentLoaded", initFullscreenPreferidoApp);
+document.addEventListener("DOMContentLoaded", inicializarPaginaNotificacoesCloudApp);
 window.adicionarRadio = adicionarRadio;
 window.editarRadio = editarRadio;
 window.guardarRadio = guardarRadio;
@@ -5764,6 +6033,10 @@ window.verificarAlertasNotificacoesApp = verificarAlertasNotificacoesApp;
 window.testarNotificacaoApp = testarNotificacaoApp;
 window.testarPushRemotoNotificacoesApp = testarPushRemotoNotificacoesApp;
 window.pedirPermissaoNotificacoesApp = pedirPermissaoNotificacoesApp;
+window.guardarCloudNotificacoesApp = guardarCloudNotificacoesApp;
+window.repararDispositivoNotificacoesCloudApp = repararDispositivoNotificacoesCloudApp;
+window.testarCloudNotificacoesApp = testarCloudNotificacoesApp;
+window.atualizarPaginaNotificacoesCloudApp = atualizarPaginaNotificacoesCloudApp;
 window.verificarSistemasApp = verificarSistemasApp;
 window.adicionarInformacao = adicionarInformacao;
 window.selecionarInformacao = selecionarInformacao;

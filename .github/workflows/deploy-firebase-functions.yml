@@ -45,19 +45,5 @@ jobs:
       - name: Install functions dependencies
         run: npm ci --prefix functions
 
-      - name: Prepare Web Push env
-        env:
-          VAPID_PUBLIC: ${{ secrets.APP_BRAGA_VAPID_PUBLIC_KEY }}
-          VAPID_PRIVATE: ${{ secrets.APP_BRAGA_VAPID_PRIVATE_KEY }}
-        run: |
-          if [ -z "$VAPID_PUBLIC" ] || [ -z "$VAPID_PRIVATE" ]; then
-            echo "Missing APP_BRAGA_VAPID_PUBLIC_KEY or APP_BRAGA_VAPID_PRIVATE_KEY GitHub secret."
-            exit 1
-          fi
-          {
-            printf "APP_BRAGA_VAPID_PUBLIC_KEY=%s\n" "$VAPID_PUBLIC"
-            printf "APP_BRAGA_VAPID_PRIVATE_KEY=%s\n" "$VAPID_PRIVATE"
-          } > functions/.env
-
       - name: Deploy functions
         run: firebase deploy --only functions --project toner-manager-756c4
