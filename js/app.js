@@ -1941,6 +1941,9 @@ function aplicarConfigNotificacoesApp(config = {}) {
   iniciarMonitorNotificacoesApp();
   carregarDispositivosNotificacoesApp(false);
   restaurarRegistoPushAtualApp();
+  if (window.electronAPI?.sendWebPushBroadcast && document.getElementById("notifyServiceStatus")) {
+    iniciarPontePushElectronApp(false);
+  }
 }
 
 function notificationPermissionApp() {
@@ -2335,7 +2338,7 @@ async function iniciarPontePushElectronApp(showMessage = false) {
       if (change.type === "added" || change.type === "modified") processarPedidoPushElectronApp(change.doc);
     });
   }, (error) => console.error("Erro na ponte PC ao ler pedidos:", error));
-  if (showMessage) mostrarMensagem("Modo antigo de ponte PC desativado. O envio remoto corre na Cloud.", "sucesso");
+  if (showMessage) mostrarMensagem("Ponte Electron ligada como apoio. A Cloud continua a ser o envio principal.", "sucesso");
   await atualizarEstadoNotificacoesApp(false);
   return true;
 }
@@ -2880,7 +2883,11 @@ async function atualizarEstadoNotificacoesApp(showMessage = false) {
 }
 
 async function ligarServicoNotificacoesApp() {
-  mostrarMensagem("O envio remoto corre nas Firebase Cloud Functions. Nao precisa de Node nem de PC ligado.", "sucesso");
+  if (window.electronAPI?.sendWebPushBroadcast) {
+    const ok = await iniciarPontePushElectronApp(true);
+    if (ok) return;
+  }
+  mostrarMensagem("O envio remoto corre nas Firebase Cloud Functions.", "sucesso");
   await atualizarEstadoNotificacoesApp(false);
 }
 
