@@ -9,10 +9,13 @@ const logger = require("firebase-functions/logger");
 admin.initializeApp();
 setGlobalOptions({ region: "europe-west1", maxInstances: 10 });
 
+<<<<<<< Updated upstream
 function envValue(name) {
   return String(process.env[name] || "").trim();
 }
 
+=======
+>>>>>>> Stashed changes
 const APP_URL = "https://picafern-commits.github.io/App-Tablet/html/index.html";
 const VAPID_SUBJECT = envValue("APP_BRAGA_VAPID_SUBJECT") || "mailto:admin@appbraga.pt";
 const CONFIG_DOC = "config/cloudNotifications";
@@ -143,8 +146,13 @@ async function markDeviceInactive(item, reason) {
 }
 
 function configureWebPush() {
+<<<<<<< Updated upstream
   const publicKey = envValue("APP_BRAGA_VAPID_PUBLIC_KEY");
   const privateKey = envValue("APP_BRAGA_VAPID_PRIVATE_KEY");
+=======
+  const publicKey = String(process.env.APP_BRAGA_VAPID_PUBLIC_KEY || "").trim();
+  const privateKey = String(process.env.APP_BRAGA_VAPID_PRIVATE_KEY || "").trim();
+>>>>>>> Stashed changes
   if (!publicKey || !privateKey) return false;
   webpush.setVapidDetails(VAPID_SUBJECT, publicKey, privateKey);
   return true;

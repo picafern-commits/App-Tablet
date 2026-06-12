@@ -10,18 +10,13 @@ O caminho principal e pelo GitHub Actions. Configura estes GitHub Secrets no rep
 - `APP_BRAGA_VAPID_PUBLIC_KEY`: chave publica Web Push.
 - `APP_BRAGA_VAPID_PRIVATE_KEY`: chave privada Web Push.
 
-Opcionalmente, num PC com Firebase CLI autenticado:
-
-```bash
-firebase functions:secrets:set APP_BRAGA_VAPID_PUBLIC_KEY
-firebase functions:secrets:set APP_BRAGA_VAPID_PRIVATE_KEY
-```
-
 O assunto VAPID fica por defeito como `mailto:admin@appbraga.pt`.
 
 ## Deploy
 
 Automatico pelo GitHub Actions quando houver alteracoes em `functions/**`, `firebase.json`, `.firebaserc`, neste guia ou no workflow, desde que os GitHub Secrets existam.
+
+O workflow cria `functions/.env` apenas durante o deploy para passar as chaves VAPID as Cloud Functions. Nao usa Secret Manager, para evitar erro 403 em contas de servico sem permissao de Secret Manager.
 
 Tambem pode ser lancado manualmente no GitHub em **Actions > Deploy Firebase Functions > Run workflow**.
 
@@ -29,6 +24,8 @@ Deploy manual num PC com Firebase CLI autenticado:
 
 ```bash
 cd "C:\Users\pica-\Documents\Codex\2026-06-08\files-mentioned-by-the-user-app\work\App-Tablet-main\App-Tablet-main\App-Tablet"
+set APP_BRAGA_VAPID_PUBLIC_KEY=cola_a_chave_publica
+set APP_BRAGA_VAPID_PRIVATE_KEY=cola_a_chave_privada
 firebase deploy --only functions
 ```
 

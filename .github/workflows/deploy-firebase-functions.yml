@@ -45,20 +45,19 @@ jobs:
       - name: Install functions dependencies
         run: npm ci --prefix functions
 
-      - name: Sync Web Push secrets
+      - name: Prepare Web Push env
         env:
           VAPID_PUBLIC: ${{ secrets.APP_BRAGA_VAPID_PUBLIC_KEY }}
           VAPID_PRIVATE: ${{ secrets.APP_BRAGA_VAPID_PRIVATE_KEY }}
         run: |
-          if [ -n "$VAPID_PUBLIC" ] && [ -n "$VAPID_PRIVATE" ]; then
-            printf "%s" "$VAPID_PUBLIC" > vapid_public.txt
-            printf "%s" "$VAPID_PRIVATE" > vapid_private.txt
-            firebase functions:secrets:set APP_BRAGA_VAPID_PUBLIC_KEY --data-file vapid_public.txt --project toner-manager-756c4
-            firebase functions:secrets:set APP_BRAGA_VAPID_PRIVATE_KEY --data-file vapid_private.txt --project toner-manager-756c4
-            rm -f vapid_public.txt vapid_private.txt
-          else
-            echo "VAPID secrets not configured in GitHub; keeping existing Firebase secret values."
+          if [ -z "$VAPID_PUBLIC" ] || [ -z "$VAPID_PRIVATE" ]; then
+            echo "Missing APP_BRAGA_VAPID_PUBLIC_KEY or APP_BRAGA_VAPID_PRIVATE_KEY GitHub secret."
+            exit 1
           fi
+          {
+            printf "APP_BRAGA_VAPID_PUBLIC_KEY=%s\n" "$VAPID_PUBLIC"
+            printf "APP_BRAGA_VAPID_PRIVATE_KEY=%s\n" "$VAPID_PRIVATE"
+          } > functions/.env
 
       - name: Deploy functions
         run: firebase deploy --only functions --project toner-manager-756c4
