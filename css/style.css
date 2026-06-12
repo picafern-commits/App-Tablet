@@ -6334,6 +6334,26 @@ body.app-role-consulta .danger {
   }
 }
 
+.sidebar a[data-icon]::before {
+  content: attr(data-icon) !important;
+}
+
+.sidebar a[href$="tarefas.html"]::before {
+  content: "✅" !important;
+}
+
+.sidebar a[href$="notificacoes.html"]::before {
+  content: "🔔" !important;
+}
+
+.sidebar a[href$="scanner-ia.html"]::before {
+  content: "📄" !important;
+}
+
+.sidebar a[href$="diagnostico.html"]::before {
+  content: "🩺" !important;
+}
+
 .config-actions-row.compact {
   width: auto !important;
   margin: 0 !important;

@@ -282,6 +282,18 @@ async function broadcast(title, body, data = {}) {
     }
   }
 
+  if (sent <= 0 && !lastError) {
+    if (!devices.length) {
+      lastError = "Nao ha dispositivos ativos registados para receber push.";
+    } else if (standardWebPushTargets <= 0) {
+      lastError = "Nao ha nenhum dispositivo com Web Push standard. No iPhone/Android abre a app instalada e usa Reparar este dispositivo.";
+    } else if (!canStandardWebPush) {
+      lastError = "Faltam credenciais VAPID na configuracao cloud.";
+    } else {
+      lastError = "A cloud nao conseguiu enviar para nenhum dispositivo registado.";
+    }
+  }
+
   await updateRuntimeStatus({
     lastTitle: title,
     lastBody: body,

@@ -32,12 +32,13 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.34.0";
+const APP_VERSION = "1.34.1";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BE2xnhqmSPq85_kA6comGATxEseSoh8zY_EK_4NZsbiI1HJByjc1PgQqhTsUwPlr1ujuUSpSzp29AQeS1hnlHOQ";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "notificationCloudSettings";
 const APP_BRAGA_NOTIFICATION_CONFIG_COLLECTION = "config";
 const APP_BRAGA_DEFAULT_VAPID_SUBJECT = "mailto:admin@appbraga.pt";
+const APP_BRAGA_DEVICE_PROFILE_STORAGE_KEY = "appBragaNotificationDeviceProfile";
 
 function garantirLinkNotificacoesSidebarApp() {
   const nav = document.querySelector(".sidebar-nav-pro");
@@ -2691,6 +2692,7 @@ async function registarPushSubscriptionPadraoApp(vapidKey, options = {}) {
     permission: "Notification" in window ? Notification.permission : "unsupported",
     pushAvailable: true,
     vapidPublicKey: vapidKey,
+    ...getNotificationDeviceProfilePayloadApp(),
     updatedAt: Date.now(),
     createdAt: Date.now()
   }, { merge: true });
@@ -2720,10 +2722,10 @@ async function registarFcmWebPushApp(vapidKey) {
     platform: navigator.platform || "",
     permission: "Notification" in window ? Notification.permission : "unsupported",
     pushAvailable: true,
+    ...getNotificationDeviceProfilePayloadApp(),
     updatedAt: Date.now(),
     createdAt: Date.now()
   }, { merge: true });
-  await desativarRegistosAntigosDispositivoApp(docId, deviceKey);
   return { docId, token };
 }
 
@@ -2781,6 +2783,92 @@ function getNotificationDeviceKeyApp() {
   ].join("|"))}`;
 }
 
+function inferNotificationDeviceRoleApp() {
+  if (window.electronAPI?.showNotification) return "pc-casa";
+  if (isIosAppBraga()) return "iphone";
+  if (/android/i.test(navigator.userAgent || "") || document.body.classList.contains("device-tablet")) return "tablet-android";
+  return "pc-trabalho";
+}
+
+function labelNotificationDeviceRoleApp(role = "") {
+  const map = {
+    "pc-casa": "PC de casa",
+    "pc-trabalho": "PC de trabalho",
+    "tablet-android": "Tablet Android",
+    iphone: "iPhone",
+    outro: "Outro dispositivo"
+  };
+  return map[role] || "Dispositivo";
+}
+
+function getNotificationDeviceProfileApp() {
+  let stored = {};
+  try {
+    stored = JSON.parse(localStorage.getItem(APP_BRAGA_DEVICE_PROFILE_STORAGE_KEY) || "{}") || {};
+  } catch {
+    stored = {};
+  }
+  const role = stored.role || inferNotificationDeviceRoleApp();
+  const fallbackName = labelNotificationDeviceRoleApp(role);
+  return {
+    role,
+    name: String(stored.name || fallbackName).trim() || fallbackName,
+    deviceKey: getNotificationDeviceKeyApp()
+  };
+}
+
+function setNotificationDeviceProfileApp(profile = {}) {
+  const role = profile.role || inferNotificationDeviceRoleApp();
+  const name = String(profile.name || labelNotificationDeviceRoleApp(role)).trim() || labelNotificationDeviceRoleApp(role);
+  const data = { role, name, deviceKey: getNotificationDeviceKeyApp(), updatedAt: Date.now() };
+  try {
+    localStorage.setItem(APP_BRAGA_DEVICE_PROFILE_STORAGE_KEY, JSON.stringify(data));
+  } catch {}
+  return data;
+}
+
+function getNotificationDeviceProfilePayloadApp() {
+  const profile = getNotificationDeviceProfileApp();
+  return {
+    notificationDeviceRole: profile.role,
+    notificationDeviceName: profile.name,
+    deviceRole: profile.role,
+    deviceName: profile.name
+  };
+}
+
+async function guardarPerfilDispositivoFirestoreApp(profile = getNotificationDeviceProfileApp()) {
+  if (!window.db?.collection) return;
+  await window.db.collection("notificationDeviceProfiles").doc(getNotificationDeviceKeyApp()).set({
+    ...profile,
+    appVersion: APP_VERSION,
+    deviceType: getNotificationDeviceTypeApp(),
+    platform: navigator.platform || "",
+    userAgent: navigator.userAgent || "",
+    updatedAt: Date.now()
+  }, { merge: true });
+}
+
+async function aplicarPerfilDispositivoARegistosPushApp(profile = getNotificationDeviceProfileApp()) {
+  if (!window.db?.collection) return;
+  const snapshot = await window.db.collection("notificationTokens").get();
+  const batch = window.db.batch();
+  let changes = 0;
+  snapshot.forEach((doc) => {
+    const data = doc.data() || {};
+    if (data.deviceKey !== getNotificationDeviceKeyApp()) return;
+    batch.set(doc.ref, {
+      notificationDeviceRole: profile.role,
+      notificationDeviceName: profile.name,
+      deviceRole: profile.role,
+      deviceName: profile.name,
+      updatedAt: Date.now()
+    }, { merge: true });
+    changes += 1;
+  });
+  if (changes) await batch.commit();
+}
+
 async function desativarRegistosAntigosDispositivoApp(currentDocId, deviceKey) {
   try {
     if (!window.db?.collection || !deviceKey) return;
@@ -2826,6 +2914,8 @@ function formatTimestampApp(value) {
 }
 
 function labelDispositivoNotificacaoApp(item = {}) {
+  if (item.notificationDeviceName || item.deviceName) return item.notificationDeviceName || item.deviceName;
+  if (item.notificationDeviceRole || item.deviceRole) return labelNotificationDeviceRoleApp(item.notificationDeviceRole || item.deviceRole);
   const type = String(item.deviceType || item.platform || "").toLowerCase();
   if (type.includes("electron")) return "PC Electron";
   if (type.includes("phone")) return "iPhone / Telemovel";
@@ -2838,6 +2928,7 @@ function labelMetodoNotificacaoApp(item = {}) {
   if (item.source === "electron-native") return "Electron nativo";
   if (item.pushSubscription?.endpoint) return "Web Push standard";
   if (item.token) return "Firebase FCM";
+  if (item.source === "web-local-no-push") return "Local sem push cloud";
   return item.source || "Registo local";
 }
 
@@ -3148,6 +3239,52 @@ function applyCloudNotificationFormApp(settings = {}) {
   appNotificationState.vapidKey = resolveVapidPublicKeyApp(settings.vapidPublicKey || settings.notificationVapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "");
 }
 
+function atualizarRececaoEsperadaDispositivoApp() {
+  const field = document.getElementById("cloudDeviceExpected");
+  if (!field) return;
+  const role = document.getElementById("cloudDeviceRole")?.value || getNotificationDeviceProfileApp().role;
+  if (role === "pc-casa") field.value = "Gestao + pode receber quando app/segundo plano estiver ativo";
+  else if (role === "pc-trabalho") field.value = "Cliente limitado; nao guardar chaves privadas";
+  else if (role === "tablet-android") field.value = "Web Push standard esperado";
+  else if (role === "iphone") field.value = "Web Push standard so pela app no ecra principal";
+  else field.value = "Rececao conforme suporte do dispositivo";
+}
+
+function applyDeviceProfileFormApp() {
+  const profile = getNotificationDeviceProfileApp();
+  const nameInput = document.getElementById("cloudDeviceName");
+  const roleInput = document.getElementById("cloudDeviceRole");
+  if (nameInput) nameInput.value = profile.name || "";
+  if (roleInput) {
+    roleInput.value = profile.role || inferNotificationDeviceRoleApp();
+    roleInput.onchange = atualizarRececaoEsperadaDispositivoApp;
+  }
+  atualizarRececaoEsperadaDispositivoApp();
+}
+
+function readDeviceProfileFormApp() {
+  const role = document.getElementById("cloudDeviceRole")?.value || inferNotificationDeviceRoleApp();
+  const name = document.getElementById("cloudDeviceName")?.value || labelNotificationDeviceRoleApp(role);
+  return setNotificationDeviceProfileApp({ role, name });
+}
+
+async function guardarIdentidadeDispositivoNotificacoesApp(showMessage = true) {
+  try {
+    const profile = readDeviceProfileFormApp();
+    await guardarPerfilDispositivoFirestoreApp(profile);
+    await aplicarPerfilDispositivoARegistosPushApp(profile);
+    applyDeviceProfileFormApp();
+    setCloudNotificationDiagnosticApp(`Identidade guardada: ${profile.name}.`, "ok");
+    if (showMessage) mostrarMensagem("Identidade do dispositivo guardada.", "sucesso");
+    carregarDispositivosCloudNotificacoesApp(true);
+    return profile;
+  } catch (error) {
+    setCloudNotificationDiagnosticApp(error.message || "Erro ao guardar identidade do dispositivo.", "bad");
+    if (showMessage) mostrarMensagem(error.message || "Erro ao guardar identidade.", "erro");
+    return null;
+  }
+}
+
 function renderCloudDevicesNotificacoesApp(items = []) {
   const host = document.getElementById("cloudDevicesList");
   if (!host) return;
@@ -3163,6 +3300,9 @@ function renderCloudDevicesNotificacoesApp(items = []) {
   const webPushItems = activeItems.filter((item) => item.pushSubscription?.endpoint);
   setCloudNotificationTextApp("cloudDevicesStatus", `${activeItems.length} registados`, activeItems.length ? "ok" : "warn");
   setCloudNotificationTextApp("cloudDevicesDetail", `${webPushItems.length} com Web Push standard pronto para cloud`);
+  if (activeItems.length && !webPushItems.length) {
+    setCloudNotificationDiagnosticApp("A cloud nao tem nenhum alvo Web Push standard. No Android/iPhone abre a app instalada e carrega em Reparar este dispositivo.", "warn");
+  }
 
   if (!activeItems.length) {
     host.innerHTML = `<div class="empty-state mini">Ainda nao ha dispositivos registados.</div>`;
@@ -3174,6 +3314,7 @@ function renderCloudDevicesNotificacoesApp(items = []) {
       (appNotificationState.fcmToken && item.token === appNotificationState.fcmToken) ||
       (appNotificationState.pushSubscriptionEndpoint && (item.endpoint === appNotificationState.pushSubscriptionEndpoint || item.pushSubscription?.endpoint === appNotificationState.pushSubscriptionEndpoint));
     const device = labelDispositivoNotificacaoApp(item);
+    const role = labelNotificationDeviceRoleApp(item.notificationDeviceRole || item.deviceRole || "");
     const mode = labelMetodoNotificacaoApp(item);
     const permission = item.permission || "sem dados";
     const updated = formatTimestampApp(item.updatedAt || item.createdAt);
@@ -3182,10 +3323,10 @@ function renderCloudDevicesNotificacoesApp(items = []) {
       <div class="notification-device-card ${isCurrent ? "is-current" : ""}">
         <div>
           <strong>${escapeHtmlAppBraga(device)}</strong>
-          <span>${escapeHtmlAppBraga(mode)} - ${escapeHtmlAppBraga(permission)}</span>
+          <span>${escapeHtmlAppBraga(role)} - ${escapeHtmlAppBraga(mode)} - ${escapeHtmlAppBraga(permission)}</span>
           <small>Ultimo contacto: ${escapeHtmlAppBraga(updated)}</small>
         </div>
-        <span class="health-status ${ready ? "ok" : "warn"}">${isCurrent ? "Este dispositivo" : (ready ? "Cloud pronto" : "Reparar")}</span>
+        <span class="health-status ${ready ? "ok" : "warn"}">${isCurrent ? (ready ? "Este dispositivo OK" : "Este dispositivo sem cloud") : (ready ? "Cloud pronto" : "Reparar")}</span>
       </div>
     `;
   }).join("");
@@ -3271,10 +3412,12 @@ async function guardarCloudNotificacoesApp() {
 
 async function repararDispositivoNotificacoesCloudApp() {
   try {
+    await guardarIdentidadeDispositivoNotificacoesApp(false);
     const settings = await carregarCloudNotificacoesApp();
     const vapidKey = resolveVapidPublicKeyApp(settings?.vapidPublicKey || document.getElementById("cloudVapidPublic")?.value || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "");
     if (!vapidKey) throw new Error("Guarda primeiro a VAPID publica.");
     await registarDispositivoPushApp(true, { vapidKey });
+    await aplicarPerfilDispositivoARegistosPushApp(getNotificationDeviceProfileApp());
     setCloudNotificationDiagnosticApp("Dispositivo reparado/registado para a cloud.", "ok");
     carregarDispositivosCloudNotificacoesApp(true);
   } catch (error) {
@@ -3320,6 +3463,7 @@ async function testarCloudNotificacoesApp() {
 
 async function atualizarPaginaNotificacoesCloudApp(showMessage = false) {
   if (!isPaginaNotificacoesCloudApp()) return;
+  applyDeviceProfileFormApp();
   if (!window.db?.collection) {
     setCloudNotificationTextApp("cloudNotifyStatus", "Sem Firebase", "bad");
     setTimeout(() => atualizarPaginaNotificacoesCloudApp(showMessage), 700);
@@ -3355,6 +3499,7 @@ async function restaurarRegistoPushAtualApp() {
           appVersion: APP_VERSION,
           deviceType: "pc-electron",
           permission: "native",
+          ...getNotificationDeviceProfilePayloadApp(),
           updatedAt: Date.now()
         }, { merge: true });
         setNotificationTokenStatus("Electron registado", "ok");
@@ -3396,6 +3541,7 @@ async function restaurarRegistoPushAtualApp() {
         appVersion: APP_VERSION,
         deviceType: getNotificationDeviceTypeApp(),
         permission,
+        ...getNotificationDeviceProfilePayloadApp(),
         updatedAt: Date.now()
       }, { merge: true });
       setNotificationTokenStatus("Local ativo", "warn");
@@ -3425,6 +3571,7 @@ async function registarDispositivoLocalNotificacoesApp(source = "web-local") {
       platform: navigator.platform || "",
       permission: "Notification" in window ? Notification.permission : "unsupported",
       pushAvailable: webPushDisponivelApp(),
+      ...getNotificationDeviceProfilePayloadApp(),
       updatedAt: Date.now(),
       createdAt: Date.now()
     }, { merge: true });
@@ -6034,6 +6181,7 @@ window.testarNotificacaoApp = testarNotificacaoApp;
 window.testarPushRemotoNotificacoesApp = testarPushRemotoNotificacoesApp;
 window.pedirPermissaoNotificacoesApp = pedirPermissaoNotificacoesApp;
 window.guardarCloudNotificacoesApp = guardarCloudNotificacoesApp;
+window.guardarIdentidadeDispositivoNotificacoesApp = guardarIdentidadeDispositivoNotificacoesApp;
 window.repararDispositivoNotificacoesCloudApp = repararDispositivoNotificacoesCloudApp;
 window.testarCloudNotificacoesApp = testarCloudNotificacoesApp;
 window.atualizarPaginaNotificacoesCloudApp = atualizarPaginaNotificacoesCloudApp;
