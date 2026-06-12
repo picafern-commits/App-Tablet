@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.33.4";
+const APP_VERSION = "1.33.5";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BE2xnhqmSPq85_kA6comGATxEseSoh8zY_EK_4NZsbiI1HJByjc1PgQqhTsUwPlr1ujuUSpSzp29AQeS1hnlHOQ";
 
 
@@ -2355,7 +2355,8 @@ async function aguardarResultadoPedidoPushRemotoApp(requestRef, startedAt) {
         status: Number(cloudData.lastSent || 0) > 0 ? "sent" : "failed",
         sent: cloudData.lastSent || 0,
         failed: cloudData.lastFailed || 0,
-        standardWebPushReady: cloudData.standardWebPushReady
+        standardWebPushReady: cloudData.standardWebPushReady,
+        error: cloudData.lastError || ""
       };
     }
   }
@@ -2384,7 +2385,7 @@ async function testarPushRemotoNotificacoesApp() {
     if (isIosAppBraga() && !currentDevice?.pushSubscription?.endpoint) {
       throw new Error("O iPhone ainda nao criou Web Push standard. Carrega em Reparar registo e confirma que abriste pelo icone do ecra principal.");
     }
-    if (!currentDevice?.token && !currentDevice?.pushSubscription?.endpoint) {
+    if (!window.electronAPI?.showNotification && !currentDevice?.token && !currentDevice?.pushSubscription?.endpoint) {
       throw new Error("Este dispositivo ainda nao tem token/endpoint Web Push remoto. Carrega em Reparar registo deste dispositivo.");
     }
 
@@ -2818,7 +2819,8 @@ function atualizarDiagnosticoDispositivoNotificacoesApp(items = []) {
   const permission = notificationPermissionApp();
   const isIos = isIosAppBraga();
   const isStandalone = isStandalonePwaAppBraga();
-  const hasRemotePush = !!(currentItem?.token || currentItem?.pushSubscription?.endpoint || currentItem?.source === "electron-native");
+  const isElectronNative = currentItem?.source === "electron-native";
+  const hasRemotePush = !!(currentItem?.token || currentItem?.pushSubscription?.endpoint);
   const hasStandardPush = !!currentItem?.pushSubscription?.endpoint;
   const parts = [
     `Permissao: ${permission}`,
@@ -2827,7 +2829,7 @@ function atualizarDiagnosticoDispositivoNotificacoesApp(items = []) {
   ];
 
   if (currentItem) {
-    parts.push(hasRemotePush ? "registo remoto OK" : "registo apenas local");
+    parts.push(isElectronNative ? "PC Electron: registo nativo/local" : (hasRemotePush ? "registo remoto OK" : "registo apenas local"));
   } else if (permission === "granted" || permission === "electron") {
     parts.push("carrega em Reparar registo");
   }

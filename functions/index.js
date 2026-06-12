@@ -9,13 +9,10 @@ const logger = require("firebase-functions/logger");
 admin.initializeApp();
 setGlobalOptions({ region: "europe-west1", maxInstances: 10 });
 
-<<<<<<< Updated upstream
 function envValue(name) {
   return String(process.env[name] || "").trim();
 }
 
-=======
->>>>>>> Stashed changes
 const APP_URL = "https://picafern-commits.github.io/App-Tablet/html/index.html";
 const VAPID_SUBJECT = envValue("APP_BRAGA_VAPID_SUBJECT") || "mailto:admin@appbraga.pt";
 const CONFIG_DOC = "config/cloudNotifications";
@@ -111,11 +108,13 @@ function getUpdatedAt(item = {}) {
 function uniqueActiveDevices(items) {
   const sorted = items
     .filter((item) => item.active !== false)
+    .filter((item) => item.source !== "electron-native")
+    .filter((item) => item.source !== "web-local-no-push")
     .filter((item) => item.token || item.pushSubscription?.endpoint)
     .sort((a, b) => getUpdatedAt(b) - getUpdatedAt(a));
   const unique = new Map();
   sorted.forEach((item) => {
-    const key = item.deviceKey || `${item.deviceType || ""}|${item.platform || ""}|${item.userAgent || item.id || ""}`;
+    const key = item.pushSubscription?.endpoint || item.token || item.deviceKey || `${item.deviceType || ""}|${item.platform || ""}|${item.userAgent || item.id || ""}`;
     if (!unique.has(key)) unique.set(key, item);
   });
   return Array.from(unique.values());
@@ -146,13 +145,8 @@ async function markDeviceInactive(item, reason) {
 }
 
 function configureWebPush() {
-<<<<<<< Updated upstream
   const publicKey = envValue("APP_BRAGA_VAPID_PUBLIC_KEY");
   const privateKey = envValue("APP_BRAGA_VAPID_PRIVATE_KEY");
-=======
-  const publicKey = String(process.env.APP_BRAGA_VAPID_PUBLIC_KEY || "").trim();
-  const privateKey = String(process.env.APP_BRAGA_VAPID_PRIVATE_KEY || "").trim();
->>>>>>> Stashed changes
   if (!publicKey || !privateKey) return false;
   webpush.setVapidDetails(VAPID_SUBJECT, publicKey, privateKey);
   return true;
@@ -235,8 +229,8 @@ async function broadcast(title, body, data = {}) {
           sent += 1;
         } else {
           failed += 1;
-          lastError = "Faltam secrets VAPID privadas nas Firebase Functions.";
-          logger.warn("Web Push standard sem VAPID secrets", { id: item.id, source: item.source });
+          lastError = "Faltam credenciais VAPID no ambiente das Firebase Functions.";
+          logger.warn("Web Push standard sem VAPID no ambiente", { id: item.id, source: item.source });
         }
       }
     } catch (error) {
