@@ -32,8 +32,24 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.33.8";
+const APP_VERSION = "1.33.9";
+const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BE2xnhqmSPq85_kA6comGATxEseSoh8zY_EK_4NZsbiI1HJByjc1PgQqhTsUwPlr1ujuUSpSzp29AQeS1hnlHOQ";
+
+function garantirLinkNotificacoesSidebarApp() {
+  const nav = document.querySelector(".sidebar-nav-pro");
+  if (!nav || nav.querySelector('a[href="notificacoes.html"]')) return;
+  const configLink = nav.querySelector('a[href="config.html"]');
+  if (!configLink?.parentElement) return;
+  const link = document.createElement("a");
+  link.href = "notificacoes.html";
+  link.dataset.icon = "🔔";
+  link.innerHTML = '<span class="sidebar-link-text">Notificações</span>';
+  if (/notificacoes\.html$/i.test(location.pathname)) link.classList.add("active");
+  configLink.parentElement.insertBefore(link, configLink);
+}
+
+document.addEventListener("DOMContentLoaded", garantirLinkNotificacoesSidebarApp);
 
 
 
@@ -1907,6 +1923,17 @@ async function maybeNotifyTonerReplacement(ip, previousInfo, nextInfo) {
 }
 
 function aplicarConfigNotificacoesApp(config = {}) {
+  if (APP_NOTIFICATIONS_REBUILD_MODE) {
+    appNotificationState.enabled = false;
+    clearInterval(appNotificationTimer);
+    const enabled = document.getElementById("notifyEnabled");
+    if (enabled) enabled.checked = false;
+    setNotificationServiceText("notifyServiceStatus", "Em reconstrução", "warn");
+    setNotificationServiceText("notifyServiceDetail", "Sistema antigo desativado temporariamente");
+    setNotificationServiceText("notifyCredentialsStatus", "Pendente", "warn");
+    setNotificationServiceText("notifyCredentialsDetail", "Nova página dedicada em preparação");
+    return;
+  }
   appNotificationState.enabled = config.notificationEnabled === true;
   appNotificationState.tonerZero = config.notifyTonerZero !== false;
   appNotificationState.tonerLow25 = config.notifyTonerLow25 !== false;

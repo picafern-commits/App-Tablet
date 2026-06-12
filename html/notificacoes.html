@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Notificações - App Braga</title>
+  <link rel="manifest" href="../manifest.json">
+  <link rel="stylesheet" href="../css/style.css?v=1.33.8">
+  <link rel="stylesheet" href="../css/app-theme-pro.css">
+  <link rel="stylesheet" href="../css/autozitania-bragalis.css">
+  <link rel="stylesheet" href="../css/iphone-force-final.css?v=safe-area-1.33.4">
+  <link rel="stylesheet" href="../css/iphone-sidebar-final.css?v=safe-area-1.33.4">
+</head>
+<body>
+<button class="app-menu-toggle" type="button" aria-label="Abrir menu">☰</button>
+<div class="app-sidebar-overlay"></div>
+
+<aside class="sidebar sidebar-pro-groups">
+  <div class="sidebar-brand-card">
+    <div class="sidebar-brand-mark">AB</div>
+    <div>
+      <strong>App Braga</strong>
+      <small class="sidebar-brand-subtitle">Centro operacional</small>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav-pro" aria-label="Navegação principal">
+    <section class="sidebar-favorites" data-sidebar-section="favorites">
+      <div class="sidebar-section-title"><span>⭐</span><strong>Favoritos</strong></div>
+      <a href="index.html" data-icon="🏠"><span class="sidebar-link-text">Dashboard</span></a>
+      <a href="stock.html" data-icon="📦"><span class="sidebar-link-text">Stock</span></a>
+      <a href="diretorio.html" data-icon="☎️"><span class="sidebar-link-text">Diretório</span></a>
+      <a href="impressoras.html" data-icon="🖨️"><span class="sidebar-link-text">Impressoras</span></a>
+    </section>
+
+    <div class="sidebar-divider"></div>
+    <section class="sidebar-group" data-sidebar-group="opera-o">
+      <button class="sidebar-group-toggle" type="button" aria-expanded="false">
+        <span class="sidebar-group-left"><span class="sidebar-group-icon">⚡</span><span>Operação</span></span>
+        <span class="sidebar-group-chevron">›</span>
+      </button>
+      <div class="sidebar-group-links">
+        <a href="add-toner.html" data-icon="➕"><span class="sidebar-link-text">Adicionar Toner</span></a>
+        <a href="historico.html" data-icon="🧾"><span class="sidebar-link-text">Histórico</span></a>
+        <a href="tarefas.html" data-icon="✅"><span class="sidebar-link-text">Tarefas</span></a>
+        <a href="scanner-ia.html" data-icon="📄"><span class="sidebar-link-text">Scanner IA</span></a>
+        <a href="etiquetas-word.html" data-icon="🏷️"><span class="sidebar-link-text">Etiquetas Word</span></a>
+      </div>
+    </section>
+
+    <section class="sidebar-group" data-sidebar-group="equipamentos">
+      <button class="sidebar-group-toggle" type="button" aria-expanded="false">
+        <span class="sidebar-group-left"><span class="sidebar-group-icon">🧰</span><span>Equipamentos</span></span>
+        <span class="sidebar-group-chevron">›</span>
+      </button>
+      <div class="sidebar-group-links">
+        <a href="impressoras.html" data-icon="🖨️"><span class="sidebar-link-text">Impressoras</span></a>
+        <a href="manutencao-impressoras.html" data-icon="🛠️"><span class="sidebar-link-text">Manutenção Impressoras</span></a>
+        <a href="computadores.html" data-icon="💻"><span class="sidebar-link-text">Computadores</span></a>
+        <a href="pistolas.html" data-icon="📟"><span class="sidebar-link-text">Pistolas CK65</span></a>
+        <a href="radios.html" data-icon="📡"><span class="sidebar-link-text">Rádios</span></a>
+      </div>
+    </section>
+
+    <section class="sidebar-group" data-sidebar-group="infraestrutura">
+      <button class="sidebar-group-toggle" type="button" aria-expanded="false">
+        <span class="sidebar-group-left"><span class="sidebar-group-icon">🌐</span><span>Infraestrutura</span></span>
+        <span class="sidebar-group-chevron">›</span>
+      </button>
+      <div class="sidebar-group-links">
+        <a href="portas.html" data-icon="🔌"><span class="sidebar-link-text">Portas Rede</span></a>
+        <a href="diretorio.html" data-icon="☎️"><span class="sidebar-link-text">Diretório</span></a>
+        <a href="informacoes.html" data-icon="ℹ️"><span class="sidebar-link-text">Informações</span></a>
+      </div>
+    </section>
+
+    <section class="sidebar-group" data-sidebar-group="administra-o" data-default-open="1">
+      <button class="sidebar-group-toggle" type="button" aria-expanded="false">
+        <span class="sidebar-group-left"><span class="sidebar-group-icon">⚙️</span><span>Administração</span></span>
+        <span class="sidebar-group-chevron">›</span>
+      </button>
+      <div class="sidebar-group-links">
+        <a href="users.html" data-icon="👥"><span class="sidebar-link-text">Users</span></a>
+        <a href="diagnostico.html" data-icon="🩺"><span class="sidebar-link-text">Diagnóstico</span></a>
+        <a href="notificacoes.html" data-icon="🔔" class="active"><span class="sidebar-link-text">Notificações</span></a>
+        <a href="config.html" data-icon="⚙️"><span class="sidebar-link-text">Configurações</span></a>
+      </div>
+    </section>
+  </nav>
+</aside>
+
+<main class="main-content">
+  <section class="page-header">
+    <div>
+      <h1>Notificações</h1>
+      <p class="section-subtitle">Página dedicada para reconstruir o sistema de alertas da App Braga.</p>
+    </div>
+  </section>
+
+  <section class="panel config-section notification-rebuild-panel">
+    <div class="section-header">
+      <div>
+        <h3>Sistema em reconstrução</h3>
+        <p class="section-subtitle">A área antiga foi retirada das Configurações. A próxima fase será montar aqui o novo fluxo limpo para Cloud, Android, iPhone e Electron.</p>
+      </div>
+    </div>
+    <div class="notification-service-grid">
+      <div class="notification-service-card">
+        <span>PC Casa Electron</span>
+        <strong>A definir</strong>
+        <small>Centro de gestão e apoio local.</small>
+      </div>
+      <div class="notification-service-card">
+        <span>PC Empresa</span>
+        <strong>Cliente</strong>
+        <small>Não deve guardar chaves privadas nem bloquear o sistema.</small>
+      </div>
+      <div class="notification-service-card">
+        <span>Tablet Android</span>
+        <strong>Receptor</strong>
+        <small>Web Push/FCM depois de registo limpo.</small>
+      </div>
+      <div class="notification-service-card">
+        <span>iPhone</span>
+        <strong>Receptor</strong>
+        <small>Web Push standard via app no ecrã principal.</small>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="../js/app.js?v=1.33.9"></script>
+<script src="../js/app-theme-pro.js"></script>
+<script src="../js/iphone-force-final.js?v=safe-area-1.33.4"></script>
+<script src="../js/iphone-sidebar-final.js?v=safe-area-1.33.4"></script>
+</body>
+</html>

@@ -190,7 +190,6 @@
         <div class="health-card"><span>Auth</span><strong id="healthAuth">A verificar</strong></div>
         <div class="health-card"><span>Rede</span><strong id="healthNetwork">A verificar</strong></div>
         <div class="health-card"><span>PIN / biometria</span><strong id="healthPin">A verificar</strong></div>
-        <div class="health-card"><span>NotificaÃ§Ãµes</span><strong id="healthNotifications">A verificar</strong></div>
         <div class="health-card"><span>Cloud Functions</span><strong id="healthPushWatcher">A verificar</strong></div>
         <div class="health-card"><span>Dispositivo</span><strong id="healthDevice">A verificar</strong></div>
       </div>
@@ -272,142 +271,6 @@
       </div>
     </div>
 
-    <div class="panel config-section config-section-notifications">
-      <div class="section-header">
-        <div>
-          <h3 class="config-notificacoes-title">NotificaÃ§Ãµes</h3>
-          <p class="section-subtitle">Alertas de toner, stock, manutenÃ§Ã£o e estado da APP.</p>
-        </div>
-        <button class="primary-btn" type="button" onclick="pedirPermissaoNotificacoesApp()">Ativar notificaÃ§Ãµes</button>
-      </div>
-
-      <div class="notification-settings-block">
-        <div class="notification-block-title">
-          <h4>Alertas</h4>
-          <span>Escolhe que avisos a app deve enviar.</span>
-        </div>
-        <div class="config-form-grid">
-        <label class="switch-row config-field-inline"><input type="checkbox" id="notifyEnabled" onchange="guardarConfigNotificacoesApp()"> <span>Sistema ativo</span></label>
-        <label class="switch-row config-field-inline"><input type="checkbox" id="notifyTonerZero" onchange="guardarConfigNotificacoesApp()"> <span>Toner a 0%</span></label>
-        <label class="switch-row config-field-inline"><input type="checkbox" id="notifyTonerLow25" onchange="guardarConfigNotificacoesApp()"> <span>Toner chega a 25%</span></label>
-        <label class="switch-row config-field-inline"><input type="checkbox" id="notifyTonerChange" onchange="guardarConfigNotificacoesApp()"> <span>Toner trocado 0% para cheio</span></label>
-        <label class="switch-row config-field-inline"><input type="checkbox" id="notifyStockMin" onchange="guardarConfigNotificacoesApp()"> <span>Stock abaixo do mÃ­nimo</span></label>
-        <label class="switch-row config-field-inline"><input type="checkbox" id="notifyMaintenance" onchange="guardarConfigNotificacoesApp()"> <span>ManutenÃ§Ãµes pendentes</span></label>
-        <label class="switch-row config-field-inline"><input type="checkbox" id="notifyRadios" onchange="guardarConfigNotificacoesApp()"> <span>Radios e registos semanais</span></label>
-        <label class="config-auth-field">
-          <span>Verificar alertas</span>
-          <select id="notifyIntervalMinutes" onchange="guardarConfigNotificacoesApp()">
-            <option value="5">5 minutos</option>
-            <option value="10">10 minutos</option>
-            <option value="15">15 minutos</option>
-            <option value="30">30 minutos</option>
-            <option value="60">60 minutos</option>
-          </select>
-        </label>
-        </div>
-      </div>
-
-      <div class="notification-vapid-panel">
-        <div class="notification-block-title">
-          <h4>Credenciais de envio</h4>
-          <span>Cola aqui as chaves Web Push para o PC Electron conseguir enviar para iPhone e Android.</span>
-        </div>
-        <div class="notification-vapid-grid">
-          <label class="config-auth-field">
-            <span>VAPID publica</span>
-            <input id="notifyVapidKey" type="text" placeholder="Chave publica Web Push" onchange="guardarConfigNotificacoesApp()">
-          </label>
-          <label class="config-auth-field">
-            <span>VAPID privada</span>
-            <input id="notifyVapidPrivateKey" type="password" autocomplete="off" placeholder="Cola a chave privada apenas no PC Electron">
-          </label>
-        </div>
-        <div class="config-actions-row compact">
-          <button class="primary-btn" type="button" onclick="configurarVapidPrivadaNotificacoesApp()">Guardar chaves no PC</button>
-          <button class="secondary-btn" type="button" onclick="toggleVapidPrivadaVisivelApp()">Mostrar/Ocultar</button>
-          <button class="secondary-btn" type="button" onclick="importarServiceAccountNotificacoesApp()">Importar service-account</button>
-        </div>
-      </div>
-
-      <div class="notification-actions-layout">
-        <div class="notification-action-group">
-          <div>
-            <h4>Este dispositivo</h4>
-            <span>Registo do iPhone, tablet Android ou PC.</span>
-          </div>
-          <div class="config-actions-row compact">
-            <button class="primary-btn" type="button" onclick="registarDispositivoPushApp(true)">Reparar registo</button>
-            <button class="secondary-btn" type="button" onclick="testarNotificacaoApp()">Teste local</button>
-            <button class="secondary-btn" type="button" onclick="atualizarEstadoNotificacoesApp(true)">Diagnosticar</button>
-          </div>
-        </div>
-        <div class="notification-action-group">
-          <div>
-            <h4>Envio remoto</h4>
-            <span>Cloud Functions ou ponte Electron do PC de Casa.</span>
-          </div>
-          <div class="config-actions-row compact">
-            <button class="primary-btn" type="button" onclick="ligarServicoNotificacoesApp()">Ligar envio</button>
-            <button class="secondary-btn" type="button" onclick="testarPushRemotoNotificacoesApp()">Testar push remoto</button>
-            <button class="secondary-btn" type="button" onclick="verificarAlertasNotificacoesApp(true)">Verificar alertas</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="notification-token-status">
-        <span>Estado deste dispositivo</span>
-        <strong id="notifyTokenStatus">Ainda nÃ£o registado</strong>
-        <small id="notifyDeviceDiagnostic">Sem diagnÃ³stico ainda.</small>
-      </div>
-      <div class="notification-service-panel">
-        <div class="section-header">
-          <div>
-            <h4>Estado das notificaÃ§Ãµes</h4>
-            <p class="section-subtitle">Confirma se o serviÃ§o estÃ¡ ligado e se hÃ¡ dispositivos prontos a receber alertas.</p>
-          </div>
-          <div class="config-actions-row compact">
-            <button class="secondary-btn" type="button" onclick="atualizarEstadoNotificacoesApp(true)">Atualizar estado</button>
-            <button class="primary-btn" type="button" onclick="ligarServicoNotificacoesApp()">Ligar serviÃ§o</button>
-          </div>
-        </div>
-        <div class="notification-service-grid">
-          <div class="notification-service-card">
-            <span>Envio remoto</span>
-            <strong id="notifyServiceStatus">A verificar</strong>
-            <small id="notifyServiceDetail">-</small>
-          </div>
-          <div class="notification-service-card">
-            <span>Dispositivos ativos</span>
-            <strong id="notifyActiveDevicesCount">0</strong>
-            <small id="notifyActiveDevicesDetail">A carregar</small>
-          </div>
-          <div class="notification-service-card">
-            <span>Credenciais</span>
-            <strong id="notifyCredentialsStatus">A verificar</strong>
-            <small id="notifyCredentialsDetail">-</small>
-          </div>
-          <div class="notification-service-card">
-            <span>Ãšltimo teste</span>
-            <strong id="notifyLastTestStatus">Sem teste</strong>
-            <small id="notifyLastTestDetail">Carrega em Testar notificaÃ§Ã£o</small>
-          </div>
-        </div>
-      </div>
-      <div class="notification-devices-panel">
-        <div class="section-header">
-          <div>
-            <h4>Dispositivos registados e ativos</h4>
-            <p class="section-subtitle">Equipamentos que podem receber notificaÃ§Ãµes da App Braga.</p>
-          </div>
-          <button class="secondary-btn" type="button" onclick="carregarDispositivosNotificacoesApp(true)">Atualizar lista</button>
-        </div>
-        <div id="notifyDevicesList" class="notification-devices-list">
-          <div class="empty-state mini">A carregar dispositivos...</div>
-        </div>
-      </div>
-      <p class="section-subtitle notification-note">O iPhone recebe com a app fechada quando estiver instalado no ecra principal e registado com Web Push standard. O PC Electron de Casa pode enviar como apoio quando as Cloud Functions falharem.</p>
-    </div>
-
     <div class="panel config-section config-section-backups">
       <div class="section-header">
         <div>
@@ -458,7 +321,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<script src="../js/app.js?v=1.33.8"></script>
+<script src="../js/app.js?v=1.33.9"></script>
 <script src="../js/systems/equipment/equipment-models.js?v=equipment-3"></script>
 <script src="../js/systems/global-search/global-search.js?v=global-search-2"></script>
   <script src="../js/core/helpers.js"></script>

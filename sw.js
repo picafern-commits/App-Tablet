@@ -1,4 +1,4 @@
-const APP_BRAGA_SW = "app-braga-runtime-v65";
+const APP_BRAGA_SW = "app-braga-runtime-v66";
 const APP_BRAGA_FIREBASE_CONFIG = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
   authDomain: "toner-manager-756c4.firebaseapp.com",
@@ -59,6 +59,7 @@ const APP_SHELL = [
   "./html/computadores.html",
   "./html/equipamento.html",
   "./html/impressoras.html",
+  "./html/notificacoes.html",
   "./html/radios.html",
   "./html/scanner-ia.html",
   "./html/stock.html",
