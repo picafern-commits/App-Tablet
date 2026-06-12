@@ -6534,7 +6534,7 @@ body{
 @media (max-width: 980px){.scanner-ia-grid{grid-template-columns:1fr}.scanner-preview-frame{min-height:360px}.scanner-options{grid-template-columns:1fr}}
 @media (max-width: 640px){.scanner-ia-shell{padding-top:max(12px,env(safe-area-inset-top))}.scanner-panel{border-radius:20px;padding:16px}.scanner-actions{display:grid;grid-template-columns:1fr 1fr}.scanner-btn{padding:0 10px}.scanner-preview-frame{padding:10px;min-height:300px}.scanner-canvas{max-height:58vh}}
 
-/* ===== APP BRAGA v1.35.5 - NOTIFICAÇÕES CLOUD PRO ===== */
+/* ===== APP BRAGA v1.35.6 - NOTIFICAÇÕES CLOUD PRO ===== */
 .notification-health-grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
@@ -6637,10 +6637,10 @@ body{
   .notification-history-item{display:block;}
   .notification-history-stats{justify-content:flex-start;margin-top:10px;}
 }
-/* ===== END APP BRAGA v1.35.5 ===== */
+/* ===== END APP BRAGA v1.35.6 ===== */
 
 
-/* App Braga v1.35.5 - Alerta geral cloud */
+/* App Braga v1.35.6 - Alerta geral cloud */
 .notification-alert-panel{
   border:1px solid rgba(248,113,113,.22);
   background:linear-gradient(135deg, rgba(127,29,29,.28), rgba(15,23,42,.92));

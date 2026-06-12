@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.35.5";
+const APP_VERSION = "1.35.6";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BE2xnhqmSPq85_kA6comGATxEseSoh8zY_EK_4NZsbiI1HJByjc1PgQqhTsUwPlr1ujuUSpSzp29AQeS1hnlHOQ";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "notificationCloudSettings";
@@ -12145,7 +12145,7 @@ window.testarCamerasStockQr = async function(){
 })();
 /* ===== END APP BRAGA V1.33.4 - FAVORITOS EDITAVEIS SIDEBAR ===== */
 
-/* ===== APP BRAGA v1.35.5 - NOTIFICAÇÕES: ESTADO, HISTÓRICO E REPARAÇÃO ===== */
+/* ===== APP BRAGA v1.35.6 - NOTIFICAÇÕES: ESTADO, HISTÓRICO E REPARAÇÃO ===== */
 function setPushDiagValueApp(id, text, state = "") {
   const el = document.getElementById(id);
   if (!el) return;
@@ -12376,4 +12376,4 @@ async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run);
   else run();
 })();
-/* ===== END APP BRAGA v1.35.5 ===== */
+/* ===== END APP BRAGA v1.35.6 ===== */

@@ -106,16 +106,36 @@ function getUpdatedAt(item = {}) {
   return Number(value) || 0;
 }
 
+function normalizeWebPushSubscription(item = {}) {
+  const direct = item.pushSubscription && typeof item.pushSubscription === "object" ? item.pushSubscription : null;
+  const endpoint = String(direct?.endpoint || item.endpoint || "").trim();
+  const keys = direct?.keys || item.keys || {};
+  const p256dh = keys.p256dh || item.p256dh || item.publicKey || "";
+  const auth = keys.auth || item.auth || item.authSecret || "";
+  if (!endpoint) return null;
+  return {
+    endpoint,
+    expirationTime: direct?.expirationTime || null,
+    keys: { p256dh, auth }
+  };
+}
+
+function hasValidWebPushSubscription(item = {}) {
+  const sub = normalizeWebPushSubscription(item);
+  return !!(sub?.endpoint && sub?.keys?.p256dh && sub?.keys?.auth);
+}
+
 function uniqueActiveDevices(items) {
   const sorted = items
     .filter((item) => item.active !== false)
     .filter((item) => item.source !== "electron-native")
     .filter((item) => item.source !== "web-local-no-push")
-    .filter((item) => item.token || item.pushSubscription?.endpoint)
+    .filter((item) => item.token || hasValidWebPushSubscription(item))
+    .map((item) => ({ ...item, pushSubscription: normalizeWebPushSubscription(item) || item.pushSubscription }))
     .sort((a, b) => getUpdatedAt(b) - getUpdatedAt(a));
   const unique = new Map();
   sorted.forEach((item) => {
-    const key = item.pushSubscription?.endpoint || item.token || item.deviceKey || `${item.deviceType || ""}|${item.platform || ""}|${item.userAgent || item.id || ""}`;
+    const key = item.pushSubscription?.endpoint || item.endpoint || item.token || item.deviceKey || `${item.deviceType || ""}|${item.platform || ""}|${item.userAgent || item.id || ""}`;
     if (!unique.has(key)) unique.set(key, item);
   });
   return Array.from(unique.values());
@@ -211,10 +231,15 @@ async function sendFcm(item, title, body, data = {}) {
 }
 
 async function sendStandardWebPush(item, title, body, data = {}) {
-  await webpush.sendNotification(item.pushSubscription, JSON.stringify({
+  const subscription = normalizeWebPushSubscription(item);
+  if (!subscription?.endpoint || !subscription?.keys?.p256dh || !subscription?.keys?.auth) {
+    throw new Error("Web Push subscription incompleta: faltam endpoint/keys.");
+  }
+  await webpush.sendNotification(subscription, JSON.stringify({
     title,
     body,
     tag: data.event || data.collection || "app-braga",
+    requireInteraction: data.requireInteraction === "1" || data.requireInteraction === true,
     data: {
       url: data.url || APP_URL,
       ...data
@@ -295,7 +320,7 @@ async function broadcast(title, body, data = {}) {
       fcmTargets += 1;
       await tryPush(item, "fcm", () => sendFcm(item, title, body, data));
     }
-    if (item.pushSubscription?.endpoint) {
+    if (hasValidWebPushSubscription(item)) {
       standardWebPushTargets += 1;
       if (canStandardWebPush) {
         await tryPush(item, "standard-web-push", () => sendStandardWebPush(item, title, body, data));
