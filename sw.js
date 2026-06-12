@@ -1,4 +1,4 @@
-const APP_BRAGA_SW = "app-braga-runtime-v60";
+const APP_BRAGA_SW = "app-braga-runtime-v61";
 const APP_BRAGA_FIREBASE_CONFIG = {
   apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
   authDomain: "toner-manager-756c4.firebaseapp.com",
@@ -60,6 +60,7 @@ const APP_SHELL = [
   "./html/equipamento.html",
   "./html/impressoras.html",
   "./html/radios.html",
+  "./html/scanner-ia.html",
   "./html/stock.html",
   "./manifest.json",
   "./css/style.css",
@@ -82,6 +83,7 @@ const APP_SHELL = [
   "./js/core/helpers.js",
   "./js/iphone-force-final.js",
   "./js/iphone-sidebar-final.js",
+  "./js/scanner-ia.js",
   "./icon-192.png",
   "./icon-512.png"
 ];
@@ -159,4 +161,4 @@ self.addEventListener("notificationclick", (event) => {
   );
 });
 
-// APP BRAGA V1.33.3 safe-area-diretorio-edit
+// APP BRAGA V1.33.4 safe-area-diretorio-edit

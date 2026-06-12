@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.33.3";
+const APP_VERSION = "1.33.4";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BE2xnhqmSPq85_kA6comGATxEseSoh8zY_EK_4NZsbiI1HJByjc1PgQqhTsUwPlr1ujuUSpSzp29AQeS1hnlHOQ";
 
 
@@ -11372,7 +11372,7 @@ window.testarCamerasStockQr = async function(){
   });
 })();
 
-/* ===== APP BRAGA V1.33.3 - SIDEBAR GROUPS STATE FIX ===== */
+/* ===== APP BRAGA V1.33.4 - SIDEBAR GROUPS STATE FIX ===== */
 (function(){
   const STORAGE_KEY = "appBraga.sidebar.groups.open";
   const LEGACY_KEYS = [
@@ -11483,9 +11483,9 @@ window.testarCamerasStockQr = async function(){
   setTimeout(setupSidebarGroups, 500);
   setTimeout(setupSidebarGroups, 1200);
 })();
-/* ===== END APP BRAGA V1.33.3 - SIDEBAR GROUPS STATE FIX ===== */
+/* ===== END APP BRAGA V1.33.4 - SIDEBAR GROUPS STATE FIX ===== */
 
-/* ===== APP BRAGA V1.33.3 - FAVORITOS EDITAVEIS SIDEBAR ===== */
+/* ===== APP BRAGA V1.33.4 - FAVORITOS EDITAVEIS SIDEBAR ===== */
 (function(){
   const STORAGE_KEY = "appBraga.sidebar.favoritos.v1329";
   const DEFAULT_FAVS = ["index.html", "stock.html", "diretorio.html", "impressoras.html"];
@@ -11495,6 +11495,7 @@ window.testarCamerasStockQr = async function(){
     { href:"stock.html", label:"Stock", icon:"📦" },
     { href:"historico.html", label:"Histórico", icon:"🧾" },
     { href:"tarefas.html", label:"Tarefas", icon:"✅" },
+    { href:"scanner-ia.html", label:"Scanner IA", icon:"📄" },
     { href:"etiquetas-word.html", label:"Etiquetas Word", icon:"🏷️" },
     { href:"impressoras.html", label:"Impressoras", icon:"🖨️" },
     { href:"manutencao-impressoras.html", label:"Manutenção Impressoras", icon:"🛠️" },
@@ -11591,4 +11592,4 @@ window.testarCamerasStockQr = async function(){
   if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
 })();
-/* ===== END APP BRAGA V1.33.3 - FAVORITOS EDITAVEIS SIDEBAR ===== */
+/* ===== END APP BRAGA V1.33.4 - FAVORITOS EDITAVEIS SIDEBAR ===== */
