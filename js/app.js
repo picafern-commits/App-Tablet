@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.35.6";
+const APP_VERSION = "1.35.7";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BE2xnhqmSPq85_kA6comGATxEseSoh8zY_EK_4NZsbiI1HJByjc1PgQqhTsUwPlr1ujuUSpSzp29AQeS1hnlHOQ";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "notificationCloudSettings";
@@ -12058,6 +12058,7 @@ window.testarCamerasStockQr = async function(){
     { href:"informacoes.html", label:"Informações", icon:"ℹ️" },
     { href:"users.html", label:"Users", icon:"👥" },
     { href:"diagnostico.html", label:"Diagnóstico", icon:"🩺" },
+    { href:"notificacoes.html", label:"Notificações", icon:"🔔" },
     { href:"config.html", label:"Configurações", icon:"⚙️" }
   ];
   function safeGetFavs(){
@@ -12377,3 +12378,85 @@ async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
   else run();
 })();
 /* ===== END APP BRAGA v1.35.6 ===== */
+
+
+/* ===== APP BRAGA v1.35.7 - SIDEBAR COLAPSAVEL PRO ===== */
+(function(){
+  const STORAGE_KEY = "appBraga.sidebar.collapsed.v1357";
+  const DESKTOP_QUERY = "(min-width: 769px)";
+  const PAGE_ICONS = {
+    "index.html":"🏠", "add-toner.html":"➕", "stock.html":"📦", "historico.html":"🧾",
+    "tarefas.html":"✅", "scanner-ia.html":"📄", "etiquetas-word.html":"🏷️",
+    "impressoras.html":"🖨️", "manutencao-impressoras.html":"🛠️", "computadores.html":"💻",
+    "pistolas.html":"📟", "radios.html":"📡", "portas.html":"🔌", "diretorio.html":"☎️",
+    "informacoes.html":"ℹ️", "users.html":"👥", "diagnostico.html":"🩺", "notificacoes.html":"🔔",
+    "config.html":"⚙️"
+  };
+
+  function isDesktop(){ return window.matchMedia && window.matchMedia(DESKTOP_QUERY).matches; }
+  function readCollapsed(){ try { return localStorage.getItem(STORAGE_KEY) === "1"; } catch(e){ return false; } }
+  function saveCollapsed(value){ try { localStorage.setItem(STORAGE_KEY, value ? "1" : "0"); } catch(e){} }
+  function currentFile(){ return ((location.pathname || "").split("/").pop() || "index.html").toLowerCase(); }
+
+  function ensureIcons(sidebar){
+    const current = currentFile();
+    sidebar.querySelectorAll("a[href]").forEach((link) => {
+      const href = (link.getAttribute("href") || "").split("?")[0].split("#")[0].split("/").pop().toLowerCase();
+      if (PAGE_ICONS[href] && !link.dataset.icon) link.dataset.icon = PAGE_ICONS[href];
+      const text = (link.querySelector(".sidebar-link-text")?.textContent || link.textContent || "").replace(/\s+/g," ").trim();
+      if (text) link.setAttribute("title", text);
+      if (href === current) {
+        link.classList.add("active");
+        link.setAttribute("aria-current", "page");
+      }
+    });
+  }
+
+  function ensureCollapseButton(sidebar){
+    if (sidebar.querySelector(".sidebar-collapse-toggle")) return sidebar.querySelector(".sidebar-collapse-toggle");
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "sidebar-collapse-toggle";
+    button.setAttribute("aria-label", "Colapsar sidebar");
+    button.setAttribute("title", "Colapsar/expandir sidebar");
+    button.innerHTML = "‹";
+    const brand = sidebar.querySelector(".sidebar-brand-card, .premium-brand, .brand, .brand-block") || sidebar.firstElementChild;
+    if (brand && brand.classList && brand.classList.contains("sidebar-brand-card")) brand.appendChild(button);
+    else sidebar.insertBefore(button, sidebar.firstChild);
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const next = !document.body.classList.contains("sidebar-collapsed");
+      applyCollapsed(next, true);
+    });
+    return button;
+  }
+
+  function applyCollapsed(collapsed, persist){
+    const canCollapse = isDesktop();
+    document.body.classList.toggle("sidebar-collapsed", !!collapsed && canCollapse);
+    document.documentElement.classList.toggle("sidebar-collapsed", !!collapsed && canCollapse);
+    document.querySelectorAll(".sidebar-collapse-toggle").forEach((btn) => {
+      const active = !!collapsed && canCollapse;
+      btn.innerHTML = active ? "›" : "‹";
+      btn.setAttribute("aria-label", active ? "Expandir sidebar" : "Colapsar sidebar");
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+    if (persist) saveCollapsed(!!collapsed && canCollapse);
+  }
+
+  function init(){
+    const sidebar = document.querySelector(".sidebar-pro-groups, aside.sidebar, .sidebar");
+    if (!sidebar) return;
+    sidebar.classList.add("sidebar-pro-groups", "sidebar-collapsible-pro");
+    ensureIcons(sidebar);
+    ensureCollapseButton(sidebar);
+    applyCollapsed(readCollapsed(), false);
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+  window.addEventListener("pageshow", () => setTimeout(init, 40));
+  window.addEventListener("resize", () => setTimeout(() => applyCollapsed(readCollapsed(), false), 90));
+})();
+/* ===== END APP BRAGA v1.35.7 - SIDEBAR COLAPSAVEL PRO ===== */

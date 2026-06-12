@@ -20,6 +20,7 @@
     ["radios.html", "Radios"],
     ["informacoes.html", "Informacoes"],
     ["diagnostico.html", "Diagnostico"],
+    ["notificacoes.html", "Notificacoes"],
     ["config.html", "Configuracoes"]
   ];
 
