@@ -12380,7 +12380,7 @@ async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
 /* ===== END APP BRAGA v1.35.6 ===== */
 
 
-/* ===== APP BRAGA v1.35.7 - SIDEBAR COLAPSAVEL PRO ===== */
+/* ===== APP BRAGA v1.35.8 - SIDEBAR COLAPSAVEL PRO ===== */
 (function(){
   const STORAGE_KEY = "appBraga.sidebar.collapsed.v1357";
   const DESKTOP_QUERY = "(min-width: 769px)";
@@ -12421,7 +12421,7 @@ async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
     button.setAttribute("title", "Colapsar/expandir sidebar");
     button.innerHTML = "‹";
     const brand = sidebar.querySelector(".sidebar-brand-card, .premium-brand, .brand, .brand-block") || sidebar.firstElementChild;
-    if (brand && brand.classList && brand.classList.contains("sidebar-brand-card")) brand.appendChild(button);
+    if (brand && brand.classList && (brand.classList.contains("sidebar-brand-card") || brand.classList.contains("premium-brand") || brand.classList.contains("brand") || brand.classList.contains("brand-block"))) brand.appendChild(button);
     else sidebar.insertBefore(button, sidebar.firstChild);
     button.addEventListener("click", (event) => {
       event.preventDefault();
@@ -12459,4 +12459,62 @@ async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
   window.addEventListener("pageshow", () => setTimeout(init, 40));
   window.addEventListener("resize", () => setTimeout(() => applyCollapsed(readCollapsed(), false), 90));
 })();
-/* ===== END APP BRAGA v1.35.7 - SIDEBAR COLAPSAVEL PRO ===== */
+/* ===== END APP BRAGA v1.35.8 - SIDEBAR COLAPSAVEL PRO ===== */
+
+
+/* ===== APP BRAGA v1.35.8 - SIDEBAR COLLAPSE HARDENING ===== */
+(function(){
+  const KEY = "appBraga.sidebar.collapsed.v1358";
+  const OLD_KEYS = ["appBraga.sidebar.collapsed.v1357"];
+  function desktop(){ return !window.matchMedia || window.matchMedia("(min-width:769px)").matches; }
+  function read(){
+    try{
+      const v = localStorage.getItem(KEY);
+      if (v === "1" || v === "0") return v === "1";
+      for (const k of OLD_KEYS){ const old = localStorage.getItem(k); if (old === "1" || old === "0") return old === "1"; }
+    }catch(e){}
+    return false;
+  }
+  function save(v){ try{ localStorage.setItem(KEY, v ? "1" : "0"); }catch(e){} }
+  function getSidebar(){ return document.querySelector("aside.sidebar, .sidebar-pro-groups, .enterprise-sidebar, #sidebar"); }
+  function ensure(){
+    const sidebar = getSidebar();
+    if(!sidebar) return;
+    sidebar.classList.add("sidebar-pro-groups", "sidebar-collapsible-pro");
+    let btn = sidebar.querySelector(".sidebar-collapse-toggle");
+    if(!btn){
+      btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "sidebar-collapse-toggle";
+      btn.title = "Colapsar/expandir sidebar";
+      btn.setAttribute("aria-label", "Colapsar sidebar");
+      btn.textContent = "‹";
+      const brand = sidebar.querySelector(".premium-brand, .sidebar-brand-card, .brand, .brand-block") || sidebar.firstElementChild;
+      if(brand) brand.appendChild(btn); else sidebar.prepend(btn);
+    }
+    if(btn.dataset.collapseBound !== "1"){
+      btn.dataset.collapseBound = "1";
+      btn.addEventListener("click", function(ev){
+        ev.preventDefault(); ev.stopPropagation();
+        const next = !document.body.classList.contains("sidebar-collapsed");
+        apply(next, true);
+      }, true);
+    }
+    apply(read(), false);
+  }
+  function apply(collapsed, persist){
+    const active = !!collapsed && desktop();
+    document.body.classList.toggle("sidebar-collapsed", active);
+    document.documentElement.classList.toggle("sidebar-collapsed", active);
+    document.querySelectorAll(".sidebar-collapse-toggle").forEach(function(btn){
+      btn.textContent = active ? "›" : "‹";
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+      btn.setAttribute("aria-label", active ? "Expandir sidebar" : "Colapsar sidebar");
+    });
+    if(persist) save(active);
+  }
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", ensure); else ensure();
+  window.addEventListener("pageshow", function(){ setTimeout(ensure, 50); });
+  window.addEventListener("resize", function(){ setTimeout(function(){ apply(read(), false); }, 80); });
+})();
+/* ===== END APP BRAGA v1.35.8 ===== */
