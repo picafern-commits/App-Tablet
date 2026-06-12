@@ -304,10 +304,28 @@
             <option value="60">60 minutos</option>
           </select>
         </label>
-        <label class="config-auth-field">
-          <span>Firebase Web Push VAPID key</span>
-          <input id="notifyVapidKey" type="text" placeholder="Chave Web Push do Firebase" onchange="guardarConfigNotificacoesApp()">
-        </label>
+        </div>
+      </div>
+
+      <div class="notification-vapid-panel">
+        <div class="notification-block-title">
+          <h4>Credenciais de envio</h4>
+          <span>Cola aqui as chaves Web Push para o PC Electron conseguir enviar para iPhone e Android.</span>
+        </div>
+        <div class="notification-vapid-grid">
+          <label class="config-auth-field">
+            <span>VAPID publica</span>
+            <input id="notifyVapidKey" type="text" placeholder="Chave publica Web Push" onchange="guardarConfigNotificacoesApp()">
+          </label>
+          <label class="config-auth-field">
+            <span>VAPID privada</span>
+            <input id="notifyVapidPrivateKey" type="password" autocomplete="off" placeholder="Cola a chave privada apenas no PC Electron">
+          </label>
+        </div>
+        <div class="config-actions-row compact">
+          <button class="primary-btn" type="button" onclick="configurarVapidPrivadaNotificacoesApp()">Guardar chaves no PC</button>
+          <button class="secondary-btn" type="button" onclick="toggleVapidPrivadaVisivelApp()">Mostrar/Ocultar</button>
+          <button class="secondary-btn" type="button" onclick="importarServiceAccountNotificacoesApp()">Importar service-account</button>
         </div>
       </div>
 
@@ -315,7 +333,7 @@
         <div class="notification-action-group">
           <div>
             <h4>Este dispositivo</h4>
-            <span>Permissao e registo do iPhone, tablet ou PC.</span>
+            <span>Registo do iPhone, tablet Android ou PC.</span>
           </div>
           <div class="config-actions-row compact">
             <button class="primary-btn" type="button" onclick="registarDispositivoPushApp(true)">Reparar registo</button>
@@ -326,33 +344,12 @@
         <div class="notification-action-group">
           <div>
             <h4>Envio remoto</h4>
-            <span>Firebase Cloud Functions envia para todos os dispositivos.</span>
+            <span>Cloud Functions ou ponte Electron do PC de Casa.</span>
           </div>
           <div class="config-actions-row compact">
-            <button class="primary-btn" type="button" onclick="ligarServicoNotificacoesApp()">Ver Cloud Functions</button>
+            <button class="primary-btn" type="button" onclick="ligarServicoNotificacoesApp()">Ligar envio</button>
             <button class="secondary-btn" type="button" onclick="testarPushRemotoNotificacoesApp()">Testar push remoto</button>
             <button class="secondary-btn" type="button" onclick="verificarAlertasNotificacoesApp(true)">Verificar alertas</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="notification-vapid-panel">
-        <div class="notification-block-title">
-          <h4>Credenciais Cloud Functions</h4>
-          <span>As chaves privadas ficam nos secrets do GitHub/Firebase, nunca dentro da app.</span>
-        </div>
-        <div class="notification-vapid-grid notification-cloud-secrets">
-          <label class="config-auth-field">
-            <span>APP_BRAGA_VAPID_PUBLIC_KEY</span>
-            <input id="notifyVapidPublicLocal" type="text" readonly placeholder="Usa a chave publica guardada na app">
-          </label>
-          <div class="notification-secret-status">
-            <strong>APP_BRAGA_VAPID_PRIVATE_KEY</strong>
-            <span>Tem de existir nos GitHub Secrets para o iPhone receber com a app fechada.</span>
-          </div>
-          <div class="notification-secret-status">
-            <strong>FIREBASE_SERVICE_ACCOUNT</strong>
-            <span>Usado pelo GitHub para publicar as Firebase Cloud Functions.</span>
           </div>
         </div>
       </div>
@@ -408,7 +405,7 @@
           <div class="empty-state mini">A carregar dispositivos...</div>
         </div>
       </div>
-      <p class="section-subtitle notification-note">O iPhone recebe com a app fechada quando estiver instalado no ecra principal, registado com Web Push standard e as Firebase Cloud Functions estiverem publicadas.</p>
+      <p class="section-subtitle notification-note">O iPhone recebe com a app fechada quando estiver instalado no ecra principal e registado com Web Push standard. O PC Electron de Casa pode enviar como apoio quando as Cloud Functions falharem.</p>
     </div>
 
     <div class="panel config-section config-section-backups">
@@ -461,7 +458,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<script src="../js/app.js?v=1.33.5"></script>
+<script src="../js/app.js?v=1.33.6"></script>
 <script src="../js/systems/equipment/equipment-models.js?v=equipment-3"></script>
 <script src="../js/systems/global-search/global-search.js?v=global-search-2"></script>
   <script src="../js/core/helpers.js"></script>

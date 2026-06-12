@@ -696,6 +696,8 @@ ipcMain.handle("app:notification-status", async () => ({
   appUserModelId: process.platform === "win32" ? "com.appbraga.desktop" : "",
   trayReady: !!tray,
   focused: !!win && !win.isDestroyed() && win.isFocused(),
+  webPushBridgeReady: getWebPushRuntime().ready,
+  pushReadiness: getPushWatcherReadiness(),
   pushWatcher: pushWatcherStatus
 }));
 

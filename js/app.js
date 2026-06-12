@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.33.5";
+const APP_VERSION = "1.33.6";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BE2xnhqmSPq85_kA6comGATxEseSoh8zY_EK_4NZsbiI1HJByjc1PgQqhTsUwPlr1ujuUSpSzp29AQeS1hnlHOQ";
 
 
@@ -2850,6 +2850,26 @@ async function atualizarEstadoNotificacoesApp(showMessage = false) {
   const service = document.getElementById("notifyServiceStatus");
   if (!service) return;
 
+  async function renderElectronBridgeStatus() {
+    if (!window.electronAPI?.getNotificationStatus) return false;
+    const status = await window.electronAPI.getNotificationStatus().catch(() => null);
+    if (!status) return false;
+    const readiness = status.pushReadiness || {};
+    const bridgeReady = status.webPushBridgeReady === true;
+    setNotificationServiceText("notifyServiceStatus", bridgeReady ? "Ponte Electron" : "Electron incompleto", bridgeReady ? "ok" : "warn");
+    setNotificationServiceText("notifyServiceDetail", bridgeReady ? "PC Electron pronto para enviar Web Push" : "Guarda a VAPID publica e privada neste PC");
+    setNotificationServiceText("notifyCredentialsStatus", bridgeReady ? "Chaves OK" : "Faltam chaves", bridgeReady ? "ok" : "warn");
+    setNotificationServiceText("notifyCredentialsDetail", bridgeReady
+      ? "VAPID local guardada no Electron"
+      : `Publica: ${readiness.vapidPublicReady ? "OK" : "falta"} - Privada: ${readiness.vapidPrivateReady ? "OK" : "falta"}`);
+    return true;
+  }
+
+  if (await renderElectronBridgeStatus()) {
+    if (showMessage) mostrarMensagem("Estado da ponte Electron atualizado.");
+    return;
+  }
+
   async function renderCloudFunctionsStatus() {
     if (!window.db?.collection) return false;
     const doc = await window.db.collection("config").doc("cloudNotifications").get().catch(() => null);
@@ -2915,7 +2935,15 @@ async function configurarVapidPrivadaNotificacoesApp() {
   const publicKey = resolveVapidPublicKeyApp(document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "");
   const input = document.getElementById("notifyVapidPrivateKey");
   const privateKey = String(input?.value || "").trim();
-  if (!privateKey) return;
+  if (!privateKey) {
+    mostrarMensagem("Cola primeiro a VAPID privada.", "erro");
+    return;
+  }
+  if (!publicKey) {
+    mostrarMensagem("Cola primeiro a VAPID publica.", "erro");
+    return;
+  }
+  await guardarConfigNotificacoesApp({ notificationEnabled: true, notificationVapidKey: publicKey });
   const result = await window.electronAPI.setPushVapidKeys({
     publicKey,
     privateKey,
