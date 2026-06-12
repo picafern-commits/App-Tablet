@@ -310,6 +310,7 @@ function writeLocalPushEnvFile(values = {}) {
 async function sendWebPushBroadcastFromElectron(payload = {}) {
   const runtime = getWebPushRuntime();
   const devices = Array.isArray(payload.devices) ? payload.devices : [];
+  const webPushDevices = devices.filter((item) => item?.active !== false && item?.pushSubscription?.endpoint);
   let sent = 0;
   let failed = 0;
   let standardWebPushTargets = 0;
@@ -319,10 +320,23 @@ async function sendWebPushBroadcastFromElectron(payload = {}) {
     return {
       ok: false,
       sent,
-      failed: devices.filter((item) => item?.pushSubscription?.endpoint).length,
-      standardWebPushTargets: devices.filter((item) => item?.pushSubscription?.endpoint).length,
+      failed: webPushDevices.length,
+      deviceCount: devices.length,
+      standardWebPushTargets: webPushDevices.length,
       standardWebPushReady: false,
       error: "Faltam VAPID keys locais"
+    };
+  }
+
+  if (!webPushDevices.length) {
+    return {
+      ok: false,
+      sent: 0,
+      failed: 0,
+      deviceCount: devices.length,
+      standardWebPushTargets: 0,
+      standardWebPushReady: true,
+      error: "Nenhum dispositivo com Web Push standard registado"
     };
   }
 
@@ -330,8 +344,7 @@ async function sendWebPushBroadcastFromElectron(payload = {}) {
   const body = String(payload.body || "Notificacao App Braga");
   const data = payload.data && typeof payload.data === "object" ? payload.data : {};
 
-  for (const item of devices) {
-    if (!item?.pushSubscription?.endpoint || item.active === false) continue;
+  for (const item of webPushDevices) {
     standardWebPushTargets += 1;
     try {
       await postWebPushNative(item.pushSubscription, title, body, data, runtime);
@@ -348,6 +361,7 @@ async function sendWebPushBroadcastFromElectron(payload = {}) {
     ok: sent > 0,
     sent,
     failed,
+    deviceCount: devices.length,
     standardWebPushTargets,
     standardWebPushReady: true,
     error: sent > 0 ? "" : (lastError || "Nenhum dispositivo Web Push recebeu o envio.")

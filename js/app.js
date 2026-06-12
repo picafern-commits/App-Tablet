@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.33.7";
+const APP_VERSION = "1.33.8";
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BE2xnhqmSPq85_kA6comGATxEseSoh8zY_EK_4NZsbiI1HJByjc1PgQqhTsUwPlr1ujuUSpSzp29AQeS1hnlHOQ";
 
 
@@ -2248,7 +2248,10 @@ async function processarPedidoPushElectronApp(doc) {
   const requestId = doc.id;
   if (electronPushBridgeState.processing.has(requestId)) return;
   const fields = doc.data() || {};
-  if (fields.status && fields.status !== "created") return;
+  const status = String(fields.status || "");
+  const alreadyTriedByElectron = fields.electronFallbackTried === true || fields.processedBy === "electron-client-bridge";
+  const canRetryFailedByCloud = status === "failed" && !alreadyTriedByElectron && Number(fields.sent || 0) <= 0;
+  if (status && status !== "created" && !canRetryFailedByCloud) return;
   if (normalizeTimestampApp(fields.createdAt) && normalizeTimestampApp(fields.createdAt) < electronPushBridgeState.startedAt - 60000) return;
 
   electronPushBridgeState.processing.add(requestId);
@@ -2256,7 +2259,8 @@ async function processarPedidoPushElectronApp(doc) {
     await doc.ref.set({
       status: "processing",
       processingAt: Date.now(),
-      processedBy: "electron-client-bridge"
+      processedBy: "electron-client-bridge",
+      electronFallbackTried: true
     }, { merge: true });
 
     const title = fields.title || "App Braga";
@@ -2268,6 +2272,9 @@ async function processarPedidoPushElectronApp(doc) {
       electronPushBridgeState.devices = [];
       tokensSnap.forEach((tokenDoc) => electronPushBridgeState.devices.push({ id: tokenDoc.id, ...tokenDoc.data() }));
       devices = getDispositivosPushRemotoElectronApp();
+    }
+    if (!devices.length) {
+      throw new Error("Nenhum iPhone ou Android com Web Push standard registado. Abre a app nesses dispositivos e carrega em Reparar registo.");
     }
     const result = await window.electronAPI.sendWebPushBroadcast({
       title,
@@ -2288,6 +2295,8 @@ async function processarPedidoPushElectronApp(doc) {
       status: sent > 0 ? "sent" : "failed",
       sent,
       failed,
+      deviceCount: Number(result?.deviceCount || devices.length || 0),
+      standardWebPushTargets: Number(result?.standardWebPushTargets || 0),
       standardWebPushReady: result?.standardWebPushReady !== false,
       error: result?.error || "",
       finishedAt: Date.now(),
@@ -2303,7 +2312,7 @@ async function processarPedidoPushElectronApp(doc) {
       lastFailed: failed,
       lastError: result?.error || "",
       lastDeviceCount: devices.length,
-      lastStandardWebPushTargets: devices.length,
+      lastStandardWebPushTargets: Number(result?.standardWebPushTargets || 0),
       standardWebPushReady: result?.standardWebPushReady !== false,
       lastRunAt: Date.now(),
       updatedAt: Date.now()
@@ -2349,7 +2358,11 @@ async function aguardarResultadoPedidoPushRemotoApp(requestRef, startedAt) {
     await new Promise((resolve) => setTimeout(resolve, 1400));
     const requestDoc = await requestRef.get().catch(() => null);
     const requestData = requestDoc?.exists ? requestDoc.data() || {} : {};
-    if (requestData.status === "sent" || requestData.status === "failed") return requestData;
+    if (requestData.status === "sent") return requestData;
+    if (requestData.status === "failed") {
+      const electronCanRetry = !!window.electronAPI?.sendWebPushBroadcast && requestData.electronFallbackTried !== true;
+      if (!electronCanRetry) return requestData;
+    }
 
     const cloudDoc = await window.db.collection("config").doc("cloudNotifications").get().catch(() => null);
     const cloudData = cloudDoc?.exists ? cloudDoc.data() || {} : null;
@@ -2358,6 +2371,8 @@ async function aguardarResultadoPedidoPushRemotoApp(requestRef, startedAt) {
         status: Number(cloudData.lastSent || 0) > 0 ? "sent" : "failed",
         sent: cloudData.lastSent || 0,
         failed: cloudData.lastFailed || 0,
+        deviceCount: cloudData.lastDeviceCount || 0,
+        standardWebPushTargets: cloudData.lastStandardWebPushTargets || 0,
         standardWebPushReady: cloudData.standardWebPushReady,
         error: cloudData.lastError || ""
       };
@@ -2421,7 +2436,8 @@ async function testarPushRemotoNotificacoesApp() {
     const ok = result.status === "sent" && sent > 0;
     setNotificationServiceText("notifyLastTestStatus", ok ? "Enviado" : "Falhou", ok ? "ok" : "bad");
     const resultError = result.error ? ` - ${result.error}` : "";
-    setNotificationServiceText("notifyLastTestDetail", `Enviados: ${sent} - falhas: ${failed}${resultError}`);
+    const targetInfo = typeof result.standardWebPushTargets !== "undefined" ? ` - Web Push: ${Number(result.standardWebPushTargets || 0)}` : "";
+    setNotificationServiceText("notifyLastTestDetail", `Enviados: ${sent} - falhas: ${failed}${targetInfo}${resultError}`);
     if (result.standardWebPushReady === false && isIosAppBraga()) {
       setNotificationDeviceDiagnostic("Falta configurar a VAPID privada nas Firebase Cloud Functions para o iPhone receber Web Push.");
     }

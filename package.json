@@ -1,6 +1,6 @@
 {
   "name": "app-braga",
-  "version": "1.33.7",
+  "version": "1.33.8",
   "description": "App Braga - gestao de toners e computadores",
   "main": "js/main.js",
   "author": "Ricardo Fernandes",
