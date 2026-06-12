@@ -40,6 +40,31 @@ const APP_BRAGA_NOTIFICATION_CONFIG_COLLECTION = "config";
 const APP_BRAGA_DEFAULT_VAPID_SUBJECT = "mailto:admin@appbraga.pt";
 const APP_BRAGA_DEVICE_PROFILE_STORAGE_KEY = "appBragaNotificationDeviceProfile";
 
+function appBragaPageName() {
+  const name = String(location.pathname || "").split("/").pop() || "index.html";
+  return name.toLowerCase() || "index.html";
+}
+
+function appBragaIsPage(...names) {
+  const current = appBragaPageName();
+  return names.some((name) => current === String(name || "").toLowerCase());
+}
+
+function appBragaBindFirestoreListener(key, shouldBind, bindFn) {
+  if (!shouldBind || appFirestoreUnsubscribers[key]) return;
+  const unsubscribe = bindFn?.();
+  if (typeof unsubscribe === "function") appFirestoreUnsubscribers[key] = unsubscribe;
+}
+
+function appBragaUnsubscribeFirestoreListeners() {
+  Object.keys(appFirestoreUnsubscribers).forEach((key) => {
+    try { appFirestoreUnsubscribers[key]?.(); } catch {}
+    delete appFirestoreUnsubscribers[key];
+  });
+}
+
+window.addEventListener("beforeunload", appBragaUnsubscribeFirestoreListeners);
+
 function garantirLinkNotificacoesSidebarApp() {
   const nav = document.querySelector(".sidebar-nav-pro");
   if (!nav || nav.querySelector('a[href="notificacoes.html"]')) return;
@@ -108,6 +133,7 @@ let pcsGlobal = [];
 let manutencoesGlobal = [];
 let activityLogGlobal = [];
 let appNotificationTimer = null;
+const appFirestoreUnsubscribers = {};
 
 const appNotificationState = {
   enabled: false,
@@ -864,7 +890,7 @@ async function disponivel() {
   }
 }
 
-if (getDbAppBraga()) getDbAppBraga().collection("stock").onSnapshot(snap => {
+appBragaBindFirestoreListener("stock-core", appBragaIsPage("index.html", "stock.html", "add-toner.html", "historico.html"), () => getDbAppBraga()?.collection("stock").onSnapshot(snap => {
   notificarAlteracaoRealtimeApp("stock", snap);
   stockGlobal = [];
   setText("countStock", snap.size);
@@ -897,9 +923,9 @@ if (getDbAppBraga()) getDbAppBraga().collection("stock").onSnapshot(snap => {
   renderDashboardResumoInteligente();
   renderModoGestorExtremo();
   renderDashboardOpsResumoApp();
-});
+}));
 
-db.collection("historico").onSnapshot(snap => {
+appBragaBindFirestoreListener("historico-core", appBragaIsPage("index.html", "historico.html"), () => db.collection("historico").onSnapshot(snap => {
   historicoGlobal = [];
   setText("countUsados", snap.size);
 
@@ -927,19 +953,21 @@ db.collection("historico").onSnapshot(snap => {
   renderModoGestorExtremo();
   renderDashboardResumoInteligente();
   renderDashboardOpsResumoApp();
-});
+}));
 
 if (window.db && window.db.collection) {
-  window.db.collection("activityLog").orderBy("createdAtMs", "desc").limit(30).onSnapshot((snap) => {
-    activityLogGlobal = [];
-    snap.forEach((doc) => activityLogGlobal.push({ idDoc: doc.id, ...doc.data() }));
-    renderActivityLogApp();
-  }, (error) => {
-    console.warn("Erro ao carregar activityLog:", error);
-  });
+  if (appBragaIsPage("index.html", "historico.html", "diagnostico.html")) {
+    window.db.collection("activityLog").orderBy("createdAtMs", "desc").limit(30).get().then((snap) => {
+      activityLogGlobal = [];
+      snap.forEach((doc) => activityLogGlobal.push({ idDoc: doc.id, ...doc.data() }));
+      renderActivityLogApp();
+    }).catch((error) => {
+      console.warn("Erro ao carregar activityLog:", error);
+    });
+  }
 }
 
-db.collection("pcs").onSnapshot(snap => {
+appBragaBindFirestoreListener("pcs-core", appBragaIsPage("index.html", "computadores.html"), () => db.collection("pcs").onSnapshot(snap => {
   pcsGlobal = [];
   setText("countPCs", snap.size);
 
@@ -961,9 +989,9 @@ db.collection("pcs").onSnapshot(snap => {
   showBackupBadge();
   renderPCCards(pcsGlobal);
   renderModoGestorExtremo();
-});
+}));
 
-db.collection("manutencoes").onSnapshot(snap => {
+appBragaBindFirestoreListener("manutencoes-core", appBragaIsPage("index.html", "manutencao-impressoras.html", "impressoras.html"), () => db.collection("manutencoes").onSnapshot(snap => {
   notificarAlteracaoRealtimeApp("manutencoes", snap);
   manutencoesGlobal = [];
 
@@ -986,7 +1014,7 @@ db.collection("manutencoes").onSnapshot(snap => {
   atualizarContadoresManutencao();
   renderManutencoes(manutencoesGlobal);
   renderImpressoras();
-});
+}));
 
 function atualizarContadoresManutencao() {
   setText("countManutTotal", manutencoesGlobal.length);
@@ -2245,7 +2273,7 @@ async function testarNotificacaoApp() {
 
 async function obterDispositivoAtualNotificacoesApp() {
   if (!window.db?.collection) return null;
-  const snapshot = await window.db.collection("notificationTokens").get();
+  const snapshot = await window.db.collection("notificationTokens").where("deviceKey", "==", getNotificationDeviceKeyApp()).get();
   let fallback = null;
   let current = null;
   snapshot.forEach((doc) => {
@@ -2851,7 +2879,7 @@ async function guardarPerfilDispositivoFirestoreApp(profile = getNotificationDev
 
 async function aplicarPerfilDispositivoARegistosPushApp(profile = getNotificationDeviceProfileApp()) {
   if (!window.db?.collection) return;
-  const snapshot = await window.db.collection("notificationTokens").get();
+  const snapshot = await window.db.collection("notificationTokens").where("deviceKey", "==", getNotificationDeviceKeyApp()).get();
   const batch = window.db.batch();
   let changes = 0;
   snapshot.forEach((doc) => {
@@ -2872,7 +2900,7 @@ async function aplicarPerfilDispositivoARegistosPushApp(profile = getNotificatio
 async function desativarRegistosAntigosDispositivoApp(currentDocId, deviceKey) {
   try {
     if (!window.db?.collection || !deviceKey) return;
-    const snapshot = await window.db.collection("notificationTokens").get();
+    const snapshot = await window.db.collection("notificationTokens").where("deviceKey", "==", deviceKey).get();
     const batch = window.db.batch();
     let changes = 0;
     snapshot.forEach((doc) => {
@@ -4565,16 +4593,7 @@ function aplicarCorApp(value = APP_DEFAULT_ACCENT) {
 
 function initResolucaoApp() {
   aplicarResolucaoApp("comfortable");
-  if (window.AppThemePro) {
-    window.AppThemePro.apply(window.AppThemePro.getCachedTheme(), { persist: false });
-    window.AppThemePro.bindControls?.();
-    window.AppThemePro.connectFirestore?.();
-  } else {
-    aplicarCorApp(getCachedCorApp() || APP_DEFAULT_ACCENT);
-  }
-  if (!window.db || !window.db.collection) return;
-  window.db.collection("config").doc("layout").onSnapshot((doc) => {
-    const data = doc.exists ? doc.data() : {};
+  const aplicarLayoutApp = (data = {}) => {
     aplicarResolucaoApp(data.resolution || "comfortable");
     if (window.AppThemePro) {
       window.AppThemePro.apply({
@@ -4593,7 +4612,18 @@ function initResolucaoApp() {
     if (typeof aplicarModoTextoBotoes === "function") aplicarModoTextoBotoes(data.buttonTextMode || getButtonTextMode());
     aplicarConfigNotificacoesApp(data);
     aplicarSegurancaApp(data.pinHash || "", data.lockTimeoutMinutes || 0, data.pinLength || 0, data.authMethod || "pin", data.biometricEnabled || false, data.biometricCredentialId || "");
-  }, (error) => console.error("Erro ao carregar resoluÃƒÂ§ÃƒÂ£o:", error));
+  };
+  if (!window.__appBragaLayoutEventBound) {
+    window.__appBragaLayoutEventBound = true;
+    window.addEventListener("appbraga:layout", (event) => aplicarLayoutApp(event.detail || {}));
+  }
+  if (window.AppThemePro) {
+    window.AppThemePro.apply(window.AppThemePro.getCachedTheme(), { persist: false });
+    window.AppThemePro.bindControls?.();
+    window.AppThemePro.connectFirestore?.();
+  } else {
+    aplicarCorApp(getCachedCorApp() || APP_DEFAULT_ACCENT);
+  }
 }
 
 async function guardarResolucaoApp(value) {
@@ -6443,8 +6473,9 @@ function mapFirebasePrinterInfo(printerDoc) {
 
 function bindPrintersFirebaseRealtime() {
   if (!db || !db.collection) return;
+  if (!appBragaIsPage("index.html", "impressoras.html")) return;
 
-  db.collection("printers").onSnapshot((snap) => {
+  appBragaBindFirestoreListener("printers-realtime", true, () => db.collection("printers").onSnapshot((snap) => {
     notificarAlteracaoRealtimeApp("printers", snap);
     snap.forEach((doc) => {
       const data = ({ firebaseId: doc.id, ...doc.data() }) || {};
@@ -6469,7 +6500,7 @@ function bindPrintersFirebaseRealtime() {
     }
   }, (error) => {
     console.error("Erro ao ler coleÃƒÂ§ÃƒÂ£o printers:", error);
-  });
+  }));
 }
 
 const __originalObterTonerInfo = obterTonerInfo;
@@ -7382,9 +7413,11 @@ async function carregarPortasComFallback() {
     renderPortas(window.portasData);
     return;
   }
+  if (!appBragaIsPage("portas.html")) return;
+  if (typeof window.iniciarPortas === "function") return;
 
   try {
-    db.collection("portas").onSnapshot(snap => {
+    appBragaBindFirestoreListener("portas-realtime", true, () => db.collection("portas").onSnapshot(snap => {
       if (snap.empty) {
         carregarPortasLocal();
         renderPortas(window.portasData);
@@ -7424,7 +7457,7 @@ async function carregarPortasComFallback() {
     }, error => {
       console.error(error);
       renderPortas(window.portasData);
-    });
+    }));
   } catch (e) {
     console.error(e);
     renderPortas(window.portasData);
@@ -9521,7 +9554,8 @@ window.imprimirEtiquetasWordSelecionadas = imprimirEtiquetasWordSelecionadas;
 
 function bindEtiquetasWordRealtime() {
   if (!db || !db.collection) return;
-  db.collection("etiquetasWord").onSnapshot((snap) => {
+  if (!appBragaIsPage("etiquetas-word.html")) return;
+  appBragaBindFirestoreListener("etiquetas-word-realtime", true, () => db.collection("etiquetasWord").onSnapshot((snap) => {
     etiquetasWordGlobal = [];
     snap.forEach((doc) => {
       const t = ({ firebaseId: doc.id, ...doc.data() }) || {};
@@ -9535,7 +9569,7 @@ function bindEtiquetasWordRealtime() {
     console.error(error);
     try { etiquetasWordGlobal = loadBackupAppBraga(BACKUP_KEYS_APP_BRAGA.etiquetas); } catch (e) { etiquetasWordGlobal = []; }
     renderEtiquetasWordCards();
-  });
+  }));
 }
 
 window.addEventListener("DOMContentLoaded", () => {

@@ -143,7 +143,7 @@ async function getNotificationConfig() {
 }
 
 async function getActiveNotificationDevices() {
-  const snap = await admin.firestore().collection("notificationTokens").get();
+  const snap = await admin.firestore().collection("notificationTokens").where("active", "==", true).get();
   const items = [];
   snap.forEach((doc) => items.push({ id: doc.id, ref: doc.ref, ...doc.data() }));
   return uniqueActiveDevices(items);

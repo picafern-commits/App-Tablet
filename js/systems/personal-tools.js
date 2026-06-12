@@ -120,7 +120,11 @@
   }
 
   function bootRealtime() {
-    ["printers", "impressoras", "stock", "manutencoes", "radios", "radioWeeklyRecords", "historico", "auditLogs", "personalTasks", "equipmentNotes", "equipmentAttachments", "dailyChecks"].forEach((name) => observeCollection(name));
+    if (!isDashboard() && !isTasksPage()) return;
+    const collections = isTasksPage()
+      ? ["personalTasks", "dailyChecks"]
+      : ["personalTasks"];
+    collections.forEach((name) => observeCollection(name));
   }
 
   function dashboardRoot() {

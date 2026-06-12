@@ -267,7 +267,7 @@
   function connectFirestore() {
     if (!window.db?.collection || window.__appThemeProFirestoreBound) return;
     window.__appThemeProFirestoreBound = true;
-    window.db.collection("config").doc("layout").onSnapshot((doc) => {
+    window.__appThemeProUnsubscribe = window.db.collection("config").doc("layout").onSnapshot((doc) => {
       const data = doc.exists ? doc.data() : {};
       const nextTheme = data.themePro || {
         primary: data.accentColor,
@@ -275,8 +275,15 @@
         buttonTextMode: data.buttonTextMode
       };
       apply({ ...getCachedTheme(), ...nextTheme });
+      window.dispatchEvent(new CustomEvent("appbraga:layout", { detail: data }));
     }, (error) => console.error("Erro ao carregar tema:", error));
   }
+
+  window.addEventListener("beforeunload", () => {
+    try { window.__appThemeProUnsubscribe?.(); } catch {}
+    window.__appThemeProUnsubscribe = null;
+    window.__appThemeProFirestoreBound = false;
+  });
 
   window.AppThemePro = {
     DEFAULT_THEME,
