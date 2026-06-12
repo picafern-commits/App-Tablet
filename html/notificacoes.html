@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Notificações - App Braga</title>
   <link rel="manifest" href="../manifest.json">
-  <link rel="stylesheet" href="../css/style.css?v=1.35.3">
+  <link rel="stylesheet" href="../css/style.css?v=1.35.5">
   <link rel="stylesheet" href="../css/app-theme-pro.css">
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
   <link rel="stylesheet" href="../css/iphone-force-final.css?v=safe-area-1.33.4">
@@ -159,6 +159,26 @@
     </div>
   </section>
 
+
+  <section class="panel config-section notification-cloud-panel notification-alert-panel">
+    <div class="section-header">
+      <div>
+        <h3>🚨 Alerta geral</h3>
+        <p class="section-subtitle">Carrega aqui para avisar todos os outros dispositivos registados, mesmo com a app fechada.</p>
+      </div>
+    </div>
+    <div class="form-grid notification-cloud-form">
+      <label>
+        <span>Mensagem opcional</span>
+        <input id="cloudGeneralAlertMessage" type="text" autocomplete="off" maxlength="120" placeholder="Ex: Preciso de ajuda no armazém">
+      </label>
+    </div>
+    <div class="notification-actions">
+      <button class="btn-danger notification-alert-button" type="button" onclick="enviarAlertaGeralNotificacoesApp()">🚨 Enviar alerta geral</button>
+    </div>
+    <p class="section-subtitle">O dispositivo que envia o alerta fica excluído para evitar receber o próprio aviso.</p>
+  </section>
+
   <section class="panel config-section notification-cloud-panel">
     <div class="section-header">
       <div>
@@ -241,7 +261,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="../js/app.js?v=1.35.3"></script>
+<script src="../js/app.js?v=1.35.5"></script>
 <script src="../js/app-theme-pro.js"></script>
 <script src="../js/iphone-force-final.js?v=safe-area-1.33.4"></script>
 <script src="../js/iphone-sidebar-final.js?v=safe-area-1.33.4"></script>

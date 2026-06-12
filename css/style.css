@@ -6135,6 +6135,83 @@ body.app-role-consulta .danger {
   background: rgba(255,255,255,.035) !important;
 }
 
+.notification-settings-block,
+.notification-vapid-panel,
+.notification-action-group {
+  display: grid !important;
+  gap: 12px !important;
+  margin-top: 14px !important;
+  padding: 14px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  border-radius: 12px !important;
+  background: rgba(255,255,255,.035) !important;
+}
+
+.notification-block-title {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+}
+
+.notification-block-title h4,
+.notification-action-group h4 {
+  margin: 0 !important;
+  color: var(--text, #f8fafc) !important;
+  font-size: 15px !important;
+}
+
+.notification-block-title span,
+.notification-action-group span {
+  color: var(--muted, var(--app-muted)) !important;
+  font-size: 12px !important;
+}
+
+.notification-actions-layout {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  margin-top: 14px !important;
+}
+
+.notification-vapid-grid {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr) !important;
+  gap: 12px !important;
+}
+
+.notification-vapid-panel input {
+  min-width: 0 !important;
+}
+
+.notification-cloud-secrets {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+}
+
+.notification-secret-status {
+  display: grid !important;
+  align-content: start !important;
+  min-height: 76px !important;
+  padding: 11px 12px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  border-radius: 10px !important;
+  background: rgba(255,255,255,.045) !important;
+}
+
+.notification-secret-status strong {
+  color: var(--text, #f8fafc) !important;
+  font-size: 12px !important;
+  letter-spacing: 0 !important;
+  word-break: break-word !important;
+}
+
+.notification-secret-status span {
+  margin-top: 5px !important;
+  color: var(--muted, var(--app-muted)) !important;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+}
+
 .notification-service-grid {
   display: grid !important;
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)) !important;
@@ -6163,6 +6240,120 @@ body.app-role-consulta .danger {
   font-size: 18px !important;
 }
 
+.notification-cloud-summary {
+  margin: 0 0 18px !important;
+}
+
+.notification-cloud-panel {
+  display: grid !important;
+  gap: 18px !important;
+  margin-bottom: 18px !important;
+}
+
+.notification-cloud-form {
+  align-items: end !important;
+}
+
+.notification-cloud-form input {
+  min-width: 0 !important;
+}
+
+.notification-cloud-toggle {
+  justify-content: flex-end !important;
+  white-space: nowrap !important;
+}
+
+.notification-rules-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+.notification-rules-grid .toggle-row,
+.notification-cloud-toggle,
+.notification-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.notification-rules-grid .toggle-row {
+  min-height: 46px !important;
+  padding: 10px 12px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  border-radius: 8px !important;
+  background: rgba(16,17,20,.50) !important;
+}
+
+.notification-actions {
+  flex-wrap: wrap !important;
+}
+
+.notification-devices-list {
+  display: grid !important;
+  gap: 10px !important;
+}
+
+.notification-device-card {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding: 12px 14px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  border-radius: 8px !important;
+  background: rgba(16,17,20,.72) !important;
+}
+
+.notification-device-card > div {
+  display: grid !important;
+  gap: 3px !important;
+  min-width: 0 !important;
+}
+
+.notification-device-card strong,
+.notification-device-card span,
+.notification-device-card small {
+  overflow-wrap: anywhere !important;
+}
+
+@media (max-width: 820px) {
+  .notification-rules-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .notification-rules-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .notification-device-card {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+  }
+}
+
+.sidebar a[data-icon]::before {
+  content: attr(data-icon) !important;
+}
+
+.sidebar a[href$="tarefas.html"]::before {
+  content: "✅" !important;
+}
+
+.sidebar a[href$="notificacoes.html"]::before {
+  content: "🔔" !important;
+}
+
+.sidebar a[href$="scanner-ia.html"]::before {
+  content: "📄" !important;
+}
+
+.sidebar a[href$="diagnostico.html"]::before {
+  content: "🩺" !important;
+}
+
 .config-actions-row.compact {
   width: auto !important;
   margin: 0 !important;
@@ -6179,47 +6370,295 @@ body.app-role-consulta .danger {
   .etiquetas-bulk-actions button {
     flex: 1 1 100% !important;
   }
+  .notification-actions-layout,
+  .notification-vapid-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .notification-block-title {
+    display: grid !important;
+  }
 }
 
-/* App Braga v1.35.4 - alerta geral cloud */
-.notification-alert-box{
-  display:grid;
-  grid-template-columns:minmax(220px,1fr) minmax(280px,1.25fr);
-  gap:16px;
+/* === App Braga v1.30.3: diagnóstico, dashboard útil e UX scanner === */
+.dashboard-live-metrics{margin-top:18px}.dashboard-ops-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}.mini-feed-list{display:grid;gap:10px}.mini-feed-item{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 14px;border:1px solid rgba(255,255,255,.09);border-radius:16px;background:rgba(255,255,255,.045)}.mini-feed-item strong{display:block;color:var(--text,#fff)}.mini-feed-item span,.mini-feed-item small{color:var(--muted,#a8b0bd)}.scanner-health-box{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}.scanner-health-box>div,.diagnostic-card{padding:12px 14px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:rgba(255,255,255,.045)}.scanner-health-box span,.diagnostic-card span{display:block;font-size:.82rem;color:var(--muted,#a8b0bd);margin-bottom:4px}.scanner-health-box strong,.diagnostic-card strong{color:var(--text,#fff)}.scanner-box,.stock-qr-reader,#reader{min-height:260px;border-radius:20px;overflow:hidden;background:rgba(0,0,0,.25);border:1px dashed rgba(255,255,255,.18)}.diagnostics-page .diagnostic-actions .section-header{align-items:flex-start}.diagnostic-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.diagnostic-card.ok{border-color:rgba(34,197,94,.35)}.diagnostic-card.warn{border-color:rgba(245,158,11,.45)}.diagnostic-card.error{border-color:rgba(239,68,68,.45)}.diagnostic-log-list{display:grid;gap:10px;max-height:520px;overflow:auto}.diagnostic-log-item{padding:12px 14px;border-radius:16px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.08);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:.86rem;white-space:pre-wrap}.diagnostic-log-item.error{border-color:rgba(239,68,68,.4)}.diagnostic-log-item.warn{border-color:rgba(245,158,11,.4)}.diagnostic-log-item .log-time{display:block;color:var(--muted,#a8b0bd);font-family:inherit;margin-bottom:4px}.config-section{scroll-margin-top:80px}.panel,.modal-card,.stock-card,.stat-card,.metric-card{backdrop-filter:blur(18px)}button.primary-btn,button.secondary-btn,.primary-btn,.secondary-btn{min-height:42px}.cards-list,.cards-grid{gap:14px}@media(max-width:900px){.dashboard-ops-grid{grid-template-columns:1fr}.scanner-health-box{grid-template-columns:1fr}.card-actions{flex-wrap:wrap}.card-actions button,.etiquetas-bulk-actions button{width:100%}}
+
+/* v1.30.3 clean dashboard/sidebar */
+#personalToolsDashboard{display:none!important;}
+.sidebar a[href="equipamento.html"]{display:none!important;}
+
+
+/* ===== APP BRAGA v1.31.8 — Dashboard tarefas + equipamentos abaixo dos contadores ===== */
+.dashboard-shell .enterprise-metrics{
+  margin-bottom:18px;
+}
+.dashboard-tasks-only{
+  margin:0 0 20px 0;
+}
+.dashboard-task-panel{
+  border:1px solid rgba(255,255,255,.12);
+  background:linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.035));
+  box-shadow:0 20px 60px rgba(0,0,0,.18);
+}
+.dashboard-task-panel .personal-panel-head{
   align-items:center;
-  margin:18px 0;
-  padding:18px;
-  border:1px solid rgba(248,113,113,.28);
-  border-radius:22px;
-  background:linear-gradient(135deg,rgba(127,29,29,.32),rgba(15,23,42,.82));
-  box-shadow:0 18px 40px rgba(0,0,0,.20);
 }
-.notification-alert-box h4{margin:0 0 6px;font-size:1.05rem;color:#fff;}
-.notification-alert-controls{display:flex;gap:10px;align-items:center;}
-.notification-alert-controls input{
-  flex:1;
-  min-height:44px;
-  border:1px solid rgba(255,255,255,.14);
-  border-radius:14px;
-  background:rgba(15,23,42,.72);
+.dashboard-task-panel .personal-panel-head h2{
+  margin:0;
+}
+.dashboard-task-panel .personal-panel-head p{
+  margin:4px 0 0;
+  color:var(--muted);
+}
+.dashboard-task-list{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+.dashboard-task-list .personal-row{
+  min-height:68px;
+  border-radius:18px;
+}
+.dashboard-task-list .empty-state{
+  grid-column:1/-1;
+}
+.dashboard-shell .dashboard-fullwidth{
+  margin-top:0;
+}
+@media (max-width:900px){
+  .dashboard-task-list{
+    grid-template-columns:1fr;
+  }
+}
+
+
+/* ===== APP BRAGA V1.32.9 - SIDEBAR FAVORITOS + LIMPEZA VISUAL ===== */
+.sidebar-favorites .sidebar-section-title{display:flex;align-items:center;gap:8px;justify-content:space-between;margin-bottom:8px;}
+.sidebar-fav-edit{margin-left:auto;width:34px;height:30px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.055);color:#e5f7ff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s ease;}
+.sidebar-fav-edit:hover{transform:translateY(-1px);background:rgba(0,214,255,.15);border-color:rgba(0,214,255,.35);}
+.sidebar-fav-list{display:grid;gap:6px;}
+.sidebar-fav-list .empty-favs{font-size:12px;color:rgba(255,255,255,.58);padding:8px 10px;border:1px dashed rgba(255,255,255,.14);border-radius:12px;}
+.sidebar-fav-manage-overlay{position:fixed;inset:0;z-index:99999;background:rgba(2,6,23,.66);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:24px;}
+.sidebar-fav-manage-card{width:min(620px,96vw);max-height:88vh;overflow:auto;border-radius:24px;background:linear-gradient(145deg,rgba(15,23,42,.98),rgba(8,13,22,.98));border:1px solid rgba(255,255,255,.12);box-shadow:0 28px 90px rgba(0,0,0,.45);padding:22px;color:#fff;}
+.sidebar-fav-manage-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px;}
+.sidebar-fav-manage-head h3{margin:0;font-size:22px;}
+.sidebar-fav-manage-head p{margin:4px 0 0;color:rgba(255,255,255,.64);}
+.sidebar-fav-close{width:38px;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff;cursor:pointer;font-size:18px;}
+.sidebar-fav-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0 18px;}
+.sidebar-fav-option{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:rgba(255,255,255,.045);cursor:pointer;}
+.sidebar-fav-option input{width:18px;height:18px;accent-color:#06d6ff;}
+.sidebar-fav-option span:last-child{font-weight:850;}
+.sidebar-fav-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;}
+.sidebar a[data-icon]::before,.sidebar-group-toggle .sidebar-group-icon{width:28px!important;height:28px!important;min-width:28px!important;border-radius:10px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;background:linear-gradient(145deg,rgba(255,255,255,.10),rgba(255,255,255,.035))!important;border:1px solid rgba(255,255,255,.11)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.1)!important;font-size:15px!important;}
+.sidebar a.active[data-icon]::before{background:linear-gradient(135deg,rgba(6,214,255,.35),rgba(37,99,235,.35))!important;border-color:rgba(6,214,255,.45)!important;}
+.enterprise-sidebar-window-actions{margin-top:auto;padding:12px 0 4px;display:grid;grid-template-columns:1fr 1fr;gap:10px;position:sticky;bottom:0;background:linear-gradient(180deg,rgba(12,12,14,0),rgba(12,12,14,.95) 28%);}
+.enterprise-sidebar-window-actions button{height:46px;border-radius:15px;border:1px solid rgba(255,255,255,.14);background:linear-gradient(145deg,rgba(255,255,255,.10),rgba(255,255,255,.035));color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 14px 30px rgba(0,0,0,.22);transition:.18s ease;font-size:19px;}
+.enterprise-sidebar-window-actions button:hover{transform:translateY(-1px);border-color:rgba(6,214,255,.38);background:linear-gradient(145deg,rgba(6,214,255,.18),rgba(37,99,235,.12));}
+.enterprise-sidebar-window-actions .enterprise-window-close:hover{border-color:rgba(248,113,113,.45);background:linear-gradient(145deg,rgba(248,113,113,.22),rgba(127,29,29,.2));}
+.enterprise-window-actions{display:none!important;}
+.printer-card::after,.radio-card::after,.pistol-card::after,.network-card::after,.user-card::after,.pc-card::after,.card::after,.panel::after,.reference-panel::after{content:none!important;display:none!important;}
+@media(max-width:720px){.sidebar-fav-grid{grid-template-columns:1fr}.enterprise-sidebar-window-actions{grid-template-columns:1fr 1fr}}
+/* ===== END APP BRAGA V1.32.9 ===== */
+
+
+/* ===== APP BRAGA V1.33.3 - IPHONE 16 PRO MAX SAFE AREA ===== */
+html{
+  min-height:100%;
+  min-height:100dvh;
+  background:var(--bg);
+}
+body{
+  min-height:100vh;
+  min-height:100dvh;
+}
+@supports (padding: max(0px)){
+  body{
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+}
+@media screen and (max-width: 820px){
+  body{
+    background:#020617!important;
+  }
+  .main,
+  main,
+  .main-content,
+  .page-content,
+  .dashboard-container,
+  .content-area,
+  .dashboard-shell,
+  .content{
+    padding-top: max(104px, calc(72px + env(safe-area-inset-top, 0px)))!important;
+    padding-bottom: max(34px, calc(24px + env(safe-area-inset-bottom, 0px)))!important;
+  }
+  .page-hero,
+  .dashboard-header,
+  .reference-header{
+    margin-top:0!important;
+  }
+  .app-menu-toggle,
+  .mobile-menu-btn,
+  .hamburger,
+  .sidebar-toggle{
+    top: max(16px, calc(12px + env(safe-area-inset-top, 0px)))!important;
+  }
+  .sidebar,
+  aside.sidebar{
+    padding-top: max(24px, calc(16px + env(safe-area-inset-top, 0px)))!important;
+    padding-bottom: max(18px, calc(14px + env(safe-area-inset-bottom, 0px)))!important;
+  }
+}
+@media screen and (display-mode: fullscreen), screen and (display-mode: standalone){
+  @media screen and (max-width: 820px){
+    .main,
+    main,
+    .main-content,
+    .page-content,
+    .dashboard-container,
+    .content-area,
+    .dashboard-shell,
+    .content{
+      padding-top: max(112px, calc(78px + env(safe-area-inset-top, 0px)))!important;
+    }
+  }
+}
+/* ===== END APP BRAGA V1.33.3 ===== */
+
+/* ===== APP BRAGA v1.33.4 - Scanner IA Foto para PDF ===== */
+.scanner-ia-shell{max-width:1400px;margin:0 auto;padding-bottom:36px}
+.scanner-ia-grid{display:grid;grid-template-columns:minmax(320px,460px) 1fr;gap:22px;align-items:start;margin-top:18px}
+.scanner-panel{background:linear-gradient(145deg,rgba(15,23,42,.94),rgba(17,31,45,.92));border:1px solid rgba(148,163,184,.22);border-radius:24px;box-shadow:0 18px 45px rgba(0,0,0,.24);padding:22px;color:#f8fafc;overflow:hidden}
+.scanner-panel h2,.scanner-panel h3{margin:0 0 8px;color:#fff;letter-spacing:-.02em}.scanner-panel p{color:#b8c7d8;margin:0 0 16px;line-height:1.45}.scanner-steps{display:grid;gap:10px;margin:16px 0}.scanner-step{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:12px 14px;color:#dbeafe;font-weight:800}.scanner-step span:first-child{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#0ea5e9,#22d3ee);box-shadow:0 10px 24px rgba(34,211,238,.22);color:#00131f}.scanner-input-wrap{position:relative;display:block;border:1px dashed rgba(34,211,238,.45);border-radius:22px;padding:18px;background:rgba(34,211,238,.06);text-align:center;cursor:pointer;transition:.2s}.scanner-input-wrap:hover{transform:translateY(-1px);border-color:#22d3ee;background:rgba(34,211,238,.1)}.scanner-input-wrap input{position:absolute;inset:0;opacity:0;cursor:pointer}.scanner-input-icon{font-size:44px;display:block;margin-bottom:8px}.scanner-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}.scanner-btn{border:1px solid rgba(255,255,255,.14);border-radius:16px;min-height:46px;padding:0 16px;background:rgba(255,255,255,.08);color:#f8fafc;font-weight:950;cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.18);transition:.2s}.scanner-btn:hover:not(:disabled){transform:translateY(-1px);border-color:rgba(34,211,238,.55);background:rgba(34,211,238,.14)}.scanner-btn.primary{background:linear-gradient(135deg,#0891b2,#22d3ee);color:#00131f;border-color:rgba(34,211,238,.7)}.scanner-btn.danger{background:rgba(239,68,68,.16);border-color:rgba(239,68,68,.35)}.scanner-btn:disabled{opacity:.45;cursor:not-allowed}.scanner-status{margin-top:14px;padding:12px 14px;border-radius:16px;background:rgba(15,23,42,.75);border:1px solid rgba(148,163,184,.18);color:#cbd5e1;font-weight:800}.scanner-preview-frame{min-height:520px;border-radius:26px;border:1px solid rgba(148,163,184,.18);background:radial-gradient(circle at 30% 15%,rgba(34,211,238,.12),transparent 32rem),rgba(2,6,23,.72);display:grid;place-items:center;overflow:hidden;padding:18px}.scanner-preview-empty{text-align:center;color:#94a3b8}.scanner-preview-empty strong{display:block;color:#e2e8f0;font-size:22px;margin-bottom:8px}.scanner-canvas{max-width:100%;max-height:74vh;border-radius:18px;background:#fff;box-shadow:0 18px 50px rgba(0,0,0,.35)}.scanner-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}.scanner-field{display:grid;gap:7px}.scanner-field label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#7dd3fc;font-weight:950}.scanner-field input,.scanner-field select,.scanner-field textarea{width:100%;border:1px solid rgba(148,163,184,.22);border-radius:14px;background:rgba(2,6,23,.55);color:#f8fafc;padding:12px 13px;font-weight:800;outline:none}.scanner-field textarea{min-height:92px;resize:vertical}.scanner-history{display:grid;gap:10px;margin-top:14px}.scanner-history-item{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08);color:#e2e8f0}.scanner-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.24);color:#67e8f9;font-weight:950;font-size:13px}.scanner-tip{margin-top:14px;color:#9fb3c8;font-size:13px;line-height:1.45}.scanner-ocr-box{white-space:pre-wrap;max-height:220px;overflow:auto;background:rgba(2,6,23,.55);border:1px solid rgba(148,163,184,.18);border-radius:16px;padding:12px;color:#dbeafe;font-size:13px;line-height:1.45;margin-top:10px}.sidebar-nav-pro a[href="scanner-ia.html"]::before{filter:drop-shadow(0 6px 12px rgba(34,211,238,.22))}
+@media (max-width: 980px){.scanner-ia-grid{grid-template-columns:1fr}.scanner-preview-frame{min-height:360px}.scanner-options{grid-template-columns:1fr}}
+@media (max-width: 640px){.scanner-ia-shell{padding-top:max(12px,env(safe-area-inset-top))}.scanner-panel{border-radius:20px;padding:16px}.scanner-actions{display:grid;grid-template-columns:1fr 1fr}.scanner-btn{padding:0 10px}.scanner-preview-frame{padding:10px;min-height:300px}.scanner-canvas{max-height:58vh}}
+
+/* ===== APP BRAGA v1.35.5 - NOTIFICAÇÕES CLOUD PRO ===== */
+.notification-health-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:12px;
+  margin:14px 0 18px;
+}
+.notification-health-card{
+  padding:14px 15px;
+  border-radius:18px;
+  border:1px solid rgba(148,163,184,.18);
+  background:linear-gradient(180deg,rgba(15,23,42,.92),rgba(2,6,23,.74));
+  box-shadow:0 16px 38px rgba(0,0,0,.18);
+}
+.notification-health-card span{
+  display:block;
+  font-size:12px;
+  color:#94a3b8;
+  font-weight:800;
+  letter-spacing:.02em;
+  margin-bottom:7px;
+}
+.notification-health-card strong{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  color:#e5f0ff;
+  font-size:15px;
+  font-weight:950;
+}
+.notification-health-card strong.ok{color:#86efac;}
+.notification-health-card strong.warn{color:#fde68a;}
+.notification-health-card strong.bad{color:#fca5a5;}
+.notification-devices-pro-table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0 10px;
+}
+.notification-devices-pro-table th{
+  text-align:left;
+  color:#94a3b8;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  padding:0 12px 2px;
+}
+.notification-devices-pro-table td{
+  padding:13px 12px;
+  color:#e5edf8;
+  background:rgba(15,23,42,.88);
+  border-top:1px solid rgba(148,163,184,.16);
+  border-bottom:1px solid rgba(148,163,184,.16);
+  vertical-align:middle;
+}
+.notification-devices-pro-table td:first-child{
+  border-left:1px solid rgba(148,163,184,.16);
+  border-radius:16px 0 0 16px;
+}
+.notification-devices-pro-table td:last-child{
+  border-right:1px solid rgba(148,163,184,.16);
+  border-radius:0 16px 16px 0;
+}
+.notification-device-main strong{display:block;font-weight:950;color:#fff;}
+.notification-device-main small{display:block;color:#94a3b8;margin-top:3px;max-width:520px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.notification-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:950;
+  border:1px solid rgba(148,163,184,.18);
+  background:rgba(148,163,184,.12);
+  color:#dbeafe;
+}
+.notification-chip.ok{background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.25);color:#86efac;}
+.notification-chip.warn{background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.25);color:#fde68a;}
+.notification-chip.bad{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.25);color:#fca5a5;}
+.notification-history-list{display:grid;gap:10px;}
+.notification-history-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  padding:13px 14px;
+  border-radius:16px;
+  border:1px solid rgba(148,163,184,.16);
+  background:rgba(15,23,42,.78);
+}
+.notification-history-item strong{display:block;color:#fff;font-weight:950;}
+.notification-history-item small{display:block;color:#94a3b8;margin-top:4px;}
+.notification-history-stats{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end;}
+@media(max-width:760px){
+  .notification-devices-pro-table,.notification-devices-pro-table thead,.notification-devices-pro-table tbody,.notification-devices-pro-table tr,.notification-devices-pro-table th,.notification-devices-pro-table td{display:block;width:100%;}
+  .notification-devices-pro-table thead{display:none;}
+  .notification-devices-pro-table tr{margin-bottom:12px;border-radius:16px;background:rgba(15,23,42,.88);border:1px solid rgba(148,163,184,.16);overflow:hidden;}
+  .notification-devices-pro-table td{border:0!important;border-radius:0!important;background:transparent;display:flex;justify-content:space-between;gap:12px;}
+  .notification-devices-pro-table td::before{content:attr(data-label);color:#94a3b8;font-weight:800;min-width:92px;}
+  .notification-device-main small{white-space:normal;}
+  .notification-history-item{display:block;}
+  .notification-history-stats{justify-content:flex-start;margin-top:10px;}
+}
+/* ===== END APP BRAGA v1.35.5 ===== */
+
+
+/* App Braga v1.35.5 - Alerta geral cloud */
+.notification-alert-panel{
+  border:1px solid rgba(248,113,113,.22);
+  background:linear-gradient(135deg, rgba(127,29,29,.28), rgba(15,23,42,.92));
+  box-shadow:0 24px 70px rgba(0,0,0,.24);
+}
+.notification-alert-button,
+.btn-danger.notification-alert-button{
+  min-height:52px;
+  border:1px solid rgba(248,113,113,.45);
+  border-radius:16px;
+  padding:0 22px;
+  background:linear-gradient(135deg, #dc2626, #7f1d1d);
   color:#fff;
-  padding:0 14px;
-  outline:none;
-}
-.notification-alert-controls input::placeholder{color:rgba(226,232,240,.58);}
-.danger-btn{
-  min-height:44px;
-  border:0;
-  border-radius:14px;
-  padding:0 16px;
   font-weight:900;
-  color:#fff;
-  cursor:pointer;
-  background:linear-gradient(135deg,#ef4444,#b91c1c);
-  box-shadow:0 12px 28px rgba(239,68,68,.28);
+  letter-spacing:.02em;
+  box-shadow:0 16px 34px rgba(220,38,38,.24);
 }
-.danger-btn:active{transform:translateY(1px);}
-@media (max-width:780px){
-  .notification-alert-box{grid-template-columns:1fr;}
-  .notification-alert-controls{flex-direction:column;align-items:stretch;}
+.notification-alert-button:hover{
+  transform:translateY(-1px);
+  box-shadow:0 20px 42px rgba(220,38,38,.32);
 }

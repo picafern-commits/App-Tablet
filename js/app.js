@@ -1,4 +1,4 @@
-﻿
+
 window.usersData = window.usersData || [];
 window.pistolasData = window.pistolasData || [];
 window.portasData = window.portasData || [];
@@ -14,20 +14,46 @@ const firebaseConfig = {
   appId: "1:1004492465437:web:6a745933c51fc17b04adf4"
 };
 
-if(typeof firebase !== "undefined"){
+var db = window.db || null;
 
-  if(!firebase.apps.length){
-    firebase.initializeApp(firebaseConfig);
+if (typeof firebase !== "undefined") {
+  try {
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    db = firebase.firestore();
+    window.db = db;
+    if (firebase.firestore && firebase.firestore.FieldValue) {
+      window.appBragaServerTimestamp = firebase.firestore.FieldValue.serverTimestamp;
+    }
+  } catch (error) {
+    console.error("Erro ao iniciar Firebase:", error);
+    db = window.db || null;
   }
-
-  const db = firebase.firestore();
-
-  window.db = db;
-
 }
 
-const APP_VERSION = "1.35.4";
-const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BG20bdfeQZOOBoWBs84k8Kw-o8xorWt33BGG7xKatqr4pjMxxhNHqAXtb1Zw5ehi3yCA6USF5p_l_qWt8YIIsXc";
+const APP_VERSION = "1.35.5";
+const APP_NOTIFICATIONS_REBUILD_MODE = true;
+const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BE2xnhqmSPq85_kA6comGATxEseSoh8zY_EK_4NZsbiI1HJByjc1PgQqhTsUwPlr1ujuUSpSzp29AQeS1hnlHOQ";
+const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "notificationCloudSettings";
+const APP_BRAGA_NOTIFICATION_CONFIG_COLLECTION = "config";
+const APP_BRAGA_DEFAULT_VAPID_SUBJECT = "mailto:admin@appbraga.pt";
+const APP_BRAGA_DEVICE_PROFILE_STORAGE_KEY = "appBragaNotificationDeviceProfile";
+
+function garantirLinkNotificacoesSidebarApp() {
+  const nav = document.querySelector(".sidebar-nav-pro");
+  if (!nav || nav.querySelector('a[href="notificacoes.html"]')) return;
+  const configLink = nav.querySelector('a[href="config.html"]');
+  if (!configLink?.parentElement) return;
+  const link = document.createElement("a");
+  link.href = "notificacoes.html";
+  link.dataset.icon = "🔔";
+  link.innerHTML = '<span class="sidebar-link-text">Notificações</span>';
+  if (/notificacoes\.html$/i.test(location.pathname)) link.classList.add("active");
+  configLink.parentElement.insertBefore(link, configLink);
+}
+
+document.addEventListener("DOMContentLoaded", garantirLinkNotificacoesSidebarApp);
 
 
 
@@ -103,10 +129,19 @@ const appNotificationState = {
   restoredTokenDocId: ""
 };
 
+const electronPushBridgeState = {
+  started: false,
+  startedAt: 0,
+  devices: [],
+  unsubscribeDevices: null,
+  unsubscribeRequests: null,
+  processing: new Set()
+};
+
 const APP_ROLE_LABELS = {
   admin: "Admin",
-  tecnico: "TÃ©cnico",
-  armazem: "ArmazÃ©m",
+  tecnico: "TÃƒÂ©cnico",
+  armazem: "ArmazÃƒÂ©m",
   consulta: "Consulta"
 };
 let appRoleAtual = "admin";
@@ -114,6 +149,116 @@ let appRoleAtual = "admin";
 function el(id) {
   return document.getElementById(id);
 }
+
+function corrigirTextoMojibakeAppBraga(texto) {
+  const raw = String(texto ?? "");
+  if (!/[\u00c3\u00c2\u00e2\u00c6\u00c5]/.test(raw)) return raw;
+  const decoder = new TextDecoder("utf-8", { fatal: false });
+  const cp1252 = new Map([
+    ["\u20ac", 0x80], ["\u201a", 0x82], ["\u0192", 0x83], ["\u201e", 0x84],
+    ["\u2026", 0x85], ["\u2020", 0x86], ["\u2021", 0x87], ["\u02c6", 0x88],
+    ["\u2030", 0x89], ["\u0160", 0x8a], ["\u2039", 0x8b], ["\u0152", 0x8c],
+    ["\u017d", 0x8e], ["\u2018", 0x91], ["\u2019", 0x92], ["\u201c", 0x93],
+    ["\u201d", 0x94], ["\u2022", 0x95], ["\u2013", 0x96], ["\u2014", 0x97],
+    ["\u02dc", 0x98], ["\u2122", 0x99], ["\u0161", 0x9a], ["\u203a", 0x9b],
+    ["\u0153", 0x9c], ["\u017e", 0x9e], ["\u0178", 0x9f]
+  ]);
+  let current = raw;
+  for (let i = 0; i < 4; i += 1) {
+    if (!/[\u00c3\u00c2\u00e2\u00c6\u00c5]/.test(current)) break;
+    const bytes = Uint8Array.from(Array.from(current, (char) => cp1252.get(char) ?? (char.charCodeAt(0) & 255)));
+    const next = decoder.decode(bytes);
+    if (!next || next === current) break;
+    current = next;
+  }
+  return current
+    .replace(/\u00c2\u00b7/g, "\u00b7")
+    .replace(/\u00e2\u20ac\u201d/g, "\u2014")
+    .replace(/\u00e2\u20ac\u201c/g, "\u2013")
+    .replace(/\u00e2\u0153\u201d/g, "\u2714")
+    .replace(/\u00e2\u009d\u0152/g, "\u2716")
+    .replace(/\u00ef\u00bb\u00bf/g, "");
+}
+
+function corrigirTextosVisiveisAppBraga(root = document.body) {
+  if (!root) return;
+  const skip = new Set(["SCRIPT", "STYLE", "NOSCRIPT", "TEXTAREA"]);
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      const parent = node.parentElement;
+      if (!parent || skip.has(parent.tagName)) return NodeFilter.FILTER_REJECT;
+      return /[\u00c3\u00c2\u00e2\u00c6\u00c5]/.test(node.nodeValue || "") ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+    }
+  });
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach((node) => {
+    node.nodeValue = corrigirTextoMojibakeAppBraga(node.nodeValue);
+  });
+  if (document.title) {
+    document.title = corrigirTextoMojibakeAppBraga(document.title);
+  }
+  const attrs = ["placeholder", "title", "aria-label", "alt"];
+  root.querySelectorAll?.("input, textarea, img, button, [title], [aria-label]").forEach((node) => {
+    attrs.forEach((attr) => {
+      if (node.hasAttribute?.(attr)) {
+        const value = node.getAttribute(attr);
+        const fixed = corrigirTextoMojibakeAppBraga(value);
+        if (fixed !== value) node.setAttribute(attr, fixed);
+      }
+    });
+  });
+  root.querySelectorAll?.("option").forEach((node) => {
+    const value = node.getAttribute("value");
+    const fixed = corrigirTextoMojibakeAppBraga(value);
+    if (fixed !== value) node.setAttribute("value", fixed);
+  });
+}
+
+function iniciarCorrecaoMojibakeAppBraga() {
+  corrigirTextosVisiveisAppBraga();
+  let scheduled = false;
+  const pendingRoots = new Set();
+  const schedule = () => {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(() => {
+      scheduled = false;
+      const roots = [...pendingRoots];
+      pendingRoots.clear();
+      roots.forEach((root) => corrigirTextosVisiveisAppBraga(root.nodeType === Node.TEXT_NODE ? root.parentElement : root));
+    });
+  };
+  new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === "characterData") pendingRoots.add(mutation.target);
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === Node.TEXT_NODE || node.nodeType === Node.ELEMENT_NODE) pendingRoots.add(node);
+      });
+    });
+    if (pendingRoots.size) schedule();
+  }).observe(document.body, { childList: true, subtree: true, characterData: true });
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", iniciarCorrecaoMojibakeAppBraga);
+} else {
+  iniciarCorrecaoMojibakeAppBraga();
+}
+
+(() => {
+  const nativeAlert = window.alert?.bind(window);
+  const nativeConfirm = window.confirm?.bind(window);
+  const nativePrompt = window.prompt?.bind(window);
+  if (nativeAlert) window.alert = (message) => nativeAlert(corrigirTextoMojibakeAppBraga(message));
+  if (nativeConfirm) window.confirm = (message) => nativeConfirm(corrigirTextoMojibakeAppBraga(message));
+  if (nativePrompt) {
+    window.prompt = (message, defaultValue) => nativePrompt(
+      corrigirTextoMojibakeAppBraga(message),
+      corrigirTextoMojibakeAppBraga(defaultValue)
+    );
+  }
+})();
 
 function setText(id, value) {
   const node = el(id);
@@ -150,7 +295,28 @@ function extrairCodigoEtiquetaTonerAppBraga(texto) {
 }
 
 function buildPayloadQrTonerAppBraga(codigo) {
-  return `APPBRAGA:TONER:${codigo}`;
+  const clean = String(codigo || "").trim().toUpperCase() || gerarCodigoEtiquetaTonerAppBraga();
+  return `APPBRAGA:TONER:${clean}`;
+}
+
+function sanitizeFirestorePayloadAppBraga(value) {
+  if (value === undefined) return null;
+  if (value === null) return null;
+  if (value instanceof Date) return value;
+  if (Array.isArray(value)) return value.map(sanitizeFirestorePayloadAppBraga).filter(v => v !== undefined);
+  if (typeof value === "object") {
+    const out = {};
+    Object.keys(value).forEach((key) => {
+      const v = sanitizeFirestorePayloadAppBraga(value[key]);
+      if (v !== undefined) out[key] = v;
+    });
+    return out;
+  }
+  return value;
+}
+
+function getDbAppBraga() {
+  return window.db || db || null;
 }
 
 function dataUrlToUint8ArrayAppBraga(dataUrl) {
@@ -314,7 +480,7 @@ async function carregarPermissoesApp() {
     const role = snap.exists ? String((snap.data() || {}).appRole || "admin") : "admin";
     aplicarPerfilApp(role);
   } catch (error) {
-    console.warn("Erro ao carregar permissÃµes:", error);
+    console.warn("Erro ao carregar permissÃƒÂµes:", error);
     aplicarPerfilApp(appRoleAtual || "admin");
   }
 }
@@ -344,11 +510,11 @@ const impressorasData = [
   { modelo: "Kyocera P3155dn", serie: "R4B1395508", armazem: "Braga", localizacao: "Ilha 03", ip: "192.168.10.180" },
   { modelo: "Kyocera P3155dn", serie: "R4B1293179", armazem: "Braga", localizacao: "Ilha 04", ip: "192.168.10.181" },
   { modelo: "Kyocera P3155dn", serie: "R4B1293180", armazem: "Braga", localizacao: "Ilha 05", ip: "192.168.10.182" },
-  { modelo: "Kyocera P3155dn", serie: "R4B1293183", armazem: "Braga", localizacao: "BalcÃ£o 01", ip: "192.168.10.184" },
-  { modelo: "Kyocera P3155dn", serie: "R4B1293184", armazem: "Braga", localizacao: "BalcÃ£o 02", ip: "192.168.10.183" },
+  { modelo: "Kyocera P3155dn", serie: "R4B1293183", armazem: "Braga", localizacao: "BalcÃƒÂ£o 01", ip: "192.168.10.184" },
+  { modelo: "Kyocera P3155dn", serie: "R4B1293184", armazem: "Braga", localizacao: "BalcÃƒÂ£o 02", ip: "192.168.10.183" },
   { modelo: "Kyocera P3155dn", serie: "R4B2230012", armazem: "Braga", localizacao: "Dep. Logistica", ip: "192.168.10.185" },
   { modelo: "Kyocera P3155dn", serie: "R4B1293173", armazem: "Braga", localizacao: "G/Encomendas", ip: "192.168.10.186" },
-  { modelo: "Kyocera P3155dn", serie: "R4B1395261", armazem: "Braga", localizacao: "DevoluÃ§Ãµes", ip: "192.168.10.187" },
+  { modelo: "Kyocera P3155dn", serie: "R4B1395261", armazem: "Braga", localizacao: "DevoluÃƒÂ§ÃƒÂµes", ip: "192.168.10.187" },
   { modelo: "TASKalfa 2554ci", serie: "RVP0Z03770", armazem: "Braga", localizacao: "Escritorio", ip: "192.168.10.197" },
   { modelo: "Kyocera P3155dn", serie: "R4B1293169", armazem: "Vila Real", localizacao: "Ilha 01", ip: "192.168.11.110" },
   { modelo: "Kyocera P3155dn", serie: "R4B1293174", armazem: "Vila Real", localizacao: "Ilha 02", ip: "192.168.11.108" },
@@ -363,11 +529,11 @@ const manutencaoLocais = [
   "Ilha 03",
   "Ilha 04",
   "Ilha 05",
-  "BalcÃ£o 01",
-  "BalcÃ£o 02",
+  "BalcÃƒÂ£o 01",
+  "BalcÃƒÂ£o 02",
   "Dep. Logistica",
   "G/Encomendas",
-  "DevoluÃ§Ãµes",
+  "DevoluÃƒÂ§ÃƒÂµes",
   "Escritorio"
 ];
 
@@ -410,7 +576,7 @@ function carregarUsersLocal() {
 
 
 /* =========================
-   IMPRESSORAS / MANUTENÃ‡ÃƒO
+   IMPRESSORAS / MANUTENÃƒâ€¡ÃƒÆ’O
 ========================= */
 function obterEstadoImpressora(ip) {
   const relacionados = manutencoesGlobal.filter(m => m.ip === ip);
@@ -420,7 +586,7 @@ function obterEstadoImpressora(ip) {
 
 function badgeEstado(estado) {
   if (estado === "Pendente") return `<span class="badge pendente">Pendente</span>`;
-  if (estado === "Em reparaÃ§Ã£o") return `<span class="badge reparacao">Em reparaÃ§Ã£o</span>`;
+  if (estado === "Em reparaÃƒÂ§ÃƒÂ£o") return `<span class="badge reparacao">Em reparaÃƒÂ§ÃƒÂ£o</span>`;
   if (estado === "Resolvido") return `<span class="badge resolvido">Resolvido</span>`;
   return `<span class="badge ok">OK</span>`;
 }
@@ -471,7 +637,7 @@ function preencherLocaisManutencao() {
   const selectLoc = el("manutencaoLocalizacao");
   if (selectLoc) {
     selectLoc.innerHTML = `
-      <option value="">Selecionar localizaÃ§Ã£o</option>
+      <option value="">Selecionar localizaÃƒÂ§ÃƒÂ£o</option>
       ${manutencaoLocais.map(loc => `<option value="${loc}">${loc}</option>`).join("")}
     `;
   }
@@ -491,7 +657,7 @@ function preencherLocaisManutencao() {
   const selectSerie = el("manutencaoSerie");
   if (selectSerie) {
     selectSerie.innerHTML = `
-      <option value="">Selecionar nÂº sÃ©rie</option>
+      <option value="">Selecionar nÃ‚Âº sÃƒÂ©rie</option>
       ${impressorasData.map(item => `
         <option value="${item.serie}">${item.serie}</option>
       `).join("")}
@@ -533,13 +699,28 @@ function limparFormularioManutencao() {
 }
 
 async function gerarID() {
-  const ref = db.collection("config").doc("contador");
-  return db.runTransaction(async t => {
-    const doc = await t.get(ref);
-    const n = doc.exists ? ({ firebaseId: doc.id, ...doc.data() }).valor + 1 : 1;
-    t.set(ref, { valor: n });
-    return "TON-" + String(n).padStart(4, "0");
-  });
+  const database = getDbAppBraga();
+  if (!database || !database.collection || !database.runTransaction) {
+    const fallback = Number(localStorage.getItem("appBraga_toner_counter_fallback") || "0") + 1;
+    localStorage.setItem("appBraga_toner_counter_fallback", String(fallback));
+    return "TON-" + String(fallback).padStart(4, "0");
+  }
+
+  const ref = database.collection("config").doc("contador");
+  try {
+    return await database.runTransaction(async (t) => {
+      const doc = await t.get(ref);
+      const atual = doc.exists ? Number((doc.data() || {}).valor || 0) : 0;
+      const n = atual + 1;
+      t.set(ref, { valor: n, updatedAt: new Date() }, { merge: true });
+      return "TON-" + String(n).padStart(4, "0");
+    });
+  } catch (error) {
+    console.error("Erro ao gerar ID no Firestore:", error);
+    const fallback = Number(localStorage.getItem("appBraga_toner_counter_fallback") || "0") + 1;
+    localStorage.setItem("appBraga_toner_counter_fallback", String(fallback));
+    return "TON-LOCAL-" + String(fallback).padStart(4, "0");
+  }
 }
 
 function formatTonerIdCounterAppBraga(value) {
@@ -565,7 +746,7 @@ async function carregarContadorTonerConfig() {
 }
 
 async function reiniciarContadorTonerConfig() {
-  if (!confirm("Reiniciar o contador dos toners? O prÃ³ximo toner criado vai ser TON-0001.")) return;
+  if (!confirm("Reiniciar o contador dos toners? O prÃƒÂ³ximo toner criado vai ser TON-0001.")) return;
 
   try {
     await db.collection("config").doc("contador").set({
@@ -573,7 +754,7 @@ async function reiniciarContadorTonerConfig() {
       resetAt: new Date()
     }, { merge: true });
     await carregarContadorTonerConfig();
-    mostrarMensagem("Contador reiniciado. O prÃ³ximo toner serÃ¡ TON-0001.");
+    mostrarMensagem("Contador reiniciado. O prÃƒÂ³ximo toner serÃƒÂ¡ TON-0001.");
   } catch (error) {
     console.error(error);
     mostrarMensagem("Erro ao reiniciar contador dos toners.", "erro");
@@ -595,16 +776,28 @@ async function disponivel() {
   const data = el("data");
   const lote = el("lote");
   const sdsRef = el("sdsRef");
-  const codigoEtiqueta = getCodigoEtiquetaAtualAppBraga();
+  const dataFolha = el("dataFolha");
+  const codigoInput = el("codigoEtiqueta");
 
-  if (!equipamento || !cor) return;
+  if (!equipamento || !cor) {
+    mostrarMensagem("Sistema de adicionar toner nÃ£o encontrou o formulÃ¡rio.", "erro");
+    return;
+  }
 
-  const eq = equipamento.value;
-  const loc = localizacao ? localizacao.value : "";
-  const corValue = cor.value;
-  const dataValue = data ? data.value : "";
-  const loteValue = lote ? lote.value : "";
-  const sdsRefValue = sdsRef ? sdsRef.value.trim() : "";
+  const database = getDbAppBraga();
+  if (!database || !database.collection) {
+    mostrarMensagem("Firebase indisponÃ­vel. Liga a internet e volta a tentar.", "erro");
+    return;
+  }
+
+  const eq = String(equipamento.value || "").trim();
+  const loc = String(localizacao ? localizacao.value : "").trim();
+  const corValue = String(cor.value || "").trim();
+  const dataValue = String(data ? data.value : "").trim();
+  const dataFolhaValue = String(dataFolha ? dataFolha.value : "").trim();
+  const loteValue = String(lote ? lote.value : "").trim().toUpperCase();
+  const sdsRefValue = String(sdsRef ? sdsRef.value : "").trim().toUpperCase();
+  const codigoEtiqueta = String(getCodigoEtiquetaAtualAppBraga() || "").trim().toUpperCase();
 
   if (!eq || !corValue) {
     mostrarMensagem("Preenche o equipamento e a cor.", "erro");
@@ -613,55 +806,65 @@ async function disponivel() {
 
   try {
     const id = await gerarID();
-
-    await db.collection("stock").add({
+    const payload = sanitizeFirestorePayloadAppBraga({
       idInterno: id,
       equipamento: eq,
       localizacao: loc || "Sem LocalizaÃ§Ã£o",
       cor: corValue,
-      data: dataValue || "Sem Data",
-      dataFolha: (el("dataFolha") && el("dataFolha").value) || "Sem Data da Folha",
+      data: dataValue || new Date().toISOString().slice(0, 10),
+      dataFolha: dataFolhaValue || "",
       lote: loteValue || "",
-      sdsRef: sdsRefValue || "",
+      sdsRef: /^S\d{7,12}$/.test(sdsRefValue) ? sdsRefValue : sdsRefValue,
       codigoEtiqueta,
       codigoScan: buildPayloadQrTonerAppBraga(codigoEtiqueta),
       estado: "stock",
-      created: new Date()
+      origem: "adicionar-toner",
+      created: new Date(),
+      createdAtMs: Date.now()
     });
 
-    await logActivityApp("stock-add", "Toner adicionado", `${id} - ${eq} - ${corValue}`, {
+    const ref = await database.collection("stock").add(payload);
+
+    logActivityApp("stock-add", "Toner adicionado", `${id} - ${eq} - ${corValue}`, {
       idInterno: id,
       equipamento: eq,
       cor: corValue,
-      localizacao: loc || "Sem LocalizaÃ§Ã£o",
-      sdsRef: sdsRefValue || "",
-      codigoEtiqueta
-    });
+      localizacao: payload.localizacao,
+      sdsRef: payload.sdsRef || "",
+      codigoEtiqueta,
+      stockDocId: ref.id
+    }).catch(() => false);
 
-    const etiquetaGerada = await gerarWordEtiquetaFromForm(true);
+    let etiquetaGerada = false;
+    try {
+      etiquetaGerada = await gerarWordEtiquetaFromForm(true);
+    } catch (etiquetaError) {
+      console.warn("Toner guardado, mas a etiqueta automÃ¡tica falhou:", etiquetaError);
+    }
 
     equipamento.value = "";
     if (localizacao) localizacao.value = "";
     cor.value = "";
     if (data) data.value = "";
-    if (el("dataFolha")) el("dataFolha").value = "";
+    if (dataFolha) dataFolha.value = "";
     if (lote) lote.value = "";
     if (sdsRef) sdsRef.value = "";
-    prepararCodigoEtiquetaTonerAppBraga(true);
+    if (codigoInput) prepararCodigoEtiquetaTonerAppBraga(true);
 
     mostrarMensagem(
       etiquetaGerada
         ? "Toner adicionado ao stock e etiqueta gerada."
-        : "Toner adicionado ao stock, mas a etiqueta nao foi gerada.",
-      etiquetaGerada ? "sucesso" : "erro"
+        : "Toner adicionado ao stock. A etiqueta ficou disponÃ­vel para gerar manualmente.",
+      "sucesso"
     );
   } catch (error) {
-    console.error(error);
-    mostrarMensagem("Erro ao adicionar toner.", "erro");
+    console.error("Erro ao adicionar toner:", error);
+    const detalhe = error && (error.message || error.code) ? ` (${error.message || error.code})` : "";
+    mostrarMensagem(`Erro ao adicionar toner${detalhe}`, "erro");
   }
 }
 
-db.collection("stock").onSnapshot(snap => {
+if (getDbAppBraga()) getDbAppBraga().collection("stock").onSnapshot(snap => {
   notificarAlteracaoRealtimeApp("stock", snap);
   stockGlobal = [];
   setText("countStock", snap.size);
@@ -788,7 +991,7 @@ db.collection("manutencoes").onSnapshot(snap => {
 function atualizarContadoresManutencao() {
   setText("countManutTotal", manutencoesGlobal.length);
   setText("countManutPendentes", manutencoesGlobal.filter(i => i.estado === "Pendente").length);
-  setText("countManutReparacao", manutencoesGlobal.filter(i => i.estado === "Em reparaÃ§Ã£o").length);
+  setText("countManutReparacao", manutencoesGlobal.filter(i => i.estado === "Em reparaÃƒÂ§ÃƒÂ£o").length);
   setText("countManutResolvidos", manutencoesGlobal.filter(i => i.estado === "Resolvido").length);
 }
 
@@ -821,7 +1024,7 @@ function getCriticalityBucketsAppBraga() {
 function getTopLocalizacoesHistorico(limit = 3) {
   const counts = {};
   historicoGlobal.forEach(item => {
-    const key = String(item.localizacao || "Sem LocalizaÃ§Ã£o");
+    const key = String(item.localizacao || "Sem LocalizaÃƒÂ§ÃƒÂ£o");
     counts[key] = (counts[key] || 0) + 1;
   });
   return Object.entries(counts)
@@ -847,7 +1050,7 @@ function renderDashboardResumoInteligente() {
   const topLocs = getTopLocalizacoesHistorico(4);
   const ultimos = getUltimosMovimentos(4);
 
-  const critLabel = buckets.critical > 0 ? "AÃ§Ã£o imediata" : "Sem crÃ­ticos";
+  const critLabel = buckets.critical > 0 ? "AÃƒÂ§ÃƒÂ£o imediata" : "Sem crÃƒÂ­ticos";
   const warnLabel = buckets.warning > 0 ? "Vigiar" : "Sem avisos";
 
   host.innerHTML = `
@@ -855,20 +1058,20 @@ function renderDashboardResumoInteligente() {
       <div class="summary-card">
         <h4>Criticidade Real</h4>
         <div class="summary-value">${buckets.critical}</div>
-        <div class="meta-line">${critLabel} Â· toner a 0%</div>
+        <div class="meta-line">${critLabel} Ã‚Â· toner a 0%</div>
       </div>
       <div class="summary-card">
-        <h4>AtenÃ§Ã£o</h4>
+        <h4>AtenÃƒÂ§ÃƒÂ£o</h4>
         <div class="summary-value">${buckets.warning}</div>
-        <div class="meta-line">${warnLabel} Â· sem avisos intermÃ©dios de toner</div>
+        <div class="meta-line">${warnLabel} Ã‚Â· sem avisos intermÃƒÂ©dios de toner</div>
       </div>
       <div class="summary-card">
-        <h4>Top LocalizaÃ§Ãµes</h4>
-        <ul class="summary-list">${topLocs.length ? topLocs.map(([k,v]) => `<li>${k} â€” ${v}</li>`).join("") : "<li>Sem dados ainda</li>"}</ul>
+        <h4>Top LocalizaÃƒÂ§ÃƒÂµes</h4>
+        <ul class="summary-list">${topLocs.length ? topLocs.map(([k,v]) => `<li>${k} Ã¢â‚¬â€ ${v}</li>`).join("") : "<li>Sem dados ainda</li>"}</ul>
       </div>
       <div class="summary-card">
-        <h4>Ãšltimos Movimentos</h4>
-        <ul class="summary-list">${ultimos.length ? ultimos.map(item => `<li>${item.equipamento || "-"} Â· ${item.cor || "-"} Â· ${item.localizacao || "-"}</li>`).join("") : "<li>Sem histÃ³rico ainda</li>"}</ul>
+        <h4>ÃƒÅ¡ltimos Movimentos</h4>
+        <ul class="summary-list">${ultimos.length ? ultimos.map(item => `<li>${item.equipamento || "-"} Ã‚Â· ${item.cor || "-"} Ã‚Â· ${item.localizacao || "-"}</li>`).join("") : "<li>Sem histÃƒÂ³rico ainda</li>"}</ul>
       </div>
     </div>`;
 }
@@ -914,7 +1117,7 @@ function renderDashboardCards(items) {
   });
 
   if (!criticas.length) {
-    lista.innerHTML = `<div class="panel empty-state"><h3>Sem toners abaixo de 25%</h3><p>As impressoras com toner a 25% ou menos vÃ£o aparecer aqui.</p></div>`;
+    lista.innerHTML = `<div class="panel empty-state"><h3>Sem toners abaixo de 25%</h3><p>As impressoras com toner a 25% ou menos vÃƒÂ£o aparecer aqui.</p></div>`;
     return;
   }
 
@@ -923,7 +1126,7 @@ function renderDashboardCards(items) {
       ? criticalColors.map(c => gerarHTMLBarraToner(c.percent, c.label, c.key)).join("")
       : (monoCritical ? gerarHTMLBarraToner(info.percent, "Preto", "black") : "");
 
-    const residueHtml = residue ? gerarHTMLBarraToner(residue.percent, residue.label || "ResÃ­duo", "waste") : "";
+    const residueHtml = residue ? gerarHTMLBarraToner(residue.percent, residue.label || "ResÃƒÂ­duo", "waste") : "";
 
     const printerImage = getDashboardPrinterImage(item);
     return `
@@ -932,7 +1135,7 @@ function renderDashboardCards(items) {
           <img class="equipment-real-image" src="${printerImage}" alt="${safeRefHtml(item.modelo)}" loading="lazy" onerror="this.src='../img/printer.png'">
         </div>
         <div class="stock-id">${item.modelo}</div>
-        <div class="meta-line">SÃ©rie: <span class="meta-value">${item.serie}</span></div>
+        <div class="meta-line">SÃƒÂ©rie: <span class="meta-value">${item.serie}</span></div>
         <div class="meta-line">Local: <span class="meta-value">${item.localizacao} (${item.armazem})</span></div>
         <div class="meta-line">IP: <span class="meta-value">${item.ip}</span></div>
         <div class="printer-toners-grid" style="margin-top:10px;">${supplyHtml}${residueHtml}</div>
@@ -958,10 +1161,10 @@ function renderStockCards(items) {
       <div class="stock-id">${t.idInterno}</div>
       <div class="meta-line">Equipamento: <span class="meta-value">${t.equipamento}</span></div>
       <div class="meta-line">Cor: <span class="meta-value">${t.cor}</span></div>
-      <div class="meta-line">LocalizaÃ§Ã£o: <span class="meta-value">${t.localizacao}</span></div>
+      <div class="meta-line">LocalizaÃƒÂ§ÃƒÂ£o: <span class="meta-value">${t.localizacao}</span></div>
       <div class="meta-line">Lote: <span class="meta-value">${t.lote || "-"}</span></div>
       <div class="meta-line">SDS Ref: <span class="meta-value">${t.sdsRef || "-"}</span></div>
-      <div class="meta-line">CÃ³digo etiqueta: <span class="meta-value">${t.codigoEtiqueta || "-"}</span></div>
+      <div class="meta-line">CÃƒÂ³digo etiqueta: <span class="meta-value">${t.codigoEtiqueta || "-"}</span></div>
       <div class="meta-line">Data Scan: <span class="meta-value">${t.data || "Sem Data"}</span></div>
       <div class="meta-line">Data Folha: <span class="meta-value">${t.dataFolha || "Sem Data da Folha"}</span></div>
       <div class="card-actions">
@@ -980,7 +1183,7 @@ function renderHistoricoCards(items) {
   if (!lista) return;
 
   if (!items.length) {
-    lista.innerHTML = `<div class="panel empty-state"><h3>Sem histÃ³rico</h3><p>Os toners usados vÃ£o aparecer aqui.</p></div>`;
+    lista.innerHTML = `<div class="panel empty-state"><h3>Sem histÃƒÂ³rico</h3><p>Os toners usados vÃƒÂ£o aparecer aqui.</p></div>`;
     return;
   }
 
@@ -989,10 +1192,10 @@ function renderHistoricoCards(items) {
       <div class="history-id">${t.idInterno}</div>
       <div class="meta-line">Equipamento: <span class="meta-value">${t.equipamento}</span></div>
       <div class="meta-line">Cor: <span class="meta-value">${t.cor || "-"}</span></div>
-      <div class="meta-line">LocalizaÃ§Ã£o: <span class="meta-value">${t.localizacao || "Sem LocalizaÃ§Ã£o"}</span></div>
+      <div class="meta-line">LocalizaÃƒÂ§ÃƒÂ£o: <span class="meta-value">${t.localizacao || "Sem LocalizaÃƒÂ§ÃƒÂ£o"}</span></div>
       <div class="meta-line">Lote: <span class="meta-value">${t.lote || "-"}</span></div>
       <div class="meta-line">SDS Ref: <span class="meta-value">${t.sdsRef || "-"}</span></div>
-      <div class="meta-line">CÃ³digo etiqueta: <span class="meta-value">${t.codigoEtiqueta || "-"}</span></div>
+      <div class="meta-line">CÃƒÂ³digo etiqueta: <span class="meta-value">${t.codigoEtiqueta || "-"}</span></div>
       <div class="meta-line">Data Scan: <span class="meta-value">${t.data || "Sem Data"}</span></div>
       <div class="meta-line">Data Folha: <span class="meta-value">${t.dataFolha || "Sem Data da Folha"}</span></div>
       <div class="card-actions">
@@ -1010,7 +1213,7 @@ async function usar(id) {
     const snap = await ref.get();
 
     if (!snap.exists) {
-      mostrarMensagem("Toner nÃ£o encontrado.", "erro");
+      mostrarMensagem("Toner nÃƒÂ£o encontrado.", "erro");
       return;
     }
 
@@ -1030,10 +1233,10 @@ async function usar(id) {
       cor: snap.data().cor || "",
       codigoEtiqueta: snap.data().codigoEtiqueta || ""
     });
-    mostrarMensagem("Toner movido para histÃ³rico.");
+    mostrarMensagem("Toner movido para histÃƒÂ³rico.");
   } catch (error) {
     console.error(error);
-    mostrarMensagem("Erro ao mover para histÃ³rico.", "erro");
+    mostrarMensagem("Erro ao mover para histÃƒÂ³rico.", "erro");
   }
 }
 
@@ -1107,12 +1310,12 @@ async function usarPorCodigoEtiquetaToner(codigoOuPayload) {
     }
 
     if (!id) {
-      mostrarMensagem("CÃ³digo de toner nÃ£o encontrado em stock.", "erro");
+      mostrarMensagem("CÃƒÂ³digo de toner nÃƒÂ£o encontrado em stock.", "erro");
       return true;
     }
 
     await usar(id);
-    mostrarMensagem(`Toner ${codigo || rawUpper} passado para histÃ³rico.`);
+    mostrarMensagem(`Toner ${codigo || rawUpper} passado para histÃƒÂ³rico.`);
     return true;
   } catch (error) {
     console.error(error);
@@ -1124,7 +1327,7 @@ async function usarPorCodigoEtiquetaToner(codigoOuPayload) {
 async function apagar(id) {
   try {
     await db.collection("historico").doc(id).delete();
-    mostrarMensagem("HistÃ³rico apagado.");
+    mostrarMensagem("HistÃƒÂ³rico apagado.");
   } catch (error) {
     console.error(error);
     mostrarMensagem("Erro ao apagar.", "erro");
@@ -1186,7 +1389,7 @@ function renderPCCards(items) {
 
   lista.innerHTML = items.map((d, index) => {
     const htmlPassos = (d.passos || []).map(p => `
-      <div class="meta-line">${p.feito ? "âœ”" : "âŒ"} <span class="meta-value">${p.passo}</span></div>
+      <div class="meta-line">${p.feito ? "Ã¢Å“â€" : "Ã¢ÂÅ’"} <span class="meta-value">${p.passo}</span></div>
     `).join("");
 
     return `
@@ -1258,7 +1461,7 @@ async function guardarPC() {
   let data = dataPC ? dataPC.value : "";
 
   if (!nome) {
-    mostrarMensagem("Nome obrigatÃ³rio.", "erro");
+    mostrarMensagem("Nome obrigatÃƒÂ³rio.", "erro");
     return;
   }
 
@@ -1301,7 +1504,7 @@ async function apagarPC(id) {
 }
 
 /* =========================
-   MANUTENÃ‡ÃƒO
+   MANUTENÃƒâ€¡ÃƒÆ’O
 ========================= */
 async function guardarManutencao() {
   const tecnico = el("manutencaoTecnico")?.value || "";
@@ -1316,7 +1519,7 @@ async function guardarManutencao() {
   const dataResolucao = el("manutencaoResolucao")?.value || "";
 
   if (!tecnico || !armazem || !localizacao || !modelo || !serie || !ip || !motivo || !dataPedido) {
-    mostrarMensagem("Preenche os campos obrigatÃ³rios da manutenÃ§Ã£o.", "erro");
+    mostrarMensagem("Preenche os campos obrigatÃƒÂ³rios da manutenÃƒÂ§ÃƒÂ£o.", "erro");
     return;
   }
 
@@ -1331,15 +1534,15 @@ async function guardarManutencao() {
       ip,
       motivo,
       dataPedido,
-      dataResolucao: dataResolucao || "Sem resoluÃ§Ã£o",
+      dataResolucao: dataResolucao || "Sem resoluÃƒÂ§ÃƒÂ£o",
       created: new Date()
     });
 
     limparFormularioManutencao();
-    mostrarMensagem("ManutenÃ§Ã£o guardada com sucesso.");
+    mostrarMensagem("ManutenÃƒÂ§ÃƒÂ£o guardada com sucesso.");
   } catch (error) {
     console.error(error);
-    mostrarMensagem("Erro ao guardar manutenÃ§Ã£o.", "erro");
+    mostrarMensagem("Erro ao guardar manutenÃƒÂ§ÃƒÂ£o.", "erro");
   }
 }
 
@@ -1350,8 +1553,8 @@ function renderManutencoes(items) {
   if (!items.length) {
     lista.innerHTML = `
       <div class="panel empty-state">
-        <h3>Sem pedidos de manutenÃ§Ã£o</h3>
-        <p>Os pedidos vÃ£o aparecer aqui.</p>
+        <h3>Sem pedidos de manutenÃƒÂ§ÃƒÂ£o</h3>
+        <p>Os pedidos vÃƒÂ£o aparecer aqui.</p>
       </div>
     `;
     return;
@@ -1362,17 +1565,17 @@ function renderManutencoes(items) {
       <div class="manut-card-top">
         <div>
           <div class="pc-name">${item.modelo || "-"}</div>
-          <div class="meta-line">SÃ©rie: <span class="meta-value">${item.serie || "-"}</span></div>
+          <div class="meta-line">SÃƒÂ©rie: <span class="meta-value">${item.serie || "-"}</span></div>
         </div>
         <div>${badgeEstado(item.estado || "Pendente")}</div>
       </div>
 
-      <div class="meta-line">TÃ©cnico: <span class="meta-value">${item.tecnico}</span></div>
-      <div class="meta-line">ArmazÃ©m: <span class="meta-value">${item.armazem}</span></div>
-      <div class="meta-line">LocalizaÃ§Ã£o: <span class="meta-value">${item.localizacao}</span></div>
+      <div class="meta-line">TÃƒÂ©cnico: <span class="meta-value">${item.tecnico}</span></div>
+      <div class="meta-line">ArmazÃƒÂ©m: <span class="meta-value">${item.armazem}</span></div>
+      <div class="meta-line">LocalizaÃƒÂ§ÃƒÂ£o: <span class="meta-value">${item.localizacao}</span></div>
       <div class="meta-line">IP: <span class="meta-value"><a href="http://${item.ip}" target="_blank" rel="noopener noreferrer">${item.ip}</a></span></div>
       <div class="meta-line">Pedido: <span class="meta-value">${item.dataPedido}</span></div>
-      <div class="meta-line">ResoluÃ§Ã£o: <span class="meta-value">${item.dataResolucao || "Sem resoluÃ§Ã£o"}</span></div>
+      <div class="meta-line">ResoluÃƒÂ§ÃƒÂ£o: <span class="meta-value">${item.dataResolucao || "Sem resoluÃƒÂ§ÃƒÂ£o"}</span></div>
       <div class="meta-line">Motivo: <span class="meta-value">${item.motivo}</span></div>
 
       <div class="card-actions">
@@ -1412,20 +1615,20 @@ async function marcarResolvido(id) {
       dataResolucao: new Date().toISOString().split("T")[0]
     });
 
-    mostrarMensagem("ManutenÃ§Ã£o marcada como resolvida.");
+    mostrarMensagem("ManutenÃƒÂ§ÃƒÂ£o marcada como resolvida.");
   } catch (error) {
     console.error(error);
-    mostrarMensagem("Erro ao atualizar manutenÃ§Ã£o.", "erro");
+    mostrarMensagem("Erro ao atualizar manutenÃƒÂ§ÃƒÂ£o.", "erro");
   }
 }
 
 async function apagarManutencao(id) {
   try {
     await db.collection("manutencoes").doc(id).delete();
-    mostrarMensagem("Registo de manutenÃ§Ã£o apagado.");
+    mostrarMensagem("Registo de manutenÃƒÂ§ÃƒÂ£o apagado.");
   } catch (error) {
     console.error(error);
-    mostrarMensagem("Erro ao apagar manutenÃ§Ã£o.", "erro");
+    mostrarMensagem("Erro ao apagar manutenÃƒÂ§ÃƒÂ£o.", "erro");
   }
 }
 
@@ -1483,7 +1686,7 @@ function corBarraToner(percentagem, cor = "black") {
 
   const value = Math.max(0, Math.min(100, Number(percentagem)));
 
-  // ResÃ­duo Ã© ao contrÃ¡rio: quanto maior pior.
+  // ResÃƒÂ­duo ÃƒÂ© ao contrÃƒÂ¡rio: quanto maior pior.
   if (cor === "waste") {
     if (value >= 85) return "#dc2626"; // vermelho
     if (value >= 65) return "#f97316"; // laranja
@@ -1492,9 +1695,9 @@ function corBarraToner(percentagem, cor = "black") {
   }
 
   // Toner normal: quanto maior melhor.
-  if (value <= 10) return "#dc2626";  // vermelho crÃ­tico
+  if (value <= 10) return "#dc2626";  // vermelho crÃƒÂ­tico
   if (value <= 25) return "#f97316";  // laranja baixo
-  if (value <= 50) return "#eab308";  // amarelo mÃ©dio
+  if (value <= 50) return "#eab308";  // amarelo mÃƒÂ©dio
   return "#22c55e";                  // verde bom
 }
 
@@ -1504,15 +1707,15 @@ function estadoBarraToner(percentagem, cor = "black") {
   const value = Math.max(0, Math.min(100, Number(percentagem)));
 
   if (cor === "waste") {
-    if (value >= 85) return "CrÃ­tico";
+    if (value >= 85) return "CrÃƒÂ­tico";
     if (value >= 65) return "Alto";
-    if (value >= 45) return "MÃ©dio";
+    if (value >= 45) return "MÃƒÂ©dio";
     return "OK";
   }
 
-  if (value <= 10) return "CrÃ­tico";
+  if (value <= 10) return "CrÃƒÂ­tico";
   if (value <= 25) return "Baixo";
-  if (value <= 50) return "MÃ©dio";
+  if (value <= 50) return "MÃƒÂ©dio";
   return "Bom";
 }
 
@@ -1609,7 +1812,7 @@ function gerarHTMLToners(info) {
   }
 
   if (residueItem) {
-    blocks.push(gerarHTMLBarraToner(residueItem.percent, residueItem.label || "ResÃ­duo", "waste"));
+    blocks.push(gerarHTMLBarraToner(residueItem.percent, residueItem.label || "ResÃƒÂ­duo", "waste"));
   }
 
   return `<div class="printer-toners-grid">${blocks.join("")}</div>`;
@@ -1636,7 +1839,7 @@ function maybeNotifyCriticalSupply(ip, info) {
   if (tonerAlertState[ip] === key) return;
   tonerAlertState[ip] = key;
 
-  const message = `Toner vazio em ${printerLabel} â€” ${key}`;
+  const message = `Toner vazio em ${printerLabel} Ã¢â‚¬â€ ${key}`;
   mostrarMensagem(message, "erro");
 
   enviarNotificacaoApp("Toner vazio", message, `toner-${ip}-${key}`, { url: "html/impressoras.html" });
@@ -1724,6 +1927,17 @@ async function maybeNotifyTonerReplacement(ip, previousInfo, nextInfo) {
 }
 
 function aplicarConfigNotificacoesApp(config = {}) {
+  if (APP_NOTIFICATIONS_REBUILD_MODE) {
+    appNotificationState.enabled = false;
+    clearInterval(appNotificationTimer);
+    const enabled = document.getElementById("notifyEnabled");
+    if (enabled) enabled.checked = false;
+    setNotificationServiceText("notifyServiceStatus", "Em reconstrução", "warn");
+    setNotificationServiceText("notifyServiceDetail", "Sistema antigo desativado temporariamente");
+    setNotificationServiceText("notifyCredentialsStatus", "Pendente", "warn");
+    setNotificationServiceText("notifyCredentialsDetail", "Nova página dedicada em preparação");
+    return;
+  }
   appNotificationState.enabled = config.notificationEnabled === true;
   appNotificationState.tonerZero = config.notifyTonerZero !== false;
   appNotificationState.tonerLow25 = config.notifyTonerLow25 !== false;
@@ -1752,10 +1966,15 @@ function aplicarConfigNotificacoesApp(config = {}) {
     vapid.value = appNotificationState.vapidKey;
     vapid.placeholder = "Public key Web Push ja configurada";
   }
+  const vapidLocal = document.getElementById("notifyVapidPublicLocal");
+  if (vapidLocal) vapidLocal.value = appNotificationState.vapidKey;
 
   iniciarMonitorNotificacoesApp();
   carregarDispositivosNotificacoesApp(false);
   restaurarRegistoPushAtualApp();
+  if (window.electronAPI?.sendWebPushBroadcast && document.getElementById("notifyServiceStatus")) {
+    iniciarPontePushElectronApp(false);
+  }
 }
 
 function notificationPermissionApp() {
@@ -1764,15 +1983,13 @@ function notificationPermissionApp() {
   return Notification.permission;
 }
 
-async function pedirPermissaoNotificacoesApp() {
-  if (window.electronAPI?.showNotification) {
-    await guardarConfigNotificacoesApp({ notificationEnabled: true });
-    await enviarNotificacaoApp("App Braga", "NotificaÃ§Ãµes ativas no Electron.", "test-electron", { force: true });
-    return;
-  }
+async function pedirPermissaoNotificacoesApp(options = {}) {
+  const shouldRegisterDevice = options.registerDevice !== false;
+  // Mesmo na app Electron, tentamos sempre registo Web Push real.
+  // O registo nativo do Windows só serve para teste local e não recebe com a app fechada.
 
   if (!("Notification" in window)) {
-    mostrarMensagem("Este dispositivo nÃ£o suporta notificaÃ§Ãµes Web.", "erro");
+    mostrarMensagem("Este dispositivo nÃƒÂ£o suporta notificaÃƒÂ§ÃƒÂµes Web.", "erro");
     return;
   }
 
@@ -1781,13 +1998,17 @@ async function pedirPermissaoNotificacoesApp() {
     if (permission === "granted") {
       await registarServiceWorkerAppBraga();
       await guardarConfigNotificacoesApp({ notificationEnabled: true });
-      await enviarNotificacaoApp("App Braga", "NotificaÃ§Ãµes ativas neste dispositivo.", "test-web", { force: true });
+      if (shouldRegisterDevice) {
+        await registarDispositivoPushApp(false, { skipPermission: true });
+      } else {
+        await enviarNotificacaoApp("App Braga", "NotificaÃƒÂ§ÃƒÂµes ativas neste dispositivo.", "test-web", { force: true });
+      }
     } else {
-      mostrarMensagem("PermissÃ£o de notificaÃ§Ãµes recusada.", "erro");
+      mostrarMensagem("PermissÃƒÂ£o de notificaÃƒÂ§ÃƒÂµes recusada.", "erro");
     }
   } catch (error) {
     console.error(error);
-    mostrarMensagem("Erro ao ativar notificaÃ§Ãµes.", "erro");
+    mostrarMensagem("Erro ao ativar notificaÃƒÂ§ÃƒÂµes.", "erro");
   }
 }
 
@@ -1818,7 +2039,7 @@ async function guardarConfigNotificacoesApp(overrides = null) {
   aplicarConfigNotificacoesApp(data);
 
   if (!window.db || !window.db.collection) {
-    mostrarMensagem("Firebase indisponÃ­vel para guardar notificaÃ§Ãµes.", "erro");
+    mostrarMensagem("Firebase indisponÃƒÂ­vel para guardar notificaÃƒÂ§ÃƒÂµes.", "erro");
     return;
   }
 
@@ -1827,10 +2048,10 @@ async function guardarConfigNotificacoesApp(overrides = null) {
       ...data,
       updatedAt: Date.now()
     }, { merge: true });
-    mostrarMensagem("NotificaÃ§Ãµes atualizadas.");
+    mostrarMensagem("NotificaÃƒÂ§ÃƒÂµes atualizadas.");
   } catch (error) {
     console.error(error);
-    mostrarMensagem("Erro ao guardar notificaÃ§Ãµes.", "erro");
+    mostrarMensagem("Erro ao guardar notificaÃƒÂ§ÃƒÂµes.", "erro");
   }
 }
 
@@ -1865,7 +2086,7 @@ async function enviarNotificacaoApp(title, body, tag = "app-braga", options = {}
     new Notification(title, { body, tag });
     return true;
   } catch (error) {
-    console.error("Erro notificaÃ§Ã£o:", error);
+    console.error("Erro notificaÃƒÂ§ÃƒÂ£o:", error);
     return false;
   }
 }
@@ -1878,7 +2099,7 @@ function buildAlertasNotificacoesApp() {
       .filter((item) => item.tipo === "stock")
       .forEach((item) => alerts.push({
         key: `stock-${item.titulo}-${item.detalhe}`,
-        title: "Stock abaixo do mÃ­nimo",
+        title: "Stock abaixo do mÃƒÂ­nimo",
         body: `${item.titulo}: ${item.detalhe}`,
         url: "html/stock.html"
       }));
@@ -1905,7 +2126,7 @@ function buildAlertasNotificacoesApp() {
       .slice(0, 5)
       .forEach((item) => alerts.push({
         key: `manut-${item.idDoc || item.ip || item.numeroSerie || item.modelo || item.dataPedido}`,
-        title: "ManutenÃ§Ã£o pendente",
+        title: "ManutenÃƒÂ§ÃƒÂ£o pendente",
         body: `${item.modelo || item.numeroSerie || "Impressora"} - ${item.localizacao || item.ip || "sem local"}`,
         url: "html/manutencao-impressoras.html"
       }));
@@ -1977,8 +2198,8 @@ async function notificarAlteracaoRealtimeApp(collectionKey, snapshot) {
       url: "html/stock.html"
     },
     manutencoes: {
-      title: "ManutenÃ§Ã£o atualizada",
-      label: "ManutenÃ§Ãµes",
+      title: "ManutenÃƒÂ§ÃƒÂ£o atualizada",
+      label: "ManutenÃƒÂ§ÃƒÂµes",
       url: "html/manutencao-impressoras.html"
     },
     printers: {
@@ -2022,68 +2243,242 @@ async function testarNotificacaoApp() {
   mostrarMensagem(ok ? "Notificacao de teste enviada." : "Ativa as permissoes de notificacoes primeiro.", ok ? "sucesso" : "erro");
 }
 
-async function criarPedidoNotificacaoCloudApp(payload = {}) {
-  if (!window.db?.collection) throw new Error("Firestore indisponivel.");
-  const doc = await window.db.collection("notificationRequests").add({
-    title: payload.title || "App Braga",
-    body: payload.body || "Nova notificacao da App Braga.",
-    url: payload.url || "https://picafern-commits.github.io/App-Tablet/html/config.html",
-    event: payload.event || "manual-cloud-alert",
-    requestedBy: payload.requestedBy || labelDispositivoNotificacaoApp({ deviceType: getNotificationDeviceTypeApp() }),
-    requestedFrom: getNotificationDeviceTypeApp(),
-    requestedDeviceKey: getNotificationDeviceKeyApp(),
-    excludeDeviceKey: payload.excludeCurrent === false ? "" : getNotificationDeviceKeyApp(),
-    requestedUserAgent: navigator.userAgent || "",
-    requireInteraction: payload.requireInteraction !== false,
-    createdAt: Date.now()
+async function obterDispositivoAtualNotificacoesApp() {
+  if (!window.db?.collection) return null;
+  const snapshot = await window.db.collection("notificationTokens").get();
+  let fallback = null;
+  let current = null;
+  snapshot.forEach((doc) => {
+    const item = { id: doc.id, ...doc.data() };
+    if (item.active === false) return;
+    const sameDevice = item.deviceKey === getNotificationDeviceKeyApp();
+    const sameToken = appNotificationState.fcmToken && item.token === appNotificationState.fcmToken;
+    const sameEndpoint = appNotificationState.pushSubscriptionEndpoint &&
+      (item.endpoint === appNotificationState.pushSubscriptionEndpoint || item.pushSubscription?.endpoint === appNotificationState.pushSubscriptionEndpoint);
+    if (sameEndpoint || sameToken || item.id === appNotificationState.restoredTokenDocId) current = item;
+    if (!fallback && sameDevice) fallback = item;
   });
-  return doc;
+  return current || fallback;
+}
+
+function getDispositivosPushRemotoElectronApp() {
+  const sorted = [...electronPushBridgeState.devices]
+    .filter((item) => item.active !== false)
+    .filter((item) => item.pushSubscription?.endpoint)
+    .sort((a, b) => normalizeTimestampApp(b.updatedAt || b.createdAt) - normalizeTimestampApp(a.updatedAt || a.createdAt));
+  const unique = new Map();
+  sorted.forEach((item) => {
+    const key = item.deviceKey || item.pushSubscription?.endpoint || item.id;
+    if (!unique.has(key)) unique.set(key, item);
+  });
+  return Array.from(unique.values());
+}
+
+async function processarPedidoPushElectronApp(doc) {
+  if (!doc?.exists || !window.db?.collection || !window.electronAPI?.sendWebPushBroadcast) return;
+  const requestId = doc.id;
+  if (electronPushBridgeState.processing.has(requestId)) return;
+  const fields = doc.data() || {};
+  if (fields.forceCloud === true) return;
+  const status = String(fields.status || "");
+  const alreadyTriedByElectron = fields.electronFallbackTried === true || fields.processedBy === "electron-client-bridge";
+  const canRetryFailedByCloud = status === "failed" && !alreadyTriedByElectron && Number(fields.sent || 0) <= 0;
+  if (status && status !== "created" && !canRetryFailedByCloud) return;
+  if (normalizeTimestampApp(fields.createdAt) && normalizeTimestampApp(fields.createdAt) < electronPushBridgeState.startedAt - 60000) return;
+
+  electronPushBridgeState.processing.add(requestId);
+  try {
+    await doc.ref.set({
+      status: "processing",
+      processingAt: Date.now(),
+      processedBy: "electron-client-bridge",
+      electronFallbackTried: true
+    }, { merge: true });
+
+    const title = fields.title || "App Braga";
+    const body = fields.body || "Teste remoto de notificacao.";
+    const url = fields.url || "https://picafern-commits.github.io/App-Tablet/html/config.html";
+    let devices = getDispositivosPushRemotoElectronApp();
+    if (!devices.length) {
+      const tokensSnap = await window.db.collection("notificationTokens").get();
+      electronPushBridgeState.devices = [];
+      tokensSnap.forEach((tokenDoc) => electronPushBridgeState.devices.push({ id: tokenDoc.id, ...tokenDoc.data() }));
+      devices = getDispositivosPushRemotoElectronApp();
+    }
+    if (!devices.length) {
+      throw new Error("Nenhum iPhone ou Android com Web Push standard registado. Abre a app nesses dispositivos e carrega em Reparar registo.");
+    }
+    const result = await window.electronAPI.sendWebPushBroadcast({
+      title,
+      body,
+      devices,
+      data: {
+        collection: "notificationRequests",
+        event: fields.event || "manual-remote-test",
+        requestId,
+        tag: `manual-remote-test-${requestId}`,
+        url
+      }
+    });
+
+    const sent = Number(result?.sent || 0);
+    const failed = Number(result?.failed || 0);
+    await doc.ref.set({
+      status: sent > 0 ? "sent" : "failed",
+      sent,
+      failed,
+      deviceCount: Number(result?.deviceCount || devices.length || 0),
+      standardWebPushTargets: Number(result?.standardWebPushTargets || 0),
+      standardWebPushReady: result?.standardWebPushReady !== false,
+      error: result?.error || "",
+      finishedAt: Date.now(),
+      processedBy: "electron-client-bridge"
+    }, { merge: true });
+    await window.db.collection("config").doc("cloudNotifications").set({
+      provider: "electron-client-bridge",
+      region: "pc-local",
+      lastTitle: title,
+      lastBody: body,
+      lastEvent: fields.event || "manual-remote-test",
+      lastSent: sent,
+      lastFailed: failed,
+      lastError: result?.error || "",
+      lastDeviceCount: devices.length,
+      lastStandardWebPushTargets: Number(result?.standardWebPushTargets || 0),
+      standardWebPushReady: result?.standardWebPushReady !== false,
+      lastRunAt: Date.now(),
+      updatedAt: Date.now()
+    }, { merge: true });
+  } catch (error) {
+    console.error("Erro na ponte Electron Web Push:", error);
+    await doc.ref.set({
+      status: "failed",
+      error: error.message || String(error),
+      finishedAt: Date.now(),
+      processedBy: "electron-client-bridge"
+    }, { merge: true }).catch(() => {});
+  } finally {
+    electronPushBridgeState.processing.delete(requestId);
+  }
+}
+
+async function iniciarPontePushElectronApp(showMessage = false) {
+  if (!window.electronAPI?.sendWebPushBroadcast || !window.db?.collection) return false;
+  if (electronPushBridgeState.started) {
+    if (showMessage) mostrarMensagem("Ponte PC ja esta ligada.");
+    return true;
+  }
+  electronPushBridgeState.started = true;
+  electronPushBridgeState.startedAt = Date.now();
+  electronPushBridgeState.unsubscribeDevices = window.db.collection("notificationTokens").onSnapshot((snapshot) => {
+    electronPushBridgeState.devices = [];
+    snapshot.forEach((doc) => electronPushBridgeState.devices.push({ id: doc.id, ...doc.data() }));
+  }, (error) => console.error("Erro na ponte PC ao ler dispositivos:", error));
+  electronPushBridgeState.unsubscribeRequests = window.db.collection("notificationRequests").onSnapshot((snapshot) => {
+    snapshot.docChanges().forEach((change) => {
+      if (change.type === "added" || change.type === "modified") processarPedidoPushElectronApp(change.doc);
+    });
+  }, (error) => console.error("Erro na ponte PC ao ler pedidos:", error));
+  if (showMessage) mostrarMensagem("Ponte Electron ligada como apoio. A Cloud continua a ser o envio principal.", "sucesso");
+  await atualizarEstadoNotificacoesApp(false);
+  return true;
+}
+
+async function aguardarResultadoPedidoPushRemotoApp(requestRef, startedAt) {
+  const deadline = Date.now() + 45000;
+  while (Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 1400));
+    const requestDoc = await requestRef.get().catch(() => null);
+    const requestData = requestDoc?.exists ? requestDoc.data() || {} : {};
+    if (requestData.status === "sent") return requestData;
+    if (requestData.status === "failed") {
+      const electronCanRetry = requestData.forceCloud !== true && !!window.electronAPI?.sendWebPushBroadcast && requestData.electronFallbackTried !== true;
+      if (!electronCanRetry) return requestData;
+    }
+
+    const cloudDoc = await window.db.collection("config").doc("cloudNotifications").get().catch(() => null);
+    const cloudData = cloudDoc?.exists ? cloudDoc.data() || {} : null;
+    if (cloudData && normalizeTimestampApp(cloudData.lastRunAt) >= startedAt) {
+      return {
+        status: Number(cloudData.lastSent || 0) > 0 ? "sent" : "failed",
+        sent: cloudData.lastSent || 0,
+        failed: cloudData.lastFailed || 0,
+        deviceCount: cloudData.lastDeviceCount || 0,
+        standardWebPushTargets: cloudData.lastStandardWebPushTargets || 0,
+        standardWebPushReady: cloudData.standardWebPushReady,
+        credentialSource: cloudData.credentialSource || "",
+        error: cloudData.lastError || ""
+      };
+    }
+  }
+  return null;
 }
 
 async function testarPushRemotoNotificacoesApp() {
   try {
-    const doc = await criarPedidoNotificacaoCloudApp({
+    if (!window.db?.collection) throw new Error("Firestore indisponivel.");
+    setNotificationServiceText("notifyLastTestStatus", "A preparar", "warn");
+    setNotificationServiceText("notifyLastTestDetail", "A confirmar registo deste dispositivo");
+
+    if (!window.electronAPI?.showNotification) {
+      if (!("Notification" in window)) throw new Error("Este dispositivo nao suporta notificacoes Web.");
+      if (Notification.permission !== "granted") {
+        await pedirPermissaoNotificacoesApp();
+      } else {
+        await registarDispositivoPushApp(true, { skipPermission: true });
+      }
+    }
+
+    const currentDevice = await obterDispositivoAtualNotificacoesApp();
+    if (isIosAppBraga() && !isStandalonePwaAppBraga()) {
+      throw new Error("No iPhone tens de abrir a APP pelo icone do ecra principal para receber push.");
+    }
+    if (isIosAppBraga() && !currentDevice?.pushSubscription?.endpoint) {
+      throw new Error("O iPhone ainda nao criou Web Push standard. Carrega em Reparar registo e confirma que abriste pelo icone do ecra principal.");
+    }
+    if (!window.electronAPI?.showNotification && !currentDevice?.token && !currentDevice?.pushSubscription?.endpoint) {
+      throw new Error("Este dispositivo ainda nao tem token/endpoint Web Push remoto. Carrega em Reparar registo deste dispositivo.");
+    }
+
+    const startedAt = Date.now();
+    const requestRef = await window.db.collection("notificationRequests").add({
       title: "App Braga",
-      body: "Teste remoto Web Push recebido. Este teste funciona mesmo com a app fechada.",
+      body: "Teste remoto Web Push recebido. Este teste tambem funciona com a app fechada.",
+      url: "https://picafern-commits.github.io/App-Tablet/html/config.html",
       event: "manual-remote-test",
-      excludeCurrent: false,
-      requireInteraction: false
+      requestedDeviceDocId: currentDevice?.id || "",
+      requestedDeviceSource: currentDevice?.source || "",
+      requestedFrom: getNotificationDeviceTypeApp(),
+      requestedUserAgent: navigator.userAgent || "",
+      status: "created",
+      createdAt: startedAt
     });
-    setNotificationServiceText("notifyLastTestStatus", "Pedido enviado", "warn");
-    setNotificationServiceText("notifyLastTestDetail", `Pedido cloud criado: ${doc.id.slice(0, 8)}. Aguarda a Firebase Function.`);
-    mostrarMensagem("Pedido de push remoto enviado para a cloud.");
+    setNotificationServiceText("notifyLastTestStatus", "Pedido criado", "warn");
+    setNotificationServiceText("notifyLastTestDetail", "A aguardar resposta das Firebase Cloud Functions");
+
+    const result = await aguardarResultadoPedidoPushRemotoApp(requestRef, startedAt);
+    if (!result) {
+      setNotificationServiceText("notifyLastTestStatus", "Sem resposta", "bad");
+      setNotificationServiceText("notifyLastTestDetail", "Pedido criado, mas as Cloud Functions nao responderam");
+      mostrarMensagem("Pedido criado, mas as Firebase Cloud Functions nao responderam. Confirma o deploy das Functions.", "erro");
+      return;
+    }
+
+    const sent = Number(result.sent || 0);
+    const failed = Number(result.failed || 0);
+    const ok = result.status === "sent" && sent > 0;
+    setNotificationServiceText("notifyLastTestStatus", ok ? "Enviado" : "Falhou", ok ? "ok" : "bad");
+    const resultError = result.error ? ` - ${result.error}` : "";
+    const targetInfo = typeof result.standardWebPushTargets !== "undefined" ? ` - Web Push: ${Number(result.standardWebPushTargets || 0)}` : "";
+    setNotificationServiceText("notifyLastTestDetail", `Enviados: ${sent} - falhas: ${failed}${targetInfo}${resultError}`);
+    if (result.standardWebPushReady === false && isIosAppBraga()) {
+      setNotificationDeviceDiagnostic("Falta configurar a VAPID privada nas Firebase Cloud Functions para o iPhone receber Web Push.");
+    }
+    mostrarMensagem(ok ? "Push remoto enviado pelo servidor." : (result.error || "O servidor respondeu, mas nao enviou push. Ve as credenciais Web Push."), ok ? "sucesso" : "erro");
   } catch (error) {
     console.error("Erro no teste remoto push:", error);
     setNotificationServiceText("notifyLastTestStatus", "Falhou", "bad");
-    setNotificationServiceText("notifyLastTestDetail", error.message || "Erro desconhecido");
     mostrarMensagem(error.message || "Nao foi possivel criar o teste remoto.", "erro");
-  }
-}
-
-async function enviarAlertaGeralNotificacoesApp() {
-  try {
-    const input = document.getElementById("notifyAlertMessage");
-    const rawMessage = String(input?.value || "").trim();
-    const message = rawMessage || "Alerta geral enviado pela App Braga.";
-    const sender = labelDispositivoNotificacaoApp({ deviceType: getNotificationDeviceTypeApp() });
-    const doc = await criarPedidoNotificacaoCloudApp({
-      title: "🚨 Alerta App Braga",
-      body: `${message} · Enviado por ${sender}`,
-      event: "manual-general-alert",
-      requestedBy: sender,
-      excludeCurrent: true,
-      requireInteraction: true,
-      url: "https://picafern-commits.github.io/App-Tablet/html/config.html"
-    });
-    if (input) input.value = "";
-    setNotificationServiceText("notifyLastTestStatus", "Alerta enviado", "warn");
-    setNotificationServiceText("notifyLastTestDetail", `Pedido ${doc.id.slice(0, 8)} enviado para todos os outros dispositivos.`);
-    mostrarMensagem("Alerta enviado para todos os outros dispositivos.", "sucesso");
-  } catch (error) {
-    console.error("Erro ao enviar alerta geral:", error);
-    setNotificationServiceText("notifyLastTestStatus", "Falhou", "bad");
-    setNotificationServiceText("notifyLastTestDetail", error.message || "Erro ao enviar alerta");
-    mostrarMensagem(error.message || "Nao foi possivel enviar o alerta.", "erro");
   }
 }
 
@@ -2194,7 +2589,6 @@ function carregarScriptAppBraga(src) {
 }
 
 async function garantirFirebaseMessagingApp() {
-  if (window.electronAPI?.showNotification) throw new Error("FCM Web Push e para Web/PWA; Electron usa notificacoes nativas.");
   if (!window.isSecureContext) throw new Error("Push Service precisa de HTTPS.");
   if (!("serviceWorker" in navigator)) throw new Error("Service Worker indisponivel neste dispositivo.");
   if (!("PushManager" in window)) throw new Error("Push Service indisponivel neste dispositivo/browser.");
@@ -2202,9 +2596,9 @@ async function garantirFirebaseMessagingApp() {
   if (!firebase.messaging) {
     await carregarScriptAppBraga("https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js");
   }
-  if (!firebase.messaging) throw new Error("Firebase Messaging indisponÃ­vel.");
+  if (!firebase.messaging) throw new Error("Firebase Messaging indisponÃƒÂ­vel.");
   const supported = firebase.messaging.isSupported ? await Promise.resolve(firebase.messaging.isSupported()) : true;
-  if (!supported) throw new Error("Este browser/dispositivo nÃ£o suporta Firebase Messaging.");
+  if (!supported) throw new Error("Este browser/dispositivo nÃƒÂ£o suporta Firebase Messaging.");
   return firebase.messaging();
 }
 
@@ -2298,6 +2692,7 @@ async function registarPushSubscriptionPadraoApp(vapidKey, options = {}) {
     permission: "Notification" in window ? Notification.permission : "unsupported",
     pushAvailable: true,
     vapidPublicKey: vapidKey,
+    ...getNotificationDeviceProfilePayloadApp(),
     updatedAt: Date.now(),
     createdAt: Date.now()
   }, { merge: true });
@@ -2327,10 +2722,10 @@ async function registarFcmWebPushApp(vapidKey) {
     platform: navigator.platform || "",
     permission: "Notification" in window ? Notification.permission : "unsupported",
     pushAvailable: true,
+    ...getNotificationDeviceProfilePayloadApp(),
     updatedAt: Date.now(),
     createdAt: Date.now()
   }, { merge: true });
-  await desativarRegistosAntigosDispositivoApp(docId, deviceKey);
   return { docId, token };
 }
 
@@ -2388,6 +2783,92 @@ function getNotificationDeviceKeyApp() {
   ].join("|"))}`;
 }
 
+function inferNotificationDeviceRoleApp() {
+  if (window.electronAPI?.showNotification) return "pc-casa";
+  if (isIosAppBraga()) return "iphone";
+  if (/android/i.test(navigator.userAgent || "") || document.body.classList.contains("device-tablet")) return "tablet-android";
+  return "pc-trabalho";
+}
+
+function labelNotificationDeviceRoleApp(role = "") {
+  const map = {
+    "pc-casa": "PC de casa",
+    "pc-trabalho": "PC de trabalho",
+    "tablet-android": "Tablet Android",
+    iphone: "iPhone",
+    outro: "Outro dispositivo"
+  };
+  return map[role] || "Dispositivo";
+}
+
+function getNotificationDeviceProfileApp() {
+  let stored = {};
+  try {
+    stored = JSON.parse(localStorage.getItem(APP_BRAGA_DEVICE_PROFILE_STORAGE_KEY) || "{}") || {};
+  } catch {
+    stored = {};
+  }
+  const role = stored.role || inferNotificationDeviceRoleApp();
+  const fallbackName = labelNotificationDeviceRoleApp(role);
+  return {
+    role,
+    name: String(stored.name || fallbackName).trim() || fallbackName,
+    deviceKey: getNotificationDeviceKeyApp()
+  };
+}
+
+function setNotificationDeviceProfileApp(profile = {}) {
+  const role = profile.role || inferNotificationDeviceRoleApp();
+  const name = String(profile.name || labelNotificationDeviceRoleApp(role)).trim() || labelNotificationDeviceRoleApp(role);
+  const data = { role, name, deviceKey: getNotificationDeviceKeyApp(), updatedAt: Date.now() };
+  try {
+    localStorage.setItem(APP_BRAGA_DEVICE_PROFILE_STORAGE_KEY, JSON.stringify(data));
+  } catch {}
+  return data;
+}
+
+function getNotificationDeviceProfilePayloadApp() {
+  const profile = getNotificationDeviceProfileApp();
+  return {
+    notificationDeviceRole: profile.role,
+    notificationDeviceName: profile.name,
+    deviceRole: profile.role,
+    deviceName: profile.name
+  };
+}
+
+async function guardarPerfilDispositivoFirestoreApp(profile = getNotificationDeviceProfileApp()) {
+  if (!window.db?.collection) return;
+  await window.db.collection("notificationDeviceProfiles").doc(getNotificationDeviceKeyApp()).set({
+    ...profile,
+    appVersion: APP_VERSION,
+    deviceType: getNotificationDeviceTypeApp(),
+    platform: navigator.platform || "",
+    userAgent: navigator.userAgent || "",
+    updatedAt: Date.now()
+  }, { merge: true });
+}
+
+async function aplicarPerfilDispositivoARegistosPushApp(profile = getNotificationDeviceProfileApp()) {
+  if (!window.db?.collection) return;
+  const snapshot = await window.db.collection("notificationTokens").get();
+  const batch = window.db.batch();
+  let changes = 0;
+  snapshot.forEach((doc) => {
+    const data = doc.data() || {};
+    if (data.deviceKey !== getNotificationDeviceKeyApp()) return;
+    batch.set(doc.ref, {
+      notificationDeviceRole: profile.role,
+      notificationDeviceName: profile.name,
+      deviceRole: profile.role,
+      deviceName: profile.name,
+      updatedAt: Date.now()
+    }, { merge: true });
+    changes += 1;
+  });
+  if (changes) await batch.commit();
+}
+
 async function desativarRegistosAntigosDispositivoApp(currentDocId, deviceKey) {
   try {
     if (!window.db?.collection || !deviceKey) return;
@@ -2433,6 +2914,8 @@ function formatTimestampApp(value) {
 }
 
 function labelDispositivoNotificacaoApp(item = {}) {
+  if (item.notificationDeviceName || item.deviceName) return item.notificationDeviceName || item.deviceName;
+  if (item.notificationDeviceRole || item.deviceRole) return labelNotificationDeviceRoleApp(item.notificationDeviceRole || item.deviceRole);
   const type = String(item.deviceType || item.platform || "").toLowerCase();
   if (type.includes("electron")) return "PC Electron";
   if (type.includes("phone")) return "iPhone / Telemovel";
@@ -2445,6 +2928,7 @@ function labelMetodoNotificacaoApp(item = {}) {
   if (item.source === "electron-native") return "Electron nativo";
   if (item.pushSubscription?.endpoint) return "Web Push standard";
   if (item.token) return "Firebase FCM";
+  if (item.source === "web-local-no-push") return "Local sem push cloud";
   return item.source || "Registo local";
 }
 
@@ -2469,19 +2953,77 @@ function renderResumoDispositivosNotificacoesApp(items = []) {
   setNotificationServiceText("notifyActiveDevicesDetail", activeItems.length ? remoteText : "Sem dispositivos registados");
 }
 
+function atualizarDiagnosticoDispositivoNotificacoesApp(items = []) {
+  const activeItems = items.filter((item) => item.active !== false);
+  const currentItem = activeItems.find((item) => item.id === appNotificationState.restoredTokenDocId ||
+    (appNotificationState.fcmToken && item.token === appNotificationState.fcmToken) ||
+    (appNotificationState.pushSubscriptionEndpoint && (item.endpoint === appNotificationState.pushSubscriptionEndpoint || item.pushSubscription?.endpoint === appNotificationState.pushSubscriptionEndpoint)));
+  const permission = notificationPermissionApp();
+  const isIos = isIosAppBraga();
+  const isStandalone = isStandalonePwaAppBraga();
+  const isElectronNative = currentItem?.source === "electron-native";
+  const hasRemotePush = !!(currentItem?.token || currentItem?.pushSubscription?.endpoint);
+  const hasStandardPush = !!currentItem?.pushSubscription?.endpoint;
+  const parts = [
+    `Permissao: ${permission}`,
+    `Push: ${webPushDisponivelApp() ? "disponivel" : "indisponivel"}`,
+    `PWA: ${isStandalone ? "sim" : "nao"}`
+  ];
+
+  if (currentItem) {
+    parts.push(isElectronNative ? "PC Electron: registo nativo/local" : (hasRemotePush ? "registo remoto OK" : "registo apenas local"));
+  } else if (permission === "granted" || permission === "electron") {
+    parts.push("carrega em Reparar registo");
+  }
+
+  if (isIos && !isStandalone) {
+    parts.push("iPhone: abrir pelo icone do ecra principal");
+  } else if (isIos && !hasStandardPush) {
+    parts.push("iPhone: falta Web Push standard neste dispositivo");
+  }
+
+  setNotificationDeviceDiagnostic(parts.join(" | "));
+}
+
 async function atualizarEstadoNotificacoesApp(showMessage = false) {
   const service = document.getElementById("notifyServiceStatus");
   if (!service) return;
+
+  async function renderElectronBridgeStatus() {
+    if (!window.electronAPI?.getNotificationStatus) return false;
+    const status = await window.electronAPI.getNotificationStatus().catch(() => null);
+    if (!status) return false;
+    const readiness = status.pushReadiness || {};
+    const bridgeReady = status.webPushBridgeReady === true;
+    setNotificationServiceText("notifyServiceStatus", bridgeReady ? "Ponte Electron" : "Electron incompleto", bridgeReady ? "ok" : "warn");
+    setNotificationServiceText("notifyServiceDetail", bridgeReady ? "PC Electron pronto para enviar Web Push" : "Guarda a VAPID publica e privada neste PC");
+    setNotificationServiceText("notifyCredentialsStatus", bridgeReady ? "Chaves OK" : "Faltam chaves", bridgeReady ? "ok" : "warn");
+    setNotificationServiceText("notifyCredentialsDetail", bridgeReady
+      ? "VAPID local guardada no Electron"
+      : `Publica: ${readiness.vapidPublicReady ? "OK" : "falta"} - Privada: ${readiness.vapidPrivateReady ? "OK" : "falta"}`);
+    return true;
+  }
+
+  if (await renderElectronBridgeStatus()) {
+    if (showMessage) mostrarMensagem("Estado da ponte Electron atualizado.");
+    return;
+  }
 
   async function renderCloudFunctionsStatus() {
     if (!window.db?.collection) return false;
     const doc = await window.db.collection("config").doc("cloudNotifications").get().catch(() => null);
     const data = doc?.exists ? doc.data() || {} : null;
     if (!data) return false;
+    const standardReady = data.standardWebPushReady !== false;
     setNotificationServiceText("notifyServiceStatus", "Cloud Functions", "ok");
     setNotificationServiceText("notifyServiceDetail", data.lastRunAt ? `Ultimo envio: ${formatTimestampApp(data.lastRunAt)}` : "Ativo no Firebase");
-    setNotificationServiceText("notifyCredentialsStatus", data.standardWebPushReady === false ? "FCM OK" : "OK", data.standardWebPushReady === false ? "warn" : "ok");
-    setNotificationServiceText("notifyCredentialsDetail", `Firebase ${data.region || "europe-west1"} - enviados: ${data.lastSent ?? 0} - falhas: ${data.lastFailed ?? 0} - alvos: ${data.lastTargets ?? "-"}`);
+    setNotificationServiceText("notifyCredentialsStatus", standardReady ? "Web Push OK" : "Falta Web Push", standardReady ? "ok" : "bad");
+    setNotificationServiceText("notifyCredentialsDetail", standardReady
+      ? `Firebase ${data.region || "europe-west1"} - enviados: ${data.lastSent ?? 0} - falhas: ${data.lastFailed ?? 0}`
+      : "Firebase sem secrets VAPID privadas: iPhone nao recebe push remoto.");
+    if (!standardReady && isIosAppBraga()) {
+      setNotificationDeviceDiagnostic("iPhone precisa de Web Push standard: configurar secrets VAPID privadas nas Cloud Functions.");
+    }
     return true;
   }
 
@@ -2492,16 +3034,75 @@ async function atualizarEstadoNotificacoesApp(showMessage = false) {
 
   const permission = notificationPermissionApp();
   const ok = permission === "granted";
-  setNotificationServiceText("notifyServiceStatus", ok ? "Web pronta" : "PermissÃ£o pendente", ok ? "ok" : "warn");
-  setNotificationServiceText("notifyServiceDetail", ok ? "A aguardar primeiro envio das Cloud Functions" : "Ativa as notificaÃ§Ãµes neste dispositivo");
+  setNotificationServiceText("notifyServiceStatus", ok ? "Web pronta" : "PermissÃƒÂ£o pendente", ok ? "ok" : "warn");
+  setNotificationServiceText("notifyServiceDetail", ok ? "A aguardar primeiro envio das Cloud Functions" : "Ativa as notificaÃƒÂ§ÃƒÂµes neste dispositivo");
   setNotificationServiceText("notifyCredentialsStatus", appNotificationState.vapidKey ? "VAPID OK" : "Falta VAPID", appNotificationState.vapidKey ? "ok" : "warn");
   setNotificationServiceText("notifyCredentialsDetail", "Cloud Functions envia as notificacoes no Firebase");
   if (showMessage) mostrarMensagem(ok ? "Notificacoes web prontas." : "Ativa permissoes e regista o dispositivo.", ok ? "sucesso" : "erro");
 }
 
 async function ligarServicoNotificacoesApp() {
-  mostrarMensagem("O envio remoto corre nas Cloud Functions. Usa Testar push remoto para validar.", "sucesso");
+  if (window.electronAPI?.sendWebPushBroadcast) {
+    const ok = await iniciarPontePushElectronApp(true);
+    if (ok) return;
+  }
+  mostrarMensagem("O envio remoto corre nas Firebase Cloud Functions.", "sucesso");
   await atualizarEstadoNotificacoesApp(false);
+}
+
+async function importarServiceAccountNotificacoesApp() {
+  if (!window.electronAPI?.importServiceAccount) {
+    mostrarMensagem("A app desktop instalada precisa de atualizar para importar automaticamente o service-account.json.", "erro");
+    return;
+  }
+  const result = await window.electronAPI.importServiceAccount().catch((error) => ({ ok: false, error: error.message }));
+  if (result?.canceled) return;
+  if (!result?.ok) {
+    mostrarMensagem(result?.error || "Nao foi possivel importar o service-account.json.", "erro");
+    return;
+  }
+  setNotificationDeviceDiagnostic(`Service account importada para: ${result.path}`);
+  mostrarMensagem("Service account importada. O envio remoto fica a cargo das Cloud Functions.", "sucesso");
+  await atualizarEstadoNotificacoesApp(true);
+}
+
+async function configurarVapidPrivadaNotificacoesApp() {
+  if (!window.electronAPI?.setPushVapidKeys) {
+    mostrarMensagem("A app desktop instalada precisa de atualizar para guardar a VAPID privada.", "erro");
+    return;
+  }
+  const publicKey = resolveVapidPublicKeyApp(document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "");
+  const input = document.getElementById("notifyVapidPrivateKey");
+  const privateKey = String(input?.value || "").trim();
+  if (!privateKey) {
+    mostrarMensagem("Cola primeiro a VAPID privada.", "erro");
+    return;
+  }
+  if (!publicKey) {
+    mostrarMensagem("Cola primeiro a VAPID publica.", "erro");
+    return;
+  }
+  await guardarConfigNotificacoesApp({ notificationEnabled: true, notificationVapidKey: publicKey });
+  const result = await window.electronAPI.setPushVapidKeys({
+    publicKey,
+    privateKey,
+    subject: "mailto:admin@appbraga.pt"
+  }).catch((error) => ({ ok: false, error: error.message }));
+  if (!result?.ok) {
+    mostrarMensagem(result?.error || "Nao foi possivel guardar a VAPID privada.", "erro");
+    return;
+  }
+  setNotificationDeviceDiagnostic(`VAPID privada guardada neste PC. Ficheiro local: ${result.path}`);
+  if (input) input.value = "";
+  mostrarMensagem("VAPID privada configurada neste PC.", "sucesso");
+  await iniciarPontePushElectronApp(false);
+  await atualizarEstadoNotificacoesApp(true);
+}
+
+function toggleVapidPrivadaVisivelApp() {
+  const input = document.getElementById("notifyVapidPrivateKey");
+  if (!input) return;
+  input.type = input.type === "password" ? "text" : "password";
 }
 
 function renderDispositivosNotificacoesApp(items = []) {
@@ -2518,6 +3119,7 @@ function renderDispositivosNotificacoesApp(items = []) {
   });
   const activeItems = Array.from(uniqueMap.values());
   renderResumoDispositivosNotificacoesApp(activeItems);
+  atualizarDiagnosticoDispositivoNotificacoesApp(activeItems);
   atualizarEstadoNotificacoesApp(false);
 
   if (!activeItems.length) {
@@ -2528,7 +3130,7 @@ function renderDispositivosNotificacoesApp(items = []) {
   host.innerHTML = activeItems.map((item) => {
     const isCurrent = item.id === appNotificationState.restoredTokenDocId ||
       (appNotificationState.fcmToken && item.token === appNotificationState.fcmToken) ||
-      (appNotificationState.pushSubscriptionEndpoint && item.endpoint === appNotificationState.pushSubscriptionEndpoint);
+      (appNotificationState.pushSubscriptionEndpoint && (item.endpoint === appNotificationState.pushSubscriptionEndpoint || item.pushSubscription?.endpoint === appNotificationState.pushSubscriptionEndpoint));
     const device = labelDispositivoNotificacaoApp(item);
     const permission = item.permission || "sem dados";
     const mode = labelMetodoNotificacaoApp(item);
@@ -2567,6 +3169,371 @@ function carregarDispositivosNotificacoesApp(force = false) {
   });
 }
 
+function isPaginaNotificacoesCloudApp() {
+  return /notificacoes\.html$/i.test(location.pathname || "");
+}
+
+function setCloudNotificationTextApp(id, text, statusClass = "") {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text || "";
+  if (statusClass) {
+    el.classList.remove("ok", "warn", "bad");
+    el.classList.add(statusClass);
+  }
+}
+
+function setCloudNotificationDiagnosticApp(text, type = "") {
+  const el = document.getElementById("cloudNotificationDiagnostic");
+  if (el) {
+    el.textContent = text || "";
+    el.classList.remove("ok", "warn", "bad");
+    if (type) el.classList.add(type);
+  }
+  if (text && typeof setNotificationDeviceDiagnostic === "function") setNotificationDeviceDiagnostic(text);
+}
+
+function cloudNotificationSettingsRefApp() {
+  if (!window.db?.collection) return null;
+  return window.db.collection(APP_BRAGA_NOTIFICATION_CONFIG_COLLECTION).doc(APP_BRAGA_NOTIFICATION_CLOUD_DOC);
+}
+
+function readCloudNotificationFormApp() {
+  const enabled = document.getElementById("cloudNotifyEnabled")?.checked === true;
+  return {
+    enabled,
+    notificationEnabled: enabled,
+    vapidPublicKey: resolveVapidPublicKeyApp(document.getElementById("cloudVapidPublic")?.value || appNotificationState.vapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || ""),
+    vapidPrivateKey: String(document.getElementById("cloudVapidPrivate")?.value || "").trim(),
+    vapidSubject: String(document.getElementById("cloudVapidSubject")?.value || APP_BRAGA_DEFAULT_VAPID_SUBJECT).trim() || APP_BRAGA_DEFAULT_VAPID_SUBJECT,
+    alerts: {
+      tonerZero: document.getElementById("cloudAlertTonerZero")?.checked !== false,
+      tonerLow25: document.getElementById("cloudAlertTonerLow")?.checked !== false,
+      tonerChange: document.getElementById("cloudAlertTonerChange")?.checked !== false,
+      stockMin: document.getElementById("cloudAlertStock")?.checked !== false,
+      maintenance: document.getElementById("cloudAlertMaintenance")?.checked !== false,
+      radios: document.getElementById("cloudAlertRadios")?.checked !== false
+    }
+  };
+}
+
+function applyCloudNotificationFormApp(settings = {}) {
+  const alerts = settings.alerts || {};
+  const setChecked = (id, value, fallback = true) => {
+    const el = document.getElementById(id);
+    if (el) el.checked = typeof value === "undefined" ? fallback : value === true;
+  };
+  setChecked("cloudNotifyEnabled", settings.enabled ?? settings.notificationEnabled, true);
+  const publicInput = document.getElementById("cloudVapidPublic");
+  const privateInput = document.getElementById("cloudVapidPrivate");
+  const subjectInput = document.getElementById("cloudVapidSubject");
+  if (publicInput) publicInput.value = settings.vapidPublicKey || settings.notificationVapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "";
+  if (privateInput) privateInput.value = settings.vapidPrivateKey ? String(settings.vapidPrivateKey) : "";
+  if (subjectInput) subjectInput.value = settings.vapidSubject || APP_BRAGA_DEFAULT_VAPID_SUBJECT;
+  setChecked("cloudAlertTonerZero", alerts.tonerZero ?? settings.notificationTonerZero, true);
+  setChecked("cloudAlertTonerLow", alerts.tonerLow25 ?? settings.notificationTonerLow25, true);
+  setChecked("cloudAlertTonerChange", alerts.tonerChange ?? settings.notificationTonerChange, true);
+  setChecked("cloudAlertStock", alerts.stockMin ?? settings.notificationStockMin, true);
+  setChecked("cloudAlertMaintenance", alerts.maintenance ?? settings.notificationMaintenance, true);
+  setChecked("cloudAlertRadios", alerts.radios ?? settings.notificationRadios, true);
+  appNotificationState.vapidKey = resolveVapidPublicKeyApp(settings.vapidPublicKey || settings.notificationVapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "");
+}
+
+function atualizarRececaoEsperadaDispositivoApp() {
+  const field = document.getElementById("cloudDeviceExpected");
+  if (!field) return;
+  const role = document.getElementById("cloudDeviceRole")?.value || getNotificationDeviceProfileApp().role;
+  if (role === "pc-casa") field.value = "Gestao + pode receber quando app/segundo plano estiver ativo";
+  else if (role === "pc-trabalho") field.value = "Cliente limitado; nao guardar chaves privadas";
+  else if (role === "tablet-android") field.value = "Web Push standard esperado";
+  else if (role === "iphone") field.value = "Web Push standard so pela app no ecra principal";
+  else field.value = "Rececao conforme suporte do dispositivo";
+}
+
+function applyDeviceProfileFormApp() {
+  const profile = getNotificationDeviceProfileApp();
+  const nameInput = document.getElementById("cloudDeviceName");
+  const roleInput = document.getElementById("cloudDeviceRole");
+  if (nameInput) nameInput.value = profile.name || "";
+  if (roleInput) {
+    roleInput.value = profile.role || inferNotificationDeviceRoleApp();
+    roleInput.onchange = atualizarRececaoEsperadaDispositivoApp;
+  }
+  atualizarRececaoEsperadaDispositivoApp();
+}
+
+function readDeviceProfileFormApp() {
+  const role = document.getElementById("cloudDeviceRole")?.value || inferNotificationDeviceRoleApp();
+  const name = document.getElementById("cloudDeviceName")?.value || labelNotificationDeviceRoleApp(role);
+  return setNotificationDeviceProfileApp({ role, name });
+}
+
+async function guardarIdentidadeDispositivoNotificacoesApp(showMessage = true) {
+  try {
+    const profile = readDeviceProfileFormApp();
+    await guardarPerfilDispositivoFirestoreApp(profile);
+    await aplicarPerfilDispositivoARegistosPushApp(profile);
+    applyDeviceProfileFormApp();
+    setCloudNotificationDiagnosticApp(`Identidade guardada: ${profile.name}.`, "ok");
+    if (showMessage) mostrarMensagem("Identidade do dispositivo guardada.", "sucesso");
+    carregarDispositivosCloudNotificacoesApp(true);
+    return profile;
+  } catch (error) {
+    setCloudNotificationDiagnosticApp(error.message || "Erro ao guardar identidade do dispositivo.", "bad");
+    if (showMessage) mostrarMensagem(error.message || "Erro ao guardar identidade.", "erro");
+    return null;
+  }
+}
+
+function renderCloudDevicesNotificacoesApp(items = []) {
+  const host = document.getElementById("cloudDevicesList");
+  if (!host) return;
+  const sortedActive = items
+    .filter((item) => item.active !== false)
+    .sort((a, b) => normalizeTimestampApp(b.updatedAt || b.createdAt) - normalizeTimestampApp(a.updatedAt || a.createdAt));
+  const uniqueMap = new Map();
+  sortedActive.forEach((item) => {
+    const key = item.deviceKey || item.pushSubscription?.endpoint || item.token || item.id;
+    if (!uniqueMap.has(key)) uniqueMap.set(key, item);
+  });
+  const activeItems = Array.from(uniqueMap.values());
+  const webPushItems = activeItems.filter((item) => item.pushSubscription?.endpoint);
+  setCloudNotificationTextApp("cloudDevicesStatus", `${activeItems.length} registados`, activeItems.length ? "ok" : "warn");
+  setCloudNotificationTextApp("cloudDevicesDetail", `${webPushItems.length} com Web Push standard pronto para cloud`);
+  if (activeItems.length && !webPushItems.length) {
+    setCloudNotificationDiagnosticApp("A cloud nao tem nenhum alvo Web Push standard. No Android/iPhone abre a app instalada e carrega em Reparar este dispositivo.", "warn");
+  }
+
+  if (!activeItems.length) {
+    host.innerHTML = `<div class="empty-state mini">Ainda nao ha dispositivos registados.</div>`;
+    return;
+  }
+
+  host.innerHTML = activeItems.map((item) => {
+    const isCurrent = item.id === appNotificationState.restoredTokenDocId ||
+      (appNotificationState.fcmToken && item.token === appNotificationState.fcmToken) ||
+      (appNotificationState.pushSubscriptionEndpoint && (item.endpoint === appNotificationState.pushSubscriptionEndpoint || item.pushSubscription?.endpoint === appNotificationState.pushSubscriptionEndpoint));
+    const device = labelDispositivoNotificacaoApp(item);
+    const role = labelNotificationDeviceRoleApp(item.notificationDeviceRole || item.deviceRole || "");
+    const mode = labelMetodoNotificacaoApp(item);
+    const permission = item.permission || "sem dados";
+    const updated = formatTimestampApp(item.updatedAt || item.createdAt);
+    const ready = !!item.pushSubscription?.endpoint;
+    return `
+      <div class="notification-device-card ${isCurrent ? "is-current" : ""}">
+        <div>
+          <strong>${escapeHtmlAppBraga(device)}</strong>
+          <span>${escapeHtmlAppBraga(role)} - ${escapeHtmlAppBraga(mode)} - ${escapeHtmlAppBraga(permission)}</span>
+          <small>Ultimo contacto: ${escapeHtmlAppBraga(updated)}</small>
+        </div>
+        <span class="health-status ${ready ? "ok" : "warn"}">${isCurrent ? (ready ? "Este dispositivo OK" : "Este dispositivo sem cloud") : (ready ? "Cloud pronto" : "Reparar")}</span>
+      </div>
+    `;
+  }).join("");
+}
+
+function carregarDispositivosCloudNotificacoesApp(force = false) {
+  const host = document.getElementById("cloudDevicesList");
+  if (!host || !window.db?.collection) return;
+  if (appNotificationState.devicesUnsubscribe && force) {
+    appNotificationState.devicesUnsubscribe();
+    appNotificationState.devicesUnsubscribe = null;
+  }
+  if (appNotificationState.devicesUnsubscribe) return;
+  appNotificationState.devicesUnsubscribe = window.db.collection("notificationTokens").onSnapshot((snapshot) => {
+    const items = [];
+    snapshot.forEach((doc) => items.push({ id: doc.id, ...doc.data() }));
+    renderCloudDevicesNotificacoesApp(items);
+  }, (error) => {
+    console.error("Erro ao carregar dispositivos cloud:", error);
+    host.innerHTML = `<div class="empty-state mini">Erro ao carregar dispositivos.</div>`;
+  });
+}
+
+async function carregarCloudNotificacoesApp() {
+  const ref = cloudNotificationSettingsRefApp();
+  if (!ref) {
+    setCloudNotificationTextApp("cloudNotifyStatus", "Sem Firebase", "bad");
+    setCloudNotificationDiagnosticApp("Firebase indisponivel nesta pagina.", "bad");
+    return null;
+  }
+  const doc = await ref.get();
+  const settings = doc.exists ? (doc.data() || {}) : {};
+  if (!doc.exists) {
+    settings.enabled = true;
+    settings.vapidPublicKey = APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY;
+    settings.vapidSubject = APP_BRAGA_DEFAULT_VAPID_SUBJECT;
+    settings.alerts = { tonerZero: true, tonerLow25: true, tonerChange: true, stockMin: true, maintenance: true, radios: true };
+  }
+  applyCloudNotificationFormApp(settings);
+  const hasPublic = !!resolveVapidPublicKeyApp(settings.vapidPublicKey || settings.notificationVapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "");
+  const hasPrivate = !!String(settings.vapidPrivateKey || "").trim();
+  setCloudNotificationTextApp("cloudNotifyStatus", settings.enabled === false ? "Desligado" : "Ativo", settings.enabled === false ? "warn" : "ok");
+  setCloudNotificationTextApp("cloudNotifyDetail", "Envio principal: Firebase Cloud Functions");
+  setCloudNotificationTextApp("cloudCredentialsStatus", hasPublic && hasPrivate ? "Completas" : "Falta chave", hasPublic && hasPrivate ? "ok" : "bad");
+  setCloudNotificationTextApp("cloudCredentialsDetail", hasPrivate ? "VAPID privada guardada na Firebase" : "Guarda a VAPID privada nesta pagina");
+  return settings;
+}
+
+async function guardarCloudNotificacoesApp() {
+  try {
+    const ref = cloudNotificationSettingsRefApp();
+    if (!ref) throw new Error("Firebase indisponivel.");
+    const form = readCloudNotificationFormApp();
+    if (!form.vapidPublicKey) throw new Error("Cola a VAPID publica.");
+    if (!form.vapidPrivateKey) throw new Error("Cola a VAPID privada.");
+    const payload = {
+      ...form,
+      updatedAt: Date.now(),
+      updatedByDevice: getNotificationDeviceTypeApp(),
+      updatedByKey: getNotificationDeviceKeyApp(),
+      appVersion: APP_VERSION
+    };
+    await ref.set(payload, { merge: true });
+    await guardarConfigNotificacoesApp({
+      notificationEnabled: form.enabled,
+      notificationVapidKey: form.vapidPublicKey,
+      notifyTonerZero: form.alerts.tonerZero,
+      notifyTonerLow25: form.alerts.tonerLow25,
+      notifyTonerChange: form.alerts.tonerChange,
+      notifyStockMin: form.alerts.stockMin,
+      notifyMaintenance: form.alerts.maintenance,
+      notifyRadios: form.alerts.radios
+    });
+    appNotificationState.vapidKey = form.vapidPublicKey;
+    setCloudNotificationDiagnosticApp("Cloud guardada. Agora regista cada dispositivo nesta pagina.", "ok");
+    mostrarMensagem("Configuracao cloud guardada.", "sucesso");
+    await carregarCloudNotificacoesApp();
+  } catch (error) {
+    setCloudNotificationDiagnosticApp(error.message || "Erro ao guardar cloud.", "bad");
+    mostrarMensagem(error.message || "Erro ao guardar cloud.", "erro");
+  }
+}
+
+async function repararDispositivoNotificacoesCloudApp() {
+  try {
+    await guardarIdentidadeDispositivoNotificacoesApp(false);
+    const settings = await carregarCloudNotificacoesApp();
+    const vapidKey = resolveVapidPublicKeyApp(settings?.vapidPublicKey || document.getElementById("cloudVapidPublic")?.value || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "");
+    if (!vapidKey) throw new Error("Guarda primeiro a VAPID publica.");
+    await registarDispositivoPushApp(true, { vapidKey });
+    await aplicarPerfilDispositivoARegistosPushApp(getNotificationDeviceProfileApp());
+    setCloudNotificationDiagnosticApp("Dispositivo reparado/registado para a cloud.", "ok");
+    carregarDispositivosCloudNotificacoesApp(true);
+  } catch (error) {
+    setCloudNotificationDiagnosticApp(error.message || "Erro ao reparar dispositivo.", "bad");
+    mostrarMensagem(error.message || "Erro ao reparar dispositivo.", "erro");
+  }
+}
+
+async function testarCloudNotificacoesApp() {
+  try {
+    if (!window.db?.collection) throw new Error("Firebase indisponivel.");
+    const settings = await carregarCloudNotificacoesApp();
+    if (!settings || settings.enabled === false) throw new Error("Ativa primeiro as notificacoes cloud.");
+    if (!settings.vapidPublicKey || !settings.vapidPrivateKey) throw new Error("Guarda a VAPID publica e privada antes do teste.");
+    setCloudNotificationTextApp("cloudLastTestStatus", "A enviar", "warn");
+    setCloudNotificationTextApp("cloudLastTestDetail", "Pedido criado na Firebase");
+    const startedAt = Date.now();
+    const requestRef = await window.db.collection("notificationRequests").add({
+      title: "App Braga",
+      body: "Teste cloud recebido. Funciona mesmo com o PC de casa desligado.",
+      tag: `cloud-test-${startedAt}`,
+      url: "/html/notificacoes.html",
+      source: "app-cloud-page",
+      status: "created",
+      forceCloud: true,
+      createdAt: startedAt,
+      requestedFrom: getNotificationDeviceTypeApp(),
+      requestedDeviceKey: getNotificationDeviceKeyApp()
+    });
+    const result = await aguardarResultadoPedidoPushRemotoApp(requestRef, startedAt);
+    const ok = result?.status === "sent" && Number(result.sent || 0) > 0;
+    setCloudNotificationTextApp("cloudLastTestStatus", ok ? "Enviado" : "Falhou", ok ? "ok" : "bad");
+    setCloudNotificationTextApp("cloudLastTestDetail", ok ? `${Number(result.sent || 0)} dispositivo(s) avisado(s)` : (result?.error || "A cloud respondeu sem enviar push"));
+    mostrarMensagem(ok ? "Teste cloud enviado." : (result?.error || "A cloud respondeu, mas nao enviou push."), ok ? "sucesso" : "erro");
+    carregarDispositivosCloudNotificacoesApp(true);
+  } catch (error) {
+    setCloudNotificationTextApp("cloudLastTestStatus", "Erro", "bad");
+    setCloudNotificationTextApp("cloudLastTestDetail", error.message || "Teste falhou");
+    setCloudNotificationDiagnosticApp(error.message || "Teste cloud falhou.", "bad");
+    mostrarMensagem(error.message || "Teste cloud falhou.", "erro");
+  }
+}
+
+async function enviarAlertaGeralNotificacoesApp() {
+  try {
+    if (!window.db?.collection) throw new Error("Firebase indisponível.");
+    const settings = await carregarCloudNotificacoesApp();
+    if (!settings || settings.enabled === false) throw new Error("Ativa primeiro as notificações cloud.");
+
+    const currentDevice = await obterDispositivoAtualNotificacoesApp().catch(() => null);
+    const deviceName = document.getElementById("cloudDeviceName")?.value || currentDevice?.deviceName || currentDevice?.name || labelDispositivoNotificacaoApp(currentDevice || {}) || "Dispositivo";
+    const messageInput = document.getElementById("cloudGeneralAlertMessage");
+    const customMessage = String(messageInput?.value || "").trim();
+    const startedAt = Date.now();
+    const body = customMessage || `Alerta geral enviado por ${deviceName}.`;
+
+    setCloudNotificationTextApp("cloudLastTestStatus", "A enviar alerta", "warn");
+    setCloudNotificationTextApp("cloudLastTestDetail", "Pedido criado na cloud para os outros dispositivos");
+
+    const requestRef = await window.db.collection("notificationRequests").add({
+      title: "🚨 Alerta geral - App Braga",
+      body,
+      tag: `alerta-geral-${startedAt}`,
+      url: "https://picafern-commits.github.io/App-Tablet/html/notificacoes.html",
+      source: "app-cloud-alert",
+      status: "created",
+      forceCloud: true,
+      requireInteraction: true,
+      createdAt: startedAt,
+      requestedBy: deviceName,
+      requestedFrom: getNotificationDeviceTypeApp(),
+      requestedDeviceKey: getNotificationDeviceKeyApp(),
+      requestedDeviceDocId: currentDevice?.id || "",
+      excludeDeviceKey: getNotificationDeviceKeyApp(),
+      alertType: "general"
+    });
+
+    const result = await aguardarResultadoPedidoPushRemotoApp(requestRef, startedAt);
+    const ok = result?.status === "sent" && Number(result.sent || 0) > 0;
+    setCloudNotificationTextApp("cloudLastTestStatus", ok ? "Alerta enviado" : "Alerta falhou", ok ? "ok" : "bad");
+    setCloudNotificationTextApp("cloudLastTestDetail", ok ? `${Number(result.sent || 0)} envio(s) para outros dispositivos` : (result?.error || "A cloud respondeu sem enviar push"));
+    mostrarMensagem(ok ? "Alerta geral enviado para os outros dispositivos." : (result?.error || "A cloud respondeu, mas não enviou o alerta."), ok ? "sucesso" : "erro");
+    if (messageInput) messageInput.value = "";
+    carregarDispositivosCloudNotificacoesApp(true);
+  } catch (error) {
+    setCloudNotificationTextApp("cloudLastTestStatus", "Erro", "bad");
+    setCloudNotificationTextApp("cloudLastTestDetail", error.message || "Alerta falhou");
+    setCloudNotificationDiagnosticApp(error.message || "Alerta geral falhou.", "bad");
+    mostrarMensagem(error.message || "Alerta geral falhou.", "erro");
+  }
+}
+
+async function atualizarPaginaNotificacoesCloudApp(showMessage = false) {
+  if (!isPaginaNotificacoesCloudApp()) return;
+  applyDeviceProfileFormApp();
+  if (!window.db?.collection) {
+    setCloudNotificationTextApp("cloudNotifyStatus", "Sem Firebase", "bad");
+    setTimeout(() => atualizarPaginaNotificacoesCloudApp(showMessage), 700);
+    return;
+  }
+  await carregarCloudNotificacoesApp();
+  carregarDispositivosCloudNotificacoesApp(true);
+  const current = await obterDispositivoAtualNotificacoesApp().catch(() => null);
+  if (current?.pushSubscription?.endpoint) {
+    setCloudNotificationDiagnosticApp("Este dispositivo esta registado com Web Push standard.", "ok");
+  } else {
+    setCloudNotificationDiagnosticApp("Abre esta pagina no dispositivo e carrega em Reparar este dispositivo.", "warn");
+  }
+  if (showMessage) mostrarMensagem("Notificacoes atualizadas.", "sucesso");
+}
+
+function inicializarPaginaNotificacoesCloudApp() {
+  if (!isPaginaNotificacoesCloudApp()) return;
+  atualizarPaginaNotificacoesCloudApp(false);
+}
+
 async function restaurarRegistoPushAtualApp() {
   if (appNotificationState.restoreRunning || !window.db?.collection) return;
   appNotificationState.restoreRunning = true;
@@ -2581,6 +3548,7 @@ async function restaurarRegistoPushAtualApp() {
           appVersion: APP_VERSION,
           deviceType: "pc-electron",
           permission: "native",
+          ...getNotificationDeviceProfilePayloadApp(),
           updatedAt: Date.now()
         }, { merge: true });
         setNotificationTokenStatus("Electron registado", "ok");
@@ -2590,7 +3558,7 @@ async function restaurarRegistoPushAtualApp() {
 
     const permission = "Notification" in window ? Notification.permission : "unsupported";
     if (permission !== "granted") {
-      setNotificationTokenStatus(permission === "denied" ? "PermissÃ£o bloqueada" : "Sem permissÃ£o", permission === "denied" ? "bad" : "warn");
+      setNotificationTokenStatus(permission === "denied" ? "PermissÃƒÂ£o bloqueada" : "Sem permissÃƒÂ£o", permission === "denied" ? "bad" : "warn");
       return;
     }
 
@@ -2622,12 +3590,13 @@ async function restaurarRegistoPushAtualApp() {
         appVersion: APP_VERSION,
         deviceType: getNotificationDeviceTypeApp(),
         permission,
+        ...getNotificationDeviceProfilePayloadApp(),
         updatedAt: Date.now()
       }, { merge: true });
       setNotificationTokenStatus("Local ativo", "warn");
     }
   } catch (error) {
-    console.warn("NÃ£o foi possÃ­vel restaurar registo push:", error);
+    console.warn("NÃƒÂ£o foi possÃƒÂ­vel restaurar registo push:", error);
   } finally {
     appNotificationState.restoreRunning = false;
     carregarDispositivosNotificacoesApp(false);
@@ -2651,6 +3620,7 @@ async function registarDispositivoLocalNotificacoesApp(source = "web-local") {
       platform: navigator.platform || "",
       permission: "Notification" in window ? Notification.permission : "unsupported",
       pushAvailable: webPushDisponivelApp(),
+      ...getNotificationDeviceProfilePayloadApp(),
       updatedAt: Date.now(),
       createdAt: Date.now()
     }, { merge: true });
@@ -2661,33 +3631,14 @@ async function registarDispositivoLocalNotificacoesApp(source = "web-local") {
   mostrarMensagem("Push remoto indisponivel; notificacoes locais ativadas.");
 }
 
-async function registarDispositivoPushApp(forceReset = false) {
+async function registarDispositivoPushApp(forceReset = false, options = {}) {
   try {
     if (!window.db || !window.db.collection) throw new Error("Firestore indisponivel.");
-    const vapidKey = resolveVapidPublicKeyApp(document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "");
+    const vapidKey = resolveVapidPublicKeyApp(options.vapidKey || document.getElementById("cloudVapidPublic")?.value || document.getElementById("notifyVapidKey")?.value || appNotificationState.vapidKey || APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY || "");
     setNotificationDeviceDiagnostic(`Permissao: ${notificationPermissionApp()} | Push: ${webPushDisponivelApp() ? "disponivel" : "indisponivel"} | PWA: ${isStandalonePwaAppBraga() ? "sim" : "nao"} | iOS: ${isIosAppBraga() ? "sim" : "nao"}`);
 
-    if (window.electronAPI?.showNotification) {
-      await guardarConfigNotificacoesApp({ notificationEnabled: true, notificationVapidKey: vapidKey });
-      appNotificationState.restoredTokenDocId = "electron-native";
-      await window.db.collection("notificationTokens").doc("electron-native").set({
-        active: true,
-        source: "electron-native",
-        appVersion: APP_VERSION,
-        deviceKey: "pc-electron-native",
-        deviceName: "PC Electron",
-        deviceType: "pc-electron",
-        userAgent: navigator.userAgent,
-        platform: navigator.platform || "",
-        permission: "native",
-        updatedAt: Date.now(),
-        createdAt: Date.now()
-      }, { merge: true });
-      setNotificationTokenStatus("Electron nativo", "ok");
-      await enviarNotificacaoApp("App Braga", "Este PC ficou registado com notificacoes nativas.", "electron-register", { force: true });
-      mostrarMensagem("PC registado com notificacoes nativas.");
-      return;
-    }
+    // Nao fazemos return aqui no Electron: ele tambem precisa de um token/endpoint Web Push
+    // para receber pela cloud sem depender do PC ligado ou de watcher local.
 
     if (!vapidKey) {
       mostrarMensagem("Coloca primeiro a VAPID key do Firebase.", "erro");
@@ -2696,7 +3647,9 @@ async function registarDispositivoPushApp(forceReset = false) {
     }
 
     await guardarConfigNotificacoesApp({ notificationEnabled: true, notificationVapidKey: vapidKey });
-    await pedirPermissaoNotificacoesApp();
+    if (!options.skipPermission) {
+      await pedirPermissaoNotificacoesApp({ registerDevice: false });
+    }
     if (!("Notification" in window) || Notification.permission !== "granted") return;
 
     if (!webPushDisponivelApp()) {
@@ -2804,7 +3757,7 @@ async function testarTonerImpressora(ip, outputId) {
     output.innerHTML = `
       <div class="printer-toner-box">
         <div class="printer-toner-head">
-          <span class="printer-toner-title">ConsumÃ­veis</span>
+          <span class="printer-toner-title">ConsumÃƒÂ­veis</span>
           <span class="printer-toner-status is-muted">A testar</span>
         </div>
         <div class="printer-toner-bar-wrap">
@@ -2872,8 +3825,8 @@ function abrirHistoricoImpressora(item) {
     <div class="printer-history-card">
       <div class="section-header">
         <div>
-          <h3>${item.modelo} â€” ${item.serie}</h3>
-          <p class="section-subtitle">${item.armazem} Â· ${item.localizacao}</p>
+          <h3>${item.modelo} Ã¢â‚¬â€ ${item.serie}</h3>
+          <p class="section-subtitle">${item.armazem} Ã‚Â· ${item.localizacao}</p>
         </div>
       </div>
 
@@ -2883,8 +3836,8 @@ function abrirHistoricoImpressora(item) {
           <div class="summary-value">${itens.length}</div>
         </div>
         <div class="summary-card">
-          <h4>Ãšltimo Registo</h4>
-          <div class="meta-line">${ultimo ? `${ultimo.cor || "-"} Â· ${ultimo.data || "Sem Data"}` : "Sem registos"}</div>
+          <h4>ÃƒÅ¡ltimo Registo</h4>
+          <div class="meta-line">${ultimo ? `${ultimo.cor || "-"} Ã‚Â· ${ultimo.data || "Sem Data"}` : "Sem registos"}</div>
         </div>
       </div>
 
@@ -2894,9 +3847,9 @@ function abrirHistoricoImpressora(item) {
             <div class="meta-line">ID: <span class="meta-value">${h.idInterno || "-"}</span></div>
             <div class="meta-line">Cor: <span class="meta-value">${h.cor || "-"}</span></div>
             <div class="meta-line">Data: <span class="meta-value">${h.data || "Sem Data"}</span></div>
-            <div class="meta-line">LocalizaÃ§Ã£o: <span class="meta-value">${h.localizacao || "Sem LocalizaÃ§Ã£o"}</span></div>
+            <div class="meta-line">LocalizaÃƒÂ§ÃƒÂ£o: <span class="meta-value">${h.localizacao || "Sem LocalizaÃƒÂ§ÃƒÂ£o"}</span></div>
           </div>
-        `).join("") : `<div class="panel empty-state"><h3>Sem histÃ³rico para esta impressora</h3><p>Quando houver movimentos associados, aparecem aqui.</p></div>`}
+        `).join("") : `<div class="panel empty-state"><h3>Sem histÃƒÂ³rico para esta impressora</h3><p>Quando houver movimentos associados, aparecem aqui.</p></div>`}
       </div>
     </div>
   `;
@@ -2928,7 +3881,7 @@ function renderImpressoras(lista = impressorasData) {
   const ok = impressorasData.filter(i => obterEstadoImpressora(i.ip) === "OK").length;
   const problema = impressorasData.filter(i => {
     const e = obterEstadoImpressora(i.ip);
-    return e === "Pendente" || e === "Em reparaÃ§Ã£o";
+    return e === "Pendente" || e === "Em reparaÃƒÂ§ÃƒÂ£o";
   }).length;
   const resolvidas = impressorasData.filter(i => obterEstadoImpressora(i.ip) === "Resolvido").length;
 
@@ -2953,8 +3906,8 @@ function renderImpressoras(lista = impressorasData) {
           <div id="${tonerId}">${gerarHTMLBarraToner(null)}</div>
           <div class="table-actions" style="margin-top:8px;">
             <button class="action-btn ip" onclick="abrirIP('${item.ip}')">Abrir IP</button>
-            <button class="action-btn manut" onclick='abrirManutencaoDireta(${JSON.stringify(item)})'>ManutenÃ§Ã£o</button>
-            <button class="action-btn" onclick='abrirHistoricoImpressora(${JSON.stringify(item)})'>HistÃ³rico</button>
+            <button class="action-btn manut" onclick='abrirManutencaoDireta(${JSON.stringify(item)})'>ManutenÃƒÂ§ÃƒÂ£o</button>
+            <button class="action-btn" onclick='abrirHistoricoImpressora(${JSON.stringify(item)})'>HistÃƒÂ³rico</button>
             <button class="action-btn" onclick="window.testarTonerImpressora('${item.ip}', '${tonerId}')">Testar toner</button>
           </div>
         </td>
@@ -3081,7 +4034,7 @@ function renderPistolas(lista = window.pistolasData) {
       <div class="pc-name">${p.nome || "-"}</div>
  
       <div class="meta-line">
-        NÂº:
+        NÃ‚Âº:
         <span class="meta-value">${p.num || "-"}</span>
       </div>
  
@@ -3111,7 +4064,7 @@ function renderPistolas(lista = window.pistolasData) {
       </div>
  
       <div class="meta-line">
-        ArmazÃ©m:
+        ArmazÃƒÂ©m:
         <span class="meta-value">${p.armazem || "-"}</span>
       </div>
  
@@ -3334,7 +4287,7 @@ function utilizadorTemTeamviewer(u) {
 }
 
 function badgeUser(valor) {
-  return valor ? `<span class="badge ok">Sim</span>` : `<span class="badge livre">NÃ£o</span>`;
+  return valor ? `<span class="badge ok">Sim</span>` : `<span class="badge livre">NÃƒÂ£o</span>`;
 }
 
 function atualizarContadoresUsers(lista = window.usersData) {
@@ -3579,7 +4532,7 @@ function setCookieAppBraga(name, value, maxAgeSeconds = null) {
   const age = Number.isFinite(maxAgeSeconds) ? `; Max-Age=${Math.max(0, Math.floor(maxAgeSeconds))}` : "";
   document.cookie = `${name}=${encodeURIComponent(String(value || ""))}${age}; Path=/; SameSite=Lax`;
   } catch (error) {
-    console.warn("Cookie indisponÃ­vel", error);
+    console.warn("Cookie indisponÃƒÂ­vel", error);
   }
 }
 
@@ -3587,7 +4540,7 @@ function deleteCookieAppBraga(name) {
   try {
     document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax`;
   } catch (error) {
-    console.warn("Cookie indisponÃ­vel", error);
+    console.warn("Cookie indisponÃƒÂ­vel", error);
   }
 }
 
@@ -3603,7 +4556,7 @@ function setSessionAppBraga(name, value) {
   try {
     window.sessionStorage?.setItem(name, String(value || ""));
   } catch (error) {
-    console.warn("SessÃ£o temporÃ¡ria indisponÃ­vel", error);
+    console.warn("SessÃƒÂ£o temporÃƒÂ¡ria indisponÃƒÂ­vel", error);
   }
 }
 
@@ -3611,7 +4564,7 @@ function deleteSessionAppBraga(name) {
   try {
     window.sessionStorage?.removeItem(name);
   } catch (error) {
-    console.warn("SessÃ£o temporÃ¡ria indisponÃ­vel", error);
+    console.warn("SessÃƒÂ£o temporÃƒÂ¡ria indisponÃƒÂ­vel", error);
   }
 }
 
@@ -3689,7 +4642,7 @@ function initResolucaoApp() {
     if (typeof aplicarModoTextoBotoes === "function") aplicarModoTextoBotoes(data.buttonTextMode || getButtonTextMode());
     aplicarConfigNotificacoesApp(data);
     aplicarSegurancaApp(data.pinHash || "", data.lockTimeoutMinutes || 0, data.pinLength || 0, data.authMethod || "pin", data.biometricEnabled || false, data.biometricCredentialId || "");
-  }, (error) => console.error("Erro ao carregar resoluÃ§Ã£o:", error));
+  }, (error) => console.error("Erro ao carregar resoluÃƒÂ§ÃƒÂ£o:", error));
 }
 
 async function guardarResolucaoApp(value) {
@@ -3700,10 +4653,10 @@ async function guardarResolucaoApp(value) {
       resolution: value,
       updatedAt: Date.now()
     }, { merge: true });
-    mostrarMensagem("ResoluÃ§Ã£o atualizada.");
+    mostrarMensagem("ResoluÃƒÂ§ÃƒÂ£o atualizada.");
   } catch (error) {
     console.error(error);
-    mostrarMensagem("Erro ao guardar resoluÃ§Ã£o.", "erro");
+    mostrarMensagem("Erro ao guardar resoluÃƒÂ§ÃƒÂ£o.", "erro");
   }
 }
 
@@ -3814,8 +4767,8 @@ function renderAppLockOverlayContent(overlay) {
     <div class="app-lock-card">
       <div class="brand-badge">BR</div>
       <h2>APP bloqueada</h2>
-      <p>${canUseBio ? "Usa Face ID, impressÃ£o digital ou o PIN disponÃ­vel." : "Introduz o PIN para continuar."}</p>
-      ${canUseBio ? `<button class="primary-btn biometric-unlock-btn" type="button" onclick="desbloquearAppComBiometria()">Face ID / impressÃ£o digital</button>` : ""}
+      <p>${canUseBio ? "Usa Face ID, impressÃƒÂ£o digital ou o PIN disponÃƒÂ­vel." : "Introduz o PIN para continuar."}</p>
+      ${canUseBio ? `<button class="primary-btn biometric-unlock-btn" type="button" onclick="desbloquearAppComBiometria()">Face ID / impressÃƒÂ£o digital</button>` : ""}
       ${canUsePin ? `<input id="appPinUnlock" type="password" inputmode="numeric" maxlength="12" placeholder="PIN" autocomplete="off">
       <button class="secondary-btn" type="button" onclick="desbloquearAppComPin()">Desbloquear com PIN</button>` : ""}
       <small id="appPinError"></small>
@@ -3963,8 +4916,8 @@ async function tentarDesbloquearPinAutomatico() {
 }
 
 async function ativarBiometriaApp() {
-  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponÃ­vel.", "erro");
-  if (!webAuthnDisponivelApp()) return mostrarMensagem("Este dispositivo nÃ£o suporta Face ID / fingerprint nesta app.", "erro");
+  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponÃƒÂ­vel.", "erro");
+  if (!webAuthnDisponivelApp()) return mostrarMensagem("Este dispositivo nÃƒÂ£o suporta Face ID / fingerprint nesta app.", "erro");
   try {
     const userId = randomBytesApp(16);
     const credential = await navigator.credentials.create({
@@ -3986,25 +4939,25 @@ async function ativarBiometriaApp() {
         attestation: "none"
       }
     });
-    if (!credential?.rawId) return mostrarMensagem("NÃ£o foi possÃ­vel ativar biometria.", "erro");
+    if (!credential?.rawId) return mostrarMensagem("NÃƒÂ£o foi possÃƒÂ­vel ativar biometria.", "erro");
     const biometricCredentialId = base64UrlFromBufferApp(credential.rawId);
     await window.db.collection("config").doc("layout").set({
       biometricEnabled: true,
       biometricCredentialId,
-      biometricLabel: "Face ID / impressÃ£o digital",
+      biometricLabel: "Face ID / impressÃƒÂ£o digital",
       authMethod: document.getElementById("appAuthMethod")?.value || "both",
       updatedAt: Date.now()
     }, { merge: true });
     mostrarMensagem("Face ID / fingerprint ativado neste dispositivo.");
   } catch (error) {
     console.error(error);
-    mostrarMensagem("AtivaÃ§Ã£o biomÃ©trica cancelada ou indisponÃ­vel.", "erro");
+    mostrarMensagem("AtivaÃƒÂ§ÃƒÂ£o biomÃƒÂ©trica cancelada ou indisponÃƒÂ­vel.", "erro");
   }
 }
 
 async function desbloquearAppComBiometria() {
-  if (!webAuthnDisponivelApp()) return mostrarMensagem("Biometria indisponÃ­vel neste dispositivo.", "erro");
-  if (!appSecurityState.biometricCredentialId) return mostrarMensagem("Ativa primeiro a biometria nas ConfiguraÃ§Ãµes.", "erro");
+  if (!webAuthnDisponivelApp()) return mostrarMensagem("Biometria indisponÃƒÂ­vel neste dispositivo.", "erro");
+  if (!appSecurityState.biometricCredentialId) return mostrarMensagem("Ativa primeiro a biometria nas ConfiguraÃƒÂ§ÃƒÂµes.", "erro");
   try {
     await navigator.credentials.get({
       publicKey: {
@@ -4026,7 +4979,7 @@ async function desbloquearAppComBiometria() {
 }
 
 async function guardarMetodoEntradaApp(value) {
-  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponÃ­vel.", "erro");
+  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponÃƒÂ­vel.", "erro");
   const authMethod = ["pin", "biometric", "both"].includes(value) ? value : "pin";
   if (authMethod === "biometric" && !appSecurityState.biometricCredentialId) {
     setAuthMethodInput(appSecurityState.authMethod);
@@ -4038,15 +4991,15 @@ async function guardarMetodoEntradaApp(value) {
       updatedAt: Date.now()
     }, { merge: true });
     appSecurityState.authMethod = authMethod;
-    mostrarMensagem("MÃ©todo de entrada atualizado.");
+    mostrarMensagem("MÃƒÂ©todo de entrada atualizado.");
   } catch (error) {
     console.error(error);
-    mostrarMensagem("Erro ao guardar mÃ©todo de entrada.", "erro");
+    mostrarMensagem("Erro ao guardar mÃƒÂ©todo de entrada.", "erro");
   }
 }
 
 async function removerBiometriaApp() {
-  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponÃ­vel.", "erro");
+  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponÃƒÂ­vel.", "erro");
   if (!window.confirm("Remover Face ID / fingerprint desta APP?")) return;
   try {
     await window.db.collection("config").doc("layout").set({
@@ -4064,7 +5017,7 @@ async function removerBiometriaApp() {
 }
 
 async function guardarPinApp() {
-  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponÃ­vel.", "erro");
+  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponÃƒÂ­vel.", "erro");
   const input = document.getElementById("appPinCode");
   const pin = input?.value.trim() || "";
   if (!pin) return mostrarMensagem("Escreve um PIN novo antes de guardar.", "erro");
@@ -4087,7 +5040,7 @@ async function guardarPinApp() {
 }
 
 async function guardarTempoBloqueioApp(value) {
-  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponÃ­vel.", "erro");
+  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponÃƒÂ­vel.", "erro");
   const lockTimeoutMinutes = Math.max(0, Number(value) || 0);
   try {
     await window.db.collection("config").doc("layout").set({
@@ -4103,7 +5056,7 @@ async function guardarTempoBloqueioApp(value) {
 }
 
 async function removerPinApp() {
-  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponÃ­vel.", "erro");
+  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponÃƒÂ­vel.", "erro");
   if (!window.confirm("Remover o PIN de bloqueio da APP?")) return;
   try {
     await window.db.collection("config").doc("layout").set({
@@ -4139,7 +5092,7 @@ function setHealthStatus(id, label, state = "ok") {
 async function verificarSistemasApp() {
   if (!document.getElementById("systemHealthGrid")) return;
   setHealthStatus("healthNetwork", navigator.onLine ? "Online" : "Offline", navigator.onLine ? "ok" : "bad");
-  setHealthStatus("healthDevice", window.appBragaDeviceType || (document.body.classList.contains("device-phone") ? "TelemÃ³vel" : (document.body.classList.contains("device-tablet") ? "Tablet" : "PC")), "ok");
+  setHealthStatus("healthDevice", window.appBragaDeviceType || (document.body.classList.contains("device-phone") ? "TelemÃƒÂ³vel" : (document.body.classList.contains("device-tablet") ? "Tablet" : "PC")), "ok");
   setHealthStatus("healthPin", appSecurityState.biometricEnabled ? "Biometria ativa" : (appSecurityState.pinHash ? "PIN ativo" : "Desligado"), hasSecurityEnabledApp() ? "ok" : "warn");
   const notifyPermission = notificationPermissionApp();
   const notifyOk = notifyPermission === "granted" || notifyPermission === "electron";
@@ -4161,11 +5114,11 @@ async function verificarSistemasApp() {
   } else {
     setHealthStatus("healthPushWatcher", "Sem Firestore", "warn");
   }
-  setHealthStatus("healthFirebase", window.firebase ? "Carregado" : "IndisponÃ­vel", window.firebase ? "ok" : "bad");
-  setHealthStatus("healthAuth", window.firebase?.auth ? "Carregado" : "IndisponÃ­vel", window.firebase?.auth ? "ok" : "warn");
+  setHealthStatus("healthFirebase", window.firebase ? "Carregado" : "IndisponÃƒÂ­vel", window.firebase ? "ok" : "bad");
+  setHealthStatus("healthAuth", window.firebase?.auth ? "Carregado" : "IndisponÃƒÂ­vel", window.firebase?.auth ? "ok" : "warn");
 
   if (!window.db || typeof window.db.collection !== "function") {
-    setHealthStatus("healthFirestore", "IndisponÃ­vel", "bad");
+    setHealthStatus("healthFirestore", "IndisponÃƒÂ­vel", "bad");
     return;
   }
 
@@ -4174,7 +5127,7 @@ async function verificarSistemasApp() {
     await window.db.collection("config").doc("layout").get();
     setHealthStatus("healthFirestore", "Realtime OK", "ok");
   } catch (error) {
-    console.error("Erro no diagnÃ³stico Firestore:", error);
+    console.error("Erro no diagnÃƒÂ³stico Firestore:", error);
     setHealthStatus("healthFirestore", "Erro", "bad");
   }
 }
@@ -4226,10 +5179,10 @@ function initDeviceViewportMode() {
       Android tablets em Chrome/Samsung/desktop mode podem ter largura > 1400px.
       Antes a APP marcava isso como PC.
       Agora:
-      - Android + touch + ecrÃ£ grande = tablet
+      - Android + touch + ecrÃƒÂ£ grande = tablet
       - iPad = tablet
-      - telemÃ³veis continuam phone
-      - sÃ³ Ã© PC quando NÃƒO Ã© Android/iPad touch tablet
+      - telemÃƒÂ³veis continuam phone
+      - sÃƒÂ³ ÃƒÂ© PC quando NÃƒÆ’O ÃƒÂ© Android/iPad touch tablet
     */
     const isPhone =
       isIosPhone ||
@@ -4263,7 +5216,7 @@ function initDeviceViewportMode() {
     document.body.classList.toggle("is-ipad", isIpad);
 
     window.appBragaDeviceType = isPhone
-      ? (isAndroid ? "Android TelemÃ³vel" : "iPhone/TelemÃ³vel")
+      ? (isAndroid ? "Android TelemÃƒÂ³vel" : "iPhone/TelemÃƒÂ³vel")
       : (isAndroidTablet ? "Tablet Android" : (isIpad ? "iPad" : (isTablet ? "Tablet" : "PC")));
   };
 
@@ -4432,10 +5385,10 @@ function renderRadios() {
       <div class="radio-card-icon">${radioDeviceImageHtml(item)}</div>
       <div class="radio-card-main">
         <strong>${safeRefHtml(item.nome || "Sem nome")}</strong>
-        <small>MAC ${safeRefHtml(item.mac || "-")} Â· SÃ©rie ${safeRefHtml(item.serial || item.numeroSerie || "-")}</small>
-        <div class="radio-status-pill ${assigned ? "assigned" : "available"}">${assigned ? "AtribuÃ­do" : "DisponÃ­vel"}</div>
-        <div class="radio-card-user">${assigned ? `User: ${safeRefHtml(currentUser)}` : "Sem user atribuÃ­do"}</div>
-        ${assignedAt ? `<small>AtribuÃ­do em ${safeRefHtml(assignedAt)}</small>` : ""}
+        <small>MAC ${safeRefHtml(item.mac || "-")} Ã‚Â· SÃƒÂ©rie ${safeRefHtml(item.serial || item.numeroSerie || "-")}</small>
+        <div class="radio-status-pill ${assigned ? "assigned" : "available"}">${assigned ? "AtribuÃƒÂ­do" : "DisponÃƒÂ­vel"}</div>
+        <div class="radio-card-user">${assigned ? `User: ${safeRefHtml(currentUser)}` : "Sem user atribuÃƒÂ­do"}</div>
+        ${assignedAt ? `<small>AtribuÃƒÂ­do em ${safeRefHtml(assignedAt)}</small>` : ""}
         <div class="equipment-inline-actions">
           ${equipmentFichaLinkAppBraga("radio", item, 0, "local-radio", "Ver ficha")}
         </div>
@@ -4443,7 +5396,7 @@ function renderRadios() {
 
     </article>
   `;
-  }).join("") : `<div class="reference-empty">Sem rÃ¡dios registados na Firestore.</div>`;
+  }).join("") : `<div class="reference-empty">Sem rÃƒÂ¡dios registados na Firestore.</div>`;
 
   if (resumoNode) {
     resumoNode.innerHTML = records.length ? records.map((record) => {
@@ -4455,7 +5408,7 @@ function renderRadios() {
         <div>
           <strong>${safeRefHtml(recordId)}</strong>
           <span>${safeRefHtml(record.label || "Semana sem intervalo")}</span>
-          <small>${usedCount}/${assignments.length} rÃ¡dios com user associado</small>
+          <small>${usedCount}/${assignments.length} rÃƒÂ¡dios com user associado</small>
         </div>
         <div class="weekly-record-actions">
           <button class="secondary-btn reference-outline" type="button" onclick="abrirRelatorioRadios('${safeRefHtml(record.id)}')">Ver mais</button>
@@ -4464,7 +5417,7 @@ function renderRadios() {
         </div>
       </div>
     `;
-    }).join("") : `<div class="reference-empty">Ainda nÃ£o existem registos semanais.</div>`;
+    }).join("") : `<div class="reference-empty">Ainda nÃƒÂ£o existem registos semanais.</div>`;
   }
 
   if (detalheNode) {
@@ -4480,7 +5433,7 @@ function initRadiosPage() {
   const dbRef = window.db;
   if (!dbRef || typeof dbRef.collection !== "function") {
     const listaNode = document.getElementById("listaRadios");
-    if (listaNode) listaNode.innerHTML = `<div class="reference-empty">Firebase indisponÃ­vel. Confirma a ligaÃ§Ã£o da app.</div>`;
+    if (listaNode) listaNode.innerHTML = `<div class="reference-empty">Firebase indisponÃƒÂ­vel. Confirma a ligaÃƒÂ§ÃƒÂ£o da app.</div>`;
     return;
   }
 
@@ -4492,7 +5445,7 @@ function initRadiosPage() {
   }, (error) => {
     console.error("Erro realtime radios:", error);
     const listaNode = document.getElementById("listaRadios");
-    if (listaNode) listaNode.innerHTML = `<div class="reference-empty">Erro ao carregar rÃ¡dios da Firestore.</div>`;
+    if (listaNode) listaNode.innerHTML = `<div class="reference-empty">Erro ao carregar rÃƒÂ¡dios da Firestore.</div>`;
   });
 
 
@@ -4523,7 +5476,7 @@ function abrirModalRadio(id = null) {
   const nome = document.getElementById("radioNome");
   const mac = document.getElementById("radioMac");
   const serial = document.getElementById("radioSerial");
-  if (title) title.textContent = id ? "Editar RÃ¡dio" : "Novo RÃ¡dio";
+  if (title) title.textContent = id ? "Editar RÃƒÂ¡dio" : "Novo RÃƒÂ¡dio";
   if (nome) nome.value = item?.nome || "";
   if (mac) mac.value = item?.mac || "";
   if (serial) serial.value = item?.serial || "";
@@ -4542,7 +5495,7 @@ async function guardarRadio() {
   const mac = document.getElementById("radioMac")?.value.trim() || "";
   const serial = document.getElementById("radioSerial")?.value.trim() || "";
   if (!nome) {
-    mostrarMensagem("Preenche o nome do rÃ¡dio.", "erro");
+    mostrarMensagem("Preenche o nome do rÃƒÂ¡dio.", "erro");
     return;
   }
 
@@ -4551,15 +5504,15 @@ async function guardarRadio() {
   try {
     if (radioEditId) {
       await window.db.collection("radios").doc(radioEditId).update(payload);
-      mostrarMensagem("RÃ¡dio atualizado.");
+      mostrarMensagem("RÃƒÂ¡dio atualizado.");
     } else {
       await window.db.collection("radios").add({ ...payload, createdAt: Date.now() });
-      mostrarMensagem("RÃ¡dio criado.");
+      mostrarMensagem("RÃƒÂ¡dio criado.");
     }
     fecharModalRadio();
   } catch (error) {
     console.error(error);
-    mostrarMensagem("Erro ao guardar rÃ¡dio.", "erro");
+    mostrarMensagem("Erro ao guardar rÃƒÂ¡dio.", "erro");
   }
 }
 
@@ -4570,10 +5523,10 @@ function editarRadio(id) {
 async function apagarRadio(id) {
   try {
     await window.db.collection("radios").doc(id).delete();
-    mostrarMensagem("RÃ¡dio apagado.");
+    mostrarMensagem("RÃƒÂ¡dio apagado.");
   } catch (error) {
     console.error(error);
-    mostrarMensagem("Erro ao apagar rÃ¡dio.", "erro");
+    mostrarMensagem("Erro ao apagar rÃƒÂ¡dio.", "erro");
   }
 }
 
@@ -4586,7 +5539,7 @@ function renderRadioWeeklyRecordDetails(recordId) {
   if (!detalheNode) return;
   const record = radioWeeklyRecords.find(item => item.id === recordId || item.recordId === recordId);
   if (!record) {
-    detalheNode.innerHTML = `<div class="reference-empty">Registo nÃ£o encontrado.</div>`;
+    detalheNode.innerHTML = `<div class="reference-empty">Registo nÃƒÂ£o encontrado.</div>`;
     return;
   }
 
@@ -4605,14 +5558,14 @@ function renderRadioWeeklyRecordDetails(recordId) {
       const piso = item.piso || "Nenhum";
       return `
       <div class="weekly-radio-row">
-        <strong>${safeRefHtml(item.radioNome || "RÃ¡dio")}</strong>
+        <strong>${safeRefHtml(item.radioNome || "RÃƒÂ¡dio")}</strong>
         <span>User 1: ${safeRefHtml(user1 || "Sem user selecionado")}</span>
         <span>User 2: ${safeRefHtml(user2 || "Sem user selecionado")}</span>
         <span>Piso: ${safeRefHtml(piso)}</span>
         <small>MAC ${safeRefHtml(item.radioMac || "-")} | Serial ${safeRefHtml(item.radioSerial || "-")}</small>
       </div>
     `;
-    }).join("") : `<div class="reference-empty">Este registo nÃ£o tem rÃ¡dios associados.</div>`}
+    }).join("") : `<div class="reference-empty">Este registo nÃƒÂ£o tem rÃƒÂ¡dios associados.</div>`}
   `;
 }
 
@@ -4655,7 +5608,7 @@ function renderRadioWeeklyForm() {
   const weekInfo = editRecord ? getRadioWeekInfo(new Date(Number(editRecord.startAt || Date.now()))) : getRadioWeeklySelectedInfo();
   const record = editRecord || getRadioWeeklyRecord(weekInfo.key);
   const saved = Array.isArray(record?.assignments) ? record.assignments : [];
-  if (label) label.textContent = editRecord ? `${getRadioWeeklyRecordId(editRecord)} Â· ${weekInfo.label}` : weekInfo.label;
+  if (label) label.textContent = editRecord ? `${getRadioWeeklyRecordId(editRecord)} Ã‚Â· ${weekInfo.label}` : weekInfo.label;
 
   const users = (radioUsersData.length ? radioUsersData : window.usersData || [])
     .slice()
@@ -4695,7 +5648,7 @@ function renderRadioWeeklyForm() {
         <label><span>Piso</span><select data-radio-piso="${safeRefHtml(radio.id)}">${pisoSelect}</select></label>
       </div>
     `;
-  }).join("") : `<div class="reference-empty">Cria rÃ¡dios primeiro para conseguires fazer o registo semanal.</div>`;
+  }).join("") : `<div class="reference-empty">Cria rÃƒÂ¡dios primeiro para conseguires fazer o registo semanal.</div>`;
 }
 
 function abrirRegistoSemanalRadios() {
@@ -4712,7 +5665,7 @@ function abrirRegistoSemanalRadios() {
 
 function abrirEditarRegistoSemanalRadios(recordId) {
   const record = radioWeeklyRecords.find(item => item.id === recordId || item.recordId === recordId);
-  if (!record) return mostrarMensagem("Registo semanal nÃ£o encontrado.", "erro");
+  if (!record) return mostrarMensagem("Registo semanal nÃƒÂ£o encontrado.", "erro");
   radioWeeklyEditId = record.id;
   const title = document.getElementById("radioWeeklyModalTitle");
   if (title) title.textContent = `Editar ${getRadioWeeklyRecordId(record)}`;
@@ -4729,7 +5682,7 @@ function fecharRegistoSemanalRadios() {
 }
 
 async function guardarRegistoSemanalRadios() {
-  if (!window.db) return mostrarMensagem("Firebase indisponÃ­vel.", "erro");
+  if (!window.db) return mostrarMensagem("Firebase indisponÃƒÂ­vel.", "erro");
   const weekInfo = getRadioWeeklySelectedInfo();
   const users = radioUsersData.length ? radioUsersData : window.usersData || [];
   const assignments = radiosData.map((radio) => {
@@ -4793,9 +5746,9 @@ async function guardarRegistoSemanalRadios() {
 }
 
 async function apagarRegistoSemanalRadios(recordId) {
-  if (!window.db) return mostrarMensagem("Firebase indisponÃ­vel.", "erro");
+  if (!window.db) return mostrarMensagem("Firebase indisponÃƒÂ­vel.", "erro");
   const record = radioWeeklyRecords.find(item => item.id === recordId || item.recordId === recordId);
-  if (!record) return mostrarMensagem("Registo semanal nÃ£o encontrado.", "erro");
+  if (!record) return mostrarMensagem("Registo semanal nÃƒÂ£o encontrado.", "erro");
   if (!window.confirm(`Apagar ${getRadioWeeklyRecordId(record)}?`)) return;
   try {
     await window.db.collection("radioWeeklyRecords").doc(record.id).delete();
@@ -4822,8 +5775,8 @@ function renderInformacoes() {
   const listaFiltrada = getInformacoesFiltradas();
   lista.innerHTML = listaFiltrada.length ? listaFiltrada.map(item => `
     <article class="info-list-item ${informacaoSelecionada === item.id ? "active" : ""}">
-      <strong>${safeRefHtml(item.titulo || "Sem tÃ­tulo")}</strong>
-      <span>${safeRefHtml(item.obs || "Sem observaÃ§Ãµes")}</span>
+      <strong>${safeRefHtml(item.titulo || "Sem tÃƒÂ­tulo")}</strong>
+      <span>${safeRefHtml(item.obs || "Sem observaÃƒÂ§ÃƒÂµes")}</span>
       <div class="meta-line">${safeRefHtml(item.updatedLabel || item.createdLabel || "")}</div>
       <div class="info-card-actions">
         <button class="secondary-btn reference-outline" type="button" onclick="verInformacao('${item.id}')">Ver mais</button>
@@ -4831,7 +5784,7 @@ function renderInformacoes() {
         <button class="secondary-btn danger" type="button" onclick="apagarInformacao('${item.id}')">Apagar</button>
       </div>
     </article>
-  `).join("") : `<div class="info-empty">Ainda sem informaÃ§Ãµes guardadas na Firebase.</div>`;
+  `).join("") : `<div class="info-empty">Ainda sem informaÃƒÂ§ÃƒÂµes guardadas na Firebase.</div>`;
 }
 
 function initInformacoesPage() {
@@ -4841,7 +5794,7 @@ function initInformacoesPage() {
 
   if (!window.db || typeof window.db.collection !== "function") {
     const lista = document.getElementById("informacoesLista");
-    if (lista) lista.innerHTML = `<div class="info-empty">Firebase indisponÃ­vel. Confirma a ligaÃ§Ã£o da app.</div>`;
+    if (lista) lista.innerHTML = `<div class="info-empty">Firebase indisponÃƒÂ­vel. Confirma a ligaÃƒÂ§ÃƒÂ£o da app.</div>`;
     return;
   }
 
@@ -4858,7 +5811,7 @@ function initInformacoesPage() {
   }, (error) => {
     console.error("Erro realtime informacoes:", error);
     const lista = document.getElementById("informacoesLista");
-    if (lista) lista.innerHTML = `<div class="info-empty">Erro ao carregar informaÃ§Ãµes da Firebase.</div>`;
+    if (lista) lista.innerHTML = `<div class="info-empty">Erro ao carregar informaÃƒÂ§ÃƒÂµes da Firebase.</div>`;
   });
 }
 
@@ -4866,12 +5819,12 @@ async function adicionarInformacao() {
   const titulo = document.getElementById("infoTitulo")?.value || "";
   const obs = document.getElementById("infoObs")?.value || "";
   if (!normalizarTexto(titulo) && !normalizarTexto(obs)) {
-    mostrarMensagem("Preenche pelo menos um tÃ­tulo ou observaÃ§Ã£o.", "erro");
+    mostrarMensagem("Preenche pelo menos um tÃƒÂ­tulo ou observaÃƒÂ§ÃƒÂ£o.", "erro");
     return;
   }
 
   if (!window.db || typeof window.db.collection !== "function") {
-    mostrarMensagem("Firebase indisponÃ­vel.", "erro");
+    mostrarMensagem("Firebase indisponÃƒÂ­vel.", "erro");
     return;
   }
 
@@ -4885,21 +5838,21 @@ async function adicionarInformacao() {
   try {
     if (informacaoSelecionada) {
       await window.db.collection("informacoes").doc(informacaoSelecionada).set(payload, { merge: true });
-      mostrarMensagem("InformaÃ§Ã£o atualizada.");
+      mostrarMensagem("InformaÃƒÂ§ÃƒÂ£o atualizada.");
     } else {
       await window.db.collection("informacoes").add({
         ...payload,
         createdAt: Date.now(),
         createdLabel: nowPt()
       });
-      mostrarMensagem("InformaÃ§Ã£o criada.");
+      mostrarMensagem("InformaÃƒÂ§ÃƒÂ£o criada.");
     }
     document.getElementById("infoTitulo").value = "";
     document.getElementById("infoObs").value = "";
     informacaoSelecionada = null;
   } catch (error) {
     console.error(error);
-    mostrarMensagem("Erro ao guardar informaÃ§Ã£o.", "erro");
+    mostrarMensagem("Erro ao guardar informaÃƒÂ§ÃƒÂ£o.", "erro");
   }
 }
 
@@ -4909,12 +5862,12 @@ function selecionarInformacao(id) {
 
 function verInformacao(id) {
   const item = informacoesData.find(info => info.id === id);
-  if (!item) return mostrarMensagem("InformaÃ§Ã£o nÃ£o encontrada.", "erro");
+  if (!item) return mostrarMensagem("InformaÃƒÂ§ÃƒÂ£o nÃƒÂ£o encontrada.", "erro");
   const modal = document.getElementById("infoModal");
   const titulo = document.getElementById("modalInfoTitulo");
   const descricao = document.getElementById("modalInfoDescricao");
-  if (titulo) titulo.textContent = item.titulo || "InformaÃ§Ã£o";
-  if (descricao) descricao.textContent = item.obs || "Sem observaÃ§Ãµes";
+  if (titulo) titulo.textContent = item.titulo || "InformaÃƒÂ§ÃƒÂ£o";
+  if (descricao) descricao.textContent = item.obs || "Sem observaÃƒÂ§ÃƒÂµes";
   if (modal) modal.classList.remove("hidden");
 }
 
@@ -4925,7 +5878,7 @@ function fecharInfoModal() {
 
 function editarInformacao(id) {
   const item = informacoesData.find(info => info.id === id);
-  if (!item) return mostrarMensagem("InformaÃ§Ã£o nÃ£o encontrada.", "erro");
+  if (!item) return mostrarMensagem("InformaÃƒÂ§ÃƒÂ£o nÃƒÂ£o encontrada.", "erro");
   informacaoSelecionada = id;
   document.getElementById("infoTitulo").value = item.titulo || "";
   document.getElementById("infoObs").value = item.obs || "";
@@ -4934,8 +5887,8 @@ function editarInformacao(id) {
 
 async function apagarInformacao(id) {
   const item = informacoesData.find(info => info.id === id);
-  if (!item) return mostrarMensagem("InformaÃ§Ã£o nÃ£o encontrada.", "erro");
-  if (!window.confirm(`Apagar "${item.titulo || "esta informaÃ§Ã£o"}"?`)) return;
+  if (!item) return mostrarMensagem("InformaÃƒÂ§ÃƒÂ£o nÃƒÂ£o encontrada.", "erro");
+  if (!window.confirm(`Apagar "${item.titulo || "esta informaÃƒÂ§ÃƒÂ£o"}"?`)) return;
   try {
     await window.db.collection("informacoes").doc(id).delete();
     if (informacaoSelecionada === id) {
@@ -4945,25 +5898,25 @@ async function apagarInformacao(id) {
       if (titulo) titulo.value = "";
       if (obs) obs.value = "";
     }
-    mostrarMensagem("InformaÃ§Ã£o apagada.");
+    mostrarMensagem("InformaÃƒÂ§ÃƒÂ£o apagada.");
   } catch (error) {
     console.error(error);
-    mostrarMensagem("Erro ao apagar informaÃ§Ã£o.", "erro");
+    mostrarMensagem("Erro ao apagar informaÃƒÂ§ÃƒÂ£o.", "erro");
   }
 }
 
 function verInformacaoSelecionada() {
-  if (!informacaoSelecionada) return mostrarMensagem("Seleciona uma informaÃ§Ã£o primeiro.", "erro");
+  if (!informacaoSelecionada) return mostrarMensagem("Seleciona uma informaÃƒÂ§ÃƒÂ£o primeiro.", "erro");
   verInformacao(informacaoSelecionada);
 }
 
 function editarInformacaoSelecionada() {
-  if (!informacaoSelecionada) return mostrarMensagem("Seleciona uma informaÃ§Ã£o primeiro.", "erro");
+  if (!informacaoSelecionada) return mostrarMensagem("Seleciona uma informaÃƒÂ§ÃƒÂ£o primeiro.", "erro");
   editarInformacao(informacaoSelecionada);
 }
 
 function apagarInformacaoSelecionada() {
-  if (!informacaoSelecionada) return mostrarMensagem("Seleciona uma informaÃ§Ã£o primeiro.", "erro");
+  if (!informacaoSelecionada) return mostrarMensagem("Seleciona uma informaÃƒÂ§ÃƒÂ£o primeiro.", "erro");
   apagarInformacao(informacaoSelecionada);
 }
 
@@ -4998,11 +5951,11 @@ function renderRadioAssignUsers(selectedId = "") {
 
 function abrirAtribuirRadio(id) {
   const radio = getRadioById(id);
-  if (!radio) return mostrarMensagem("RÃ¡dio nÃ£o encontrado.", "erro");
+  if (!radio) return mostrarMensagem("RÃƒÂ¡dio nÃƒÂ£o encontrado.", "erro");
   radioAssignId = id;
 
   const title = document.getElementById("radioAssignTitle");
-  if (title) title.textContent = `Atribuir ${radio.nome || "RÃ¡dio"}`;
+  if (title) title.textContent = `Atribuir ${radio.nome || "RÃƒÂ¡dio"}`;
 
   renderRadioAssignUsers(radio.userId || "");
 
@@ -5034,10 +5987,10 @@ async function guardarHistoricoRadio(radio, tipo, extra = {}) {
 }
 
 async function guardarAtribuirRadio() {
-  if (!window.db) return mostrarMensagem("Firebase indisponÃ­vel.", "erro");
+  if (!window.db) return mostrarMensagem("Firebase indisponÃƒÂ­vel.", "erro");
 
   const radio = getRadioById(radioAssignId);
-  if (!radio) return mostrarMensagem("RÃ¡dio nÃ£o encontrado.", "erro");
+  if (!radio) return mostrarMensagem("RÃƒÂ¡dio nÃƒÂ£o encontrado.", "erro");
 
   const userId = document.getElementById("radioAssignUser")?.value || "";
   if (!userId) return mostrarMensagem("Escolhe um user.", "erro");
@@ -5058,21 +6011,21 @@ async function guardarAtribuirRadio() {
 
     await guardarHistoricoRadio(radio, "atribuido", { userId, userNome, obs });
     fecharAtribuirRadio();
-    mostrarMensagem("RÃ¡dio atribuÃ­do.");
+    mostrarMensagem("RÃƒÂ¡dio atribuÃƒÂ­do.");
   } catch (error) {
     console.error(error);
-    mostrarMensagem("Erro ao atribuir rÃ¡dio.", "erro");
+    mostrarMensagem("Erro ao atribuir rÃƒÂ¡dio.", "erro");
   }
 }
 
 async function devolverRadio(id) {
-  if (!window.db) return mostrarMensagem("Firebase indisponÃ­vel.", "erro");
+  if (!window.db) return mostrarMensagem("Firebase indisponÃƒÂ­vel.", "erro");
 
   const radio = getRadioById(id);
-  if (!radio) return mostrarMensagem("RÃ¡dio nÃ£o encontrado.", "erro");
+  if (!radio) return mostrarMensagem("RÃƒÂ¡dio nÃƒÂ£o encontrado.", "erro");
 
   const userNome = radioCurrentUserName(radio);
-  if (!userNome && !window.confirm("Este rÃ¡dio nÃ£o tem user associado. Marcar como devolvido mesmo assim?")) return;
+  if (!userNome && !window.confirm("Este rÃƒÂ¡dio nÃƒÂ£o tem user associado. Marcar como devolvido mesmo assim?")) return;
 
   try {
     await window.db.collection("radios").doc(radio.id).set({
@@ -5086,23 +6039,23 @@ async function devolverRadio(id) {
       updatedAt: Date.now()
     }, { merge: true });
 
-    await guardarHistoricoRadio(radio, "devolvido", { userNome, obs: "DevoluÃ§Ã£o manual" });
-    mostrarMensagem("RÃ¡dio devolvido.");
+    await guardarHistoricoRadio(radio, "devolvido", { userNome, obs: "DevoluÃƒÂ§ÃƒÂ£o manual" });
+    mostrarMensagem("RÃƒÂ¡dio devolvido.");
   } catch (error) {
     console.error(error);
-    mostrarMensagem("Erro ao devolver rÃ¡dio.", "erro");
+    mostrarMensagem("Erro ao devolver rÃƒÂ¡dio.", "erro");
   }
 }
 
 function abrirHistoricoRadio(id) {
   const radio = getRadioById(id);
-  if (!radio) return mostrarMensagem("RÃ¡dio nÃ£o encontrado.", "erro");
+  if (!radio) return mostrarMensagem("RÃƒÂ¡dio nÃƒÂ£o encontrado.", "erro");
 
   const title = document.getElementById("radioHistoryTitle");
   const list = document.getElementById("radioHistoryList");
 
-  if (title) title.textContent = `HistÃ³rico Â· ${radio.nome || "RÃ¡dio"}`;
-  if (list) list.innerHTML = `<div class="reference-empty">A carregar histÃ³rico...</div>`;
+  if (title) title.textContent = `HistÃƒÂ³rico Ã‚Â· ${radio.nome || "RÃƒÂ¡dio"}`;
+  if (list) list.innerHTML = `<div class="reference-empty">A carregar histÃƒÂ³rico...</div>`;
 
   const modal = document.getElementById("radioHistoryModal");
   if (modal) modal.style.display = "flex";
@@ -5110,7 +6063,7 @@ function abrirHistoricoRadio(id) {
   if (unsubscribeRadioHistoryOpen) unsubscribeRadioHistoryOpen();
 
   if (!window.db?.collection) {
-    if (list) list.innerHTML = `<div class="reference-empty">Firebase indisponÃ­vel.</div>`;
+    if (list) list.innerHTML = `<div class="reference-empty">Firebase indisponÃƒÂ­vel.</div>`;
     return;
   }
 
@@ -5123,15 +6076,15 @@ function abrirHistoricoRadio(id) {
       if (!list) return;
       list.innerHTML = items.length ? items.map((item) => `
         <div class="radio-history-item">
-          <strong>${safeRefHtml(item.tipo === "atribuido" ? "AtribuÃ­do" : item.tipo === "devolvido" ? "Devolvido" : item.tipo || "Evento")}</strong>
+          <strong>${safeRefHtml(item.tipo === "atribuido" ? "AtribuÃƒÂ­do" : item.tipo === "devolvido" ? "Devolvido" : item.tipo || "Evento")}</strong>
           <small>User: ${safeRefHtml(item.userNome || "-")}</small>
           <small>${safeRefHtml(item.createdLabel || (item.createdAt ? new Date(Number(item.createdAt)).toLocaleString("pt-PT") : "-"))}</small>
           ${item.obs ? `<small>Obs: ${safeRefHtml(item.obs)}</small>` : ""}
         </div>
-      `).join("") : `<div class="reference-empty">Sem histÃ³rico para este rÃ¡dio.</div>`;
+      `).join("") : `<div class="reference-empty">Sem histÃƒÂ³rico para este rÃƒÂ¡dio.</div>`;
     }, (error) => {
       console.error(error);
-      if (list) list.innerHTML = `<div class="reference-empty">Erro ao carregar histÃ³rico.</div>`;
+      if (list) list.innerHTML = `<div class="reference-empty">Erro ao carregar histÃƒÂ³rico.</div>`;
     });
 }
 
@@ -5161,8 +6114,8 @@ function atualizarRadioSelectOptions() {
     .slice()
     .sort((a, b) => String(a.nome || a.serial || a.mac || "").localeCompare(String(b.nome || b.serial || b.mac || ""), "pt", { numeric: true, sensitivity: "base" }));
 
-  select.innerHTML = `<option value="">Selecionar rÃ¡dio...</option>` + lista.map((radio) => {
-    const label = `${radio.nome || "RÃ¡dio"}${radio.mac ? " Â· " + radio.mac : ""}${radio.serial ? " Â· " + radio.serial : ""}`;
+  select.innerHTML = `<option value="">Selecionar rÃƒÂ¡dio...</option>` + lista.map((radio) => {
+    const label = `${radio.nome || "RÃƒÂ¡dio"}${radio.mac ? " Ã‚Â· " + radio.mac : ""}${radio.serial ? " Ã‚Â· " + radio.serial : ""}`;
     return `<option value="${safeRefHtml(radio.id)}"${String(radio.id) === String(current) ? " selected" : ""}>${safeRefHtml(label)}</option>`;
   }).join("");
 
@@ -5194,10 +6147,10 @@ function atualizarRadioSelecionado(id = null) {
 
   if (info) {
     if (!radio) {
-      info.textContent = "Seleciona um rÃ¡dio para mexer.";
+      info.textContent = "Seleciona um rÃƒÂ¡dio para mexer.";
     } else {
       const user = radioCurrentUserName(radio);
-      info.textContent = `${radio.nome || "RÃ¡dio"} Â· MAC ${radio.mac || "-"} Â· SÃ©rie ${radio.serial || radio.numeroSerie || "-"} Â· ${user ? "User: " + user : "DisponÃ­vel"}`;
+      info.textContent = `${radio.nome || "RÃƒÂ¡dio"} Ã‚Â· MAC ${radio.mac || "-"} Ã‚Â· SÃƒÂ©rie ${radio.serial || radio.numeroSerie || "-"} Ã‚Â· ${user ? "User: " + user : "DisponÃƒÂ­vel"}`;
     }
   }
 }
@@ -5205,7 +6158,7 @@ function atualizarRadioSelecionado(id = null) {
 function radioAcaoSelecionada(acao) {
   const radio = getRadioSelected();
   if (!radio) {
-    mostrarMensagem("Seleciona primeiro um rÃ¡dio.", "erro");
+    mostrarMensagem("Seleciona primeiro um rÃƒÂ¡dio.", "erro");
     return;
   }
 
@@ -5223,6 +6176,7 @@ document.addEventListener("DOMContentLoaded", initRadiosPage);
 document.addEventListener("DOMContentLoaded", initInformacoesPage);
 document.addEventListener("DOMContentLoaded", initResolucaoApp);
 document.addEventListener("DOMContentLoaded", initFullscreenPreferidoApp);
+document.addEventListener("DOMContentLoaded", inicializarPaginaNotificacoesCloudApp);
 window.adicionarRadio = adicionarRadio;
 window.editarRadio = editarRadio;
 window.guardarRadio = guardarRadio;
@@ -5262,6 +6216,9 @@ window.removerBiometriaApp = removerBiometriaApp;
 window.bloquearAppAgora = bloquearAppAgora;
 window.atualizarEstadoNotificacoesApp = atualizarEstadoNotificacoesApp;
 window.ligarServicoNotificacoesApp = ligarServicoNotificacoesApp;
+window.importarServiceAccountNotificacoesApp = importarServiceAccountNotificacoesApp;
+window.configurarVapidPrivadaNotificacoesApp = configurarVapidPrivadaNotificacoesApp;
+window.toggleVapidPrivadaVisivelApp = toggleVapidPrivadaVisivelApp;
 window.desbloquearAppComPin = desbloquearAppComPin;
 window.desbloquearAppComBiometria = desbloquearAppComBiometria;
 window.entrarFullscreenApp = entrarFullscreenApp;
@@ -5271,8 +6228,13 @@ window.guardarConfigNotificacoesApp = guardarConfigNotificacoesApp;
 window.verificarAlertasNotificacoesApp = verificarAlertasNotificacoesApp;
 window.testarNotificacaoApp = testarNotificacaoApp;
 window.testarPushRemotoNotificacoesApp = testarPushRemotoNotificacoesApp;
-window.enviarAlertaGeralNotificacoesApp = enviarAlertaGeralNotificacoesApp;
 window.pedirPermissaoNotificacoesApp = pedirPermissaoNotificacoesApp;
+window.guardarCloudNotificacoesApp = guardarCloudNotificacoesApp;
+window.guardarIdentidadeDispositivoNotificacoesApp = guardarIdentidadeDispositivoNotificacoesApp;
+window.repararDispositivoNotificacoesCloudApp = repararDispositivoNotificacoesCloudApp;
+window.testarCloudNotificacoesApp = testarCloudNotificacoesApp;
+window.enviarAlertaGeralNotificacoesApp = enviarAlertaGeralNotificacoesApp;
+window.atualizarPaginaNotificacoesCloudApp = atualizarPaginaNotificacoesCloudApp;
 window.verificarSistemasApp = verificarSistemasApp;
 window.adicionarInformacao = adicionarInformacao;
 window.selecionarInformacao = selecionarInformacao;
@@ -5295,7 +6257,7 @@ function updateEnterpriseDashboard() {
   const portasTotal = Array.isArray(window.portasData) ? window.portasData.length : 0;
   const stockTotal = Array.isArray(stockGlobal) ? stockGlobal.length : 0;
   const ticketsAbertos = Array.isArray(manutencoesGlobal)
-    ? manutencoesGlobal.filter(item => item.estado === "Pendente" || item.estado === "Em reparaÃ§Ã£o").length
+    ? manutencoesGlobal.filter(item => item.estado === "Pendente" || item.estado === "Em reparaÃƒÂ§ÃƒÂ£o").length
     : 0;
   const impressorasOk = Array.isArray(impressorasData)
     ? impressorasData.filter(item => obterEstadoImpressora(item.ip) === "OK").length
@@ -5494,7 +6456,7 @@ function normalizePrinterResidueFromFirebase(printerDoc) {
 
   return {
     key: "waste",
-    label: "ResÃ­duo",
+    label: "ResÃƒÂ­duo",
     percent: Math.max(0, Math.min(100, Math.round(wasteValue)))
   };
 }
@@ -5556,7 +6518,7 @@ function bindPrintersFirebaseRealtime() {
       renderDashboardCards();
     }
   }, (error) => {
-    console.error("Erro ao ler coleÃ§Ã£o printers:", error);
+    console.error("Erro ao ler coleÃƒÂ§ÃƒÂ£o printers:", error);
   });
 }
 
@@ -5610,7 +6572,7 @@ testarTodasAsImpressoras = async function() {
 
 const __originalAbrirIP = abrirIP;
 abrirIP = function(ip) {
-  // No tablet/web o IP fica sÃ³ de leitura
+  // No tablet/web o IP fica sÃƒÂ³ de leitura
   const webMode = !(window.electronAPI && window.electronAPI.getTonerSNMP);
   if (webMode) return;
   return __originalAbrirIP(ip);
@@ -5625,7 +6587,7 @@ renderImpressoras = function(lista = impressorasData) {
   const ok = impressorasData.filter(i => obterEstadoImpressora(i.ip) === "OK").length;
   const problema = impressorasData.filter(i => {
     const e = obterEstadoImpressora(i.ip);
-    return e === "Pendente" || e === "Em reparaÃ§Ã£o";
+    return e === "Pendente" || e === "Em reparaÃƒÂ§ÃƒÂ£o";
   }).length;
   const resolvidas = impressorasData.filter(i => obterEstadoImpressora(i.ip) === "Resolvido").length;
 
@@ -5655,7 +6617,7 @@ renderImpressoras = function(lista = impressorasData) {
           <div class="table-actions" style="margin-top:8px;">
             ${equipmentFichaLinkAppBraga("impressora", item, index, "local-impressora", "Ver ficha", "action-btn")}
             ${webMode ? "" : `<button class="action-btn ip" onclick="abrirIP('${item.ip}')">Abrir IP</button>`}
-            <button class="action-btn manut" onclick='abrirManutencaoDireta(${JSON.stringify(item)})'>ManutenÃ§Ã£o</button>
+            <button class="action-btn manut" onclick='abrirManutencaoDireta(${JSON.stringify(item)})'>ManutenÃƒÂ§ÃƒÂ£o</button>
             ${webMode ? "" : `<button class="action-btn" onclick="window.testarTonerImpressora('${item.ip}', '${tonerId}')">Testar toner</button>`}
           </div>
         </td>
@@ -5674,12 +6636,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
 /* =========================
-   DIAGNÃ“STICO DO TONER
+   DIAGNÃƒâ€œSTICO DO TONER
 ========================= */
 const tonerDiagnosticsState = {
   running: false,
   lastRunAt: null,
-  source: "â€”",
+  source: "Ã¢â‚¬â€",
   successCount: 0,
   totalCount: 0,
   status: "idle",
@@ -5687,7 +6649,7 @@ const tonerDiagnosticsState = {
 };
 
 function formatDiagTime(date) {
-  if (!date) return "â€”";
+  if (!date) return "Ã¢â‚¬â€";
   try {
     return new Intl.DateTimeFormat("pt-PT", { hour: "2-digit", minute: "2-digit", second: "2-digit", day: "2-digit", month: "2-digit" }).format(date);
   } catch (e) {
@@ -5738,12 +6700,12 @@ function renderTonerDiagnostics() {
   statusEl.textContent = current[0];
   dotEl.className = `diag-dot ${current[1]}`;
   lastRunEl.textContent = formatDiagTime(tonerDiagnosticsState.lastRunAt);
-  sourceEl.textContent = tonerDiagnosticsState.source || "â€”";
+  sourceEl.textContent = tonerDiagnosticsState.source || "Ã¢â‚¬â€";
 
   if (tonerDiagnosticsState.running) {
     summaryEl.textContent = `A testar ${tonerDiagnosticsState.totalCount || impressorasData.length || 0} impressoras`;
   } else if (!tonerDiagnosticsState.lastRunAt) {
-    summaryEl.textContent = "Ã€ espera de teste";
+    summaryEl.textContent = "Ãƒâ‚¬ espera de teste";
   } else {
     summaryEl.textContent = `${tonerDiagnosticsState.successCount}/${tonerDiagnosticsState.totalCount || 0} impressoras com leitura`;
   }
@@ -5756,7 +6718,7 @@ function renderTonerDiagnostics() {
   logEl.innerHTML = tonerDiagnosticsState.log.map(item => `
     <div class="diagnostics-log-item">
       <span class="diag-time">${item.time}</span>
-      <strong>${item.ip}</strong> Â· ${item.message}
+      <strong>${item.ip}</strong> Ã‚Â· ${item.message}
     </div>
   `).join("");
 }
@@ -5780,7 +6742,7 @@ function updateTonerDiagnosticStatus(status, partial = {}) {
 function summarizeTonerInfo(info) {
   if (!info) return "sem leitura";
   if (Array.isArray(info.colors) && info.colors.length) {
-    return info.colors.map(c => `${c.label || c.key}: ${typeof c.percent === "number" ? Math.round(c.percent) : "N/D"}%`).join(" Â· ");
+    return info.colors.map(c => `${c.label || c.key}: ${typeof c.percent === "number" ? Math.round(c.percent) : "N/D"}%`).join(" Ã‚Â· ");
   }
   if (typeof info.percent === "number") return `Preto: ${Math.round(info.percent)}%`;
   return "sem percentagem";
@@ -5825,7 +6787,7 @@ async function testarSistemaToner() {
 window.testarSistemaToner = testarSistemaToner;
 
 /* =========================
-   VERSÃƒO / ONLINE-OFFLINE
+   VERSÃƒÆ’O / ONLINE-OFFLINE
 ========================= */
 const APP_BRAGA_VERSION = `v${APP_VERSION} Premium`;
 
@@ -5845,7 +6807,7 @@ window.addEventListener("offline", atualizarEstadoLigacaoAppBraga);
 document.addEventListener("DOMContentLoaded", atualizarEstadoLigacaoAppBraga);
 
 /* =========================
-   ADD TONER - ESTÃVEL
+   ADD TONER - ESTÃƒÂVEL
 ========================= */
 const tonerMapStable = {
   "TK-3190": { equipamento: "P3155DN", cor: "Preto" },
@@ -5870,7 +6832,7 @@ function normalizarTextoOCRStable(texto) {
   return String(texto || "")
     .replace(/[\r\n]+/g, " ")
     .replace(/\s+/g, " ")
-    .replace(/â€”/g, "-")
+    .replace(/Ã¢â‚¬â€/g, "-")
     .replace(/_/g, "-")
     .trim()
     .toUpperCase();
@@ -5889,7 +6851,11 @@ function preencherDataAtualSeVaziaStable() {
 }
 
 function montarTextoLocalizacaoStable(item) {
-  return `${item.serie} - ${item.armazem} - ${item.localizacao}`;
+  if (!item) return "Sem LocalizaÃ§Ã£o";
+  const serie = String(item.serie || "").trim();
+  const armazem = String(item.armazem || "Braga").trim();
+  const local = String(item.localizacao || item.local || "Sem LocalizaÃ§Ã£o").trim();
+  return [serie, armazem, local].filter(Boolean).join(" - ");
 }
 
 function procurarImpressoraPorUltimos3DigitosStable(final3) {
@@ -5987,6 +6953,37 @@ function extrairDadosEtiquetaOCRStable(texto) {
   };
 }
 
+function setSelectValueAppBraga(selectEl, value) {
+  if (!selectEl) return;
+  const clean = String(value || "").trim();
+  if (!clean) {
+    selectEl.value = "";
+    return;
+  }
+  const exists = Array.from(selectEl.options || []).some(opt => opt.value === clean);
+  if (!exists) {
+    const opt = document.createElement("option");
+    opt.value = clean;
+    opt.textContent = clean;
+    selectEl.appendChild(opt);
+  }
+  selectEl.value = clean;
+}
+
+function carregarLocalizacoesImpressorasNoFormularioAppBraga() {
+  const select = el("localizacao");
+  if (!select || !Array.isArray(impressorasData)) return;
+  impressorasData.forEach((printer) => {
+    const value = montarTextoLocalizacaoStable(printer);
+    if (value && !Array.from(select.options || []).some(opt => opt.value === value)) {
+      const opt = document.createElement("option");
+      opt.value = value;
+      opt.textContent = value;
+      select.appendChild(opt);
+    }
+  });
+}
+
 function aplicarDadosOCRNoFormularioStable(dados) {
   if (!dados) return false;
 
@@ -6009,7 +7006,7 @@ function aplicarDadosOCRNoFormularioStable(dados) {
   if (dados.serie && el("localizacao")) {
     const printer = impressorasData.find(p => p.serie === dados.serie);
     if (printer) {
-      el("localizacao").value = montarTextoLocalizacaoStable(printer);
+      setSelectValueAppBraga(el("localizacao"), montarTextoLocalizacaoStable(printer));
     }
   } else if (dados.equipamento || dados.cor) {
     abrirSerie3DigitosStable();
@@ -6040,7 +7037,7 @@ async function processarTextoLidoStable(textoLido) {
     }
   }
 
-  mostrarMensagem("CÃ³digo nÃ£o reconhecido para preenchimento automÃ¡tico.", "erro");
+  mostrarMensagem("CÃƒÂ³digo nÃƒÂ£o reconhecido para preenchimento automÃƒÂ¡tico.", "erro");
   return false;
 }
 
@@ -6048,36 +7045,31 @@ async function startScannerStable() {
   const reader = el("reader");
 
   if (!reader) {
-    mostrarMensagem("Zona do scanner nÃ£o encontrada.", "erro");
+    mostrarMensagem("Zona do scanner nÃƒÂ£o encontrada.", "erro");
     return;
   }
-
-  if (typeof Html5Qrcode === "undefined") {
-    mostrarMensagem("Biblioteca da cÃ¢mara nÃ£o carregada.", "erro");
-    return;
-  }
-
   if (scannerAtivoStable) {
-    mostrarMensagem("A cÃ¢mara jÃ¡ estÃ¡ aberta.", "erro");
+    mostrarMensagem("A cÃƒÂ¢mara jÃƒÂ¡ estÃƒÂ¡ aberta.", "erro");
     return;
   }
 
   reader.innerHTML = "";
   garantirPreviewStockQrVisivel();
-  scannerInstanceStable = new Html5Qrcode("reader");
 
   try {
+    await garantirHtml5QrcodeStock();
+    scannerInstanceStable = new Html5Qrcode("reader");
     await scannerInstanceStable.start(
       { facingMode: "environment" },
       { fps: 10, qrbox: { width: 280, height: 180 } },
       async (decodedText) => {
-        enhanceScannerStatus("CÃ³digo lido. A processar automaticamente...");
+        enhanceScannerStatus("CÃƒÂ³digo lido. A processar automaticamente...");
 
-        // 1Âº tenta usar o QR como etiqueta de toner existente em Stock.
-        // Se encontrar, passa automaticamente de Stock para HistÃ³rico.
+        // 1Ã‚Âº tenta usar o QR como etiqueta de toner existente em Stock.
+        // Se encontrar, passa automaticamente de Stock para HistÃƒÂ³rico.
         const passouStockHistorico = await usarPorCodigoEtiquetaToner(decodedText);
         if (!passouStockHistorico) {
-          // Se nÃ£o for QR de stock, mantÃ©m o comportamento antigo do scanner.
+          // Se nÃƒÂ£o for QR de stock, mantÃƒÂ©m o comportamento antigo do scanner.
           await processarTextoLidoStable(decodedText);
         }
 
@@ -6086,11 +7078,11 @@ async function startScannerStable() {
       () => {}
     );
     scannerAtivoStable = true;
-    enhanceScannerStatus("CÃ¢mara iniciada. Ã€ espera de leitura inteligente.");
-    mostrarMensagem("CÃ¢mara iniciada.");
+    enhanceScannerStatus("CÃƒÂ¢mara iniciada. Ãƒâ‚¬ espera de leitura inteligente.");
+    mostrarMensagem("CÃƒÂ¢mara iniciada.");
   } catch (e) {
     console.error("Erro ao iniciar scanner:", e);
-    mostrarMensagem("NÃ£o foi possÃ­vel abrir a cÃ¢mara.", "erro");
+    mostrarMensagem("NÃƒÂ£o foi possÃƒÂ­vel abrir a cÃƒÂ¢mara.", "erro");
   }
 }
 
@@ -6117,7 +7109,7 @@ async function stopScannerStable() {
 function abrirOCRStable() {
   const input = el("ocrInput");
   if (!input) {
-    mostrarMensagem("Input OCR nÃ£o encontrado.", "erro");
+    mostrarMensagem("Input OCR nÃƒÂ£o encontrado.", "erro");
     return;
   }
   input.value = "";
@@ -6127,13 +7119,8 @@ function abrirOCRStable() {
 async function processarOCRInputStable(event) {
   const file = event && event.target && event.target.files ? event.target.files[0] : null;
   if (!file) return;
-
-  if (typeof Tesseract === "undefined") {
-    mostrarMensagem("Biblioteca OCR nÃ£o carregada.", "erro");
-    return;
-  }
-
   try {
+    await garantirTesseractStable();
     mostrarOCRStatusStable("A ler a folha... pode demorar alguns segundos.");
     mostrarMensagem("A ler a folha...");
 
@@ -6150,11 +7137,11 @@ async function processarOCRInputStable(event) {
       dados.cor ? `Cor: ${dados.cor}` : "",
       dados.dataFolha ? `Data folha: ${dados.dataFolha}` : "",
       el("data") && el("data").value ? `Data scan: ${el("data").value}` : "",
-      dados.serie ? `SÃ©rie: ${dados.serie}` : ""
+      dados.serie ? `SÃƒÂ©rie: ${dados.serie}` : ""
     ].filter(Boolean).join(" | ");
 
-    mostrarOCRStatusStable(resumo || "A folha foi lida, mas nÃ£o encontrei dados suficientes.");
-    mostrarMensagem(ok ? "Folha lida com sucesso." : "NÃ£o encontrei dados suficientes na folha.", ok ? "sucesso" : "erro");
+    mostrarOCRStatusStable(resumo || "A folha foi lida, mas nÃƒÂ£o encontrei dados suficientes.");
+    mostrarMensagem(ok ? "Folha lida com sucesso." : "NÃƒÂ£o encontrei dados suficientes na folha.", ok ? "sucesso" : "erro");
   } catch (e) {
     console.error("Erro OCR:", e);
     mostrarOCRStatusStable("Erro ao ler a folha.");
@@ -6162,26 +7149,40 @@ async function processarOCRInputStable(event) {
   }
 }
 
+function garantirTesseractStable() {
+  if (typeof Tesseract !== "undefined") return Promise.resolve();
+  if (window.__appBragaTesseractPromise) return window.__appBragaTesseractPromise;
+  mostrarOCRStatusStable("A preparar leitura OCR...");
+  window.__appBragaTesseractPromise = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Biblioteca OCR não carregada."));
+    document.head.appendChild(script);
+  });
+  return window.__appBragaTesseractPromise;
+}
 function confirmarSerie3DigitosStable() {
   const valor = ((el("serial3Input") && el("serial3Input").value) || "").trim().toUpperCase();
 
   if (valor.length !== 3) {
-    mostrarMensagem("Introduza exatamente 3 dÃ­gitos.", "erro");
+    mostrarMensagem("Introduza exatamente 3 dÃƒÂ­gitos.", "erro");
     return;
   }
 
   const printer = procurarImpressoraPorUltimos3DigitosStable(valor);
   if (!printer) {
-    mostrarMensagem("Nenhuma impressora encontrada com esses 3 dÃ­gitos.", "erro");
+    mostrarMensagem("Nenhuma impressora encontrada com esses 3 dÃƒÂ­gitos.", "erro");
     return;
   }
 
   if (el("localizacao")) {
-    el("localizacao").value = montarTextoLocalizacaoStable(printer);
+    setSelectValueAppBraga(el("localizacao"), montarTextoLocalizacaoStable(printer));
   }
 
   fecharSerie3DigitosStable();
-  mostrarMensagem("LocalizaÃ§Ã£o selecionada com sucesso.");
+  mostrarMensagem("LocalizaÃƒÂ§ÃƒÂ£o selecionada com sucesso.");
 }
 
 window.startScanner = startScannerStable;
@@ -6190,10 +7191,17 @@ window.abrirOCR = abrirOCRStable;
 window.processarOCRInput = processarOCRInputStable;
 window.confirmarSerie3Digitos = confirmarSerie3DigitosStable;
 window.fecharSerie3Digitos = fecharSerie3DigitosStable;
+document.addEventListener("DOMContentLoaded", () => {
+  if (el("localizacao") && el("equipamento") && el("cor")) {
+    prepararCodigoEtiquetaTonerAppBraga(false);
+    carregarLocalizacoesImpressorasNoFormularioAppBraga();
+    preencherDataAtualSeVaziaStable();
+  }
+});
 
 
 /* =========================
-   ETIQUETA WORD AUTOMÃTICA
+   ETIQUETA WORD AUTOMÃƒÂTICA
 ========================= */
 function formatDatePTAppBraga(valor) {
   const raw = String(valor || "").trim();
@@ -6229,14 +7237,14 @@ function extrairDadosEtiquetaWord() {
     armazem = parts[1] || "";
     localCurto = parts.slice(2).join(" - ");
   } else {
-    localCurto = loc || "Sem LocalizaÃ§Ã£o";
+    localCurto = loc || "Sem LocalizaÃƒÂ§ÃƒÂ£o";
   }
 
   const dataEtiqueta = formatDatePTAppBraga(dataFolha || dataScan);
 
   return {
-    serie: serie || "SEM SÃ‰RIE",
-    localCurto: localCurto || "Sem LocalizaÃ§Ã£o",
+    serie: serie || "SEM SÃƒâ€°RIE",
+    localCurto: localCurto || "Sem LocalizaÃƒÂ§ÃƒÂ£o",
     armazem: armazem || "",
     dataEtiqueta: dataEtiqueta || formatDatePTAppBraga(dataScan) || "Sem Data",
     sdsRef: sdsRef.trim(),
@@ -6248,7 +7256,7 @@ function extrairDadosEtiquetaWord() {
 async function gerarWordEtiquetaFromForm(auto = false) {
   try {
     if (typeof docx === "undefined") {
-      if (!auto) mostrarMensagem("Biblioteca Word nÃ£o carregada.", "erro");
+      if (!auto) mostrarMensagem("Biblioteca Word nÃƒÂ£o carregada.", "erro");
       return false;
     }
 
@@ -6384,18 +7392,18 @@ window.gerarWordEtiquetaFromForm = gerarWordEtiquetaFromForm;
 
 
 /* =========================
-   PORTAS FIREBASE FALLBACK + MIGRAÃ‡ÃƒO
+   PORTAS FIREBASE FALLBACK + MIGRAÃƒâ€¡ÃƒÆ’O
 ========================= */
 async function migrarPortasParaFirebase() {
   if (!window.db) {
-    mostrarMensagem("Firebase nÃ£o estÃ¡ disponÃ­vel.", "erro");
+    mostrarMensagem("Firebase nÃƒÂ£o estÃƒÂ¡ disponÃƒÂ­vel.", "erro");
     return;
   }
 
   try {
     const snap = await db.collection("portas").get();
     if (!snap.empty) {
-      mostrarMensagem("A coleÃ§Ã£o portas jÃ¡ tem dados. MigraÃ§Ã£o nÃ£o necessÃ¡ria.");
+      mostrarMensagem("A coleÃƒÂ§ÃƒÂ£o portas jÃƒÂ¡ tem dados. MigraÃƒÂ§ÃƒÂ£o nÃƒÂ£o necessÃƒÂ¡ria.");
       return;
     }
 
@@ -6411,7 +7419,7 @@ async function migrarPortasParaFirebase() {
       await db.collection("portas").add(payload);
     }
 
-    mostrarMensagem("MigraÃ§Ã£o das portas concluÃ­da com sucesso.");
+    mostrarMensagem("MigraÃƒÂ§ÃƒÂ£o das portas concluÃƒÂ­da com sucesso.");
   } catch (e) {
     console.error(e);
     mostrarMensagem("Erro ao migrar portas para Firebase.", "erro");
@@ -6535,7 +7543,7 @@ function atualizarVersaoUI(versionValue = APP_VERSION) {
   nodes.forEach((node) => {
     if (!node) return;
     node.innerText = "v" + versionValue + " Premium";
-    node.title = "VersÃ£o atual da app";
+    node.title = "VersÃƒÂ£o atual da app";
   });
 }
 
@@ -6552,9 +7560,9 @@ function mostrarAvisoAtualizacaoDisponivel(novaVersao) {
   box.dataset.version = novaVersao;
 
   box.innerHTML = `
-    <div class="update-title">AtualizaÃ§Ã£o disponÃ­vel</div>
+    <div class="update-title">AtualizaÃƒÂ§ÃƒÂ£o disponÃƒÂ­vel</div>
     <div class="update-subtitle">
-      Existe uma versÃ£o nova. Podes atualizar agora ou continuar a trabalhar.<br><br>
+      Existe uma versÃƒÂ£o nova. Podes atualizar agora ou continuar a trabalhar.<br><br>
       Atual: v${APP_VERSION} Premium<br>
       Nova: v${novaVersao} Premium
     </div>
@@ -6708,7 +7716,7 @@ function abrirAdicionarPorta() {
 
 function editarPorta(ref) {
   const item = itemPorRef(window.portasData, ref);
-  if (!item) return mostrarMensagem("Porta nÃ£o encontrada.", "erro");
+  if (!item) return mostrarMensagem("Porta nÃƒÂ£o encontrada.", "erro");
   portaEditRef = ref;
   if (el("editPorta")) el("editPorta").value = item.porta || "";
   if (el("editLocal")) el("editLocal").value = item.local || "";
@@ -6793,7 +7801,7 @@ function abrirAdicionarUser() {
 
 function editarUser(ref) {
   const item = itemPorRef(window.usersData, ref);
-  if (!item) return mostrarMensagem("User nÃ£o encontrado.", "erro");
+  if (!item) return mostrarMensagem("User nÃƒÂ£o encontrado.", "erro");
   userEditRef = ref;
   const fields = ["nome","zona","user_pc_eye","pass_remote","pass_eye_peak","op_pistola","pass_pistola","nome_pc","teamviewer","user_mo365","pw_mo365","email_bragalis","pass_bragalis"];
   fields.forEach(f => { const node = el("editUser_" + f); if (node) node.value = item[f] || ""; });
@@ -7010,8 +8018,7 @@ function getEquipmentFichaHrefAppBraga(tipo, item = {}, index = 0, localPrefix =
 }
 
 function equipmentFichaLinkAppBraga(tipo, item = {}, index = 0, localPrefix = "local", label = "Ver ficha", className = "secondary-btn") {
-  const href = getEquipmentFichaHrefAppBraga(tipo, item, index, localPrefix);
-  return `<a class="${className}" href="${href}" onclick="event.stopPropagation()">${escapeHtmlAppBraga(label)}</a>`;
+  return "";
 }
 
 function imprimirUser(user) {
@@ -7023,7 +8030,7 @@ function imprimirUser(user) {
   if (!user) {
 
     return mostrarMensagem(
-      "User nÃ£o encontrado.",
+      "User nÃƒÂ£o encontrado.",
       "erro"
     );
 
@@ -7090,7 +8097,7 @@ function imprimirUser(user) {
     .join("");
 
   // =========================
-  // TÃTULO
+  // TÃƒÂTULO
   // =========================
 
   const titulo =
@@ -7260,7 +8267,7 @@ body {
       </div>
 
       <div class="print-value">
-        Este user nÃ£o tem campos preenchidos.
+        Este user nÃƒÂ£o tem campos preenchidos.
       </div>
 
     </div>
@@ -7311,7 +8318,7 @@ body {
     iframe.remove();
 
     return mostrarMensagem(
-      "Erro ao abrir impressÃ£o",
+      "Erro ao abrir impressÃƒÂ£o",
       "erro"
     );
 
@@ -7366,7 +8373,7 @@ function abrirAdicionarPistola() {
 
 function editarPistola(ref) {
   const item = itemPorRef(window.pistolasData, ref);
-  if (!item) return mostrarMensagem("Pistola nÃ£o encontrada.", "erro");
+  if (!item) return mostrarMensagem("Pistola nÃƒÂ£o encontrada.", "erro");
   pistolaEditRef = ref;
   ["num","nome","password","cn","sn","mac","operador","armazem","prontas"].forEach(f => {
     const node = el("editP_" + f);
@@ -7452,7 +8459,7 @@ async function guardarNovaImpressora() {
     ip: el("addImp_ip")?.value || ""
   };
   if (!normalizarTexto(payload.modelo) || !normalizarTexto(payload.serie) || !normalizarTexto(payload.ip)) {
-    return mostrarMensagem("Preenche pelo menos Modelo, SÃ©rie e IP.", "erro");
+    return mostrarMensagem("Preenche pelo menos Modelo, SÃƒÂ©rie e IP.", "erro");
   }
   impressorasData.unshift({ _ref: `local-impressora-${Date.now()}`, ...payload });
   guardarImpressorasLocal();
@@ -7504,7 +8511,7 @@ window.addEventListener("load", modoVisualInit);
 function getTopConsumoEquipamentos(limit = 4) {
   const map = new Map();
   historicoGlobal.forEach(item => {
-    const key = `${item.equipamento || "-"} Â· ${item.localizacao || "-"}`;
+    const key = `${item.equipamento || "-"} Ã‚Â· ${item.localizacao || "-"}`;
     map.set(key, (map.get(key) || 0) + 1);
   });
   return [...map.entries()].sort((a,b) => b[1]-a[1]).slice(0, limit);
@@ -7517,17 +8524,17 @@ function getTopProblemasDoDia(limit = 3) {
   const problems = [];
 
   if (buckets.critical > 0) {
-    problems.push(`Existem ${buckets.critical} impressoras em estado crÃ­tico.`);
+    problems.push(`Existem ${buckets.critical} impressoras em estado crÃƒÂ­tico.`);
   }
   if (buckets.warning > 0) {
-    problems.push(`Existem ${buckets.warning} impressoras em zona de atenÃ§Ã£o.`);
+    problems.push(`Existem ${buckets.warning} impressoras em zona de atenÃƒÂ§ÃƒÂ£o.`);
   }
   if (topLocs.length) {
-    problems.push(`Maior pressÃ£o recente em ${topLocs[0][0]} com ${topLocs[0][1]} movimentos.`);
+    problems.push(`Maior pressÃƒÂ£o recente em ${topLocs[0][0]} com ${topLocs[0][1]} movimentos.`);
   }
   if (ultimos.length) {
     const u = ultimos[0];
-    problems.push(`Ãšltimo movimento: ${u.equipamento || "-"} Â· ${u.cor || "-"} Â· ${u.localizacao || "-"}.`);
+    problems.push(`ÃƒÅ¡ltimo movimento: ${u.equipamento || "-"} Ã‚Â· ${u.cor || "-"} Ã‚Â· ${u.localizacao || "-"}.`);
   }
 
   return problems.slice(0, limit);
@@ -7541,7 +8548,7 @@ function getPrioridadeMaximaGestor(limit = 4) {
     const crit = colors.filter(c => isTonerEmpty(c.percent));
     if (crit.length) {
       rows.push({
-        label: `${item.modelo} Â· ${item.localizacao}`,
+        label: `${item.modelo} Ã‚Â· ${item.localizacao}`,
         detail: crit.map(c => `${c.label}: ${c.percent}%`).join(" | ")
       });
     }
@@ -7567,23 +8574,23 @@ function renderModoGestorExtremo() {
       <div class="gestor-grid-hero">
         <div class="gestor-hero-card">
           <div class="gestor-hero-title">Estado executivo</div>
-          <div class="gestor-hero-value">${buckets.critical > 0 ? "PressÃ£o" : "EstÃ¡vel"}</div>
-          <div class="gestor-hero-note">VisÃ£o imediata da operaÃ§Ã£o para decidir onde agir primeiro.</div>
+          <div class="gestor-hero-value">${buckets.critical > 0 ? "PressÃƒÂ£o" : "EstÃƒÂ¡vel"}</div>
+          <div class="gestor-hero-note">VisÃƒÂ£o imediata da operaÃƒÂ§ÃƒÂ£o para decidir onde agir primeiro.</div>
           <div class="gestor-chip-row">
-            <span class="gestor-chip red">CrÃ­ticos: ${buckets.critical}</span>
-            <span class="gestor-chip yellow">AtenÃ§Ã£o: ${buckets.warning}</span>
+            <span class="gestor-chip red">CrÃƒÂ­ticos: ${buckets.critical}</span>
+            <span class="gestor-chip yellow">AtenÃƒÂ§ÃƒÂ£o: ${buckets.warning}</span>
             <span class="gestor-chip green">Stock: ${stockGlobal.length}</span>
           </div>
         </div>
         <div class="gestor-card">
           <h4>Movimento recente</h4>
           <div class="gestor-mini-value">${historicoGlobal.length}</div>
-          <div class="meta-line">Total de registos usados no histÃ³rico.</div>
+          <div class="meta-line">Total de registos usados no histÃƒÂ³rico.</div>
         </div>
         <div class="gestor-card">
           <h4>Capacidade atual</h4>
           <div class="gestor-mini-value">${stockGlobal.length}</div>
-          <div class="meta-line">Itens disponÃ­veis agora em stock.</div>
+          <div class="meta-line">Itens disponÃƒÂ­veis agora em stock.</div>
         </div>
         <div class="gestor-card">
           <h4>Base instalada</h4>
@@ -7597,21 +8604,21 @@ function renderModoGestorExtremo() {
   if (prioridade) {
     prioridade.innerHTML = maxRows.length
       ? maxRows.map(item => `<div class="gestor-priority-card"><h4>${item.label}</h4><div class="meta-line">${item.detail}</div></div>`).join("")
-      : `<div class="gestor-priority-card"><h4>Sem prioridade mÃ¡xima</h4><div class="meta-line">NÃ£o existem impressoras com toner a 0% neste momento.</div></div>`;
+      : `<div class="gestor-priority-card"><h4>Sem prioridade mÃƒÂ¡xima</h4><div class="meta-line">NÃƒÂ£o existem impressoras com toner a 0% neste momento.</div></div>`;
   }
 
   if (consumo) {
     consumo.innerHTML = `
       <div class="gestor-card">
-        <h4>Top LocalizaÃ§Ãµes</h4>
+        <h4>Top LocalizaÃƒÂ§ÃƒÂµes</h4>
         <ul class="gestor-list">
-          ${topLocs.length ? topLocs.map(([k,v]) => `<li>${k} â€” ${v} movimentos</li>`).join("") : "<li>Sem dados suficientes</li>"}
+          ${topLocs.length ? topLocs.map(([k,v]) => `<li>${k} Ã¢â‚¬â€ ${v} movimentos</li>`).join("") : "<li>Sem dados suficientes</li>"}
         </ul>
       </div>
       <div class="gestor-card">
         <h4>Top Equipamentos</h4>
         <ul class="gestor-list">
-          ${topEquip.length ? topEquip.map(([k,v]) => `<li>${k} â€” ${v}</li>`).join("") : "<li>Sem dados suficientes</li>"}
+          ${topEquip.length ? topEquip.map(([k,v]) => `<li>${k} Ã¢â‚¬â€ ${v}</li>`).join("") : "<li>Sem dados suficientes</li>"}
         </ul>
       </div>
     `;
@@ -7619,8 +8626,8 @@ function renderModoGestorExtremo() {
 
   if (problemas) {
     problemas.innerHTML = topProb.length
-      ? topProb.map(txt => `<div class="gestor-alert-card"><h4>Ponto de gestÃ£o</h4><div class="meta-line">${txt}</div></div>`).join("")
-      : `<div class="gestor-alert-card"><h4>Sem alertas do dia</h4><div class="meta-line">Ainda nÃ£o hÃ¡ dados suficientes para destacar problemas.</div></div>`;
+      ? topProb.map(txt => `<div class="gestor-alert-card"><h4>Ponto de gestÃƒÂ£o</h4><div class="meta-line">${txt}</div></div>`).join("")
+      : `<div class="gestor-alert-card"><h4>Sem alertas do dia</h4><div class="meta-line">Ainda nÃƒÂ£o hÃƒÂ¡ dados suficientes para destacar problemas.</div></div>`;
   }
 }
 
@@ -7633,16 +8640,16 @@ const STOCK_MIN_DEFAULTS = {
   "Braga - Ilha 03": 1,
   "Braga - Ilha 04": 1,
   "Braga - Ilha 05": 1,
-  "Braga - BalcÃ£o 01": 2,
-  "Braga - BalcÃ£o 02": 2,
+  "Braga - BalcÃƒÂ£o 01": 2,
+  "Braga - BalcÃƒÂ£o 02": 2,
   "Braga - Dep. Logistica": 2,
   "Braga - G/Encomendas": 1,
-  "Braga - DevoluÃ§Ãµes": 1,
+  "Braga - DevoluÃƒÂ§ÃƒÂµes": 1,
   "Braga - Escritorio": 1,
   "Vila Real - Ilha 01": 1,
   "Vila Real - Ilha 02": 1,
   "Vila Real - Ilha 03": 1,
-  "Sem LocalizaÃ§Ã£o": 1
+  "Sem LocalizaÃƒÂ§ÃƒÂ£o": 1
 };
 
 let stockEditModalId = null;
@@ -7675,7 +8682,7 @@ function saveStockMinConfig(cfg) {
 }
 
 function normalizeLocMin(loc) {
-  const raw = String(loc || "Sem LocalizaÃ§Ã£o");
+  const raw = String(loc || "Sem LocalizaÃƒÂ§ÃƒÂ£o");
   if (raw.includes(" - ")) {
     const parts = raw.split(" - ");
     if (parts.length >= 3) return `${parts[1]} - ${parts[2]}`;
@@ -7701,8 +8708,8 @@ function renderStockMinimoPainel() {
     const atual = counts[loc] || 0;
     const minimo = Number(config[loc] || 0);
     const cls = atual < minimo ? "item-danger" : atual === minimo ? "item-warning" : "item-ok";
-    const estado = atual < minimo ? "Abaixo do mÃ­nimo" : atual === minimo ? "No mÃ­nimo" : "Acima do mÃ­nimo";
-    return `<div class="stock-min-card"><strong>${loc}</strong><div class="meta-line">Atual: <span class="meta-value ${cls}">${atual}</span></div><div class="meta-line">MÃ­nimo: <span class="meta-value">${minimo}</span></div><div class="meta-line">${estado}</div></div>`;
+    const estado = atual < minimo ? "Abaixo do mÃƒÂ­nimo" : atual === minimo ? "No mÃƒÂ­nimo" : "Acima do mÃƒÂ­nimo";
+    return `<div class="stock-min-card"><strong>${loc}</strong><div class="meta-line">Atual: <span class="meta-value ${cls}">${atual}</span></div><div class="meta-line">MÃƒÂ­nimo: <span class="meta-value">${minimo}</span></div><div class="meta-line">${estado}</div></div>`;
   }).join("");
 }
 
@@ -7725,7 +8732,7 @@ function guardarStockMinimoConfig() {
   const cfg = {};
   inputs.forEach(inp => { cfg[inp.getAttribute("data-stock-min-loc")] = Math.max(0, parseInt(inp.value || "0", 10) || 0); });
   saveStockMinConfig(cfg);
-  mostrarMensagem("Stock mÃ­nimo guardado com sucesso.");
+  mostrarMensagem("Stock mÃƒÂ­nimo guardado com sucesso.");
   tryRenderAppBraga(renderStockMinimoPainel);
   tryRenderAppBraga(renderAlertasInteligentes);
 }
@@ -7735,7 +8742,7 @@ function resetStockMinimoConfig() {
   renderStockMinimoConfig();
   renderStockMinimoPainel();
   renderAlertasInteligentes();
-  mostrarMensagem("Stock mÃ­nimo reposto.");
+  mostrarMensagem("Stock mÃƒÂ­nimo reposto.");
 }
 
 function ensureLoteFieldOnEdit() {
@@ -7837,18 +8844,18 @@ function exportCsvFile(filename, headers, rows) {
 }
 
 function exportarExcelStock() {
-  if (!stockGlobal.length) return mostrarMensagem("NÃ£o hÃ¡ stock para exportar.", "erro");
+  if (!stockGlobal.length) return mostrarMensagem("NÃƒÂ£o hÃƒÂ¡ stock para exportar.", "erro");
   exportCsvFile("stock_app_braga.csv", ["idInterno","codigoEtiqueta","sdsRef","equipamento","localizacao","cor","lote","data","dataFolha"], stockGlobal);
 }
 
 function exportarExcelHistorico() {
-  if (!historicoGlobal.length) return mostrarMensagem("NÃ£o hÃ¡ histÃ³rico para exportar.", "erro");
+  if (!historicoGlobal.length) return mostrarMensagem("NÃƒÂ£o hÃƒÂ¡ histÃƒÂ³rico para exportar.", "erro");
   exportCsvFile("historico_app_braga.csv", ["idInterno","codigoEtiqueta","sdsRef","equipamento","localizacao","cor","lote","data","dataFolha"], historicoGlobal);
 }
 
 function exportarExcelTudo() {
   const rows = [...stockGlobal.map(x => ({...x, origem:"stock"})), ...historicoGlobal.map(x => ({...x, origem:"historico"}))];
-  if (!rows.length) return mostrarMensagem("NÃ£o hÃ¡ dados para exportar.", "erro");
+  if (!rows.length) return mostrarMensagem("NÃƒÂ£o hÃƒÂ¡ dados para exportar.", "erro");
   exportCsvFile("dados_completos_app_braga.csv", ["origem","idInterno","codigoEtiqueta","sdsRef","equipamento","localizacao","cor","lote","data","dataFolha"], rows);
 }
 
@@ -7904,8 +8911,8 @@ async function importBackupCompletoApp(event) {
       portas: data.portas
     };
     const selected = Object.entries(collections).filter(([, rows]) => Array.isArray(rows) && rows.length);
-    if (!selected.length) return mostrarMensagem("Backup sem dados importÃ¡veis.", "erro");
-    if (!confirm(`Importar backup completo? Isto vai adicionar ${selected.reduce((sum, [, rows]) => sum + rows.length, 0)} registos Ã s coleÃ§Ãµes.`)) return;
+    if (!selected.length) return mostrarMensagem("Backup sem dados importÃƒÂ¡veis.", "erro");
+    if (!confirm(`Importar backup completo? Isto vai adicionar ${selected.reduce((sum, [, rows]) => sum + rows.length, 0)} registos ÃƒÂ s coleÃƒÂ§ÃƒÂµes.`)) return;
 
     for (const [collection, rows] of selected) {
       for (const row of rows) {
@@ -7952,7 +8959,7 @@ function filtrarHistoricoAvancado() {
 
 function abrirEditarStockModal(id) {
   const item = stockGlobal.find(x => x.idDoc === id);
-  if (!item) return mostrarMensagem("Item de stock nÃ£o encontrado.", "erro");
+  if (!item) return mostrarMensagem("Item de stock nÃƒÂ£o encontrado.", "erro");
   stockEditModalId = id;
   if (el("editStockEquipamento")) el("editStockEquipamento").value = item.equipamento || "";
   if (el("editStockCor")) el("editStockCor").value = item.cor || "";
@@ -8005,7 +9012,7 @@ async function apagarStockItem(id) {
 
 function abrirEditarHistoricoModal(id) {
   const item = historicoGlobal.find(x => x.idDoc === id);
-  if (!item) return mostrarMensagem("HistÃ³rico nÃ£o encontrado.", "erro");
+  if (!item) return mostrarMensagem("HistÃƒÂ³rico nÃƒÂ£o encontrado.", "erro");
   historicoEditModalId = id;
   if (el("editHistoricoEquipamento")) el("editHistoricoEquipamento").value = item.equipamento || "";
   if (el("editHistoricoCor")) el("editHistoricoCor").value = item.cor || "";
@@ -8036,10 +9043,10 @@ async function guardarEdicaoHistoricoModal() {
   try {
     await db.collection("historico").doc(historicoEditModalId).update(payload);
     fecharEdicaoHistoricoModal();
-    mostrarMensagem("HistÃ³rico atualizado.");
+    mostrarMensagem("HistÃƒÂ³rico atualizado.");
   } catch (e) {
     console.error(e);
-    mostrarMensagem("Erro ao atualizar histÃ³rico.", "erro");
+    mostrarMensagem("Erro ao atualizar histÃƒÂ³rico.", "erro");
   }
 }
 
@@ -8050,7 +9057,7 @@ function buildAlertasInteligentes() {
   Object.keys(cfg).forEach(loc => {
     const atual = counts[loc] || 0;
     const minimo = Number(cfg[loc] || 0);
-    if (atual < minimo) rows.push({ tipo: "stock", titulo: loc, detalhe: `Stock abaixo do mÃ­nimo: ${atual}/${minimo}` });
+    if (atual < minimo) rows.push({ tipo: "stock", titulo: loc, detalhe: `Stock abaixo do mÃƒÂ­nimo: ${atual}/${minimo}` });
   });
 
   if (typeof impressorasData !== "undefined" && typeof tonerInfoState !== "undefined") {
@@ -8058,7 +9065,7 @@ function buildAlertasInteligentes() {
       const info = tonerInfoState[item.ip] || null;
       const colors = Array.isArray(info?.colors) ? info.colors : [];
       const crit = colors.filter(c => isTonerEmpty(c.percent));
-      if (crit.length) rows.push({ tipo: "printer", titulo: `${item.modelo} Â· ${item.localizacao}`, detalhe: crit.map(c => `${c.label}: ${c.percent}%`).join(" | ") });
+      if (crit.length) rows.push({ tipo: "printer", titulo: `${item.modelo} Ã‚Â· ${item.localizacao}`, detalhe: crit.map(c => `${c.label}: ${c.percent}%`).join(" | ") });
     });
   }
   return rows.slice(0, 8);
@@ -8069,7 +9076,7 @@ function renderAlertasInteligentes() {
   ["alertasInteligentesDashboard","alertasInteligentesImpressoras"].forEach(id => {
     const host = el(id);
     if (!host) return;
-    host.innerHTML = rows.length ? rows.map(r => `<div class="alert-inteligente-card"><strong>${r.titulo}</strong><div class="meta-line">${r.detalhe}</div></div>`).join("") : `<div class="alert-inteligente-card"><strong>Sem alertas</strong><div class="meta-line">NÃ£o existem alertas inteligentes ativos.</div></div>`;
+    host.innerHTML = rows.length ? rows.map(r => `<div class="alert-inteligente-card"><strong>${r.titulo}</strong><div class="meta-line">${r.detalhe}</div></div>`).join("") : `<div class="alert-inteligente-card"><strong>Sem alertas</strong><div class="meta-line">NÃƒÂ£o existem alertas inteligentes ativos.</div></div>`;
   });
 }
 
@@ -8131,7 +9138,7 @@ function formatDatePTShared(valor) {
 function parseLocalizacaoEtiquetaShared(loc) {
   const raw = String(loc || "").trim();
   let serie = "";
-  let localCurto = raw || "Sem LocalizaÃ§Ã£o";
+  let localCurto = raw || "Sem LocalizaÃƒÂ§ÃƒÂ£o";
   let armazem = "";
   const parts = raw.split(" - ").map(v => v.trim()).filter(Boolean);
   if (parts.length >= 3) {
@@ -8161,10 +9168,10 @@ function montarPayloadEtiquetaPartilhada(extra = {}) {
   const origem = extra.origem || "scan";
   const codigoEtiqueta = extra.codigoEtiqueta || getCodigoEtiquetaAtualAppBraga();
   return {
-    serie: info.serie || extra.serie || "SEM SÃ‰RIE",
-    localCurto: info.localCurto || "Sem LocalizaÃ§Ã£o",
+    serie: info.serie || extra.serie || "SEM SÃƒâ€°RIE",
+    localCurto: info.localCurto || "Sem LocalizaÃƒÂ§ÃƒÂ£o",
     armazem: info.armazem || extra.armazem || "",
-    localizacao: info.localizacaoRaw || loc || "Sem LocalizaÃ§Ã£o",
+    localizacao: info.localizacaoRaw || loc || "Sem LocalizaÃƒÂ§ÃƒÂ£o",
     dataEtiqueta: formatDatePTShared(dataScan || dataFolha) || "Sem Data",
     dataScan: dataScan || "",
     data: dataScan || "",
@@ -8181,10 +9188,11 @@ function montarPayloadEtiquetaPartilhada(extra = {}) {
 }
 
 async function guardarEtiquetaPartilhada(extra = {}) {
-  if (!db || !db.collection) return null;
+  const database = getDbAppBraga();
+  if (!database || !database.collection) return null;
   try {
-    const payload = montarPayloadEtiquetaPartilhada(extra);
-    const ref = await db.collection("etiquetasWord").add(payload);
+    const payload = sanitizeFirestorePayloadAppBraga(montarPayloadEtiquetaPartilhada(extra));
+    const ref = await database.collection("etiquetasWord").add(payload);
     return { idDoc: ref.id, ...payload };
   } catch (e) {
     console.error("Erro ao guardar etiqueta partilhada:", e);
@@ -8195,7 +9203,7 @@ async function guardarEtiquetaPartilhada(extra = {}) {
 async function gerarWordEtiquetaPartilhada(dados, opts = {}) {
   try {
     if (typeof docx === "undefined") {
-      mostrarMensagem("Biblioteca Word nÃ£o carregada.", "erro");
+      mostrarMensagem("Biblioteca Word nÃƒÂ£o carregada.", "erro");
       return false;
     }
     const payload = montarPayloadEtiquetaPartilhada(dados || {});
@@ -8301,17 +9309,17 @@ function renderEtiquetasWordCards() {
     <div class="stock-card etiqueta-word-card">
       <label class="etiqueta-select-row">
         <input type="checkbox" data-etiqueta-word-id="${safeRefHtml(t.idDoc)}" ${etiquetasWordSelecionadas.has(t.idDoc) ? "checked" : ""} onchange="toggleEtiquetaWordSelecionada('${safeRefHtml(t.idDoc)}', this.checked)">
-        <span>Selecionar para impressÃ£o</span>
+        <span>Selecionar para impressÃƒÂ£o</span>
       </label>
       <div class="stock-id">${t.localCurto || t.localizacao || 'Etiqueta'}</div>
-      <div class="meta-line">SÃ©rie: <span class="meta-value">${t.serie || '-'}</span></div>
-      <div class="meta-line">ArmazÃ©m: <span class="meta-value">${t.armazem || '-'}</span></div>
-      <div class="meta-line">LocalizaÃ§Ã£o: <span class="meta-value">${t.localizacao || '-'}</span></div>
+      <div class="meta-line">SÃƒÂ©rie: <span class="meta-value">${t.serie || '-'}</span></div>
+      <div class="meta-line">ArmazÃƒÂ©m: <span class="meta-value">${t.armazem || '-'}</span></div>
+      <div class="meta-line">LocalizaÃƒÂ§ÃƒÂ£o: <span class="meta-value">${t.localizacao || '-'}</span></div>
       <div class="meta-line">Equipamento: <span class="meta-value">${t.equipamento || '-'}</span></div>
       <div class="meta-line">Cor: <span class="meta-value">${t.cor || '-'}</span></div>
       <div class="meta-line">Lote: <span class="meta-value">${t.lote || '-'}</span></div>
       <div class="meta-line">SDS Ref: <span class="meta-value">${t.sdsRef || '-'}</span></div>
-      <div class="meta-line">CÃ³digo: <span class="meta-value">${t.codigoEtiqueta || '-'}</span></div>
+      <div class="meta-line">CÃƒÂ³digo: <span class="meta-value">${t.codigoEtiqueta || '-'}</span></div>
       <div class="meta-line">Data: <span class="meta-value">${t.dataEtiqueta || '-'}</span></div>
       <div class="meta-line">Origem: <span class="meta-value">${t.origem || 'scan'}</span></div>
       <div class="card-actions">
@@ -8327,8 +9335,8 @@ function renderEtiquetasWordCards() {
 function montarHtmlEtiquetaImpressao(item) {
   const linhas = [
     ["Local", item.localCurto || item.localizacao],
-    ["SÃ©rie", item.serie],
-    ["ArmazÃ©m", item.armazem],
+    ["SÃƒÂ©rie", item.serie],
+    ["ArmazÃƒÂ©m", item.armazem],
     ["Equipamento", item.equipamento],
     ["Cor", item.cor],
     ["Lote", item.lote],
@@ -8371,7 +9379,7 @@ function montarHtmlEtiquetaImpressao(item) {
 
 async function regerarEtiquetaWordPartilhada(id) {
   const item = etiquetasWordGlobal.find(x => x.idDoc === id);
-  if (!item) return mostrarMensagem("Etiqueta nÃ£o encontrada.", "erro");
+  if (!item) return mostrarMensagem("Etiqueta nÃƒÂ£o encontrada.", "erro");
   try {
     const existente = document.getElementById('printAreaEtiquetaAppBraga');
     if (existente) existente.remove();
@@ -8397,7 +9405,7 @@ async function regerarEtiquetaWordPartilhada(id) {
         mostrarMensagem('Etiqueta pronta a imprimir.');
       } catch (e) {
         console.error(e);
-        mostrarMensagem('Erro ao abrir a impressÃ£o.', 'erro');
+        mostrarMensagem('Erro ao abrir a impressÃƒÂ£o.', 'erro');
       } finally {
         setTimeout(() => {
           try { overlay.remove(); } catch (e) {}
@@ -8407,15 +9415,15 @@ async function regerarEtiquetaWordPartilhada(id) {
     }, 150);
   } catch (e) {
     console.error(e);
-    mostrarMensagem('Erro ao preparar impressÃ£o.', 'erro');
+    mostrarMensagem('Erro ao preparar impressÃƒÂ£o.', 'erro');
   }
 }
 
 function montarHtmlEtiquetaOverlay(item) {
   const linhas = [
     ["Local", item.localCurto || item.localizacao],
-    ["SÃ©rie", item.serie],
-    ["ArmazÃ©m", item.armazem],
+    ["SÃƒÂ©rie", item.serie],
+    ["ArmazÃƒÂ©m", item.armazem],
     ["Equipamento", item.equipamento],
     ["Cor", item.cor],
     ["Lote", item.lote],
@@ -8458,8 +9466,8 @@ function montarHtmlEtiquetasOverlay(items) {
   const sheets = items.map((item) => {
     const linhas = [
       ["Local", item.localCurto || item.localizacao],
-      ["SÃ©rie", item.serie],
-      ["ArmazÃ©m", item.armazem],
+      ["SÃƒÂ©rie", item.serie],
+      ["ArmazÃƒÂ©m", item.armazem],
       ["Equipamento", item.equipamento],
       ["Cor", item.cor],
       ["Lote", item.lote],
@@ -8504,7 +9512,7 @@ async function imprimirEtiquetasWordSelecionadas() {
   const ids = Array.from(etiquetasWordSelecionadas);
   if (!ids.length) return mostrarMensagem("Seleciona pelo menos uma etiqueta.", "erro");
   const items = ids.map((id) => etiquetasWordGlobal.find((item) => item.idDoc === id)).filter(Boolean);
-  if (!items.length) return mostrarMensagem("As etiquetas selecionadas jÃ¡ nÃ£o existem.", "erro");
+  if (!items.length) return mostrarMensagem("As etiquetas selecionadas jÃƒÂ¡ nÃƒÂ£o existem.", "erro");
 
   try {
     const existente = document.getElementById('printAreaEtiquetaAppBraga');
@@ -8529,7 +9537,7 @@ async function imprimirEtiquetasWordSelecionadas() {
         mostrarMensagem(`${items.length} etiquetas prontas para imprimir.`);
       } catch (e) {
         console.error(e);
-        mostrarMensagem("Erro ao abrir a impressÃ£o.", "erro");
+        mostrarMensagem("Erro ao abrir a impressÃƒÂ£o.", "erro");
       } finally {
         setTimeout(() => {
           try { overlay.remove(); } catch (e) {}
@@ -8590,12 +9598,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
 /* =========================================================
-   APP BRAGA â€” SIDEBAR BRINKA + DASHBOARD CLEAN
+   APP BRAGA Ã¢â‚¬â€ SIDEBAR BRINKA + DASHBOARD CLEAN
    ========================================================= */
 (function(){
   function closestPanel(el){while(el&&el!==document.body){if(el.classList&&el.classList.contains('panel'))return el;el=el.parentElement;}return null;}
-  function initBrinkaSidebar(){var sidebar=document.querySelector('.sidebar');if(!sidebar)return;if(!document.querySelector('.app-menu-toggle')){var btn=document.createElement('button');btn.className='app-menu-toggle';btn.type='button';btn.setAttribute('aria-label','Abrir menu');btn.textContent='â˜°';document.body.appendChild(btn);}if(!document.querySelector('.app-sidebar-overlay')){var ov=document.createElement('div');ov.className='app-sidebar-overlay';document.body.appendChild(ov);}var btn=document.querySelector('.app-menu-toggle');var overlay=document.querySelector('.app-sidebar-overlay');function open(){sidebar.classList.add('app-open');overlay.classList.add('show');btn.textContent='Ã—';}function close(){sidebar.classList.remove('app-open');overlay.classList.remove('show');btn.textContent='â˜°';}btn.onclick=function(e){e.preventDefault();e.stopPropagation();sidebar.classList.contains('app-open')?close():open();};overlay.onclick=close;sidebar.querySelectorAll('a').forEach(function(a){a.addEventListener('click',close);});}
-  function cleanDashboard(){var path=(location.pathname||'').toLowerCase();var isDashboard=path.endsWith('/')||path.endsWith('/index.html')||path.indexOf('index.html')!==-1;if(!isDashboard)return;document.body.classList.add('dashboard-clean');var removeTitles=['Centro Operacional Inteligente','Prioridade MÃ¡xima','Top Consumo','Alertas do Dia','Alertas Inteligentes'];document.querySelectorAll('h3').forEach(function(h){var t=(h.textContent||'').trim();if(removeTitles.indexOf(t)>=0){var p=closestPanel(h);if(p)p.classList.add('is-dashboard-removed');}});}
+  function initBrinkaSidebar(){var sidebar=document.querySelector('.sidebar');if(!sidebar)return;if(!document.querySelector('.app-menu-toggle')){var btn=document.createElement('button');btn.className='app-menu-toggle';btn.type='button';btn.setAttribute('aria-label','Abrir menu');btn.textContent='Ã¢ËœÂ°';document.body.appendChild(btn);}if(!document.querySelector('.app-sidebar-overlay')){var ov=document.createElement('div');ov.className='app-sidebar-overlay';document.body.appendChild(ov);}var btn=document.querySelector('.app-menu-toggle');var overlay=document.querySelector('.app-sidebar-overlay');function open(){sidebar.classList.add('app-open');overlay.classList.add('show');btn.textContent='Ãƒâ€”';}function close(){sidebar.classList.remove('app-open');overlay.classList.remove('show');btn.textContent='Ã¢ËœÂ°';}btn.onclick=function(e){e.preventDefault();e.stopPropagation();sidebar.classList.contains('app-open')?close():open();};overlay.onclick=close;sidebar.querySelectorAll('a').forEach(function(a){a.addEventListener('click',close);});}
+  function cleanDashboard(){var path=(location.pathname||'').toLowerCase();var isDashboard=path.endsWith('/')||path.endsWith('/index.html')||path.indexOf('index.html')!==-1;if(!isDashboard)return;document.body.classList.add('dashboard-clean');var removeTitles=['Centro Operacional Inteligente','Prioridade MÃƒÂ¡xima','Top Consumo','Alertas do Dia','Alertas Inteligentes'];document.querySelectorAll('h3').forEach(function(h){var t=(h.textContent||'').trim();if(removeTitles.indexOf(t)>=0){var p=closestPanel(h);if(p)p.classList.add('is-dashboard-removed');}});}
   if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){initBrinkaSidebar();cleanDashboard();});}else{initBrinkaSidebar();cleanDashboard();}
 })();
 
@@ -8614,7 +9622,7 @@ async function importarExcelFirebase(){
   if(!input){
 
     alert(
-      "Input Excel nÃ£o encontrado."
+      "Input Excel nÃƒÂ£o encontrado."
     );
 
     return;
@@ -8638,7 +9646,7 @@ window.addEventListener(
 
     if(!excelInput){
       console.log(
-        "Input Excel nÃ£o encontrado"
+        "Input Excel nÃƒÂ£o encontrado"
       );
       return;
     }
@@ -8860,7 +9868,7 @@ async function importarUsersJSONFirebase(){
     if(!window.db){
 
       alert(
-        "Firebase nÃ£o iniciada."
+        "Firebase nÃƒÂ£o iniciada."
       );
 
       return;
@@ -8892,7 +9900,7 @@ async function importarUsersJSONFirebase(){
         if(!Array.isArray(users)){
 
           alert(
-            "JSON invÃ¡lido."
+            "JSON invÃƒÂ¡lido."
           );
 
           return;
@@ -8912,7 +9920,7 @@ async function importarUsersJSONFirebase(){
         }
 
         alert(
-          "ImportaÃ§Ã£o concluÃ­da: "
+          "ImportaÃƒÂ§ÃƒÂ£o concluÃƒÂ­da: "
           + total +
           " users."
         );
@@ -9042,7 +10050,7 @@ async function importarUsersJSONFirebase(){
 
     if(!window.db){
 
-      alert("Firebase nÃ£o iniciada.");
+      alert("Firebase nÃƒÂ£o iniciada.");
 
       return;
 
@@ -9072,7 +10080,7 @@ async function importarUsersJSONFirebase(){
 
         if(!Array.isArray(users)){
 
-          alert("JSON invÃ¡lido");
+          alert("JSON invÃƒÂ¡lido");
 
           return;
 
@@ -9091,7 +10099,7 @@ async function importarUsersJSONFirebase(){
         }
 
         alert(
-          "ImportaÃ§Ã£o concluÃ­da: "
+          "ImportaÃƒÂ§ÃƒÂ£o concluÃƒÂ­da: "
           + total +
           " users."
         );
@@ -9127,7 +10135,7 @@ async function importarPistolasJSONFirebase(){
 
     if(!window.db){
 
-      alert("Firebase nÃ£o iniciada.");
+      alert("Firebase nÃƒÂ£o iniciada.");
 
       return;
 
@@ -9168,7 +10176,7 @@ async function importarPistolasJSONFirebase(){
         }
 
         alert(
-          "ImportaÃ§Ã£o concluÃ­da: "
+          "ImportaÃƒÂ§ÃƒÂ£o concluÃƒÂ­da: "
           + total +
           " pistolas."
         );
@@ -9204,7 +10212,7 @@ async function importarPortasJSONFirebase(){
 
     if(!window.db){
 
-      alert("Firebase nÃ£o iniciada.");
+      alert("Firebase nÃƒÂ£o iniciada.");
 
       return;
 
@@ -9245,7 +10253,7 @@ async function importarPortasJSONFirebase(){
         }
 
         alert(
-          "ImportaÃ§Ã£o concluÃ­da: "
+          "ImportaÃƒÂ§ÃƒÂ£o concluÃƒÂ­da: "
           + total +
           " portas."
         );
@@ -9313,7 +10321,7 @@ function _unused(){
 
 
 
-/* ORDENAÃ‡ÃƒO ALFANUMÃ‰RICA USERS */
+/* ORDENAÃƒâ€¡ÃƒÆ’O ALFANUMÃƒâ€°RICA USERS */
 setInterval(() => {
   try{
     if(Array.isArray(window.usersData)){
@@ -9330,7 +10338,7 @@ setInterval(() => {
 
 
 
-/* ===== ORGANIZAÃ‡ÃƒO ALFANUMÃ‰RICA ===== */
+/* ===== ORGANIZAÃƒâ€¡ÃƒÆ’O ALFANUMÃƒâ€°RICA ===== */
 
 function ordenarColecaoAlfaNumerica(lista,campo="nome"){
 
@@ -9404,7 +10412,7 @@ setInterval(()=>{
 
 
 
-/* ===== ORDENAÃ‡ÃƒO ALFANUMÃ‰RICA SEGURA ===== */
+/* ===== ORDENAÃƒâ€¡ÃƒÆ’O ALFANUMÃƒâ€°RICA SEGURA ===== */
 
 window.safeOrdenacaoAlfa = function(lista,campo="nome"){
 
@@ -9528,7 +10536,7 @@ window.renderPistolas = function(lista){
         </div>
 
         <div class="meta-line">
-          NÂº: ${p.num || "-"}
+          NÃ‚Âº: ${p.num || "-"}
         </div>
 
         <div class="meta-line">
@@ -9569,7 +10577,7 @@ window.editarPistola = function(id){
   });
 
   if(!pistola){
-    console.error("Pistola nÃ£o encontrada", id);
+    console.error("Pistola nÃƒÂ£o encontrada", id);
     return;
   }
 
@@ -9664,7 +10672,7 @@ window.guardarEdicaoPistola = async function(){
 
     if(!id){
 
-      alert("ID da pistola invÃ¡lido");
+      alert("ID da pistola invÃƒÂ¡lido");
       return;
 
     }
@@ -9781,14 +10789,14 @@ window.verMaisPistola = function(id){
   });
 
   if(!pistola){
-    alert("Pistola nÃ£o encontrada");
+    alert("Pistola nÃƒÂ£o encontrada");
     return;
   }
 
   alert(
 `Nome: ${pistola.nome || "-"}
 
-NÂº: ${pistola.num || "-"}
+NÃ‚Âº: ${pistola.num || "-"}
 
 Password: ${pistola.password || "-"}
 
@@ -9800,7 +10808,7 @@ MAC: ${pistola.mac || "-"}
 
 Operador: ${pistola.operador || "-"}
 
-ArmazÃ©m: ${pistola.armazem || "-"}
+ArmazÃƒÂ©m: ${pistola.armazem || "-"}
 
 Prontas: ${pistola.prontas || "-"}`
   );
@@ -9876,7 +10884,7 @@ window.renderPistolas = function(lista){
         </div>
 
         <div class="meta-line">
-          NÂº:
+          NÃ‚Âº:
           <span class="meta-value">
             ${p.num || "-"}
           </span>
@@ -10082,7 +11090,7 @@ window.editarPistola = function(id) {
   const lista = getListaPistolas();
   const pistola = lista.find((item, index) => String(getPistolaId(item, index)) === String(id));
   if (!pistola) {
-    mostrarMensagem("Pistola nÃ£o encontrada.", "erro");
+    mostrarMensagem("Pistola nÃƒÂ£o encontrada.", "erro");
     return;
   }
   window.pistolaAtual = pistola;
@@ -10094,7 +11102,7 @@ window.editarPistola = function(id) {
 window.guardarEdicaoPistola = async function() {
   const dados = pistolaPayloadFromForm();
   if (!dados.nome && !dados.num) {
-    mostrarMensagem("Preenche pelo menos o nÃºmero ou o nome da pistola.", "erro");
+    mostrarMensagem("Preenche pelo menos o nÃƒÂºmero ou o nome da pistola.", "erro");
     return;
   }
 
@@ -10157,9 +11165,9 @@ window.renderPistolas = function(lista) {
     return `
       <div class="pc-card pistol-card">
         <div class="pc-name">${safeRefHtml(pistola.nome || "Pistola CK65")}</div>
-        <div class="meta-line">NÂº: <span class="meta-value">${safeRefHtml(pistola.num || "-")}</span></div>
+        <div class="meta-line">NÃ‚Âº: <span class="meta-value">${safeRefHtml(pistola.num || "-")}</span></div>
         <div class="meta-line">Operador: <span class="meta-value">${safeRefHtml(pistola.operador || "-")}</span></div>
-        <div class="meta-line">ArmazÃ©m: <span class="meta-value">${safeRefHtml(pistola.armazem || "-")}</span></div>
+        <div class="meta-line">ArmazÃƒÂ©m: <span class="meta-value">${safeRefHtml(pistola.armazem || "-")}</span></div>
         <div class="meta-line">CN: <span class="meta-value">${safeRefHtml(pistola.cn || "-")}</span></div>
         <div class="meta-line">SN: <span class="meta-value">${safeRefHtml(pistola.sn || "-")}</span></div>
         <div class="item-actions">
@@ -10196,7 +11204,7 @@ async function guardarModoTextoBotoes(mode) {
       buttonTextMode: finalMode,
       updatedAt: Date.now()
     }, { merge: true });
-    mostrarMensagem("Cor do texto dos botÃµes atualizada.");
+    mostrarMensagem("Cor do texto dos botÃƒÂµes atualizada.");
   } catch (error) {
     console.error(error);
     mostrarMensagem("Erro ao guardar a cor do texto.", "erro");
@@ -10466,7 +11474,7 @@ function tocarBipStockQr() {
       try { ctx.close(); } catch(e) {}
     }, 260);
   } catch (e) {
-    // Sem som se o browser bloquear Ã¡udio.
+    // Sem som se o browser bloquear ÃƒÂ¡udio.
   }
 }
 
@@ -10529,7 +11537,7 @@ async function escolherCameraTraseiraStockQr() {
 
     const cameras = await Html5Qrcode.getCameras();
     if (!Array.isArray(cameras) || !cameras.length) {
-      throw new Error("Nenhuma cÃ¢mera encontrada pelo navegador.");
+      throw new Error("Nenhuma cÃƒÂ¢mera encontrada pelo navegador.");
     }
 
     const rear = cameras.find((cam) => {
@@ -10546,7 +11554,7 @@ async function escolherCameraTraseiraStockQr() {
     const chosen = rear || cameras[cameras.length - 1] || cameras[0];
     return chosen && chosen.id ? chosen.id : { facingMode: { ideal: "environment" } };
   } catch (error) {
-    console.error("Erro ao escolher cÃ¢mera:", error);
+    console.error("Erro ao escolher cÃƒÂ¢mera:", error);
     throw error;
   }
 }
@@ -10556,22 +11564,22 @@ function mensagemErroCameraStockQr(error) {
   const message = String(error && error.message || error || "");
 
   if (/NotAllowed|Permission|denied/i.test(name + " " + message)) {
-    return "CÃ¢mera bloqueada. Vai Ã s definiÃ§Ãµes do Safari e permite a cÃ¢mera para este site.";
+    return "CÃƒÂ¢mera bloqueada. Vai ÃƒÂ s definiÃƒÂ§ÃƒÂµes do Safari e permite a cÃƒÂ¢mera para este site.";
   }
 
   if (/NotFound|DevicesNotFound/i.test(name + " " + message)) {
-    return "NÃ£o encontrei cÃ¢mera disponÃ­vel no iPhone.";
+    return "NÃƒÂ£o encontrei cÃƒÂ¢mera disponÃƒÂ­vel no iPhone.";
   }
 
   if (/NotReadable|TrackStart/i.test(name + " " + message)) {
-    return "A cÃ¢mera estÃ¡ ocupada por outra app. Fecha a cÃ¢mera/WhatsApp e tenta outra vez.";
+    return "A cÃƒÂ¢mera estÃƒÂ¡ ocupada por outra app. Fecha a cÃƒÂ¢mera/WhatsApp e tenta outra vez.";
   }
 
   if (/Overconstrained|Constraint/i.test(name + " " + message)) {
-    return "O iPhone recusou a cÃ¢mera traseira. Vou tentar outra cÃ¢mera.";
+    return "O iPhone recusou a cÃƒÂ¢mera traseira. Vou tentar outra cÃƒÂ¢mera.";
   }
 
-  return "Erro ao abrir cÃ¢mera: " + (message || name || "erro desconhecido");
+  return "Erro ao abrir cÃƒÂ¢mera: " + (message || name || "erro desconhecido");
 }
 
 
@@ -10652,7 +11660,7 @@ async function startStockQrScanner() {
   const reader = document.getElementById("stockQrReader");
 
   if (!reader) {
-    mostrarMensagem("Ãrea do scanner QR nÃ£o encontrada.", "erro");
+    mostrarMensagem("ÃƒÂrea do scanner QR nÃƒÂ£o encontrada.", "erro");
     return;
   }
 
@@ -10660,13 +11668,13 @@ async function startStockQrScanner() {
     await garantirHtml5QrcodeStock();
   } catch (error) {
     console.error(error);
-    mostrarMensagem("Biblioteca do scanner QR nÃ£o carregada.", "erro");
-    setStockQrStatus("Biblioteca QR nÃ£o carregada. Verifica internet/HTTPS.", "erro");
+    mostrarMensagem("Biblioteca do scanner QR nÃƒÂ£o carregada.", "erro");
+    setStockQrStatus("Biblioteca QR nÃƒÂ£o carregada. Verifica internet/HTTPS.", "erro");
     return;
   }
 
   if (stockQrScannerActive) {
-    mostrarMensagem("Scanner QR jÃ¡ estÃ¡ ligado.", "erro");
+    mostrarMensagem("Scanner QR jÃƒÂ¡ estÃƒÂ¡ ligado.", "erro");
     return;
   }
 
@@ -10696,11 +11704,11 @@ async function startStockQrScanner() {
 
         if (handled) {
           tocarBipStockQr();
-          setStockQrStatus("Toner marcado como usado e movido para HistÃ³rico.", "ok");
+          setStockQrStatus("Toner marcado como usado e movido para HistÃƒÂ³rico.", "ok");
           await stopStockQrScanner();
         } else {
-          setStockQrStatus("QR lido, mas nÃ£o Ã© uma etiqueta de toner vÃ¡lida.", "erro");
-          mostrarMensagem("QR nÃ£o reconhecido como etiqueta de toner.", "erro");
+          setStockQrStatus("QR lido, mas nÃƒÂ£o ÃƒÂ© uma etiqueta de toner vÃƒÂ¡lida.", "erro");
+          mostrarMensagem("QR nÃƒÂ£o reconhecido como etiqueta de toner.", "erro");
         }
       },
       () => {}
@@ -10712,8 +11720,8 @@ async function startStockQrScanner() {
     setTimeout(forcarVideoStockQrVisivel, 800);
     const previewFrameOk = document.getElementById("stockQrPreviewFrame");
     if (previewFrameOk) previewFrameOk.classList.remove("loading");
-    setStockQrStatus("CÃ¢mera ligada. Aponta para o QR da etiqueta.");
-    mostrarMensagem("CÃ¢mera QR ligada.");
+    setStockQrStatus("CÃƒÂ¢mera ligada. Aponta para o QR da etiqueta.");
+    mostrarMensagem("CÃƒÂ¢mera QR ligada.");
   } catch (error) {
     console.error("Erro scanner QR Stock:", error);
     const previewFrameError = document.getElementById("stockQrPreviewFrame");
@@ -10753,8 +11761,8 @@ window.testarCamerasStockQr = async function(){
   try{
     await garantirHtml5QrcodeStock();
     const cams = await Html5Qrcode.getCameras();
-    console.log("CÃ¢meras disponÃ­veis:", cams);
-    setStockQrStatus("CÃ¢meras encontradas: " + (cams || []).map(c => c.label || c.id).join(" | "));
+    console.log("CÃƒÂ¢meras disponÃƒÂ­veis:", cams);
+    setStockQrStatus("CÃƒÂ¢meras encontradas: " + (cams || []).map(c => c.label || c.id).join(" | "));
     return cams;
   }catch(e){
     console.error(e);
@@ -10762,3 +11770,610 @@ window.testarCamerasStockQr = async function(){
     return [];
   }
 };
+
+/* =========================
+   APP BRAGA v1.30.7 â€” DIAGNÃ“STICO + UX SEGURO
+   NÃ£o altera autenticaÃ§Ã£o, roles ou estrutura Firebase.
+========================= */
+(function(){
+  const LOG_KEY = "appBraga_diagnosticLogs_v1";
+  const LAST_READ_KEY = "appBraga_lastScannerRead";
+  const LAST_LABEL_KEY = "appBraga_lastEtiquetaWordPayload";
+  const MAX_LOGS = 80;
+
+  function nowText(){ try { return new Date().toLocaleString("pt-PT"); } catch(e){ return String(new Date()); } }
+  function readLogs(){ try { return JSON.parse(localStorage.getItem(LOG_KEY) || "[]"); } catch(e){ return []; } }
+  function writeLogs(logs){ try { localStorage.setItem(LOG_KEY, JSON.stringify((logs || []).slice(0, MAX_LOGS))); } catch(e){} }
+  function addLog(level, source, message, extra){
+    const item = { time: nowText(), level: level || "info", source: source || "app", message: String(message || ""), extra: extra ? String(extra).slice(0,900) : "" };
+    const logs = readLogs(); logs.unshift(item); writeLogs(logs);
+    try { atualizarLogsDiagnosticoAppBraga(); } catch(e){}
+  }
+  window.appBragaAddDiagnosticLog = addLog;
+
+  const oldError = console.error;
+  console.error = function(){
+    try { addLog("error", "console", Array.from(arguments).map(a => a && a.message ? a.message : String(a)).join(" | ")); } catch(e){}
+    return oldError.apply(console, arguments);
+  };
+  const oldWarn = console.warn;
+  console.warn = function(){
+    try { addLog("warn", "console", Array.from(arguments).map(a => a && a.message ? a.message : String(a)).join(" | ")); } catch(e){}
+    return oldWarn.apply(console, arguments);
+  };
+  window.addEventListener("error", e => addLog("error", "window", e.message || "Erro JS", `${e.filename || ""}:${e.lineno || ""}`));
+  window.addEventListener("unhandledrejection", e => addLog("error", "promise", e.reason && e.reason.message ? e.reason.message : String(e.reason || "Promise rejeitada")));
+
+  function setTxt(id, value){ const n = document.getElementById(id); if(n) n.textContent = value; }
+  function toDateMs(v){
+    if(!v) return 0;
+    if(typeof v === "number") return v;
+    if(v && typeof v.toDate === "function") return v.toDate().getTime();
+    if(v instanceof Date) return v.getTime();
+    const t = Date.parse(String(v)); return Number.isFinite(t) ? t : 0;
+  }
+  function startOfToday(){ const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); }
+  function startOfWeek(){ const d = new Date(); const day = d.getDay() || 7; d.setDate(d.getDate() - day + 1); d.setHours(0,0,0,0); return d.getTime(); }
+  function esc(s){ return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c])); }
+
+  async function getCollectionArray(name){
+    const database = (typeof getDbAppBraga === "function" ? getDbAppBraga() : (window.db || window.firebase?.firestore?.()));
+    if(!database || !database.collection) return [];
+    const snap = await database.collection(name).get();
+    const arr = []; snap.forEach(doc => arr.push({idDoc: doc.id, ...doc.data()})); return arr;
+  }
+
+  async function atualizarDashboardUtilAppBraga(){
+    if(!document.getElementById("dashTonersHoje")) return;
+    try{
+      const [stock, historico, etiquetas, manutencoes, impressoras] = await Promise.all([
+        getCollectionArray("stock").catch(()=>[]), getCollectionArray("historico").catch(()=>[]), getCollectionArray("etiquetasWord").catch(()=>[]), getCollectionArray("manutencoes").catch(()=>[]), getCollectionArray("impressoras").catch(()=>[])
+      ]);
+      const today = startOfToday(), week = startOfWeek(), seven = Date.now() - 7*86400000;
+      const createdMs = x => toDateMs(x.createdAtMs || x.created || x.createdAt || x.data || x.dataScan || x.dataFolha);
+      setTxt("dashTonersHoje", stock.filter(x => createdMs(x) >= today).length);
+      setTxt("dashTonersSemana", historico.filter(x => createdMs(x) >= week).length);
+      setTxt("dashEtiquetasRecentes", etiquetas.filter(x => createdMs(x) >= seven).length);
+      const logs = readLogs(); const critical = logs.filter(x => x.level === "error" && Date.now() - Date.parse((x.time||"").replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$3-$2-$1')) < 86400000).length;
+      setTxt("dashHealthMini", critical ? "AtenÃ§Ã£o" : "OK");
+      setTxt("dashHealthMiniText", critical ? `${critical} erro(s) nas Ãºltimas leituras` : "Sem erros crÃ­ticos");
+      const etHost = document.getElementById("dashUltimasEtiquetas");
+      if(etHost){
+        const list = etiquetas.sort((a,b)=>createdMs(b)-createdMs(a)).slice(0,5);
+        etHost.innerHTML = list.length ? list.map(t => `<div class="mini-feed-item"><div><strong>${esc(t.localCurto || t.localizacao || t.serie || "Etiqueta")}</strong><span>${esc(t.serie || t.codigoEtiqueta || "-")}</span></div><small>${esc(t.dataEtiqueta || t.data || "")}</small></div>`).join("") : `<div class="mini-feed-item"><span>Sem etiquetas recentes</span></div>`;
+      }
+      const mHost = document.getElementById("dashManutencoesPendentes");
+      if(mHost){
+        const pend = manutencoes.filter(x => !/fechad|conclu|resolvid|ok/i.test(String(x.estado || x.status || ""))).slice(0,4);
+        const impProblem = impressoras.filter(x => /erro|avaria|baixo|offline|manut/i.test(String(x.estado || x.status || x.obs || ""))).slice(0,3);
+        const rows = [...pend.map(x=>({a:x.impressora||x.equipamento||"ManutenÃ§Ã£o", b:x.estado||x.status||"Pendente"})), ...impProblem.map(x=>({a:x.nome||x.modelo||x.localizacao||"Impressora", b:x.estado||x.status||"AtenÃ§Ã£o"}))].slice(0,5);
+        mHost.innerHTML = rows.length ? rows.map(x => `<div class="mini-feed-item"><strong>${esc(x.a)}</strong><small>${esc(x.b)}</small></div>`).join("") : `<div class="mini-feed-item"><span>Sem pendÃªncias detetadas</span></div>`;
+      }
+    } catch(e){ addLog("error", "dashboard", e.message || e); }
+  }
+  window.atualizarDashboardUtilAppBraga = atualizarDashboardUtilAppBraga;
+
+  setTimeout(() => {
+    if(typeof window.processarTextoLidoStable === "function") return;
+    const oldProc = window.processarOCRInput;
+    if(typeof oldProc === "function"){
+      window.processarOCRInput = async function(ev){
+        setTxt("scannerOcrState", "A ler...");
+        try{ const r = await oldProc.apply(this, arguments); setTxt("scannerOcrState", "Lido"); return r; }
+        catch(e){ setTxt("scannerOcrState", "Erro"); addLog("error", "ocr", e.message || e); throw e; }
+      };
+    }
+    const oldGerar = window.gerarWordEtiquetaFromForm;
+    if(typeof oldGerar === "function"){
+      window.gerarWordEtiquetaFromForm = async function(){
+        const payload = (typeof extrairDadosEtiquetaWord === "function") ? extrairDadosEtiquetaWord() : null;
+        const ok = await oldGerar.apply(this, arguments);
+        if(ok && payload){ try{ localStorage.setItem(LAST_LABEL_KEY, JSON.stringify(payload)); }catch(e){} addLog("info", "etiqueta", `Etiqueta gerada: ${payload.codigoEtiqueta || payload.serie || "sem cÃ³digo"}`); }
+        return ok;
+      };
+    }
+  }, 800);
+
+  async function reimprimirUltimaEtiquetaWord(){
+    try{
+      let payload = null;
+      try{ payload = JSON.parse(localStorage.getItem(LAST_LABEL_KEY) || "null"); }catch(e){}
+      if(!payload){
+        const arr = await getCollectionArray("etiquetasWord");
+        payload = arr.sort((a,b)=>toDateMs(b.created || b.createdAtMs)-toDateMs(a.created || a.createdAtMs))[0];
+      }
+      if(!payload) return typeof mostrarMensagem === "function" && mostrarMensagem("Ainda nÃ£o existe uma etiqueta para reimprimir.", "erro");
+      if(typeof gerarWordEtiquetaPartilhada === "function") await gerarWordEtiquetaPartilhada(payload, { saveRecord:false, silent:false });
+      else if(typeof gerarWordEtiquetaFromForm === "function") await gerarWordEtiquetaFromForm(false);
+      addLog("info", "etiqueta", "ReimpressÃ£o da Ãºltima etiqueta");
+    } catch(e){ addLog("error", "etiqueta", e.message || e); if(typeof mostrarMensagem === "function") mostrarMensagem("Erro ao reimprimir a Ãºltima etiqueta.", "erro"); }
+  }
+  window.reimprimirUltimaEtiquetaWord = reimprimirUltimaEtiquetaWord;
+
+  function card(label, value, status){ return `<div class="diagnostic-card ${esc(status||"")}"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`; }
+  async function executarDiagnosticoAppBraga(){
+    const checks = [];
+    checks.push(["VersÃ£o", (typeof APP_VERSION !== "undefined" ? APP_VERSION : "1.30.0"), "ok"]);
+    checks.push(["Rede", navigator.onLine ? "Online" : "Offline", navigator.onLine ? "ok" : "warn"]);
+    checks.push(["Firebase", window.firebase ? "Carregado" : "NÃ£o carregado", window.firebase ? "ok" : "error"]);
+    checks.push(["Firestore", (typeof getDbAppBraga === "function" && getDbAppBraga()) ? "DisponÃ­vel" : "IndisponÃ­vel", (typeof getDbAppBraga === "function" && getDbAppBraga()) ? "ok" : "error"]);
+    checks.push(["CÃ¢mara", (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ? "Suportada" : "NÃ£o suportada", (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ? "ok" : "warn"]);
+    checks.push(["Scanner QR", typeof Html5Qrcode !== "undefined" ? "Biblioteca OK" : "Biblioteca ausente", typeof Html5Qrcode !== "undefined" ? "ok" : "warn"]);
+    checks.push(["OCR", typeof Tesseract !== "undefined" ? "Biblioteca OK" : "Biblioteca ausente", typeof Tesseract !== "undefined" ? "ok" : "warn"]);
+    checks.push(["Word/Etiquetas", typeof docx !== "undefined" ? "Biblioteca OK" : "Biblioteca ausente", typeof docx !== "undefined" ? "ok" : "warn"]);
+    checks.push(["Cache local", (()=>{try{localStorage.setItem("__test","1");localStorage.removeItem("__test");return "OK"}catch(e){return "Bloqueada"}})(), "ok"]);
+    const host = document.getElementById("diagnosticGrid"); if(host) host.innerHTML = checks.map(x => card(x[0],x[1],x[2])).join("");
+    atualizarLogsDiagnosticoAppBraga(); addLog("info", "diagnÃ³stico", "VerificaÃ§Ã£o executada");
+  }
+  window.executarDiagnosticoAppBraga = executarDiagnosticoAppBraga;
+
+  function atualizarLogsDiagnosticoAppBraga(){
+    const host = document.getElementById("diagnosticLogs"); if(!host) return;
+    const logs = readLogs();
+    host.innerHTML = logs.length ? logs.map(l => `<div class="diagnostic-log-item ${esc(l.level)}"><span class="log-time">${esc(l.time)} Â· ${esc(l.level)} Â· ${esc(l.source)}</span>${esc(l.message)}${l.extra ? "\n"+esc(l.extra) : ""}</div>`).join("") : `<div class="diagnostic-log-item">Sem erros registados.</div>`;
+  }
+  window.atualizarLogsDiagnosticoAppBraga = atualizarLogsDiagnosticoAppBraga;
+  function limparLogsDiagnosticoAppBraga(){ writeLogs([]); atualizarLogsDiagnosticoAppBraga(); if(typeof mostrarMensagem === "function") mostrarMensagem("Logs limpos.", "sucesso"); }
+  window.limparLogsDiagnosticoAppBraga = limparLogsDiagnosticoAppBraga;
+
+  document.addEventListener("DOMContentLoaded", () => {
+    atualizarDashboardUtilAppBraga();
+    if(document.getElementById("diagnosticGrid")) setTimeout(executarDiagnosticoAppBraga, 500);
+    setInterval(atualizarDashboardUtilAppBraga, 60000);
+  });
+})();
+
+/* ===== APP BRAGA V1.33.4 - SIDEBAR GROUPS STATE FIX ===== */
+(function(){
+  const STORAGE_KEY = "appBraga.sidebar.groups.open";
+  const LEGACY_KEYS = [
+    "appBraga.sidebar.groups.open.v1322",
+    "appBraga.sidebar.groups.open.v1324"
+  ];
+
+  function readJson(key){
+    try { return JSON.parse(localStorage.getItem(key) || "{}"); }
+    catch(e){ return {}; }
+  }
+
+  function readState(){
+    let state = readJson(STORAGE_KEY);
+    if (!state || Object.keys(state).length === 0) {
+      for (const key of LEGACY_KEYS) {
+        const legacy = readJson(key);
+        if (legacy && Object.keys(legacy).length) { state = legacy; break; }
+      }
+    }
+    return state || {};
+  }
+
+  function writeState(state){
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state || {})); }
+    catch(e){}
+  }
+
+  function currentFile(){
+    const path = (location.pathname || "").split("/").pop() || "index.html";
+    return path.toLowerCase();
+  }
+
+  function collectSidebarState(sidebar){
+    const next = {};
+    sidebar.querySelectorAll(".sidebar-group").forEach((group) => {
+      const key = group.dataset.sidebarGroup || "grupo";
+      next[key] = group.classList.contains("is-open");
+    });
+    return next;
+  }
+
+  function saveCurrentSidebarState(sidebar){
+    if (!sidebar) return;
+    writeState(collectSidebarState(sidebar));
+  }
+
+  function setupSidebarGroups(){
+    const sidebar = document.querySelector(".sidebar-pro-groups, aside.sidebar");
+    if (!sidebar) return;
+
+    const activeFile = currentFile();
+    sidebar.querySelectorAll("a[href]").forEach((link) => {
+      const href = (link.getAttribute("href") || "").split("?")[0].split("#")[0].split("/").pop().toLowerCase();
+      if (href === activeFile) {
+        link.classList.add("active");
+        link.setAttribute("aria-current", "page");
+      }
+    });
+
+    const state = readState();
+    sidebar.querySelectorAll(".sidebar-group").forEach((group) => {
+      const key = group.dataset.sidebarGroup || "grupo";
+      const toggle = group.querySelector(".sidebar-group-toggle");
+      const hasActive = !!group.querySelector("a.active, a[aria-current='page']");
+      const shouldOpen = Object.prototype.hasOwnProperty.call(state, key) ? !!state[key] : (hasActive || group.dataset.defaultOpen === "1");
+
+      function setOpen(open){
+        group.classList.toggle("is-open", !!open);
+        if (toggle) toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      }
+
+      setOpen(shouldOpen);
+
+      if (toggle && toggle.dataset.bound !== "1") {
+        toggle.dataset.bound = "1";
+        toggle.addEventListener("click", () => {
+          const nextOpen = !group.classList.contains("is-open");
+          setOpen(nextOpen);
+          saveCurrentSidebarState(sidebar);
+        });
+      }
+    });
+
+    if (sidebar.dataset.sidebarGroupsReady !== "1") {
+      sidebar.dataset.sidebarGroupsReady = "1";
+
+      /* Guarda o estado real que o utilizador deixou antes de mudar de página. */
+      sidebar.addEventListener("click", (event) => {
+        const link = event.target.closest("a[href]");
+        if (link) saveCurrentSidebarState(sidebar);
+      }, true);
+
+      window.addEventListener("pagehide", () => saveCurrentSidebarState(sidebar));
+      window.addEventListener("beforeunload", () => saveCurrentSidebarState(sidebar));
+    }
+
+    /* Se ainda não existia estado guardado, grava o layout inicial desta página para as próximas. */
+    if (!localStorage.getItem(STORAGE_KEY)) saveCurrentSidebarState(sidebar);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupSidebarGroups);
+  } else {
+    setupSidebarGroups();
+  }
+  setTimeout(setupSidebarGroups, 120);
+  setTimeout(setupSidebarGroups, 500);
+  setTimeout(setupSidebarGroups, 1200);
+})();
+/* ===== END APP BRAGA V1.33.4 - SIDEBAR GROUPS STATE FIX ===== */
+
+/* ===== APP BRAGA V1.33.4 - FAVORITOS EDITAVEIS SIDEBAR ===== */
+(function(){
+  const STORAGE_KEY = "appBraga.sidebar.favoritos.v1329";
+  const DEFAULT_FAVS = ["index.html", "stock.html", "diretorio.html", "impressoras.html"];
+  const PAGES = [
+    { href:"index.html", label:"Dashboard", icon:"🏠" },
+    { href:"add-toner.html", label:"Adicionar Toner", icon:"➕" },
+    { href:"stock.html", label:"Stock", icon:"📦" },
+    { href:"historico.html", label:"Histórico", icon:"🧾" },
+    { href:"tarefas.html", label:"Tarefas", icon:"✅" },
+    { href:"scanner-ia.html", label:"Scanner IA", icon:"📄" },
+    { href:"etiquetas-word.html", label:"Etiquetas Word", icon:"🏷️" },
+    { href:"impressoras.html", label:"Impressoras", icon:"🖨️" },
+    { href:"manutencao-impressoras.html", label:"Manutenção Impressoras", icon:"🛠️" },
+    { href:"computadores.html", label:"Computadores", icon:"💻" },
+    { href:"pistolas.html", label:"Pistolas CK65", icon:"📟" },
+    { href:"radios.html", label:"Rádios", icon:"📡" },
+    { href:"portas.html", label:"Portas Rede", icon:"🔌" },
+    { href:"diretorio.html", label:"Diretório", icon:"☎️" },
+    { href:"informacoes.html", label:"Informações", icon:"ℹ️" },
+    { href:"users.html", label:"Users", icon:"👥" },
+    { href:"diagnostico.html", label:"Diagnóstico", icon:"🩺" },
+    { href:"config.html", label:"Configurações", icon:"⚙️" }
+  ];
+  function safeGetFavs(){
+    try{
+      const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+      if(Array.isArray(parsed)) return parsed.filter(Boolean);
+    }catch(e){}
+    return DEFAULT_FAVS.slice();
+  }
+  function saveFavs(list){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify([...new Set(list)])); }catch(e){}
+  }
+  function currentFile(){
+    const p = (location.pathname || "").split("/").pop() || "index.html";
+    return p === "" ? "index.html" : p;
+  }
+  function linkFor(page){
+    const a = document.createElement("a");
+    a.href = page.href;
+    a.dataset.icon = page.icon;
+    if(currentFile() === page.href) a.classList.add("active");
+    a.innerHTML = `<span class="sidebar-link-text">${page.label}</span>`;
+    return a;
+  }
+  function renderFavorites(){
+    const section = document.querySelector(".sidebar-favorites");
+    if(!section) return;
+    const favs = safeGetFavs();
+    const pages = favs.map(h => PAGES.find(p => p.href === h)).filter(Boolean);
+    section.innerHTML = `
+      <div class="sidebar-section-title">
+        <span><span>⭐</span><strong> Favoritos</strong></span>
+        <button class="sidebar-fav-edit" type="button" title="Editar favoritos" aria-label="Editar favoritos">✦</button>
+      </div>
+      <div class="sidebar-fav-list"></div>
+    `;
+    const list = section.querySelector(".sidebar-fav-list");
+    if(!pages.length){
+      list.innerHTML = '<div class="empty-favs">Sem favoritos. Carrega em ✦ para escolher.</div>';
+    }else{
+      pages.forEach(p => list.appendChild(linkFor(p)));
+    }
+    section.querySelector(".sidebar-fav-edit")?.addEventListener("click", openFavModal);
+  }
+  function openFavModal(){
+    document.querySelector(".sidebar-fav-manage-overlay")?.remove();
+    const selected = new Set(safeGetFavs());
+    const overlay = document.createElement("div");
+    overlay.className = "sidebar-fav-manage-overlay";
+    overlay.innerHTML = `
+      <div class="sidebar-fav-manage-card" role="dialog" aria-modal="true" aria-label="Editar favoritos">
+        <div class="sidebar-fav-manage-head">
+          <div><h3>Editar favoritos</h3><p>Escolhe as páginas que queres sempre no topo da sidebar.</p></div>
+          <button class="sidebar-fav-close" type="button" aria-label="Fechar">×</button>
+        </div>
+        <div class="sidebar-fav-grid">
+          ${PAGES.map(p => `
+            <label class="sidebar-fav-option">
+              <input type="checkbox" value="${p.href}" ${selected.has(p.href) ? "checked" : ""}>
+              <span>${p.icon}</span><span>${p.label}</span>
+            </label>`).join("")}
+        </div>
+        <div class="sidebar-fav-actions">
+          <button class="secondary-btn" type="button" data-fav-reset>Repor padrão</button>
+          <button class="secondary-btn" type="button" data-fav-cancel>Cancelar</button>
+          <button class="primary-btn" type="button" data-fav-save>Guardar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const close = () => overlay.remove();
+    overlay.querySelector(".sidebar-fav-close")?.addEventListener("click", close);
+    overlay.querySelector("[data-fav-cancel]")?.addEventListener("click", close);
+    overlay.addEventListener("click", (e)=>{ if(e.target === overlay) close(); });
+    overlay.querySelector("[data-fav-reset]")?.addEventListener("click", ()=>{
+      saveFavs(DEFAULT_FAVS); close(); renderFavorites();
+    });
+    overlay.querySelector("[data-fav-save]")?.addEventListener("click", ()=>{
+      const list = Array.from(overlay.querySelectorAll("input[type='checkbox']:checked")).map(i => i.value);
+      saveFavs(list); close(); renderFavorites();
+    });
+  }
+  function init(){ renderFavorites(); }
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+})();
+/* ===== END APP BRAGA V1.33.4 - FAVORITOS EDITAVEIS SIDEBAR ===== */
+
+/* ===== APP BRAGA v1.35.5 - NOTIFICAÇÕES: ESTADO, HISTÓRICO E REPARAÇÃO ===== */
+function setPushDiagValueApp(id, text, state = "") {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text || "-";
+  el.classList.remove("ok", "warn", "bad");
+  if (state) el.classList.add(state);
+}
+
+async function obterPushSubscriptionAtualApp() {
+  try {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) return null;
+    await registarServiceWorkerAppBraga?.();
+    const registration = await navigator.serviceWorker.ready;
+    return await registration.pushManager.getSubscription();
+  } catch (error) {
+    console.warn("Diagnóstico push: sem subscription atual", error);
+    return null;
+  }
+}
+
+async function atualizarDiagnosticoPushAutomaticoApp() {
+  if (!/notificacoes\.html$/i.test(location.pathname || "")) return null;
+  const isSecure = !!window.isSecureContext;
+  const hasSw = "serviceWorker" in navigator;
+  const hasPush = "PushManager" in window;
+  const permission = "Notification" in window ? Notification.permission : "unsupported";
+  const env = window.electronAPI?.showNotification ? "Electron" : (isStandalonePwaAppBraga() ? "PWA instalada" : "Browser");
+  let subscription = null;
+  if (isSecure && hasSw && hasPush) subscription = await obterPushSubscriptionAtualApp();
+  const endpoint = subscription?.endpoint || appNotificationState.pushSubscriptionEndpoint || "";
+
+  setPushDiagValueApp("pushDiagServiceWorker", hasSw ? "OK" : "Falha", hasSw ? "ok" : "bad");
+  setPushDiagValueApp("pushDiagPushManager", hasPush ? "OK" : "Falha", hasPush ? "ok" : "bad");
+  setPushDiagValueApp("pushDiagPermission", permission, permission === "granted" ? "ok" : (permission === "denied" ? "bad" : "warn"));
+  setPushDiagValueApp("pushDiagEndpoint", endpoint ? "Criado" : "Sem endpoint", endpoint ? "ok" : "warn");
+  setPushDiagValueApp("pushDiagEnvironment", env, env === "Electron" ? "warn" : "ok");
+
+  if (window.electronAPI?.showNotification && !endpoint) {
+    setCloudNotificationDiagnosticApp("Electron não cria Web Push real neste ambiente. Para PC, usa a PWA instalada pelo Edge/Chrome.", "warn");
+  } else if (endpoint) {
+    setCloudNotificationDiagnosticApp("Este dispositivo tem endpoint Web Push. Se o teste falhar, o problema está na Cloud Function/Firestore.", "ok");
+  }
+  return { isSecure, hasSw, hasPush, permission, env, endpoint };
+}
+
+function getCloudDeviceReadinessApp(item = {}) {
+  const hasStandard = !!(item.pushSubscription?.endpoint || item.endpoint);
+  const hasFcm = !!item.token;
+  const active = item.active !== false;
+  const permission = item.permission || "sem dados";
+  const staleMs = Date.now() - normalizeTimestampApp(item.updatedAt || item.createdAt);
+  const stale = staleMs > 1000 * 60 * 60 * 24 * 30;
+  let state = "warn";
+  let label = "Reparar";
+  if (!active) { state = "bad"; label = "Inativo"; }
+  else if (hasStandard) { state = stale ? "warn" : "ok"; label = stale ? "Antigo" : "Web Push ativo"; }
+  else if (hasFcm) { state = stale ? "warn" : "ok"; label = stale ? "FCM antigo" : "FCM ativo"; }
+  else { state = "warn"; label = "Sem push cloud"; }
+  if (permission === "denied") { state = "bad"; label = "Bloqueado"; }
+  return { hasStandard, hasFcm, active, stale, state, label };
+}
+
+function getUniqueActiveCloudDevicesApp(items = []) {
+  const sorted = items
+    .filter((item) => item.active !== false)
+    .sort((a, b) => normalizeTimestampApp(b.updatedAt || b.createdAt) - normalizeTimestampApp(a.updatedAt || a.createdAt));
+  const map = new Map();
+  sorted.forEach((item) => {
+    const key = item.deviceKey || item.pushSubscription?.endpoint || item.endpoint || item.token || item.id;
+    if (!map.has(key)) map.set(key, item);
+  });
+  return Array.from(map.values());
+}
+
+function renderCloudDevicesNotificacoesApp(items = []) {
+  const host = document.getElementById("cloudDevicesList");
+  if (!host) return;
+  const activeItems = getUniqueActiveCloudDevicesApp(items);
+  const webPushItems = activeItems.filter((item) => item.pushSubscription?.endpoint || item.endpoint);
+  const remoteItems = activeItems.filter((item) => item.pushSubscription?.endpoint || item.endpoint || item.token);
+  setCloudNotificationTextApp("cloudDevicesStatus", `${activeItems.length} registados`, activeItems.length ? "ok" : "warn");
+  setCloudNotificationTextApp("cloudDevicesDetail", `${webPushItems.length} Web Push · ${remoteItems.length} remotos prontos`);
+
+  if (!activeItems.length) {
+    host.innerHTML = `<div class="empty-state mini">Ainda não há dispositivos registados.</div>`;
+    return;
+  }
+
+  host.innerHTML = `
+    <table class="notification-devices-pro-table">
+      <thead>
+        <tr><th>Dispositivo</th><th>Tipo</th><th>Push</th><th>Último contacto</th><th>Estado</th></tr>
+      </thead>
+      <tbody>
+        ${activeItems.map((item) => {
+          const readiness = getCloudDeviceReadinessApp(item);
+          const isCurrent = item.id === appNotificationState.restoredTokenDocId ||
+            (appNotificationState.fcmToken && item.token === appNotificationState.fcmToken) ||
+            (appNotificationState.pushSubscriptionEndpoint && (item.endpoint === appNotificationState.pushSubscriptionEndpoint || item.pushSubscription?.endpoint === appNotificationState.pushSubscriptionEndpoint));
+          const device = labelDispositivoNotificacaoApp(item);
+          const role = labelNotificationDeviceRoleApp(item.notificationDeviceRole || item.deviceRole || "");
+          const mode = labelMetodoNotificacaoApp(item);
+          const endpoint = item.pushSubscription?.endpoint || item.endpoint || item.token || "";
+          const updated = formatTimestampApp(item.updatedAt || item.createdAt);
+          return `
+            <tr class="${isCurrent ? "is-current" : ""}">
+              <td data-label="Dispositivo"><div class="notification-device-main"><strong>${escapeHtmlAppBraga(device)}${isCurrent ? " · Este" : ""}</strong><small>${escapeHtmlAppBraga(endpoint)}</small></div></td>
+              <td data-label="Tipo"><span class="notification-chip">${escapeHtmlAppBraga(role)}</span></td>
+              <td data-label="Push"><span class="notification-chip ${readiness.hasStandard ? "ok" : (readiness.hasFcm ? "ok" : "warn")}">${escapeHtmlAppBraga(mode)}</span></td>
+              <td data-label="Último contacto">${escapeHtmlAppBraga(updated)}</td>
+              <td data-label="Estado"><span class="notification-chip ${readiness.state}">${escapeHtmlAppBraga(readiness.label)}</span></td>
+            </tr>`;
+        }).join("")}
+      </tbody>
+    </table>`;
+
+  if (activeItems.length && !webPushItems.length) {
+    setCloudNotificationDiagnosticApp("Nenhum dispositivo tem Web Push standard. Instala como PWA e carrega em Guardar e reparar push.", "warn");
+  }
+}
+
+async function carregarDispositivosCloudNotificacoesApp(force = false) {
+  const host = document.getElementById("cloudDevicesList");
+  if (!host || !window.db?.collection) return;
+  try {
+    host.innerHTML = `<p class="muted">A carregar dispositivos...</p>`;
+    const snapshot = await window.db.collection("notificationTokens").get();
+    const items = [];
+    snapshot.forEach((doc) => items.push({ id: doc.id, ...doc.data() }));
+    renderCloudDevicesNotificacoesApp(items);
+    await atualizarDiagnosticoPushAutomaticoApp();
+    await carregarHistoricoNotificacoesCloudApp(false);
+  } catch (error) {
+    console.error("Erro ao carregar dispositivos cloud:", error);
+    host.innerHTML = `<div class="empty-state mini">Erro ao carregar dispositivos.</div>`;
+  }
+}
+
+async function repararTodosRegistosCloudNotificacoesApp() {
+  try {
+    if (!window.db?.collection) throw new Error("Firebase indisponível.");
+    const snapshot = await window.db.collection("notificationTokens").get();
+    const batch = window.db.batch();
+    const latestByKey = new Map();
+    const now = Date.now();
+    snapshot.forEach((doc) => {
+      const data = doc.data() || {};
+      const key = data.deviceKey || data.pushSubscription?.endpoint || data.endpoint || data.token || doc.id;
+      const current = latestByKey.get(key);
+      const updated = normalizeTimestampApp(data.updatedAt || data.createdAt);
+      if (!current || updated > current.updated) latestByKey.set(key, { doc, data, updated });
+    });
+    let disabled = 0;
+    snapshot.forEach((doc) => {
+      const data = doc.data() || {};
+      const key = data.deviceKey || data.pushSubscription?.endpoint || data.endpoint || data.token || doc.id;
+      const latest = latestByKey.get(key);
+      const hasRemote = !!(data.token || data.pushSubscription?.endpoint || data.endpoint);
+      const tooOld = normalizeTimestampApp(data.updatedAt || data.createdAt) && (now - normalizeTimestampApp(data.updatedAt || data.createdAt) > 1000 * 60 * 60 * 24 * 120);
+      if ((latest && latest.doc.id !== doc.id) || data.active === false || !hasRemote || tooOld) {
+        batch.set(doc.ref, { active: false, disabledAt: now, disabledReason: latest?.doc.id !== doc.id ? "duplicado-antigo" : (!hasRemote ? "sem-push-cloud" : "registo-antigo") }, { merge: true });
+        disabled += 1;
+      }
+    });
+    if (disabled) await batch.commit();
+    await repararDispositivoNotificacoesCloudApp();
+    setCloudNotificationDiagnosticApp(`Reparação concluída. ${disabled} registo(s) antigo(s) desativado(s).`, "ok");
+    await carregarDispositivosCloudNotificacoesApp(true);
+  } catch (error) {
+    setCloudNotificationDiagnosticApp(error.message || "Erro ao reparar registos cloud.", "bad");
+    mostrarMensagem(error.message || "Erro ao reparar registos cloud.", "erro");
+  }
+}
+
+async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
+  const host = document.getElementById("cloudNotificationsHistory");
+  if (!host || !window.db?.collection) return;
+  try {
+    const snap = await window.db.collection("notificationHistory").orderBy("createdAt", "desc").limit(12).get();
+    const items = [];
+    snap.forEach((doc) => items.push({ id: doc.id, ...doc.data() }));
+    if (!items.length) {
+      host.innerHTML = `<div class="empty-state mini">Ainda não há histórico de envios cloud.</div>`;
+      return;
+    }
+    host.innerHTML = items.map((item) => `
+      <div class="notification-history-item">
+        <div>
+          <strong>${escapeHtmlAppBraga(item.title || item.event || "Notificação")}</strong>
+          <small>${escapeHtmlAppBraga(item.body || "")} · ${escapeHtmlAppBraga(formatTimestampApp(item.createdAt || item.lastRunAt))}</small>
+          ${item.error ? `<small>Erro: ${escapeHtmlAppBraga(item.error)}</small>` : ""}
+        </div>
+        <div class="notification-history-stats">
+          <span class="notification-chip ${Number(item.sent || 0) > 0 ? "ok" : "warn"}">Enviadas: ${Number(item.sent || 0)}</span>
+          <span class="notification-chip ${Number(item.failed || 0) > 0 ? "bad" : "ok"}">Falhas: ${Number(item.failed || 0)}</span>
+          <span class="notification-chip">WebPush: ${Number(item.standardWebPushTargets || 0)}</span>
+          <span class="notification-chip">FCM: ${Number(item.fcmTargets || 0)}</span>
+        </div>
+      </div>`).join("");
+    if (showMessage) mostrarMensagem("Histórico atualizado.", "sucesso");
+  } catch (error) {
+    console.warn("Histórico notificationHistory indisponível, a tentar auditLogs", error);
+    try {
+      const snap = await window.db.collection("auditLogs").where("action", "==", "notification-broadcast").limit(12).get();
+      const items = [];
+      snap.forEach((doc) => items.push({ id: doc.id, ...doc.data() }));
+      items.sort((a, b) => normalizeTimestampApp(b.createdAt) - normalizeTimestampApp(a.createdAt));
+      host.innerHTML = items.length ? items.map((item) => `
+        <div class="notification-history-item">
+          <div><strong>${escapeHtmlAppBraga(item.title || item.event || "Notificação")}</strong><small>${escapeHtmlAppBraga(formatTimestampApp(item.createdAt))}</small></div>
+          <div class="notification-history-stats"><span class="notification-chip ok">Enviadas: ${Number(item.sent || 0)}</span><span class="notification-chip ${Number(item.failed || 0) ? "bad" : "ok"}">Falhas: ${Number(item.failed || 0)}</span></div>
+        </div>`).join("") : `<div class="empty-state mini">Sem histórico disponível.</div>`;
+    } catch (innerError) {
+      host.innerHTML = `<div class="empty-state mini">Erro ao carregar histórico.</div>`;
+    }
+  }
+}
+
+(function initNotificacoesPro1353(){
+  if (!/notificacoes\.html$/i.test(location.pathname || "")) return;
+  const run = () => {
+    atualizarDiagnosticoPushAutomaticoApp();
+    setTimeout(() => {
+      carregarHistoricoNotificacoesCloudApp(false);
+      carregarDispositivosCloudNotificacoesApp(true);
+    }, 900);
+  };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run);
+  else run();
+})();
+/* ===== END APP BRAGA v1.35.5 ===== */

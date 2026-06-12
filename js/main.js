@@ -3,14 +3,31 @@ const path = require("path");
 const fs = require("fs");
 const http = require("http");
 const https = require("https");
+const crypto = require("crypto");
 const snmp = require("net-snmp");
 
 let win;
 let tray;
+const pushWatcherStatus = {
+  ok: true,
+  running: false,
+  mode: "cloud-functions",
+  error: "",
+  startedAt: null,
+  logFile: "",
+  cloudOnly: true,
+  message: "Envio remoto nas Firebase Cloud Functions. Este PC nao precisa de Node.js nem de watcher local."
+};
 app.isQuitting = false;
+app.setName("App Braga");
 
 const APP_REMOTE_URL = "https://picafern-commits.github.io/App-Tablet/html/index.html";
 const APP_LOCAL_FALLBACK = path.join(__dirname, "..", "html", "index.html");
+const APP_ICON_ICO = path.join(__dirname, "..", "icon.ico");
+const APP_ICON_PNG = path.join(__dirname, "..", "icon-512.png");
+function getAppIconPath() {
+  return fs.existsSync(APP_ICON_ICO) ? APP_ICON_ICO : APP_ICON_PNG;
+}
 
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) app.quit();
@@ -29,6 +46,330 @@ function backupDirPath() {
 
 function backupStatusPath() {
   return path.join(backupDirPath(), "backup-status.json");
+}
+
+function pushWatcherLogPath() {
+  return path.join(app.getPath("userData"), "push-watch.log");
+}
+
+function appendPushWatcherLog(text) {
+  try {
+    fs.mkdirSync(app.getPath("userData"), { recursive: true });
+    fs.appendFileSync(pushWatcherLogPath(), `[${new Date().toISOString()}] ${text}\n`, "utf8");
+  } catch {}
+}
+
+function parseLocalPushEnvFile(filePath) {
+  const env = {};
+  try {
+    if (!fs.existsSync(filePath)) return env;
+    const raw = fs.readFileSync(filePath, "utf8");
+    raw.split(/\r?\n/).forEach((line) => {
+      const match = line.match(/\$env:([A-Z0-9_]+)\s*=\s*["']([^"']+)["']/i);
+      if (match) env[match[1]] = match[2];
+    });
+  } catch {}
+  return env;
+}
+
+function pushEnvCandidates() {
+  const appRoot = path.join(__dirname, "..");
+  const parentRoot = path.resolve(appRoot, "..");
+  const roaming = app.getPath("appData");
+  const documents = app.getPath("documents");
+  const downloads = app.getPath("downloads");
+  const desktop = app.getPath("desktop");
+  return [
+    path.join(app.getPath("userData"), ".env.push.local.ps1"),
+    path.join(roaming, "app-braga", ".env.push.local.ps1"),
+    path.join(roaming, "App Braga", ".env.push.local.ps1"),
+    path.join(documents, "App Braga", ".env.push.local.ps1"),
+    path.join(documents, "AppBraga", ".env.push.local.ps1"),
+    path.join(downloads, ".env.push.local.ps1"),
+    path.join(desktop, ".env.push.local.ps1"),
+    path.join(appRoot, ".env.push.local.ps1"),
+    path.join(parentRoot, ".env.push.local.ps1"),
+    path.join(process.cwd(), ".env.push.local.ps1"),
+    path.join("C:\\Minhas Apps\\AppBragaDesktop", ".env.push.local.ps1"),
+    path.join("C:\\Minhas Apps\\AppBragaDesktop\\AppBragaTeste-main", ".env.push.local.ps1")
+  ];
+}
+
+function serviceAccountCandidates() {
+  const appRoot = path.join(__dirname, "..");
+  const parentRoot = path.resolve(appRoot, "..");
+  const roaming = app.getPath("appData");
+  const documents = app.getPath("documents");
+  const downloads = app.getPath("downloads");
+  const desktop = app.getPath("desktop");
+  return [
+    process.env.GOOGLE_APPLICATION_CREDENTIALS,
+    path.join(app.getPath("userData"), "service-account.json"),
+    path.join(roaming, "app-braga", "service-account.json"),
+    path.join(roaming, "App Braga", "service-account.json"),
+    path.join(documents, "App Braga", "service-account.json"),
+    path.join(documents, "AppBraga", "service-account.json"),
+    path.join(documents, "service-account.json"),
+    path.join(downloads, "service-account.json"),
+    path.join(desktop, "service-account.json"),
+    path.join(documents, "App Braga", "firebase-service-account.json"),
+    path.join(documents, "AppBraga", "firebase-service-account.json"),
+    path.join(documents, "firebase-service-account.json"),
+    path.join(downloads, "firebase-service-account.json"),
+    path.join(desktop, "firebase-service-account.json"),
+    path.join(appRoot, "service-account.json"),
+    path.join(parentRoot, "service-account.json"),
+    path.join(process.cwd(), "service-account.json"),
+    "C:\\Minhas Apps\\AppBragaDesktop\\AppBragaTeste-main\\service-account.json",
+    "C:\\Minhas Apps\\AppBragaDesktop\\service-account.json",
+    "C:\\Minhas Apps\\AppBragaDesktop\\firebase-service-account.json"
+  ].filter(Boolean);
+}
+
+function buildPushWatcherEnv() {
+  const env = { ...process.env };
+  pushEnvCandidates().forEach((filePath) => Object.assign(env, parseLocalPushEnvFile(filePath)));
+  env.APP_BRAGA_PUSH_INTERVAL = env.APP_BRAGA_PUSH_INTERVAL || "15";
+  const serviceAccount = serviceAccountCandidates().find((candidate) => fs.existsSync(candidate));
+  if (serviceAccount) env.GOOGLE_APPLICATION_CREDENTIALS = serviceAccount;
+  return env;
+}
+
+function getPushWatcherReadiness() {
+  const env = buildPushWatcherEnv();
+  return {
+    serviceAccountReady: !!(env.GOOGLE_APPLICATION_CREDENTIALS && fs.existsSync(env.GOOGLE_APPLICATION_CREDENTIALS)),
+    serviceAccountPath: env.GOOGLE_APPLICATION_CREDENTIALS || "",
+    vapidReady: !!(env.APP_BRAGA_VAPID_PUBLIC_KEY && env.APP_BRAGA_VAPID_PRIVATE_KEY),
+    vapidPublicReady: !!env.APP_BRAGA_VAPID_PUBLIC_KEY,
+    vapidPrivateReady: !!env.APP_BRAGA_VAPID_PRIVATE_KEY,
+    logFile: pushWatcherLogPath()
+  };
+}
+
+function getWebPushRuntime() {
+  const env = buildPushWatcherEnv();
+  const publicKey = env.APP_BRAGA_VAPID_PUBLIC_KEY || "";
+  const privateKey = env.APP_BRAGA_VAPID_PRIVATE_KEY || "";
+  const subject = env.APP_BRAGA_VAPID_SUBJECT || "mailto:admin@appbraga.pt";
+  return {
+    publicKey,
+    privateKey,
+    subject,
+    ready: !!(publicKey && privateKey)
+  };
+}
+
+function base64UrlToBuffer(value) {
+  const input = String(value || "").replace(/-/g, "+").replace(/_/g, "/");
+  const padded = `${input}${"=".repeat((4 - input.length % 4) % 4)}`;
+  return Buffer.from(padded, "base64");
+}
+
+function bufferToBase64Url(value) {
+  return Buffer.from(value)
+    .toString("base64")
+    .replace(/=/g, "")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
+}
+
+function hkdfExpand(prk, info, length) {
+  const infoBuffer = Buffer.isBuffer(info) ? info : Buffer.from(String(info), "utf8");
+  const blocks = [];
+  let previous = Buffer.alloc(0);
+  let counter = 1;
+  while (Buffer.concat(blocks).length < length) {
+    previous = crypto
+      .createHmac("sha256", prk)
+      .update(Buffer.concat([previous, infoBuffer, Buffer.from([counter])]))
+      .digest();
+    blocks.push(previous);
+    counter += 1;
+  }
+  return Buffer.concat(blocks).subarray(0, length);
+}
+
+function createVapidJwt(endpoint, runtime) {
+  const vapidPrivate = base64UrlToBuffer(runtime.privateKey);
+  const vapidEcdh = crypto.createECDH("prime256v1");
+  vapidEcdh.setPrivateKey(vapidPrivate);
+  const vapidPublic = vapidEcdh.getPublicKey(null, "uncompressed");
+  const jwk = {
+    kty: "EC",
+    crv: "P-256",
+    d: bufferToBase64Url(vapidPrivate),
+    x: bufferToBase64Url(vapidPublic.subarray(1, 33)),
+    y: bufferToBase64Url(vapidPublic.subarray(33, 65))
+  };
+  const keyObject = crypto.createPrivateKey({ key: jwk, format: "jwk" });
+  const aud = new URL(endpoint).origin;
+  const header = bufferToBase64Url(Buffer.from(JSON.stringify({ typ: "JWT", alg: "ES256" })));
+  const claims = bufferToBase64Url(Buffer.from(JSON.stringify({
+    aud,
+    exp: Math.floor(Date.now() / 1000) + 12 * 60 * 60,
+    sub: runtime.subject
+  })));
+  const unsigned = `${header}.${claims}`;
+  const signature = crypto.sign("sha256", Buffer.from(unsigned), {
+    key: keyObject,
+    dsaEncoding: "ieee-p1363"
+  });
+  return {
+    token: `${unsigned}.${bufferToBase64Url(signature)}`,
+    publicKey: bufferToBase64Url(vapidPublic)
+  };
+}
+
+function encryptWebPushPayload(subscription, payload) {
+  const receiverPublic = base64UrlToBuffer(subscription.keys?.p256dh);
+  const receiverAuth = base64UrlToBuffer(subscription.keys?.auth);
+  if (receiverPublic.length !== 65 || !receiverAuth.length) {
+    throw new Error("Subscricao Web Push invalida neste dispositivo.");
+  }
+
+  const localEcdh = crypto.createECDH("prime256v1");
+  localEcdh.generateKeys();
+  const senderPublic = localEcdh.getPublicKey(null, "uncompressed");
+  const sharedSecret = localEcdh.computeSecret(receiverPublic);
+  const authPrk = crypto.createHmac("sha256", receiverAuth).update(sharedSecret).digest();
+  const keyInfo = Buffer.concat([
+    Buffer.from("WebPush: info\0", "utf8"),
+    receiverPublic,
+    senderPublic
+  ]);
+  const ikm = hkdfExpand(authPrk, keyInfo, 32);
+  const salt = crypto.randomBytes(16);
+  const prk = crypto.createHmac("sha256", salt).update(ikm).digest();
+  const cek = hkdfExpand(prk, "Content-Encoding: aes128gcm\0", 16);
+  const nonce = hkdfExpand(prk, "Content-Encoding: nonce\0", 12);
+  const plaintext = Buffer.concat([Buffer.from(JSON.stringify(payload), "utf8"), Buffer.from([0x02])]);
+  const cipher = crypto.createCipheriv("aes-128-gcm", cek, nonce);
+  const encrypted = Buffer.concat([cipher.update(plaintext), cipher.final(), cipher.getAuthTag()]);
+  const header = Buffer.alloc(21 + senderPublic.length);
+  salt.copy(header, 0);
+  header.writeUInt32BE(4096, 16);
+  header.writeUInt8(senderPublic.length, 20);
+  senderPublic.copy(header, 21);
+  return Buffer.concat([header, encrypted]);
+}
+
+function postWebPushNative(subscription, title, body, data, runtime) {
+  return new Promise((resolve, reject) => {
+    const endpoint = String(subscription.endpoint || "");
+    if (!endpoint) return reject(new Error("Endpoint Web Push vazio."));
+    const payload = { title, body, tag: data.tag || data.requestId || data.event || data.collection || "app-braga", data };
+    const encrypted = encryptWebPushPayload(subscription, payload);
+    const vapid = createVapidJwt(endpoint, runtime);
+    const url = new URL(endpoint);
+    const req = https.request({
+      method: "POST",
+      hostname: url.hostname,
+      path: `${url.pathname}${url.search || ""}`,
+      headers: {
+        TTL: "2419200",
+        Urgency: "normal",
+        "Content-Encoding": "aes128gcm",
+        "Content-Type": "application/octet-stream",
+        "Content-Length": encrypted.length,
+        Authorization: `vapid t=${vapid.token}, k=${vapid.publicKey}`
+      }
+    }, (res) => {
+      let raw = "";
+      res.on("data", (chunk) => { raw += chunk.toString("utf8"); });
+      res.on("end", () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) resolve({ ok: true, statusCode: res.statusCode });
+        else reject(new Error(`Push endpoint respondeu ${res.statusCode}: ${raw || res.statusMessage || ""}`));
+      });
+    });
+    req.on("error", reject);
+    req.write(encrypted);
+    req.end();
+  });
+}
+
+function writeLocalPushEnvFile(values = {}) {
+  const publicKey = String(values.publicKey || "").trim();
+  const privateKey = String(values.privateKey || "").trim();
+  const subject = String(values.subject || "mailto:admin@appbraga.pt").trim();
+  if (!publicKey || publicKey.length < 80) throw new Error("VAPID public key invalida.");
+  if (!privateKey || privateKey.length < 30) throw new Error("VAPID private key invalida.");
+
+  const target = path.join(app.getPath("userData"), ".env.push.local.ps1");
+  const lines = [
+    `$env:APP_BRAGA_VAPID_PUBLIC_KEY="${publicKey.replace(/"/g, '\\"')}"`,
+    `$env:APP_BRAGA_VAPID_PRIVATE_KEY="${privateKey.replace(/"/g, '\\"')}"`,
+    `$env:APP_BRAGA_VAPID_SUBJECT="${subject.replace(/"/g, '\\"')}"`
+  ];
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, `${lines.join("\n")}\n`, "utf8");
+  appendPushWatcherLog(`VAPID keys locais atualizadas em ${target}`);
+  return target;
+}
+
+async function sendWebPushBroadcastFromElectron(payload = {}) {
+  const runtime = getWebPushRuntime();
+  const devices = Array.isArray(payload.devices) ? payload.devices : [];
+  const webPushDevices = devices.filter((item) => item?.active !== false && item?.pushSubscription?.endpoint);
+  let sent = 0;
+  let failed = 0;
+  let standardWebPushTargets = 0;
+  let lastError = "";
+
+  if (!runtime.ready) {
+    return {
+      ok: false,
+      sent,
+      failed: webPushDevices.length,
+      deviceCount: devices.length,
+      standardWebPushTargets: webPushDevices.length,
+      standardWebPushReady: false,
+      error: "Faltam VAPID keys locais"
+    };
+  }
+
+  if (!webPushDevices.length) {
+    return {
+      ok: false,
+      sent: 0,
+      failed: 0,
+      deviceCount: devices.length,
+      standardWebPushTargets: 0,
+      standardWebPushReady: true,
+      error: "Nenhum dispositivo com Web Push standard registado"
+    };
+  }
+
+  const title = String(payload.title || "App Braga");
+  const body = String(payload.body || "Notificacao App Braga");
+  const data = payload.data && typeof payload.data === "object" ? payload.data : {};
+
+  for (const item of webPushDevices) {
+    standardWebPushTargets += 1;
+    try {
+      await postWebPushNative(item.pushSubscription, title, body, data, runtime);
+      sent += 1;
+    } catch (error) {
+      failed += 1;
+      lastError = error.message || String(error);
+      appendPushWatcherLog(`Falhou Web Push via ponte Electron: ${error.message}`);
+    }
+  }
+
+  appendPushWatcherLog(`Ponte Electron Web Push: enviados=${sent} falhas=${failed} alvos=${standardWebPushTargets}`);
+  return {
+    ok: sent > 0,
+    sent,
+    failed,
+    deviceCount: devices.length,
+    standardWebPushTargets,
+    standardWebPushReady: true,
+    error: sent > 0 ? "" : (lastError || "Nenhum dispositivo Web Push recebeu o envio.")
+  };
+}
+
+function startPushWatcherAuto() {
+  return pushWatcherStatus;
 }
 
 function readBackupStatus() {
@@ -97,7 +438,7 @@ function mostrarJanelaPrincipal() {
 function createTray() {
   if (tray) return;
 
-  tray = new Tray(path.join(__dirname, "..", "icon.ico"));
+  tray = new Tray(getAppIconPath());
   tray.setToolTip("App Braga");
   tray.setContextMenu(Menu.buildFromTemplate([
     { label: "Abrir App Braga", click: mostrarJanelaPrincipal },
@@ -125,7 +466,7 @@ function createWindow() {
     minHeight: 700,
     fullscreen: desktopSettings.fullscreen !== false,
     autoHideMenuBar: true,
-    icon: path.join(__dirname, "..", "icon.ico"),
+    icon: getAppIconPath(),
     backgroundColor: "#101114",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
@@ -339,7 +680,7 @@ ipcMain.handle("app:notify", async (_event, payload = {}) => {
         tray.displayBalloon({
           title,
           content: body,
-          icon: path.join(__dirname, "..", "icon.ico")
+          icon: getAppIconPath()
         });
         return { ok: true, mode: "tray-balloon" };
       }
@@ -349,7 +690,7 @@ ipcMain.handle("app:notify", async (_event, payload = {}) => {
     const notification = new Notification({
       title,
       body,
-      icon: path.join(__dirname, "..", "icon-192.png"),
+      icon: getAppIconPath(),
       silent: false
     });
     notification.show();
@@ -368,8 +709,58 @@ ipcMain.handle("app:notification-status", async () => ({
   platform: process.platform,
   appUserModelId: process.platform === "win32" ? "com.appbraga.desktop" : "",
   trayReady: !!tray,
-  focused: !!win && !win.isDestroyed() && win.isFocused()
+  focused: !!win && !win.isDestroyed() && win.isFocused(),
+  webPushBridgeReady: getWebPushRuntime().ready,
+  pushReadiness: getPushWatcherReadiness(),
+  pushWatcher: pushWatcherStatus
 }));
+
+ipcMain.handle("app:push-watcher-start", async () => pushWatcherStatus);
+
+ipcMain.handle("app:push-watcher-status", async () => pushWatcherStatus);
+
+ipcMain.handle("app:send-web-push-broadcast", async (_event, payload = {}) => sendWebPushBroadcastFromElectron(payload));
+
+ipcMain.handle("app:set-push-vapid-keys", async (_event, payload = {}) => {
+  try {
+    const target = writeLocalPushEnvFile(payload);
+    return {
+      ok: true,
+      path: target,
+      status: getPushWatcherReadiness(),
+      webPushBridgeReady: getWebPushRuntime().ready
+    };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
+});
+
+ipcMain.handle("app:import-service-account", async () => {
+  try {
+    if (!win || win.isDestroyed()) return { ok: false, error: "Janela indisponivel" };
+    const result = await dialog.showOpenDialog(win, {
+      title: "Selecionar service-account.json",
+      properties: ["openFile"],
+      filters: [{ name: "Firebase service account", extensions: ["json"] }]
+    });
+    if (result.canceled || !result.filePaths?.[0]) return { ok: false, canceled: true };
+
+    const source = result.filePaths[0];
+    const raw = fs.readFileSync(source, "utf8");
+    const parsed = JSON.parse(raw);
+    if (!parsed.client_email || !parsed.private_key) {
+      return { ok: false, error: "Este JSON nao parece ser uma service account do Firebase." };
+    }
+
+    const target = path.join(app.getPath("userData"), "service-account.json");
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.copyFileSync(source, target);
+    appendPushWatcherLog(`Service account importada para ${target}`);
+    return { ok: true, path: target, projectId: parsed.project_id || "", status: pushWatcherStatus };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
+});
 
 ipcMain.handle("app:notification-dialog-test", async () => {
   if (!win || win.isDestroyed()) return { ok: false, error: "Janela indisponivel" };

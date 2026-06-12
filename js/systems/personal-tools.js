@@ -10,7 +10,9 @@
     collections: {},
     unsubs: [],
     tasksUnsub: null,
-    queueCount: 0
+    queueCount: 0,
+    taskFilter: "open",
+    taskSearch: ""
   };
 
   function ready(fn) {
@@ -20,6 +22,10 @@
 
   function isDashboard() {
     return /\/html\/index\.html$/i.test(location.pathname) || /\/index\.html$/i.test(location.pathname) || !!document.getElementById("listaDashboardStock");
+  }
+
+  function isTasksPage() {
+    return /\/html\/tarefas\.html$/i.test(location.pathname) || /\/tarefas\.html$/i.test(location.pathname) || !!document.getElementById("personalTasksPage");
   }
 
   function db() {
@@ -120,67 +126,105 @@
   function dashboardRoot() {
     if (!isDashboard()) return null;
     let root = document.getElementById("personalToolsDashboard");
-    if (root) return root;
     const main = document.querySelector("main");
-    const target = document.querySelector(".dashboard-fullwidth") || document.getElementById("listaDashboardStock")?.closest("section");
     if (!main) return null;
-    root = document.createElement("section");
-    root.id = "personalToolsDashboard";
-    root.className = "personal-dashboard";
+
+    if (!root) {
+      root = document.createElement("section");
+      root.id = "personalToolsDashboard";
+      root.className = "personal-dashboard dashboard-tasks-only";
+      root.innerHTML = `
+        <section class="personal-panel dashboard-task-panel">
+          <div class="personal-panel-head">
+            <div>
+              <h2>Tarefas</h2>
+              <p>As tarefas abertas ficam aqui para nao te esqueceres.</p>
+            </div>
+            <a href="tarefas.html" class="secondary-btn">Ver todas</a>
+          </div>
+          <div id="personalTaskList" class="personal-list personal-task-list dashboard-task-list"></div>
+        </section>
+      `;
+      const metrics = document.querySelector(".enterprise-metrics");
+      if (metrics?.parentNode) metrics.parentNode.insertBefore(root, metrics.nextSibling);
+      else main.appendChild(root);
+    } else if (!root.dataset.dashboardReady) {
+      root.classList.add("dashboard-tasks-only");
+      if (!root.querySelector("#personalTaskList")) {
+        root.innerHTML = `
+          <section class="personal-panel dashboard-task-panel">
+            <div class="personal-panel-head">
+              <div>
+                <h2>Tarefas</h2>
+                <p>As tarefas abertas ficam aqui para nao te esqueceres.</p>
+              </div>
+              <a href="tarefas.html" class="secondary-btn">Ver todas</a>
+            </div>
+            <div id="personalTaskList" class="personal-list personal-task-list dashboard-task-list"></div>
+          </section>
+        `;
+      }
+    }
+
+    root.dataset.dashboardReady = "1";
+    return root;
+  }
+  function tasksPageRoot() {
+    if (!isTasksPage()) return null;
+    let root = document.getElementById("personalTasksPage");
+    if (root?.dataset.bound) return root;
+    if (!root) return null;
+    root.dataset.bound = "1";
     root.innerHTML = `
-      <section class="personal-grid personal-morning" id="personalMorning"></section>
-      <section class="personal-panel personal-workshop">
-        <div class="personal-panel-head">
-          <div>
-            <h2>Modo Armazem</h2>
-            <p>Atalhos grandes para trabalho rapido no tablet.</p>
-          </div>
-        </div>
-        <div class="personal-shortcuts">
-          <a href="add-toner.html">Scan toner</a>
-          <a href="stock.html">Stock</a>
-          <a href="impressoras.html">Impressoras criticas</a>
-          <a href="radios.html">Radios semanais</a>
-          <button type="button" data-personal-open-equipment>Notas / fotos</button>
-          <button type="button" data-personal-export>Exportar resumo</button>
-        </div>
-      </section>
-      <section class="personal-grid">
-        <div class="personal-panel">
+      <section class="personal-task-metrics" id="personalTaskStats"></section>
+      <section class="personal-task-layout">
+        <section class="personal-panel personal-tasks-board">
           <div class="personal-panel-head">
-            <h2>Tarefas</h2>
-            <button type="button" class="secondary-btn" data-personal-add-task>Adicionar</button>
+            <div>
+              <h2>Tarefas</h2>
+              <p>Organizacao diaria para manutencao, stock e seguimento.</p>
+            </div>
+            <button type="button" class="primary-btn" data-personal-add-task>Adicionar tarefa</button>
           </div>
-          <div id="personalTaskList" class="personal-list"></div>
-        </div>
-        <div class="personal-panel">
-          <div class="personal-panel-head">
-            <h2>Relatorio semanal</h2>
-            <button type="button" class="secondary-btn" data-personal-weekly>Gerar</button>
+          <div class="personal-task-composer">
+            <input id="personalTaskQuickTitle" type="text" placeholder="Nova tarefa rapida">
+            <select id="personalTaskPriority">
+              <option value="normal">Normal</option>
+              <option value="alta">Alta</option>
+              <option value="baixa">Baixa</option>
+            </select>
+            <button type="button" class="primary-btn" data-personal-quick-task>Guardar</button>
           </div>
-          <div id="personalWeeklySummary" class="personal-list"></div>
-        </div>
-      </section>
-      <section class="personal-grid">
-        <div class="personal-panel">
-          <div class="personal-panel-head">
-            <h2>Manutencao preventiva</h2>
-            <span class="status-pill">90 dias</span>
+          <div class="personal-task-toolbar">
+            <input id="personalTaskSearch" type="search" placeholder="Pesquisar tarefas">
+            <div class="personal-task-tabs" role="tablist" aria-label="Filtro de tarefas">
+              <button type="button" data-task-filter="open" class="active">Abertas</button>
+              <button type="button" data-task-filter="done">Concluidas</button>
+              <button type="button" data-task-filter="all">Todas</button>
+            </div>
           </div>
-          <div id="personalPreventiveList" class="personal-list"></div>
-        </div>
-        <div class="personal-panel">
-          <div class="personal-panel-head">
-            <h2>Offline</h2>
-            <button type="button" class="secondary-btn" data-personal-sync>Sincronizar</button>
+          <div id="personalTaskList" class="personal-list personal-task-list"></div>
+        </section>
+        <section class="personal-task-side">
+          <div class="personal-panel">
+            <div class="personal-panel-head">
+              <h2>Offline</h2>
+              <button type="button" class="secondary-btn" data-personal-sync>Sincronizar</button>
+            </div>
+            <div id="personalOfflineStatus" class="personal-list"></div>
           </div>
-          <div id="personalOfflineStatus" class="personal-list"></div>
-        </div>
+          <div class="personal-panel">
+            <div class="personal-panel-head">
+              <h2>Relatorio semanal</h2>
+              <button type="button" class="secondary-btn" data-personal-weekly>Gerar</button>
+            </div>
+            <div id="personalWeeklySummary" class="personal-list"></div>
+          </div>
+        </section>
       </section>
     `;
-    if (target?.parentNode) target.parentNode.insertBefore(root, target.nextSibling);
-    else main.appendChild(root);
     bindDashboard(root);
+    bindTasksPage(root);
     return root;
   }
 
@@ -192,6 +236,23 @@
     root.querySelector("[data-personal-sync]")?.addEventListener("click", syncOfflineQueue);
   }
 
+  function bindTasksPage(root) {
+    root.querySelector("[data-personal-quick-task]")?.addEventListener("click", addTaskFromPage);
+    root.querySelector("#personalTaskQuickTitle")?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") addTaskFromPage();
+    });
+    root.querySelector("#personalTaskSearch")?.addEventListener("input", (event) => {
+      state.taskSearch = event.target.value || "";
+      renderTasks();
+    });
+    root.querySelectorAll("[data-task-filter]").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.taskFilter = button.dataset.taskFilter || "open";
+        renderTasks();
+      });
+    });
+  }
+
   function renderMorning() {
     const host = document.getElementById("personalMorning");
     if (!host) return;
@@ -201,7 +262,7 @@
       return percent !== null && percent < 25;
     });
     const stockLow = (state.collections.stock || []).filter((item) => Number(item.quantidade ?? item.qtd ?? item.stock ?? 1) <= Number(item.minimo ?? item.min ?? 0));
-    const maintenance = (state.collections.manutencoes || []).filter((item) => !/resolvido|fechado|concluido|concluído/i.test(String(item.estado || "")));
+    const maintenance = (state.collections.manutencoes || []).filter((item) => !/resolvido|fechado|concluido|concluÃ­do/i.test(String(item.estado || "")));
     const week = weekRange();
     const weeklyRecords = (state.collections.radioWeeklyRecords || []).filter((item) => {
       const t = getTimestamp(item.createdAt || item.updatedAt || item.weekStart);
@@ -238,23 +299,96 @@
     await db().collection("personalTasks").add(payload);
   }
 
+  async function addTaskFromPage() {
+    const input = document.getElementById("personalTaskQuickTitle");
+    const select = document.getElementById("personalTaskPriority");
+    const title = input?.value.trim() || "";
+    if (!title) return toast("Tarefas", "Escreve uma tarefa primeiro.");
+    const payload = {
+      title,
+      priority: select?.value || "normal",
+      done: false,
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+    if (!db() || !navigator.onLine) await queueOperation("personalTasks", null, payload, "add");
+    else await db().collection("personalTasks").add(payload);
+    input.value = "";
+    input.focus();
+  }
+
+  function taskPriorityLabel(priority = "normal") {
+    const key = String(priority || "normal").toLowerCase();
+    if (key === "alta") return "Alta";
+    if (key === "baixa") return "Baixa";
+    return "Normal";
+  }
+
+  function taskPriorityClass(priority = "normal") {
+    const key = String(priority || "normal").toLowerCase();
+    return key === "alta" ? "high" : (key === "baixa" ? "low" : "normal");
+  }
+
+  function renderTaskStats(tasks = []) {
+    const host = document.getElementById("personalTaskStats");
+    if (!host) return;
+    const open = tasks.filter((item) => !item.done).length;
+    const done = tasks.filter((item) => item.done).length;
+    const high = tasks.filter((item) => !item.done && String(item.priority || "").toLowerCase() === "alta").length;
+    const today = todayKey();
+    const todayCount = tasks.filter((item) => {
+      const created = getTimestamp(item.createdAt || item.updatedAt);
+      return created && new Date(created).toISOString().slice(0, 10) === today;
+    }).length;
+    host.innerHTML = `
+      <article class="personal-card ${open ? "is-warn" : "is-ok"}"><span>Abertas</span><strong>${open}</strong><small>Por concluir</small></article>
+      <article class="personal-card ${high ? "is-warn" : "is-ok"}"><span>Alta prioridade</span><strong>${high}</strong><small>Atencao primeiro</small></article>
+      <article class="personal-card is-ok"><span>Concluidas</span><strong>${done}</strong><small>Total fechado</small></article>
+      <article class="personal-card ${todayCount ? "is-ok" : "is-warn"}"><span>Hoje</span><strong>${todayCount}</strong><small>Criadas hoje</small></article>
+    `;
+  }
+
   function renderTasks() {
     const host = document.getElementById("personalTaskList");
     if (!host) return;
-    const tasks = (state.collections.personalTasks || []).filter((item) => !item.done).sort((a, b) => getTimestamp(b.createdAt) - getTimestamp(a.createdAt)).slice(0, 8);
+    const limit = isTasksPage() ? 80 : 8;
+    const allTasks = (state.collections.personalTasks || []).sort((a, b) => getTimestamp(b.createdAt) - getTimestamp(a.createdAt));
+    renderTaskStats(allTasks);
+    const filter = isTasksPage() ? state.taskFilter : "open";
+    const query = normalize(state.taskSearch);
+    document.querySelectorAll("[data-task-filter]").forEach((button) => button.classList.toggle("active", button.dataset.taskFilter === filter));
+    const tasks = allTasks.filter((item) => {
+      if (filter === "open" && item.done) return false;
+      if (filter === "done" && !item.done) return false;
+      if (!query) return true;
+      return normalize(`${item.title || ""} ${item.priority || ""}`).includes(query);
+    }).slice(0, limit);
     if (!tasks.length) {
-      host.innerHTML = `<div class="empty-state mini">Sem tarefas abertas.</div>`;
+      host.innerHTML = `<div class="empty-state mini">Sem tarefas para este filtro.</div>`;
       return;
     }
     host.innerHTML = tasks.map((task) => `
-      <div class="personal-row">
-        <div><strong>${escapeHtml(task.title)}</strong><small>${TIME_FMT.format(new Date(getTimestamp(task.createdAt) || Date.now()))}</small></div>
-        <button type="button" class="secondary-btn" data-task-done="${escapeHtml(task.id)}">OK</button>
+      <div class="personal-row personal-task-row ${task.done ? "is-done" : ""}">
+        <div>
+          <strong>${escapeHtml(task.title)}</strong>
+          <small>${TIME_FMT.format(new Date(getTimestamp(task.createdAt) || Date.now()))}</small>
+        </div>
+        <span class="personal-task-priority ${taskPriorityClass(task.priority)}">${taskPriorityLabel(task.priority)}</span>
+        <div class="personal-task-actions">
+          ${task.done
+            ? `<button type="button" class="secondary-btn" data-task-reopen="${escapeHtml(task.id)}">Reabrir</button>`
+            : `<button type="button" class="secondary-btn" data-task-done="${escapeHtml(task.id)}">OK</button>`}
+        </div>
       </div>
     `).join("");
     host.querySelectorAll("[data-task-done]").forEach((button) => {
       button.addEventListener("click", async () => {
         await db()?.collection("personalTasks").doc(button.dataset.taskDone).set({ done: true, updatedAt: Date.now() }, { merge: true });
+      });
+    });
+    host.querySelectorAll("[data-task-reopen]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        await db()?.collection("personalTasks").doc(button.dataset.taskReopen).set({ done: false, updatedAt: Date.now() }, { merge: true });
       });
     });
   }
@@ -397,7 +531,7 @@
     }
     host.innerHTML = items.map((item) => `
       <div class="personal-history-item">
-        <strong>${escapeHtml(item.type)} · ${TIME_FMT.format(new Date(getTimestamp(item.createdAt) || Date.now()))}</strong>
+        <strong>${escapeHtml(item.type)} Â· ${TIME_FMT.format(new Date(getTimestamp(item.createdAt) || Date.now()))}</strong>
         <p>${escapeHtml(item.note || item.title || item.action || "")}</p>
         ${item.photoData ? `<img src="${item.photoData}" alt="Foto do equipamento">` : ""}
       </div>
@@ -530,6 +664,7 @@
 
   function renderAll() {
     dashboardRoot();
+    tasksPageRoot();
     renderMorning();
     renderTasks();
     renderPreventive();
@@ -539,6 +674,7 @@
 
   function init() {
     dashboardRoot();
+    tasksPageRoot();
     bootRealtime();
     updateQueueCount();
     renderAll();

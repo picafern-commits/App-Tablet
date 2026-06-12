@@ -1,6 +1,6 @@
 {
   "name": "app-braga",
-  "version": "1.35.4",
+  "version": "1.35.5",
   "description": "App Braga - gestao de toners e computadores",
   "main": "js/main.js",
   "author": "Ricardo Fernandes",
@@ -36,12 +36,15 @@
       "sw.js",
       "icon.ico",
       "icon-192.png",
-      "icon-512.png"
+      "icon-512.png",
+      "assets/icon-192.png",
+      "assets/icon-512.png"
     ],
     "win": {
       "target": "nsis",
       "icon": "icon.ico",
-      "signAndEditExecutable": false
+      "signAndEditExecutable": false,
+      "artifactName": "App-Braga-Setup-${version}.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -50,8 +53,12 @@
       "perMachine": false,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "App Braga"
-    }
+      "shortcutName": "App Braga",
+      "installerIcon": "icon.ico",
+      "uninstallerIcon": "icon.ico",
+      "installerHeaderIcon": "icon.ico"
+    },
+    "icon": "icon.ico"
   },
   "dependencies": {
     "net-snmp": "^3.26.0"

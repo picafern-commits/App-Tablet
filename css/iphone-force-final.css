@@ -393,3 +393,70 @@
     overflow: hidden !important;
   }
 }
+
+
+/* ===== APP BRAGA V1.33.3 - IPHONE 16 PRO MAX SAFE AREA ===== */
+html{
+  min-height:100%;
+  min-height:100dvh;
+  background:var(--bg);
+}
+body{
+  min-height:100vh;
+  min-height:100dvh;
+}
+@supports (padding: max(0px)){
+  body{
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+}
+@media screen and (max-width: 820px){
+  body{
+    background:#020617!important;
+  }
+  .main,
+  main,
+  .main-content,
+  .page-content,
+  .dashboard-container,
+  .content-area,
+  .dashboard-shell,
+  .content{
+    padding-top: max(104px, calc(72px + env(safe-area-inset-top, 0px)))!important;
+    padding-bottom: max(34px, calc(24px + env(safe-area-inset-bottom, 0px)))!important;
+  }
+  .page-hero,
+  .dashboard-header,
+  .reference-header{
+    margin-top:0!important;
+  }
+  .app-menu-toggle,
+  .mobile-menu-btn,
+  .hamburger,
+  .sidebar-toggle{
+    top: max(16px, calc(12px + env(safe-area-inset-top, 0px)))!important;
+  }
+  .sidebar,
+  aside.sidebar{
+    padding-top: max(24px, calc(16px + env(safe-area-inset-top, 0px)))!important;
+    padding-bottom: max(18px, calc(14px + env(safe-area-inset-bottom, 0px)))!important;
+  }
+}
+@media screen and (display-mode: fullscreen), screen and (display-mode: standalone){
+  @media screen and (max-width: 820px){
+    .main,
+    main,
+    .main-content,
+    .page-content,
+    .dashboard-container,
+    .content-area,
+    .dashboard-shell,
+    .content{
+      padding-top: max(112px, calc(78px + env(safe-area-inset-top, 0px)))!important;
+    }
+  }
+}
+/* ===== END APP BRAGA V1.33.3 ===== */

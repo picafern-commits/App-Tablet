@@ -89,6 +89,40 @@ main {
   display: block !important;
 }
 
+.enterprise-window-actions {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px !important;
+  margin-top: auto !important;
+  padding: 14px 10px 10px !important;
+}
+
+.enterprise-window-btn {
+  min-width: 0 !important;
+  width: 100% !important;
+  min-height: 44px !important;
+  padding: 0 12px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  background: rgba(255,255,255,.075) !important;
+  color: var(--app-text, #f8fafc) !important;
+  box-shadow: none !important;
+  font-size: 12px !important;
+  font-weight: 850 !important;
+  line-height: 1.1 !important;
+}
+
+.enterprise-window-close {
+  border-color: color-mix(in srgb, #ef4444 48%, rgba(255,255,255,.16)) !important;
+  background: color-mix(in srgb, #ef4444 18%, rgba(255,255,255,.07)) !important;
+}
+
+@media (max-width: 520px) {
+  .enterprise-window-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
 .panel-title-row,
 .section-header {
   display: flex !important;
@@ -445,11 +479,12 @@ input[type="submit"] {
 
 /* Visual upgrade pack: typed cards, modals and density modes */
 .enterprise-window-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+  gap: 10px;
   margin-top: auto;
-  padding: 14px 10px 0;
+  padding: 16px 10px 0;
 }
 
 .sidebar [data-enterprise-displays],
@@ -461,12 +496,74 @@ input[type="submit"] {
 
 .enterprise-window-btn {
   width: 100%;
-  min-height: 40px;
+  min-height: 46px;
+  display: inline-flex !important;
+  align-items: center;
   justify-content: center;
-  border-color: color-mix(in srgb, var(--theme-accent, #ef4444) 30%, var(--border, #2b3444)) !important;
-  background: color-mix(in srgb, var(--panel, #17191d) 88%, var(--theme-accent, #ef4444) 12%) !important;
+  gap: 7px;
+  padding: 0 10px !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.035)),
+    color-mix(in srgb, var(--panel, #17191d) 86%, var(--theme-accent, #2563eb) 14%) !important;
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.13) !important;
   color: var(--text, #f8fafc) !important;
   white-space: nowrap;
+  letter-spacing: -.02em;
+  font-size: 11.5px !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease, filter .16s ease;
+}
+
+.enterprise-window-btn::before {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 16px;
+  font-size: 14px;
+  opacity: .94;
+}
+
+.enterprise-window-btn[data-enterprise-hide]::before {
+  content: "↙";
+}
+
+.enterprise-window-btn[data-enterprise-close]::before {
+  content: "✕";
+}
+
+.enterprise-window-btn:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--theme-accent, #2563eb) 48%, rgba(255,255,255,.18)) !important;
+  box-shadow:
+    0 18px 42px rgba(0,0,0,.34),
+    0 0 0 4px color-mix(in srgb, var(--theme-accent, #2563eb) 14%, transparent),
+    inset 0 1px 0 rgba(255,255,255,.18) !important;
+}
+
+.enterprise-window-btn:active {
+  transform: translateY(0) scale(.98);
+}
+
+.enterprise-window-close {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.03)),
+    linear-gradient(135deg, rgba(239,68,68,.32), rgba(127,29,29,.26)) !important;
+  border-color: rgba(248,113,113,.30) !important;
+}
+
+.enterprise-window-close:hover {
+  border-color: rgba(248,113,113,.55) !important;
+  box-shadow:
+    0 18px 42px rgba(0,0,0,.34),
+    0 0 0 4px rgba(239,68,68,.13),
+    inset 0 1px 0 rgba(255,255,255,.18) !important;
 }
 
 .enterprise-window-select {
@@ -768,11 +865,423 @@ input[type="submit"] {
 
 @media (max-width: 768px) {
   .enterprise-window-actions {
+    grid-template-columns: 1fr 1fr;
     margin-top: 18px;
     padding: 14px 0 calc(16px + env(safe-area-inset-bottom));
   }
 
   .enterprise-window-btn {
-    min-height: 44px;
+    min-height: 46px;
+    font-size: 11px !important;
   }
 }
+
+@media (max-width: 390px) {
+  .enterprise-window-actions {
+    gap: 8px;
+  }
+
+  .enterprise-window-btn {
+    padding: 0 8px !important;
+    font-size: 10.5px !important;
+  }
+}
+
+
+/* ===== APP BRAGA v1.30.3 — Botões Electron lado a lado PRO ===== */
+.sidebar .enterprise-window-actions {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 10px !important;
+  margin-top: auto !important;
+  padding: 16px 10px 0 !important;
+}
+
+.sidebar .enterprise-window-btn {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 46px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  padding: 0 9px !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255,255,255,.13) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.105), rgba(255,255,255,.035)), rgba(255,255,255,.045) !important;
+  box-shadow: 0 14px 34px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.14) !important;
+  color: #f8fafc !important;
+  font-size: 11.2px !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  letter-spacing: -.03em !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease, background .16s ease !important;
+}
+
+.sidebar .enterprise-window-btn::before {
+  width: 16px !important;
+  height: 16px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 16px !important;
+  font-size: 14px !important;
+  opacity: .95 !important;
+}
+
+.sidebar .enterprise-window-btn[data-enterprise-hide]::before { content: "↙" !important; }
+.sidebar .enterprise-window-btn[data-enterprise-close]::before { content: "✕" !important; }
+
+.sidebar .enterprise-window-btn:hover {
+  transform: translateY(-1px) !important;
+  border-color: rgba(96,165,250,.45) !important;
+  box-shadow: 0 18px 42px rgba(0,0,0,.36), 0 0 0 4px rgba(37,99,235,.13), inset 0 1px 0 rgba(255,255,255,.18) !important;
+}
+
+.sidebar .enterprise-window-close {
+  background: linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.035)), linear-gradient(135deg, rgba(239,68,68,.30), rgba(127,29,29,.24)) !important;
+  border-color: rgba(248,113,113,.32) !important;
+  color: #fee2e2 !important;
+}
+
+.sidebar .enterprise-window-close:hover {
+  border-color: rgba(248,113,113,.58) !important;
+  box-shadow: 0 18px 42px rgba(0,0,0,.36), 0 0 0 4px rgba(239,68,68,.14), inset 0 1px 0 rgba(255,255,255,.18) !important;
+}
+
+@media (max-width: 390px) {
+  .sidebar .enterprise-window-actions { gap: 8px !important; }
+  .sidebar .enterprise-window-btn { font-size: 10.5px !important; padding: 0 7px !important; }
+}
+
+.sidebar .enterprise-window-actions {
+  display: none !important;
+}
+
+.main > .enterprise-window-actions,
+main > .enterprise-window-actions {
+  width: min(420px, 100%) !important;
+  align-self: flex-end !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 10px !important;
+  margin: 0 0 2px auto !important;
+  padding: 8px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  border-radius: 18px !important;
+  background: rgba(255,255,255,.045) !important;
+  box-shadow: 0 16px 38px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+
+.main > .enterprise-window-actions .enterprise-window-btn,
+main > .enterprise-window-actions .enterprise-window-btn {
+  min-height: 42px !important;
+  border-radius: 13px !important;
+  font-size: 12px !important;
+}
+
+.main > .enterprise-window-actions .enterprise-window-btn[data-enterprise-hide]::before,
+main > .enterprise-window-actions .enterprise-window-btn[data-enterprise-hide]::before {
+  content: "\2199" !important;
+}
+
+.main > .enterprise-window-actions .enterprise-window-btn[data-enterprise-close]::before,
+main > .enterprise-window-actions .enterprise-window-btn[data-enterprise-close]::before {
+  content: "\2715" !important;
+}
+
+@media (max-width: 680px) {
+  .main > .enterprise-window-actions,
+  main > .enterprise-window-actions {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+}
+
+/* ===== APP BRAGA V1.32.5 - SIDEBAR GROUPS PRO ===== */
+.sidebar-pro-groups {
+  padding-bottom: 14px !important;
+}
+
+.sidebar-brand-subtitle {
+  display: block;
+  margin-top: 2px;
+  color: var(--app-muted, #94a3b8);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+
+.sidebar-nav-pro {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  min-height: 0;
+}
+
+.sidebar-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 6px;
+  color: var(--app-muted, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-size: 11px;
+  font-weight: 950;
+}
+
+.sidebar-divider {
+  height: 1px;
+  margin: 8px 10px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent);
+}
+
+.sidebar-favorites,
+.sidebar-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sidebar-group-toggle {
+  width: calc(100% - 10px) !important;
+  margin: 2px 5px 0 !important;
+  min-height: 42px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, rgba(255,255,255,.085), rgba(255,255,255,.035)) !important;
+  color: var(--app-text, #f8fafc) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  padding: 0 11px !important;
+  cursor: pointer !important;
+  font-weight: 950 !important;
+  letter-spacing: .01em !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+
+.sidebar-group-toggle:hover {
+  background: linear-gradient(135deg, rgb(var(--app-primary-rgb, 37 99 235) / .18), rgba(255,255,255,.055)) !important;
+  border-color: rgb(var(--app-primary-rgb, 37 99 235) / .28) !important;
+}
+
+.sidebar-group-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sidebar-group-icon {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 9px;
+  background: rgba(255,255,255,.07);
+  font-size: 14px;
+}
+
+.sidebar-group-chevron {
+  width: 22px;
+  height: 22px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  color: var(--app-muted, #94a3b8);
+  transform: rotate(0deg);
+  transition: transform .18s ease, background .18s ease, color .18s ease;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.sidebar-group.is-open .sidebar-group-chevron {
+  transform: rotate(90deg);
+  background: rgb(var(--app-primary-rgb, 37 99 235) / .18);
+  color: var(--app-text, #f8fafc);
+}
+
+.sidebar-group-links {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .22s ease;
+}
+
+.sidebar-group-links > a {
+  overflow: hidden;
+}
+
+.sidebar-group.is-open .sidebar-group-links {
+  grid-template-rows: 1fr;
+}
+
+.sidebar-group-links {
+  min-height: 0;
+}
+
+.sidebar-group-links a {
+  margin-left: 13px !important;
+  width: calc(100% - 23px) !important;
+  opacity: .92;
+}
+
+.sidebar-favorites a {
+  width: calc(100% - 10px) !important;
+  margin-left: 5px !important;
+}
+
+.sidebar a[data-icon]::before {
+  content: attr(data-icon) !important;
+}
+
+.sidebar a.active,
+.sidebar a[aria-current="page"] {
+  background: linear-gradient(135deg, rgb(var(--app-primary-rgb, 37 99 235) / .30), rgba(255,255,255,.07)) !important;
+  border-color: rgb(var(--app-primary-rgb, 37 99 235) / .44) !important;
+  box-shadow: 0 10px 24px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+
+.enterprise-window-actions {
+  align-self: stretch !important;
+  width: auto !important;
+  max-width: 420px !important;
+  margin: 0 0 18px auto !important;
+  padding: 8px !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  border-radius: 18px !important;
+  background: rgba(10, 14, 24, .48) !important;
+  box-shadow: 0 14px 34px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.06) !important;
+}
+
+.enterprise-window-btn {
+  min-height: 46px !important;
+  border-radius: 14px !important;
+  font-size: 13px !important;
+  letter-spacing: .01em !important;
+}
+
+.enterprise-window-btn[data-enterprise-hide]::before {
+  content: "⏸";
+  margin-right: 7px;
+}
+
+.enterprise-window-close::before {
+  content: "✕";
+  margin-right: 7px;
+}
+
+@media (max-width: 768px) {
+  .sidebar-section-title { padding-left: 16px; }
+  .enterprise-window-actions {
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 0 14px 0 !important;
+  }
+}
+/* ===== END APP BRAGA V1.32.5 - SIDEBAR GROUPS PRO ===== */
+
+/* Animation reliability for grouped sidebar links */
+.sidebar-group-links {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 5px !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+  transition: max-height .24s ease, opacity .18s ease !important;
+  opacity: .6 !important;
+}
+.sidebar-group.is-open .sidebar-group-links {
+  max-height: 520px !important;
+  opacity: 1 !important;
+}
+
+
+/* ===== APP BRAGA V1.32.9 - SIDEBAR ICON CARDS PRO ===== */
+.sidebar-pro-groups .sidebar-nav-pro a[data-icon]{
+  min-height:46px !important;
+  gap:12px !important;
+  border-radius:16px !important;
+  padding-left:10px !important;
+  padding-right:12px !important;
+  transition:transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease !important;
+}
+.sidebar-pro-groups .sidebar-nav-pro a[data-icon]::before{
+  width:32px !important;
+  height:32px !important;
+  min-width:32px !important;
+  display:inline-grid !important;
+  place-items:center !important;
+  content:attr(data-icon) !important;
+  font-size:17px !important;
+  line-height:1 !important;
+  border-radius:13px !important;
+  color:#eaf7ff !important;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255,255,255,.26), transparent 32%),
+    linear-gradient(145deg, rgba(37,99,235,.62), rgba(6,182,212,.28)) !important;
+  border:1px solid rgba(255,255,255,.14) !important;
+  box-shadow:0 10px 24px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.16) !important;
+  filter:none !important;
+}
+.sidebar-pro-groups .sidebar-nav-pro a[data-icon]:hover{
+  transform:translateX(2px) !important;
+  background:linear-gradient(135deg, rgba(37,99,235,.18), rgba(6,182,212,.10)) !important;
+  border-color:rgba(34,211,238,.24) !important;
+}
+.sidebar-pro-groups .sidebar-nav-pro a[data-icon]:hover::before{
+  transform:scale(1.04) !important;
+  box-shadow:0 12px 28px rgba(6,182,212,.18), inset 0 1px 0 rgba(255,255,255,.20) !important;
+}
+.sidebar-pro-groups .sidebar-nav-pro a[data-icon].active::before,
+.sidebar-pro-groups .sidebar-nav-pro a[data-icon][aria-current="page"]::before{
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255,255,255,.35), transparent 34%),
+    linear-gradient(145deg, rgba(34,211,238,.95), rgba(37,99,235,.86)) !important;
+  color:#ffffff !important;
+  border-color:rgba(255,255,255,.24) !important;
+  box-shadow:0 14px 32px rgba(6,182,212,.28), inset 0 1px 0 rgba(255,255,255,.24) !important;
+}
+.sidebar-pro-groups .sidebar-link-text{
+  font-weight:900 !important;
+  letter-spacing:-.01em !important;
+}
+.sidebar-pro-groups .sidebar-group-toggle{
+  min-height:46px !important;
+  border-radius:16px !important;
+}
+.sidebar-pro-groups .sidebar-group-icon{
+  width:32px !important;
+  height:32px !important;
+  min-width:32px !important;
+  border-radius:13px !important;
+  font-size:17px !important;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255,255,255,.22), transparent 34%),
+    linear-gradient(145deg, rgba(15,23,42,.92), rgba(37,99,235,.36)) !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  box-shadow:0 10px 24px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.12) !important;
+}
+.sidebar-pro-groups .sidebar-group.is-open .sidebar-group-icon{
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255,255,255,.30), transparent 34%),
+    linear-gradient(145deg, rgba(34,211,238,.78), rgba(37,99,235,.62)) !important;
+  box-shadow:0 12px 28px rgba(6,182,212,.18), inset 0 1px 0 rgba(255,255,255,.18) !important;
+}
+.sidebar-pro-groups .sidebar-section-title span{
+  width:26px;
+  height:26px;
+  display:inline-grid;
+  place-items:center;
+  border-radius:10px;
+  background:linear-gradient(145deg, rgba(250,204,21,.22), rgba(251,146,60,.12));
+  border:1px solid rgba(250,204,21,.18);
+}
+/* ===== END APP BRAGA V1.32.9 - SIDEBAR ICON CARDS PRO ===== */
