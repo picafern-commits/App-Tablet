@@ -1,4 +1,4 @@
-const APP_BRAGA_SW = "app-braga-runtime-v87";
+const APP_BRAGA_SW = "app-braga-runtime-v88";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -119,4 +119,4 @@ self.addEventListener("notificationclick", (event) => {
   );
 });
 
-// APP BRAGA V1.54.0 global-sidebar-v4
+// APP BRAGA V1.54.1 sidebar-collapse-fix

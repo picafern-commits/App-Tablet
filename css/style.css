@@ -7470,10 +7470,29 @@ body.app-design-pro .personal-task-priority.normal{
   color:color-mix(in srgb,var(--app-primary, #ef4444) 55%,#fff)!important;
 }
 
-/* ===== APP BRAGA v1.54.0 - SIDEBAR NOVA GLOBAL ===== */
+/* ===== APP BRAGA v1.54.1 - SIDEBAR NOVA GLOBAL ===== */
 :root{
   --app-sidebar-v4-width: 292px;
+  --app-sidebar-v4-collapsed-width: 88px;
   --app-sidebar-v4-gap: 24px;
+}
+
+body [data-app-sidebar-v4-extra="1"]{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+
+body > .sidebar-nav-pro,
+body > .sidebar-favorites,
+body > .sidebar-group,
+body > .sidebar-divider,
+body > .premium-brand,
+body > .sidebar-brand-card,
+body > .brand-block{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
 }
 
 body .sidebar.app-sidebar-v4,
@@ -7503,6 +7522,7 @@ aside.sidebar.app-sidebar-v4{
   transform:none!important;
   visibility:visible!important;
   pointer-events:auto!important;
+  transition:width .22s ease, min-width .22s ease, max-width .22s ease, padding .22s ease!important;
 }
 
 body .sidebar.app-sidebar-v4 *{
@@ -7549,6 +7569,28 @@ body .sidebar.app-sidebar-v4 *{
   color:#94a3b8!important;
   font-size:12px!important;
   font-weight:800!important;
+}
+
+.app-sidebar-v4-collapse{
+  width:32px!important;
+  height:32px!important;
+  min-width:32px!important;
+  margin-left:auto!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:12px!important;
+  border:1px solid rgba(125,211,252,.24)!important;
+  background:rgba(15,23,42,.7)!important;
+  color:#e0f2fe!important;
+  font-size:16px!important;
+  line-height:1!important;
+  font-weight:950!important;
+  cursor:pointer!important;
+}
+
+.app-sidebar-v4-collapse:hover{
+  background:rgba(14,165,233,.25)!important;
+  border-color:rgba(125,211,252,.55)!important;
 }
 
 .app-sidebar-v4-nav{
@@ -7642,6 +7684,48 @@ body.app-design-pro .sidebar.app-sidebar-v4 .app-sidebar-v4-link.active{
   display:none!important;
 }
 
+body.sidebar-collapsed .sidebar.app-sidebar-v4,
+html.sidebar-collapsed body .sidebar.app-sidebar-v4{
+  width:var(--app-sidebar-v4-collapsed-width)!important;
+  min-width:var(--app-sidebar-v4-collapsed-width)!important;
+  max-width:var(--app-sidebar-v4-collapsed-width)!important;
+  padding:12px!important;
+}
+
+body.sidebar-collapsed .app-sidebar-v4-brand{
+  justify-content:center!important;
+  padding:10px!important;
+}
+
+body.sidebar-collapsed .app-sidebar-v4-brand-text,
+body.sidebar-collapsed .app-sidebar-v4-text,
+body.sidebar-collapsed .app-sidebar-v4-group p{
+  display:none!important;
+}
+
+body.sidebar-collapsed .app-sidebar-v4-collapse{
+  position:absolute!important;
+  top:16px!important;
+  right:-12px!important;
+  width:28px!important;
+  height:28px!important;
+  min-width:28px!important;
+  z-index:2!important;
+}
+
+body.sidebar-collapsed .app-sidebar-v4-link,
+body.app-design-pro.sidebar-collapsed .sidebar.app-sidebar-v4 .app-sidebar-v4-link{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  justify-items:center!important;
+  padding:7px!important;
+}
+
+body.sidebar-collapsed .app-sidebar-v4-icon{
+  width:36px!important;
+  height:36px!important;
+}
+
 body:not(.sidebar-collapsed) .main,
 body:not(.sidebar-collapsed) main,
 body:not(.sidebar-collapsed) .main-content,
@@ -7651,9 +7735,9 @@ body:not(.sidebar-collapsed) .content-area,
 body.app-design-pro:not(.sidebar-collapsed) .main,
 body.app-design-pro:not(.sidebar-collapsed) main,
 body.app-design-pro:not(.sidebar-collapsed) .main-content{
-  margin-left:calc(var(--app-sidebar-v4-width) + var(--app-sidebar-v4-gap))!important;
-  width:calc(100vw - var(--app-sidebar-v4-width) - var(--app-sidebar-v4-gap) - 20px)!important;
-  max-width:calc(100vw - var(--app-sidebar-v4-width) - var(--app-sidebar-v4-gap) - 20px)!important;
+  margin-left:calc(var(--app-sidebar-v4-width) + var(--app-sidebar-v4-gap) + 16px)!important;
+  width:calc(100vw - var(--app-sidebar-v4-width) - var(--app-sidebar-v4-gap) - 40px)!important;
+  max-width:calc(100vw - var(--app-sidebar-v4-width) - var(--app-sidebar-v4-gap) - 40px)!important;
 }
 
 body.sidebar-collapsed .main,
@@ -7665,13 +7749,13 @@ body.sidebar-collapsed .content-area,
 body.app-design-pro.sidebar-collapsed .main,
 body.app-design-pro.sidebar-collapsed main,
 body.app-design-pro.sidebar-collapsed .main-content{
-  margin-left:calc(var(--app-sidebar-v4-width) + var(--app-sidebar-v4-gap))!important;
-  width:calc(100vw - var(--app-sidebar-v4-width) - var(--app-sidebar-v4-gap) - 20px)!important;
-  max-width:calc(100vw - var(--app-sidebar-v4-width) - var(--app-sidebar-v4-gap) - 20px)!important;
+  margin-left:calc(var(--app-sidebar-v4-collapsed-width) + var(--app-sidebar-v4-gap) + 16px)!important;
+  width:calc(100vw - var(--app-sidebar-v4-collapsed-width) - var(--app-sidebar-v4-gap) - 40px)!important;
+  max-width:calc(100vw - var(--app-sidebar-v4-collapsed-width) - var(--app-sidebar-v4-gap) - 40px)!important;
 }
 
 @media(max-width:1100px) and (min-width:769px){
-  :root{--app-sidebar-v4-width:254px;--app-sidebar-v4-gap:18px;}
+  :root{--app-sidebar-v4-width:254px;--app-sidebar-v4-collapsed-width:82px;--app-sidebar-v4-gap:18px;}
   body .sidebar.app-sidebar-v4,
   body.app-design-pro .sidebar.app-sidebar-v4{
     top:12px!important;
@@ -7713,7 +7797,7 @@ body.app-design-pro.sidebar-collapsed .main-content{
     max-width:100%!important;
   }
 }
-/* ===== END APP BRAGA v1.54.0 - SIDEBAR NOVA GLOBAL ===== */
+/* ===== END APP BRAGA v1.54.1 - SIDEBAR NOVA GLOBAL ===== */
 body.app-design-pro .diag-dot.is-running,
 body.app-design-pro .scanner-step span:first-child,
 body.app-design-pro .scanner-btn.primary{
