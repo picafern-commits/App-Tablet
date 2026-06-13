@@ -144,6 +144,7 @@
     var swipeStartX = 0;
     var swipeStartY = 0;
     var swipeTracking = false;
+    var swipePreventing = false;
 
     document.addEventListener("click", function (event) {
       var button = event.target.closest && event.target.closest(".app-menu-toggle");
@@ -169,11 +170,24 @@
 
     document.addEventListener("touchstart", function (event) {
       if (!isMobile() || !event.touches || !event.touches.length) return;
+      if (event.target.closest && event.target.closest("input, textarea, select, button, a, [contenteditable='true']")) return;
       var touch = event.touches[0];
       swipeStartX = touch.clientX;
       swipeStartY = touch.clientY;
-      swipeTracking = swipeStartX <= 26 || document.body.classList.contains("sidebar-open");
+      swipePreventing = false;
+      swipeTracking = (swipeStartX >= 32 && swipeStartX <= 112) || document.body.classList.contains("sidebar-open");
     }, { passive: true });
+
+    document.addEventListener("touchmove", function (event) {
+      if (!swipeTracking || !isMobile() || !event.touches || !event.touches.length) return;
+      var touch = event.touches[0];
+      var dx = touch.clientX - swipeStartX;
+      var dy = Math.abs(touch.clientY - swipeStartY);
+      if (Math.abs(dx) > 18 && dy < 34) {
+        swipePreventing = true;
+        event.preventDefault();
+      }
+    }, { passive: false });
 
     document.addEventListener("touchend", function (event) {
       if (!swipeTracking || !isMobile() || !event.changedTouches || !event.changedTouches.length) return;
@@ -181,8 +195,9 @@
       var dx = touch.clientX - swipeStartX;
       var dy = Math.abs(touch.clientY - swipeStartY);
       swipeTracking = false;
+      swipePreventing = false;
       if (dy > 70 || Math.abs(dx) < 58) return;
-      if (dx > 0 && swipeStartX <= 26) setOpen();
+      if (dx > 0 && swipeStartX >= 32 && swipeStartX <= 112) setOpen();
       if (dx < 0 && document.body.classList.contains("sidebar-open")) setClosed();
     }, { passive: true });
   }

@@ -890,6 +890,27 @@ body{
     max-width: none !important;
     z-index: 99999 !important;
   }
+
+  html.iphone-fit-locked.sidebar-collapsed,
+  body.iphone-fit-locked.sidebar-collapsed,
+  body.iphone-fit-locked.app-design-pro.sidebar-collapsed {
+    overflow-x: hidden !important;
+  }
+
+  html.iphone-fit-locked.sidebar-collapsed .main,
+  html.iphone-fit-locked.sidebar-collapsed main,
+  html.iphone-fit-locked.sidebar-collapsed .main-content,
+  body.iphone-fit-locked.sidebar-collapsed .main,
+  body.iphone-fit-locked.sidebar-collapsed main,
+  body.iphone-fit-locked.sidebar-collapsed .main-content,
+  body.iphone-fit-locked.app-design-pro.sidebar-collapsed .main,
+  body.iphone-fit-locked.app-design-pro.sidebar-collapsed main,
+  body.iphone-fit-locked.app-design-pro.sidebar-collapsed .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    transform: none !important;
+  }
 }
 
 @media screen and (max-width: 390px) {
