@@ -1,34 +1,69 @@
-/* APP BRAGA - final iPhone/tablet sidebar controller */
+/* APP BRAGA - mobile sidebar v2 */
 (function () {
   "use strict";
 
-  var LINKS = [
-    ["index.html", "Dashboard"],
-    ["add-toner.html", "Adicionar Toner"],
-    ["stock.html", "Stock"],
-    ["historico.html", "Historico"],
-    ["tarefas.html", "Tarefas"],
-    ["scanner-ia.html", "Scanner IA"],
-    ["etiquetas-word.html", "Etiquetas Word"],
-    ["impressoras.html", "Impressoras"],
-    ["manutencao-impressoras.html", "Manutencao Impressoras"],
-    ["computadores.html", "Computadores"],
-    ["users.html", "Users"],
-    ["pistolas.html", "Pistolas CK65"],
-    ["portas.html", "Portas Rede"],
-    ["diretorio.html", "Diretorio"],
-    ["radios.html", "Radios"],
-    ["informacoes.html", "Informacoes"],
-    ["diagnostico.html", "Diagnostico"],
-    ["config.html", "Configuracoes"]
+  var NAV_GROUPS = [
+    {
+      title: "Operacao",
+      items: [
+        ["index.html", "Hoje", "HJ"],
+        ["tarefas.html", "Tarefas", "TF"],
+        ["add-toner.html", "Adicionar Toner", "TN"],
+        ["stock.html", "Stock", "ST"],
+        ["historico.html", "Historico", "HT"],
+        ["scanner-ia.html", "Scanner IA", "IA"],
+        ["etiquetas-word.html", "Etiquetas Word", "ET"]
+      ]
+    },
+    {
+      title: "Equipamentos",
+      items: [
+        ["impressoras.html", "Impressoras", "IP"],
+        ["manutencao-impressoras.html", "Manutencao", "MN"],
+        ["computadores.html", "Computadores", "PC"],
+        ["pistolas.html", "Pistolas CK65", "CK"],
+        ["radios.html", "Radios", "RD"]
+      ]
+    },
+    {
+      title: "Infraestrutura",
+      items: [
+        ["portas.html", "Portas Rede", "PR"],
+        ["diretorio.html", "Diretorio", "DR"],
+        ["informacoes.html", "Informacoes", "IN"]
+      ]
+    },
+    {
+      title: "Sistema",
+      items: [
+        ["users.html", "Users", "US"],
+        ["diagnostico.html", "Diagnostico", "DG"],
+        ["config.html", "Configuracoes", "CF"]
+      ]
+    }
   ];
 
   function isMobile() {
     return window.matchMedia && window.matchMedia("(max-width: 768px)").matches;
   }
 
-  function getPageName() {
+  function pageName() {
     return (location.pathname || "").split("/").pop() || "index.html";
+  }
+
+  function ensureButton() {
+    var button = document.querySelector(".app-menu-toggle");
+    if (!button) {
+      button = document.createElement("button");
+      button.className = "app-menu-toggle";
+      button.type = "button";
+      document.body.appendChild(button);
+    }
+    button.classList.add("app-mobile-sidebar-button");
+    button.textContent = document.body.classList.contains("sidebar-open") ? "x" : "Menu";
+    button.setAttribute("aria-label", "Abrir menu");
+    button.setAttribute("aria-expanded", document.body.classList.contains("sidebar-open") ? "true" : "false");
+    return button;
   }
 
   function ensureOverlay() {
@@ -41,110 +76,69 @@
     return overlay;
   }
 
-  function ensureButton() {
-    var button = document.querySelector(".app-menu-toggle");
-    if (!button) {
-      button = document.createElement("button");
-      button.className = "app-menu-toggle";
-      button.type = "button";
-      document.body.appendChild(button);
+  function ensureDrawer() {
+    var drawer = document.querySelector(".app-mobile-sidebar-new");
+    var current = pageName();
+    if (!drawer) {
+      drawer = document.createElement("nav");
+      drawer.className = "app-mobile-sidebar-new";
+      drawer.setAttribute("aria-label", "Menu principal");
+      document.body.appendChild(drawer);
     }
-    button.setAttribute("aria-label", "Abrir menu");
-    button.setAttribute("title", "Menu");
-    if (!button.textContent || button.textContent.length > 2) button.textContent = "\u2630";
-    return button;
-  }
-
-  function normalizeLinks(sidebar) {
-    var current = getPageName();
-    var links = Array.prototype.slice.call(sidebar.querySelectorAll("a[href]"));
-    var usableLinks = links.filter(function (link) {
-      return (link.getAttribute("href") || "").trim() && link.getAttribute("href") !== "#";
-    });
-
-    if (usableLinks.length < 8) {
-      var brand = sidebar.querySelector(".brand, .premium-brand");
-      sidebar.innerHTML = "";
-      if (brand) sidebar.appendChild(brand);
-      LINKS.forEach(function (item) {
-        var link = document.createElement("a");
-        link.href = item[0];
-        if (item[0] === current) link.classList.add("active");
-        link.innerHTML = '<span class="sidebar-link-text">' + item[1] + "</span>";
-        sidebar.appendChild(link);
-      });
-      return;
-    }
-
-    usableLinks.forEach(function (link) {
-      var href = (link.getAttribute("href") || "").split("/").pop();
-      var known = LINKS.find(function (item) { return item[0] === href; });
-      var label = known ? known[1] : (link.textContent || "").replace(/\s+/g, " ").trim();
-      if (!label) return;
-
-      var textNode = link.querySelector(".sidebar-link-text");
-      if (!textNode) {
-        var icon = link.querySelector("svg, i, .icon, .nav-icon, .sidebar-icon");
-        link.innerHTML = "";
-        if (icon) link.appendChild(icon);
-        textNode = document.createElement("span");
-        textNode.className = "sidebar-link-text";
-        link.appendChild(textNode);
-      }
-      textNode.textContent = label;
-      if (href === current) link.classList.add("active");
-    });
-  }
-
-  function getContext() {
-    var sidebar = document.querySelector("aside.sidebar, .sidebar, #sidebar, .enterprise-sidebar");
-    if (!sidebar) return null;
-    normalizeLinks(sidebar);
-    return {
-      sidebar: sidebar,
-      button: ensureButton(),
-      overlay: ensureOverlay()
-    };
+    drawer.innerHTML = [
+      '<div class="app-mobile-sidebar-head">',
+      '<div class="app-mobile-sidebar-logo">AB</div>',
+      '<div><strong>App Braga</strong><span>Centro operacional</span></div>',
+      '</div>',
+      NAV_GROUPS.map(function (group) {
+        return '<section class="app-mobile-sidebar-group">' +
+          '<p>' + group.title + '</p>' +
+          group.items.map(function (item) {
+            var active = item[0] === current ? " active" : "";
+            return '<a class="' + active + '" href="' + item[0] + '">' +
+              '<span class="app-mobile-sidebar-icon">' + item[2] + '</span>' +
+              '<span>' + item[1] + '</span>' +
+              '</a>';
+          }).join("") +
+          '</section>';
+      }).join("")
+    ].join("");
+    return drawer;
   }
 
   function setClosed() {
-    var ctx = getContext();
-    if (!ctx) return;
-    ctx.sidebar.classList.remove("app-open", "open", "active");
+    var drawer = ensureDrawer();
+    var overlay = ensureOverlay();
+    var button = ensureButton();
+    drawer.classList.remove("open");
+    overlay.classList.remove("show");
     document.body.classList.remove("sidebar-open");
-    ctx.overlay.classList.remove("show");
-    ctx.button.textContent = "\u2630";
-    ctx.button.setAttribute("aria-expanded", "false");
-    ctx.sidebar.style.removeProperty("transform");
-    ctx.sidebar.style.removeProperty("visibility");
-    ctx.sidebar.style.removeProperty("pointer-events");
+    button.textContent = "Menu";
+    button.setAttribute("aria-expanded", "false");
   }
 
   function setOpen() {
-    var ctx = getContext();
-    if (!ctx) return;
-    ctx.sidebar.classList.add("app-open");
+    var drawer = ensureDrawer();
+    var overlay = ensureOverlay();
+    var button = ensureButton();
+    drawer.classList.add("open");
+    overlay.classList.add("show");
     document.body.classList.add("sidebar-open");
-    ctx.overlay.classList.add("show");
-    ctx.button.textContent = "\u00d7";
-    ctx.button.setAttribute("aria-expanded", "true");
+    button.textContent = "x";
+    button.setAttribute("aria-expanded", "true");
   }
 
   function toggle() {
-    if (document.body.classList.contains("sidebar-open")) {
-      setClosed();
-    } else {
-      setOpen();
-    }
+    document.body.classList.contains("sidebar-open") ? setClosed() : setOpen();
   }
 
   function bindOnce() {
-    if (document.documentElement.dataset.iphoneSidebarFinal === "1") return;
-    document.documentElement.dataset.iphoneSidebarFinal = "1";
-    var swipeStartX = 0;
-    var swipeStartY = 0;
-    var swipeTracking = false;
-    var swipePreventing = false;
+    if (document.documentElement.dataset.mobileSidebarV2 === "1") return;
+    document.documentElement.dataset.mobileSidebarV2 = "1";
+
+    var startX = 0;
+    var startY = 0;
+    var tracking = false;
 
     document.addEventListener("click", function (event) {
       var button = event.target.closest && event.target.closest(".app-menu-toggle");
@@ -155,56 +149,50 @@
     }, true);
 
     document.addEventListener("click", function (event) {
-      var overlay = event.target.closest && event.target.closest(".app-sidebar-overlay");
-      if (!overlay || !isMobile()) return;
-      event.preventDefault();
-      event.stopPropagation();
-      setClosed();
-    }, true);
-
-    document.addEventListener("click", function (event) {
-      var link = event.target.closest && event.target.closest("aside.sidebar a[href], .sidebar a[href], #sidebar a[href], .enterprise-sidebar a[href]");
-      if (!link || !isMobile()) return;
-      setClosed();
+      if (!isMobile()) return;
+      if (event.target.closest && event.target.closest(".app-sidebar-overlay")) {
+        event.preventDefault();
+        setClosed();
+      }
+      if (event.target.closest && event.target.closest(".app-mobile-sidebar-new a[href]")) {
+        setClosed();
+      }
     }, true);
 
     document.addEventListener("touchstart", function (event) {
       if (!isMobile() || !event.touches || !event.touches.length) return;
-      if (event.target.closest && event.target.closest("input, textarea, select, button, a, [contenteditable='true']")) return;
+      if (event.target.closest && event.target.closest("input, textarea, select, button, a")) return;
       var touch = event.touches[0];
-      swipeStartX = touch.clientX;
-      swipeStartY = touch.clientY;
-      swipePreventing = false;
-      swipeTracking = (swipeStartX >= 32 && swipeStartX <= 112) || document.body.classList.contains("sidebar-open");
+      startX = touch.clientX;
+      startY = touch.clientY;
+      tracking = (startX >= 34 && startX <= 118) || document.body.classList.contains("sidebar-open");
     }, { passive: true });
 
     document.addEventListener("touchmove", function (event) {
-      if (!swipeTracking || !isMobile() || !event.touches || !event.touches.length) return;
+      if (!tracking || !isMobile() || !event.touches || !event.touches.length) return;
       var touch = event.touches[0];
-      var dx = touch.clientX - swipeStartX;
-      var dy = Math.abs(touch.clientY - swipeStartY);
-      if (Math.abs(dx) > 18 && dy < 34) {
-        swipePreventing = true;
-        event.preventDefault();
-      }
+      var dx = touch.clientX - startX;
+      var dy = Math.abs(touch.clientY - startY);
+      if (Math.abs(dx) > 18 && dy < 34) event.preventDefault();
     }, { passive: false });
 
     document.addEventListener("touchend", function (event) {
-      if (!swipeTracking || !isMobile() || !event.changedTouches || !event.changedTouches.length) return;
+      if (!tracking || !isMobile() || !event.changedTouches || !event.changedTouches.length) return;
       var touch = event.changedTouches[0];
-      var dx = touch.clientX - swipeStartX;
-      var dy = Math.abs(touch.clientY - swipeStartY);
-      swipeTracking = false;
-      swipePreventing = false;
-      if (dy > 70 || Math.abs(dx) < 58) return;
-      if (dx > 0 && swipeStartX >= 32 && swipeStartX <= 112) setOpen();
+      var dx = touch.clientX - startX;
+      var dy = Math.abs(touch.clientY - startY);
+      tracking = false;
+      if (dy > 72 || Math.abs(dx) < 56) return;
+      if (dx > 0 && startX >= 34 && startX <= 118) setOpen();
       if (dx < 0 && document.body.classList.contains("sidebar-open")) setClosed();
     }, { passive: true });
   }
 
   function init() {
     bindOnce();
-    getContext();
+    ensureButton();
+    ensureOverlay();
+    ensureDrawer();
     if (isMobile()) setClosed();
   }
 
@@ -214,14 +202,10 @@
     init();
   }
 
-  window.addEventListener("pageshow", function () {
-    window.setTimeout(init, 40);
-  });
-
+  window.addEventListener("pageshow", function () { setTimeout(init, 40); });
   window.addEventListener("resize", function () {
-    window.setTimeout(function () {
-      getContext();
-      if (isMobile() && !document.body.classList.contains("sidebar-open")) setClosed();
+    setTimeout(function () {
+      if (isMobile()) setClosed();
     }, 80);
   });
 
