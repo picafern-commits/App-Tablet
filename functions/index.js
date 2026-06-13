@@ -12,7 +12,16 @@ const DEVICE_COLLECTION = "notificationDevices";
 const INBOX_COLLECTION = "notificationInbox";
 const HISTORY_COLLECTION = "notificationHistory";
 const REGION = "europe-west1";
-const PUBLIC_HTTP_OPTIONS = { region: REGION, cors: true, invoker: "public" };
+const PUBLIC_HTTP_OPTIONS = {
+  region: REGION,
+  cors: true,
+  invoker: "public",
+  minInstances: 1,
+  maxInstances: 3,
+  concurrency: 10,
+  timeoutSeconds: 60,
+  memory: "256MiB"
+};
 
 function setCors(res) {
   res.set("Access-Control-Allow-Origin", "*");
@@ -120,15 +129,17 @@ exports.notificationHealth = onRequest(PUBLIC_HTTP_OPTIONS, async (req, res) => 
   setCors(res);
   if (req.method === "OPTIONS") return res.status(204).send("");
   try {
-    const vapid = getVapid();
-    const snap = await db.collection(DEVICE_COLLECTION).where("enabled", "==", true).get();
+    const publicKey = envValue("APP_BRAGA_VAPID_PUBLIC_KEY", "WEB_PUSH_PUBLIC_KEY", "VAPID_PUBLIC_KEY");
+    const privateKey = envValue("APP_BRAGA_VAPID_PRIVATE_KEY", "WEB_PUSH_PRIVATE_KEY", "VAPID_PRIVATE_KEY");
+    const subject = envValue("APP_BRAGA_VAPID_SUBJECT", "WEB_PUSH_SUBJECT", "VAPID_SUBJECT") || "mailto:admin@appbraga.pt";
+    const snap = await db.collection(DEVICE_COLLECTION).where("enabled", "==", true).limit(50).get();
     return res.json({
       ok: true,
       collection: DEVICE_COLLECTION,
       activeDevices: snap.size,
-      vapidPublicReady: !!vapid.publicKey,
-      vapidPrivateReady: !!vapid.privateKey,
-      subject: vapid.subject
+      vapidPublicReady: !!publicKey,
+      vapidPrivateReady: !!privateKey,
+      subject
     });
   } catch (error) {
     return res.status(500).json({ ok: false, error: error.message });
@@ -265,5 +276,5 @@ async function handleNotificationBroadcast(req, res) {
   }
 }
 
-exports.sendNotificationBroadcast = onRequest({ ...PUBLIC_HTTP_OPTIONS, timeoutSeconds: 60, memory: "256MiB" }, handleNotificationBroadcast);
-exports.sendPushAlert = onRequest({ ...PUBLIC_HTTP_OPTIONS, timeoutSeconds: 60, memory: "256MiB" }, handleNotificationBroadcast);
+exports.sendNotificationBroadcast = onRequest(PUBLIC_HTTP_OPTIONS, handleNotificationBroadcast);
+exports.sendPushAlert = onRequest(PUBLIC_HTTP_OPTIONS, handleNotificationBroadcast);
