@@ -119,4 +119,4 @@ self.addEventListener("notificationclick", (event) => {
   );
 });
 
-// APP BRAGA V1.40.0 zones-priorities
+// APP BRAGA V1.41.0 sidebar-pages

@@ -267,6 +267,58 @@
     });
   }
 
+  function ensureSidebarPageLinks() {
+    if (!document.body) return;
+    const nav = document.querySelector(".sidebar-nav-pro, .sidebar nav");
+    if (!nav) return;
+
+    const ensureGroup = (key, icon, label) => {
+      let group = nav.querySelector(`.sidebar-group[data-sidebar-group="${key}"]`);
+      if (!group) {
+        group = document.createElement("section");
+        group.className = "sidebar-group";
+        group.setAttribute("data-sidebar-group", key);
+        group.innerHTML = `
+          <button class="sidebar-group-toggle" type="button">
+            <span class="sidebar-group-icon">${icon}</span>
+            <span class="sidebar-group-title">${label}</span>
+            <span class="sidebar-group-chevron">›</span>
+          </button>
+          <div class="sidebar-group-links"></div>
+        `;
+        nav.appendChild(group);
+      }
+      let links = group.querySelector(".sidebar-group-links");
+      if (!links) {
+        links = document.createElement("div");
+        links.className = "sidebar-group-links";
+        group.appendChild(links);
+      }
+      return links;
+    };
+
+    const addSidebarLink = (host, href, icon, text, beforeHref = "") => {
+      if (!host || host.querySelector(`a[href="${href}"]`)) return;
+      const link = document.createElement("a");
+      link.href = href;
+      link.setAttribute("data-icon", icon);
+      link.innerHTML = `<span class="sidebar-link-text">${text}</span>`;
+      const currentPage = (window.location.pathname.split("/").pop() || "index.html").toLowerCase();
+      if (currentPage === href.toLowerCase()) {
+        link.classList.add("active");
+        host.closest(".sidebar-group")?.classList.add("is-open");
+      }
+      const before = beforeHref ? host.querySelector(`a[href="${beforeHref}"]`) : null;
+      if (before) before.insertAdjacentElement("beforebegin", link);
+      else host.appendChild(link);
+    };
+
+    const equipmentLinks = ensureGroup("equipamentos", "EQ", "Equipamentos");
+    const infraLinks = ensureGroup("infraestrutura", "IN", "Infraestrutura");
+    addSidebarLink(equipmentLinks, "equipamento.html", "EQ", "Fichas Equipamento", "manutencao-impressoras.html");
+    addSidebarLink(infraLinks, "zonas.html", "ZN", "Zonas", "portas.html");
+  }
+
   function ensureClassicStylesheet(active) {
     const id = "appDesignClassicStylesheet";
     const existing = document.getElementById(id);
@@ -321,7 +373,6 @@
         <a href="index.html">Dashboard</a>
         <a href="tarefas.html">Tarefas</a>
         <a href="add-toner.html">Toner</a>
-        <a href="zonas.html">Zonas</a>
         <a href="notificacoes.html">Notificacoes</a>
         <a href="config.html">Design</a>
       </nav>
@@ -392,7 +443,6 @@
       <a href="index.html">Hoje</a>
       <a href="tarefas.html">Tarefas</a>
       <a href="add-toner.html">Toner</a>
-      <a href="zonas.html">Zonas</a>
       <a href="notificacoes.html">Avisos</a>
     `;
   }
@@ -757,18 +807,26 @@
       apply(getCachedTheme(), { persist: false });
       applyVisualDesign(getCachedVisualDesign(), { persist: false });
       applyWorkspace(getCachedWorkspace(), { persist: false });
+      ensureSidebarPageLinks();
       sanitizeVisibleText();
       bindControls();
       setTimeout(connectFirestore, 300);
-      setTimeout(sanitizeVisibleText, 900);
+      setTimeout(() => {
+        ensureSidebarPageLinks();
+        sanitizeVisibleText();
+      }, 900);
     });
   } else {
     apply(getCachedTheme(), { persist: false });
     applyVisualDesign(getCachedVisualDesign(), { persist: false });
     applyWorkspace(getCachedWorkspace(), { persist: false });
+    ensureSidebarPageLinks();
     sanitizeVisibleText();
     bindControls();
     setTimeout(connectFirestore, 300);
-    setTimeout(sanitizeVisibleText, 900);
+    setTimeout(() => {
+      ensureSidebarPageLinks();
+      sanitizeVisibleText();
+    }, 900);
   }
 })();
