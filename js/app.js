@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.38.0";
+const APP_VERSION = "1.39.0";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "";
@@ -7820,7 +7820,7 @@ async function atualizarAppObrigatorio(novaVersao = "") {
 window.addEventListener("load", verificarAtualizacao);
 window.addEventListener("load", () => atualizarVersaoUI(APP_VERSION));
 
-/* ===== App Braga Firebase Notifications Rebuild v1.38.0 ===== */
+/* ===== App Braga Firebase Notifications Rebuild v1.39.0 ===== */
 (function initFirebaseNotificationsRebuild() {
   "use strict";
 
@@ -8075,18 +8075,48 @@ window.addEventListener("load", () => atualizarVersaoUI(APP_VERSION));
       }, (error) => console.warn("Inbox notificacoes indisponivel:", error));
   }
 
-  async function sendBroadcast(kind = "test") {
+  function roleLabel(value) {
+    return {
+      "pc-casa": "PC de Casa",
+      "pc-empresa": "PC de Empresa",
+      iphone: "iPhone",
+      android: "Android"
+    }[String(value || "")] || String(value || "Dispositivo");
+  }
+
+  function formatDeviceTime(value) {
+    const ms = Number(value?.toMillis?.() || value || 0);
+    if (!ms) return "Sem contacto";
+    return new Date(ms).toLocaleString("pt-PT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+  }
+
+  function deviceReadiness(item = {}) {
+    const hasWebPush = !!(item.webPush?.endpoint && item.webPush?.keys?.p256dh && item.webPush?.keys?.auth);
+    const hasFcm = !!item.fcmToken;
+    const hasInbox = item.desktopInbox === true || item.electron === true;
+    const permission = String(item.permission || "").toLowerCase();
+    if (item.enabled === false) return { label: "Desligado", state: "bad", channel: "Sem envio" };
+    if (permission === "denied") return { label: "Bloqueado", state: "bad", channel: "Permissao negada" };
+    if (hasWebPush) return { label: "Pronto", state: "ok", channel: "Web Push" };
+    if (hasFcm) return { label: "Pronto", state: "ok", channel: "FCM" };
+    if (hasInbox) return { label: "Inbox desktop", state: "warn", channel: "App aberta" };
+    return { label: "Reparar", state: "warn", channel: "Sem push" };
+  }
+
+  async function sendBroadcast(kind = "test", targetDevice = null) {
     const message = document.getElementById("firebaseNotifyMessage")?.value || "";
     const id = deviceId();
+    const targetId = targetDevice?.deviceId || targetDevice?.id || "";
     const payload = {
       requestId: `app-${kind}-${Date.now()}`,
-      senderDeviceId: id,
-      title: kind === "alert" ? "Alerta geral - App Braga" : "Teste App Braga",
+      senderDeviceId: targetId ? "" : id,
+      targetDeviceId: targetId,
+      title: kind === "alert" ? "Alerta geral - App Braga" : (targetId ? `Teste ${targetDevice?.deviceName || "dispositivo"}` : "Teste App Braga"),
       body: message || (kind === "alert" ? "Alerta enviado pela App Braga." : "Teste de notificacoes Firebase."),
       url: "https://picafern-commits.github.io/App-Tablet/html/index.html",
-      tag: `app-braga-${kind}`
+      tag: targetId ? `app-braga-${kind}-${targetId}` : `app-braga-${kind}`
     };
-    setText("firebaseNotifyLastResult", "A enviar pela Firebase...", "warn");
+    setText("firebaseNotifyLastResult", targetId ? `A testar ${targetDevice?.deviceName || targetId}...` : "A enviar pela Firebase...", "warn");
     let response;
     try {
       response = await fetch(CLOUD_URL, {
@@ -8101,7 +8131,7 @@ window.addEventListener("load", () => atualizarVersaoUI(APP_VERSION));
     if (!response.ok || result.ok === false) {
       throw new Error(result.error || result.errors?.[0]?.error || `Function respondeu ${response.status}`);
     }
-    setText("firebaseNotifyLastResult", `Enviadas: ${result.sent || 0} | Inbox: ${result.inboxWritten || 0} | Falhas: ${result.failed || 0} | Ignorados: ${result.ignored || 0}`, "ok");
+    setText("firebaseNotifyLastResult", `Enviadas: ${result.sent || 0} | Inbox: ${result.inboxWritten || 0} | Falhas: ${result.failed || 0} | Ignorados: ${result.ignored || 0}`, Number(result.failed || 0) ? "warn" : "ok");
     await refreshLists();
     return result;
   }
@@ -8130,16 +8160,39 @@ window.addEventListener("load", () => atualizarVersaoUI(APP_VERSION));
     rows.sort((a, b) => String(a.deviceRole || "").localeCompare(String(b.deviceRole || "")) || String(a.deviceName || "").localeCompare(String(b.deviceName || "")));
     if (devicesHost) {
       devicesHost.innerHTML = rows.length ? rows.map((item) => {
-        const ready = item.fcmToken ? "FCM" : (item.webPush?.endpoint ? "Web Push" : (item.desktopInbox ? "Desktop inbox" : "Sem push"));
+        const readiness = deviceReadiness(item);
         const isThis = item.deviceId === deviceId();
+        const lastSeen = formatDeviceTime(item.lastSeenAt || item.updatedAt || item.createdAt);
         return `
-          <article class="notification-device-card ${isThis ? "is-current" : ""}">
-            <div><strong>${escapeHtmlAppBraga(item.deviceName || item.deviceId || item.id)}</strong><small>${escapeHtmlAppBraga(item.deviceRole || item.platform || "")}</small></div>
-            <span class="notification-chip ${item.enabled === false ? "bad" : "ok"}">${item.enabled === false ? "Desligado" : "Ativo"}</span>
-            <span class="notification-chip">${escapeHtmlAppBraga(ready)}</span>
+          <article class="notification-device-card ${isThis ? "is-current" : ""}" data-device-id="${escapeHtmlAppBraga(item.deviceId || item.id)}">
+            <div>
+              <strong>${escapeHtmlAppBraga(item.deviceName || item.deviceId || item.id)}</strong>
+              <small>${escapeHtmlAppBraga(roleLabel(item.deviceRole))} - ${escapeHtmlAppBraga(item.platform || "")}</small>
+              <small>Ultimo contacto: ${escapeHtmlAppBraga(lastSeen)}</small>
+              <small data-technical-detail>Device ID: ${escapeHtmlAppBraga(item.deviceId || item.id)}</small>
+            </div>
+            <span class="notification-chip ${readiness.state}">${escapeHtmlAppBraga(readiness.label)}</span>
+            <span class="notification-chip">${escapeHtmlAppBraga(readiness.channel)}</span>
+            ${isThis ? `<span class="notification-chip ok">Este dispositivo</span>` : ""}
+            <button class="secondary-btn small-btn" type="button" data-firebase-test-device="${escapeHtmlAppBraga(item.deviceId || item.id)}">Testar</button>
           </article>
         `;
       }).join("") : `<div class="empty-state mini">Sem dispositivos registados.</div>`;
+      devicesHost.querySelectorAll("[data-firebase-test-device]").forEach((button) => {
+        button.addEventListener("click", async () => {
+          const target = rows.find((item) => String(item.deviceId || item.id) === button.getAttribute("data-firebase-test-device"));
+          try {
+            button.disabled = true;
+            button.textContent = "A testar...";
+            await sendBroadcast("device-test", target);
+          } catch (error) {
+            setText("firebaseNotifyLastResult", error.message || "Erro ao testar dispositivo.", "bad");
+          } finally {
+            button.disabled = false;
+            button.textContent = "Testar";
+          }
+        });
+      });
     }
     if (historyHost) {
       const history = await window.db.collection(HISTORY_COLLECTION).get().catch(() => null);
@@ -8169,7 +8222,8 @@ window.addEventListener("load", () => atualizarVersaoUI(APP_VERSION));
     if (roleInput) roleInput.value = p.role || info.role;
     setText("firebaseNotifyDeviceId", deviceId(), "ok");
     setText("firebaseNotifyEnvironment", info.electron ? "Electron desktop" : (info.ios ? "iPhone Safari/PWA" : (info.android ? "Android Chrome/PWA" : "Web/PWA")), "ok");
-    setText("firebaseNotifyPermission", ("Notification" in window ? Notification.permission : "sem Notification"), Notification.permission === "granted" ? "ok" : "warn");
+    const permission = "Notification" in window ? Notification.permission : "sem Notification";
+    setText("firebaseNotifyPermission", permission, permission === "granted" ? "ok" : "warn");
   }
 
   function bindPage() {

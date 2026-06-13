@@ -119,4 +119,4 @@ self.addEventListener("notificationclick", (event) => {
   );
 });
 
-// APP BRAGA V1.38.0 firebase-notifications
+// APP BRAGA V1.39.0 workspace-devices-printers

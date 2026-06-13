@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-<script src="../js/app-theme-pro.js?v=theme-pro-6"></script>
+<script src="../js/app-theme-pro.js?v=theme-pro-7"></script>
 <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
   <title>Ficha de Equipamento</title>
@@ -9,13 +9,13 @@
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/style.css?v=1.38.0">
+  <link rel="stylesheet" href="../css/style.css?v=1.39.0">
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
-  <link rel="stylesheet" href="../css/app-theme-pro.css?v=theme-pro-6">
+  <link rel="stylesheet" href="../css/app-theme-pro.css?v=theme-pro-7">
   <link rel="stylesheet" href="../css/enterprise/ops.css?v=ops-13">
   <link rel="stylesheet" href="../css/systems/personal-tools.css?v=personal-6">
   <link rel="stylesheet" href="../css/systems/global-search.css?v=global-search-2">
-  <link rel="stylesheet" href="../css/systems/equipment.css?v=equipment-3">
+  <link rel="stylesheet" href="../css/systems/equipment.css?v=equipment-4">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="App Braga">
@@ -155,6 +155,16 @@
     </div>
   </section>
 
+  <section class="panel equipment-printer-panel equipment-only-detail" id="equipmentPrinterPanel" hidden>
+    <div class="section-header">
+      <div>
+        <h3>Estado da impressora</h3>
+        <p class="section-subtitle">Toner atual, localização, ligações rápidas e atividade relacionada.</p>
+      </div>
+    </div>
+    <div id="equipmentPrinterInsights" class="equipment-printer-insights"></div>
+  </section>
+
   <section class="equipment-layout equipment-only-detail">
     <div class="panel">
       <div class="section-header">
@@ -192,10 +202,10 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<script src="../js/app.js?v=1.38.0"></script>
+<script src="../js/app.js?v=1.39.0"></script>
 <script src="../js/systems/equipment/equipment-models.js?v=equipment-3"></script>
 <script src="../js/systems/global-search/global-search.js?v=global-search-2"></script>
-<script src="../js/systems/equipment/equipment-detail.js?v=equipment-3"></script>
+<script src="../js/systems/equipment/equipment-detail.js?v=equipment-4"></script>
 <script src="../js/core/helpers.js"></script>
 <script src="../js/iphone-force-final.js?v=safe-area-1.35.8"></script>
 <script src="../js/enterprise/ops.js?v=ops-13"></script>

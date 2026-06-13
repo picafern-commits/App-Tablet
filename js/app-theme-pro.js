@@ -9,7 +9,7 @@
   const LEGACY_COOKIE = "appAccentColor";
   const ONE_YEAR = 31536000;
   const DEFAULT_WORKSPACE = {
-    mode: "tech",
+    mode: "simple",
     density: "comfortable",
     radius: "soft",
     mobileActions: "on"
@@ -328,8 +328,9 @@
   }
 
   function normalizeWorkspace(input = {}) {
+    const rawMode = input.mode === "management" ? "simple" : input.mode;
     return {
-      mode: ["tech", "management"].includes(input.mode) ? input.mode : DEFAULT_WORKSPACE.mode,
+      mode: ["simple", "tech"].includes(rawMode) ? rawMode : DEFAULT_WORKSPACE.mode,
       density: ["compact", "comfortable"].includes(input.density) ? input.density : DEFAULT_WORKSPACE.density,
       radius: ["sharp", "soft", "round"].includes(input.radius) ? input.radius : DEFAULT_WORKSPACE.radius,
       mobileActions: input.mobileActions === "off" ? "off" : "on"
@@ -398,7 +399,8 @@
     const applyTo = (node) => {
       if (!node?.classList) return;
       node.classList.toggle("app-mode-tech", workspace.mode === "tech");
-      node.classList.toggle("app-mode-management", workspace.mode === "management");
+      node.classList.toggle("app-mode-simple", workspace.mode === "simple");
+      node.classList.toggle("app-mode-management", workspace.mode === "simple");
       node.classList.toggle("app-density-compact", workspace.density === "compact");
       node.classList.toggle("app-density-comfortable", workspace.density === "comfortable");
       node.classList.toggle("app-radius-sharp", workspace.radius === "sharp");

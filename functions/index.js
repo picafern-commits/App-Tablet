@@ -132,6 +132,7 @@ async function sendNotificationToDevices(payloadInput = {}, options = {}) {
   const startedAt = Date.now();
   const requestId = cleanText(payloadInput.requestId, `system-${startedAt}`);
   const senderDeviceId = cleanText(options.senderDeviceId, "");
+  const targetDeviceId = cleanText(options.targetDeviceId, "");
   const payload = {
     requestId,
     title: cleanText(payloadInput.title, "App Braga"),
@@ -165,6 +166,10 @@ async function sendNotificationToDevices(payloadInput = {}, options = {}) {
   for (const doc of snap.docs) {
     const device = { id: doc.id, ...doc.data() };
     const deviceId = String(device.deviceId || doc.id);
+    if (targetDeviceId && deviceId !== targetDeviceId && doc.id !== targetDeviceId) {
+      result.ignored += 1;
+      continue;
+    }
     if (senderDeviceId && deviceId === senderDeviceId) {
       result.ignored += 1;
       continue;
@@ -233,6 +238,7 @@ async function sendNotificationToDevices(payloadInput = {}, options = {}) {
     body: payload.body,
     event: payload.event,
     senderDeviceId,
+    targetDeviceId,
     system: options.system === true,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     durationMs: Date.now() - startedAt
@@ -270,6 +276,7 @@ async function handleNotificationBroadcast(req, res) {
   const body = req.body || {};
   const requestId = cleanText(body.requestId, `notif-${startedAt}`);
   const senderDeviceId = cleanText(body.senderDeviceId, "");
+  const targetDeviceId = cleanText(body.targetDeviceId, "");
   const payload = {
     requestId,
     title: cleanText(body.title, "App Braga"),
@@ -303,6 +310,10 @@ async function handleNotificationBroadcast(req, res) {
     for (const doc of snap.docs) {
       const device = { id: doc.id, ...doc.data() };
       const deviceId = String(device.deviceId || doc.id);
+      if (targetDeviceId && deviceId !== targetDeviceId && doc.id !== targetDeviceId) {
+        result.ignored += 1;
+        continue;
+      }
       if (senderDeviceId && deviceId === senderDeviceId) {
         result.ignored += 1;
         continue;
@@ -370,6 +381,7 @@ async function handleNotificationBroadcast(req, res) {
       title: payload.title,
       body: payload.body,
       senderDeviceId,
+      targetDeviceId,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       durationMs: Date.now() - startedAt
     });
@@ -383,6 +395,7 @@ async function handleNotificationBroadcast(req, res) {
       title: payload.title,
       body: payload.body,
       senderDeviceId,
+      targetDeviceId,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       durationMs: Date.now() - startedAt
     }).catch(() => null);

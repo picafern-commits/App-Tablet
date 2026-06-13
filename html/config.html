@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-<script src="../js/app-theme-pro.js?v=theme-pro-6"></script>
+<script src="../js/app-theme-pro.js?v=theme-pro-7"></script>
 <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
   <title>Configuracoes</title>
@@ -9,9 +9,9 @@
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/style.css?v=1.38.0">
+  <link rel="stylesheet" href="../css/style.css?v=1.39.0">
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
-  <link rel="stylesheet" href="../css/app-theme-pro.css?v=theme-pro-6">
+  <link rel="stylesheet" href="../css/app-theme-pro.css?v=theme-pro-7">
   <link rel="stylesheet" href="../css/enterprise/ops.css?v=ops-13">
   <link rel="stylesheet" href="../css/systems/personal-tools.css?v=personal-6">
   <link rel="stylesheet" href="../css/systems/global-search.css?v=global-search-2">
@@ -131,17 +131,17 @@
       <button class="theme-pro-preset" type="button" data-theme-preset="violet">Violeta</button>
     </div>
     <div class="workspace-mode-switch" aria-label="Modo de trabalho">
-      <button class="workspace-mode-card" type="button" data-work-mode="tech" aria-pressed="true">
-        <strong>Modo tecnico</strong>
-        <span>Mais rapido, compacto e virado para a operacao diaria.</span>
+      <button class="workspace-mode-card" type="button" data-work-mode="simple" aria-pressed="true">
+        <strong>Modo simples</strong>
+        <span>Mostra o essencial para usar a app sem ruido tecnico.</span>
       </button>
-      <button class="workspace-mode-card" type="button" data-work-mode="management" aria-pressed="false">
-        <strong>Modo gestao</strong>
-        <span>Mais resumo, prioridades e leitura geral do estado da app.</span>
+      <button class="workspace-mode-card" type="button" data-work-mode="tech" aria-pressed="false">
+        <strong>Modo tecnico</strong>
+        <span>Mostra IDs, colecoes, diagnosticos e detalhes de suporte.</span>
       </button>
       <select id="appWorkMode" class="design-mode-select" aria-label="Modo de trabalho">
+        <option value="simple">Simples</option>
         <option value="tech">Tecnico</option>
-        <option value="management">Gestao</option>
       </select>
     </div>
     <div class="theme-pro-grid">
@@ -353,7 +353,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<script src="../js/app.js?v=1.38.0"></script>
+<script src="../js/app.js?v=1.39.0"></script>
 <script src="../js/systems/equipment/equipment-models.js?v=equipment-3"></script>
 <script src="../js/systems/global-search/global-search.js?v=global-search-2"></script>
   <script src="../js/core/helpers.js"></script>

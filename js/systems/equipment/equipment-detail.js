@@ -66,6 +66,49 @@
     return String(value);
   }
 
+  function percentValue(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return null;
+    return Math.max(0, Math.min(100, Math.round(number)));
+  }
+
+  function tonerLabel(key = "") {
+    return {
+      black: "Preto",
+      cyan: "Cyan",
+      magenta: "Magenta",
+      yellow: "Amarelo",
+      waste: "Residuo"
+    }[String(key || "").toLowerCase()] || String(key || "Toner");
+  }
+
+  function printerTonerLevels(item = {}) {
+    const levels = new Map();
+    const add = (key, value, label) => {
+      const percent = percentValue(value);
+      const cleanKey = String(key || label || "black").toLowerCase();
+      if (percent === null || !cleanKey) return;
+      levels.set(cleanKey, { key: cleanKey, label: label || tonerLabel(cleanKey), percent });
+    };
+    if (item.toner && typeof item.toner === "object") {
+      Object.entries(item.toner).forEach(([key, value]) => add(key, value));
+    }
+    if (Array.isArray(item.colors)) {
+      item.colors.forEach((entry = {}) => add(entry.key || entry.color || entry.label, entry.percent ?? entry.value ?? entry.nivel, entry.label));
+    }
+    ["black", "cyan", "magenta", "yellow"].forEach((key) => {
+      add(key, item[key] ?? item[`${key}_percent`] ?? item[`${key}Percent`]);
+    });
+    add("black", item.percent ?? item.toner_percent ?? item.tonerPercent ?? item.percentage, "Preto");
+    return Array.from(levels.values());
+  }
+
+  function tonerState(percent) {
+    if (percent <= 0) return { label: "Vazio", className: "bad" };
+    if (percent <= 25) return { label: "Baixo", className: "warn" };
+    return { label: "OK", className: "ok" };
+  }
+
   function titleFor(config, item) {
     return firstField(item, config.titleFields) || item.id || "Ficha";
   }
@@ -254,6 +297,60 @@
     `).join("");
   }
 
+  function renderPrinterInsights() {
+    const panel = byId("equipmentPrinterPanel");
+    const host = byId("equipmentPrinterInsights");
+    if (!panel || !host) return;
+    if (state.typeKey !== "impressora") {
+      panel.hidden = true;
+      host.innerHTML = "";
+      return;
+    }
+
+    panel.hidden = false;
+    const item = state.item || {};
+    const ip = firstField(item, ["ip", "address"]);
+    const serial = firstField(item, ["serie", "serial", "numeroSerie"]);
+    const location = firstField(item, ["localizacao", "location", "armazem"]);
+    const status = firstField(item, ["estado", "status"]) || "Operacional";
+    const levels = printerTonerLevels(item);
+    const manutencoes = state.related.find((group) => normalize(group.label).includes("manutenc"));
+    const toners = state.related.find((group) => normalize(group.label).includes("toner"));
+    const worst = levels.length ? levels.reduce((min, entry) => entry.percent < min.percent ? entry : min, levels[0]) : null;
+    const worstState = worst ? tonerState(worst.percent) : { label: "Sem dados", className: "warn" };
+
+    const tonerHtml = levels.length ? levels.map((entry) => {
+      const stateInfo = tonerState(entry.percent);
+      return `
+        <div class="equipment-toner-mini">
+          <div><strong>${escapeHtml(entry.label)}</strong><span>${entry.percent}%</span></div>
+          <div class="equipment-toner-track"><span style="width:${entry.percent}%"></span></div>
+          <em class="${stateInfo.className}">${escapeHtml(stateInfo.label)}</em>
+        </div>
+      `;
+    }).join("") : `<div class="equipment-printer-empty">Sem leituras de toner nesta ficha.</div>`;
+
+    host.innerHTML = `
+      <div class="equipment-printer-kpis">
+        <div class="equipment-printer-kpi"><span>Estado</span><strong>${escapeHtml(status)}</strong></div>
+        <div class="equipment-printer-kpi"><span>Pior toner</span><strong class="${worstState.className}">${worst ? `${escapeHtml(worst.label)} ${worst.percent}%` : "Sem dados"}</strong></div>
+        <div class="equipment-printer-kpi"><span>Manutencoes</span><strong>${Number(manutencoes?.items?.length || 0)}</strong></div>
+        <div class="equipment-printer-kpi"><span>Trocas toner</span><strong>${Number(toners?.items?.length || 0)}</strong></div>
+      </div>
+      <div class="equipment-printer-toners">${tonerHtml}</div>
+      <div class="equipment-printer-actions">
+        ${ip ? `<a class="secondary-btn equipment-action-link" href="http://${escapeHtml(ip)}" target="_blank" rel="noopener">Abrir IP ${escapeHtml(ip)}</a>` : ""}
+        <a class="secondary-btn equipment-action-link" href="manutencao-impressoras.html">Nova manutencao</a>
+        <a class="secondary-btn equipment-action-link" href="impressoras.html">Voltar as impressoras</a>
+      </div>
+      <div class="equipment-printer-foot" data-technical-detail>
+        <span>Local: ${escapeHtml(location || "-")}</span>
+        <span>Serie: ${escapeHtml(serial || "-")}</span>
+        <span>Colecao: ${escapeHtml(state.collectionName || state.config.collection)}</span>
+      </div>
+    `;
+  }
+
   function renderRelatedItem(item) {
     const title = firstField(item, ["titulo", "modelo", "nome", "name", "equipamento", "action", "weekLabel", "estado"]) || item.id;
     const detail = compact(["createdAt", "updatedAt", "data", "estado", "motivo", "ip", "user", "localizacao"].map((field) => formatValue(item[field])).filter((value) => value !== "-")).slice(0, 4).join(" - ");
@@ -382,6 +479,7 @@
     renderFields();
     renderActions();
     state.related = await fetchRelated();
+    renderPrinterInsights();
     renderRelated();
     setLoading("Ficha carregada");
   }
