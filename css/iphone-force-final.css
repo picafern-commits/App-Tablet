@@ -460,3 +460,255 @@ body{
   }
 }
 /* ===== END APP BRAGA V1.33.3 ===== */
+
+/* ===== APP BRAGA v1.50 - IPHONE POLISH FINAL ===== */
+@media screen and (max-width: 768px) {
+  :root {
+    --iphone-page-pad: 12px;
+    --iphone-top-pad: max(82px, calc(62px + env(safe-area-inset-top, 0px)));
+    --iphone-bottom-pad: max(22px, calc(18px + env(safe-area-inset-bottom, 0px)));
+  }
+
+  html,
+  body {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    background: #070b12 !important;
+  }
+
+  body {
+    padding: 0 !important;
+  }
+
+  .main,
+  main,
+  .main-content,
+  .page-content,
+  .dashboard-container,
+  .content-area,
+  .dashboard-shell,
+  .content {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: var(--iphone-top-pad) var(--iphone-page-pad) var(--iphone-bottom-pad) !important;
+    overflow-x: hidden !important;
+  }
+
+  .page-hero,
+  .dashboard-header,
+  .topbar,
+  .premium-topbar,
+  .reference-header {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    align-items: start !important;
+    margin: 0 0 12px !important;
+    padding: 16px !important;
+    border-radius: 18px !important;
+  }
+
+  .page-hero-title,
+  .dashboard-header h1,
+  .topbar h1,
+  .main h1 {
+    font-size: 24px !important;
+    line-height: 1.1 !important;
+    letter-spacing: 0 !important;
+    word-break: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .section-header,
+  .toolbar,
+  .card-actions,
+  .topbar-status {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    align-items: stretch !important;
+  }
+
+  .section-header > *,
+  .toolbar > *,
+  .card-actions > *,
+  .topbar-status > * {
+    min-width: 0 !important;
+  }
+
+  .panel,
+  .dashboard-panel,
+  .personal-panel,
+  .config-section,
+  .stock-card,
+  .history-card,
+  .pc-card,
+  .dashboard-card,
+  .card,
+  .box,
+  .printer-card,
+  .network-card,
+  .pistol-card,
+  .equipment-detail-card,
+  .equipment-result-card,
+  .equipment-type-card,
+  .modal-content,
+  .modal-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding: 15px !important;
+    border-radius: 18px !important;
+    box-sizing: border-box !important;
+  }
+
+  .stats-grid,
+  .form-grid,
+  .cards-grid,
+  .equipment-grid,
+  .radio-cards-grid,
+  .enterprise-metrics,
+  .personal-grid,
+  .zone-grid,
+  .diagnostic-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+
+  input,
+  select,
+  textarea,
+  button,
+  .primary-btn,
+  .secondary-btn,
+  .ghost-btn,
+  .action-btn {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 46px !important;
+    font-size: 16px !important;
+    box-sizing: border-box !important;
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: auto !important;
+    min-height: auto !important;
+  }
+
+  .table-wrap,
+  table {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .app-menu-toggle {
+    width: 46px !important;
+    height: 46px !important;
+    top: max(10px, calc(8px + env(safe-area-inset-top, 0px))) !important;
+    left: 10px !important;
+    border-radius: 15px !important;
+  }
+
+  .app-braga-version-fixed {
+    top: max(10px, calc(8px + env(safe-area-inset-top, 0px))) !important;
+    right: 10px !important;
+    max-width: calc(100vw - 72px) !important;
+    min-height: 28px !important;
+    padding: 5px 8px !important;
+    font-size: 10px !important;
+  }
+
+  aside.sidebar,
+  .sidebar,
+  #sidebar,
+  .enterprise-sidebar {
+    width: min(318px, 86vw) !important;
+    min-width: 0 !important;
+    max-width: 86vw !important;
+    padding: max(66px, calc(54px + env(safe-area-inset-top, 0px))) 12px max(16px, calc(12px + env(safe-area-inset-bottom, 0px))) !important;
+    border-radius: 0 22px 22px 0 !important;
+    background: linear-gradient(180deg, rgba(10,15,24,.98), rgba(8,12,20,.98)) !important;
+  }
+
+  .sidebar .brand,
+  .sidebar .premium-brand,
+  .sidebar .sidebar-brand-card {
+    padding: 10px !important;
+    margin-bottom: 10px !important;
+    border-radius: 16px !important;
+  }
+
+  .sidebar a,
+  .sidebar-group-toggle {
+    min-height: 44px !important;
+    padding: 10px 11px !important;
+    margin-bottom: 6px !important;
+    border-radius: 13px !important;
+  }
+
+  .sidebar a::before,
+  .sidebar-group-toggle .sidebar-group-icon {
+    width: 26px !important;
+    height: 26px !important;
+    min-width: 26px !important;
+    margin-right: 10px !important;
+    border-radius: 9px !important;
+  }
+
+  body.sidebar-open .main,
+  body.sidebar-open main,
+  body.sidebar-open .main-content,
+  body.sidebar-open .page-content,
+  body.sidebar-open .dashboard-container,
+  body.sidebar-open .content-area,
+  body.sidebar-open .dashboard-shell,
+  body.sidebar-open .content {
+    filter: none !important;
+  }
+
+  .update-box-appbraga {
+    left: 10px !important;
+    right: 10px !important;
+    bottom: max(10px, calc(8px + env(safe-area-inset-bottom, 0px))) !important;
+    width: auto !important;
+    max-width: none !important;
+    border-radius: 20px !important;
+  }
+}
+
+@media screen and (max-width: 390px) {
+  :root {
+    --iphone-page-pad: 10px;
+  }
+
+  .page-hero-title,
+  .dashboard-header h1,
+  .topbar h1,
+  .main h1 {
+    font-size: 22px !important;
+  }
+
+  .panel,
+  .dashboard-panel,
+  .personal-panel,
+  .config-section,
+  .stock-card,
+  .history-card,
+  .pc-card,
+  .dashboard-card,
+  .card,
+  .box {
+    padding: 13px !important;
+    border-radius: 16px !important;
+  }
+}
+/* ===== END APP BRAGA v1.50 ===== */

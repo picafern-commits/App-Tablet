@@ -1,4 +1,4 @@
-const APP_BRAGA_SW = "app-braga-runtime-v82";
+const APP_BRAGA_SW = "app-braga-runtime-v83";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -119,4 +119,4 @@ self.addEventListener("notificationclick", (event) => {
   );
 });
 
-// APP BRAGA V1.49.0 app-js-cache-bust
+// APP BRAGA V1.50.0 iphone-polish

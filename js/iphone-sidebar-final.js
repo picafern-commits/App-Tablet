@@ -141,6 +141,9 @@
   function bindOnce() {
     if (document.documentElement.dataset.iphoneSidebarFinal === "1") return;
     document.documentElement.dataset.iphoneSidebarFinal = "1";
+    var swipeStartX = 0;
+    var swipeStartY = 0;
+    var swipeTracking = false;
 
     document.addEventListener("click", function (event) {
       var button = event.target.closest && event.target.closest(".app-menu-toggle");
@@ -163,6 +166,25 @@
       if (!link || !isMobile()) return;
       setClosed();
     }, true);
+
+    document.addEventListener("touchstart", function (event) {
+      if (!isMobile() || !event.touches || !event.touches.length) return;
+      var touch = event.touches[0];
+      swipeStartX = touch.clientX;
+      swipeStartY = touch.clientY;
+      swipeTracking = swipeStartX <= 26 || document.body.classList.contains("sidebar-open");
+    }, { passive: true });
+
+    document.addEventListener("touchend", function (event) {
+      if (!swipeTracking || !isMobile() || !event.changedTouches || !event.changedTouches.length) return;
+      var touch = event.changedTouches[0];
+      var dx = touch.clientX - swipeStartX;
+      var dy = Math.abs(touch.clientY - swipeStartY);
+      swipeTracking = false;
+      if (dy > 70 || Math.abs(dx) < 58) return;
+      if (dx > 0 && swipeStartX <= 26) setOpen();
+      if (dx < 0 && document.body.classList.contains("sidebar-open")) setClosed();
+    }, { passive: true });
   }
 
   function init() {
