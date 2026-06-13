@@ -445,7 +445,9 @@
   function ensureMobileActionDock(workspaceInput) {
     const workspace = normalizeWorkspace(workspaceInput || getCachedWorkspace());
     let dock = document.querySelector(".app-mobile-action-dock");
-    if (workspace.mobileActions === "off" || getCachedVisualDesign() !== "pro") {
+    const isPhoneSize = window.matchMedia?.("(max-width: 767px)")?.matches;
+    const isTouchOnly = window.matchMedia?.("(hover: none) and (pointer: coarse)")?.matches;
+    if (workspace.mobileActions === "off" || getCachedVisualDesign() !== "pro" || isPhoneSize || isTouchOnly) {
       dock?.remove();
       return;
     }

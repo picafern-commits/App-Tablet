@@ -685,6 +685,213 @@ body{
   }
 }
 
+/* ===== APP BRAGA v1.51 - IPHONE HARD FIT ===== */
+@media (max-width: 767px), (hover: none) and (pointer: coarse) {
+  html,
+  body {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+    position: relative !important;
+  }
+
+  body.app-mobile-actions-on {
+    padding-bottom: 0 !important;
+  }
+
+  .app-mobile-action-dock {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  body,
+  .app,
+  .main,
+  main,
+  .main-content,
+  .page-content,
+  .content,
+  .container,
+  .page,
+  .page-shell,
+  .dashboard,
+  .diagnostics-page,
+  .config-page,
+  .notifications-page,
+  .scanner-ia-shell,
+  .personal-tools-page {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+  }
+
+  .main,
+  main,
+  .main-content,
+  .page-content,
+  body.app-design-pro .main,
+  body.app-design-pro main,
+  body.app-design-pro .main-content {
+    margin-left: 0 !important;
+    padding-left: max(12px, env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(12px, env(safe-area-inset-right, 0px)) !important;
+    padding-bottom: max(26px, calc(18px + env(safe-area-inset-bottom, 0px))) !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box !important;
+    max-width: 100%;
+  }
+
+  img,
+  video,
+  canvas,
+  svg,
+  iframe {
+    max-width: 100% !important;
+  }
+
+  .topbar,
+  .premium-topbar,
+  .page-hero,
+  .section-header,
+  .panel-header,
+  .card-header,
+  .filters-bar,
+  .toolbar,
+  .card-actions,
+  .form-actions,
+  .actions,
+  .scanner-actions,
+  .radio-toolbar,
+  .etiquetas-bulk-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .stats-grid,
+  .cards-grid,
+  .form-grid,
+  .dashboard-grid,
+  .dashboard-grid-bottom,
+  .dashboard-ops-grid,
+  .diagnostic-grid,
+  .notification-metrics-pro,
+  .notification-control-grid,
+  .scanner-options,
+  .scanner-health-box,
+  .enterprise-grid,
+  .systems-grid,
+  .quick-grid,
+  .kpi-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .panel,
+  .card,
+  .premium-card,
+  .stat-card,
+  .metric-card,
+  .stock-card,
+  .config-card,
+  .config-collapsible-card,
+  .diagnostic-card,
+  .scanner-panel,
+  .notification-panel-pro,
+  .notification-devices-pro,
+  .modal-card {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  input,
+  select,
+  textarea,
+  button,
+  .btn,
+  .primary-btn,
+  .secondary-btn,
+  .scanner-btn {
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  button,
+  .btn,
+  .primary-btn,
+  .secondary-btn,
+  .scanner-btn,
+  .card-actions button,
+  .form-actions button,
+  .actions button {
+    width: 100% !important;
+  }
+
+  table,
+  .table,
+  .data-table,
+  .premium-table,
+  .notification-devices-pro-table {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .table-wrap,
+  .table-container,
+  .responsive-table,
+  .data-table-wrap,
+  .notification-devices-pro-table-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  h1,
+  h2,
+  h3,
+  p,
+  span,
+  strong,
+  small,
+  label,
+  a,
+  td,
+  th,
+  .text,
+  .card-title,
+  .page-title {
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+  }
+
+  .update-box,
+  #updateBox,
+  .app-update-box {
+    left: max(10px, env(safe-area-inset-left, 0px)) !important;
+    right: max(10px, env(safe-area-inset-right, 0px)) !important;
+    bottom: max(12px, env(safe-area-inset-bottom, 0px)) !important;
+    width: auto !important;
+    max-width: none !important;
+    z-index: 99999 !important;
+  }
+}
+
 @media screen and (max-width: 390px) {
   :root {
     --iphone-page-pad: 10px;
