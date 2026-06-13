@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.53.0";
+const APP_VERSION = "1.54.0";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "";
@@ -13284,3 +13284,99 @@ async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
   window.addEventListener("resize", function(){ setTimeout(function(){ apply(read(), false); }, 80); });
 })();
 /* ===== END APP BRAGA v1.35.8 ===== */
+
+/* ===== APP BRAGA v1.54.0 - SIDEBAR NOVA GLOBAL ===== */
+(function(){
+  const GROUPS = [
+    {
+      title: "Operacao",
+      items: [
+        ["index.html", "Dashboard", "DB"],
+        ["tarefas.html", "Tarefas", "TF"],
+        ["add-toner.html", "Adicionar Toner", "TN"],
+        ["stock.html", "Stock", "ST"],
+        ["historico.html", "Historico", "HT"],
+        ["scanner-ia.html", "Scanner IA", "IA"],
+        ["etiquetas-word.html", "Etiquetas Word", "ET"]
+      ]
+    },
+    {
+      title: "Equipamentos",
+      items: [
+        ["impressoras.html", "Impressoras", "IP"],
+        ["manutencao-impressoras.html", "Manutencao", "MN"],
+        ["computadores.html", "Computadores", "PC"],
+        ["pistolas.html", "Pistolas CK65", "CK"],
+        ["radios.html", "Radios", "RD"]
+      ]
+    },
+    {
+      title: "Infraestrutura",
+      items: [
+        ["portas.html", "Portas Rede", "PR"],
+        ["diretorio.html", "Diretorio", "DR"],
+        ["informacoes.html", "Informacoes", "IN"]
+      ]
+    },
+    {
+      title: "Sistema",
+      items: [
+        ["users.html", "Users", "US"],
+        ["diagnostico.html", "Diagnostico", "DG"],
+        ["config.html", "Configuracoes", "CF"]
+      ]
+    }
+  ];
+
+  function currentFile(){
+    return (location.pathname || "").split("/").pop() || "index.html";
+  }
+
+  function getSidebar(){
+    return document.querySelector("aside.sidebar, .sidebar-pro-groups, #sidebar, .enterprise-sidebar");
+  }
+
+  function itemHtml(item, current){
+    const active = item[0] === current ? " active" : "";
+    const aria = item[0] === current ? ' aria-current="page"' : "";
+    return `<a class="app-sidebar-v4-link${active}" href="${item[0]}"${aria}><span class="app-sidebar-v4-icon">${item[2]}</span><span class="app-sidebar-v4-text">${item[1]}</span></a>`;
+  }
+
+  function render(){
+    const sidebar = getSidebar();
+    if (!sidebar) return;
+    const current = currentFile();
+    document.documentElement.classList.remove("sidebar-collapsed");
+    document.body.classList.remove("sidebar-collapsed");
+    sidebar.className = "sidebar app-sidebar-v4";
+    sidebar.innerHTML = `
+      <div class="app-sidebar-v4-brand">
+        <div class="app-sidebar-v4-mark">AB</div>
+        <div class="app-sidebar-v4-brand-text">
+          <strong>App Braga</strong>
+          <span>Centro operacional</span>
+        </div>
+      </div>
+      <nav class="app-sidebar-v4-nav" aria-label="Menu principal">
+        ${GROUPS.map((group) => `
+          <section class="app-sidebar-v4-group">
+            <p>${group.title}</p>
+            ${group.items.map((item) => itemHtml(item, current)).join("")}
+          </section>
+        `).join("")}
+      </nav>
+    `;
+  }
+
+  function init(){
+    render();
+    setTimeout(render, 80);
+    setTimeout(render, 500);
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+  window.addEventListener("pageshow", () => setTimeout(init, 80));
+  window.addEventListener("resize", () => setTimeout(render, 120));
+})();
+/* ===== END APP BRAGA v1.54.0 - SIDEBAR NOVA GLOBAL ===== */
