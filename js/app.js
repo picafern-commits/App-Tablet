@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.48.0";
+const APP_VERSION = "1.49.0";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "";
@@ -7914,6 +7914,7 @@ async function atualizarAppObrigatorio(novaVersao = "") {
   setUpdateTargetVersionAppBraga(versaoDestino);
   const targetUrl = new URL(window.location.href);
   targetUrl.searchParams.set("v", versaoDestino);
+  targetUrl.searchParams.set("app", versaoDestino);
   targetUrl.searchParams.set("update", String(Date.now()));
   const target = targetUrl.toString();
   const currentBefore = window.location.href;
