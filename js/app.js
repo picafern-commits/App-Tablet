@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.45.0";
+const APP_VERSION = "1.46.0";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "";
@@ -52,6 +52,13 @@ function appBragaIsPage(...names) {
 
 function iniciarLoadingInicialAppBraga() {
   if (!document.body || document.getElementById("appBragaSplash")) return;
+  try {
+    if (sessionStorage.getItem("appBragaSplashShown") === "1") return;
+    sessionStorage.setItem("appBragaSplashShown", "1");
+  } catch (error) {
+    if (window.__appBragaSplashShown) return;
+    window.__appBragaSplashShown = true;
+  }
   const iconPath = location.pathname.includes("/html/") ? "../icon-192.png" : "icon-192.png";
   const splash = document.createElement("div");
   splash.id = "appBragaSplash";
