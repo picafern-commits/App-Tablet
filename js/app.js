@@ -1683,6 +1683,7 @@ const tonerReplacementAlertState = {};
 const tonerInfoState = {};
 const TONER_EMPTY_THRESHOLD = 0;
 const DASHBOARD_TONER_LOW_THRESHOLD = 25;
+const APP_BRAGA_TONER_NOTIFY_URL = "https://europe-west1-toner-manager-756c4.cloudfunctions.net/sendNotificationBroadcast";
 
 function isTonerEmpty(percentagem) {
   return typeof percentagem === "number" && percentagem <= TONER_EMPTY_THRESHOLD;
@@ -1690,6 +1691,32 @@ function isTonerEmpty(percentagem) {
 
 function isDashboardTonerLow(percentagem) {
   return typeof percentagem === "number" && percentagem <= DASHBOARD_TONER_LOW_THRESHOLD;
+}
+
+function tonerNotifyUrlApp() {
+  return "https://picafern-commits.github.io/App-Tablet/html/impressoras.html";
+}
+
+async function enviarNotificacaoCloudTonerApp(payload = {}) {
+  if (!navigator.onLine || !payload.title || !payload.body) return false;
+  try {
+    const response = await fetch(APP_BRAGA_TONER_NOTIFY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        requestId: payload.requestId || payload.tag || `toner-client-${Date.now()}`,
+        title: payload.title,
+        body: payload.body,
+        event: payload.event || "system-toner-client",
+        tag: payload.tag || payload.requestId || `toner-client-${Date.now()}`,
+        url: payload.url || tonerNotifyUrlApp()
+      })
+    });
+    return response.ok;
+  } catch (error) {
+    console.warn("Nao foi possivel enviar notificacao cloud de toner:", error);
+    return false;
+  }
 }
 
 function corBarraToner(percentagem, cor = "black") {
@@ -1834,15 +1861,33 @@ function maybeNotifyCriticalSupply(ip, info) {
 
   const printer = impressorasData.find(i => i.ip === ip);
   const printerLabel = printer ? `${printer.modelo} - ${printer.localizacao}` : ip;
-  const issues = [];
+  const alerts = [];
+  const tonerItems = Array.isArray(info.colors) && info.colors.length
+    ? info.colors
+    : (typeof info.percent === "number" ? [{ key: "black", label: "Preto", percent: info.percent }] : []);
 
-  (info.colors || []).forEach((item) => {
-    if (isTonerEmpty(item.percent)) {
-      issues.push(`${item.label}: ${item.percent}%`);
+  tonerItems.forEach((item) => {
+    const itemKey = String(item.key || item.label || "toner").toLowerCase();
+    if (appNotificationState.tonerZero && isTonerEmpty(item.percent)) {
+      alerts.push({
+        title: "Toner a 0%",
+        event: "system-toner-zero",
+        tag: `toner-zero-${ip}-${itemKey}-${item.percent}`,
+        issue: `${item.label}: ${item.percent}%`,
+        level: "erro"
+      });
+    } else if (appNotificationState.tonerLow25 && isDashboardTonerLow(item.percent)) {
+      alerts.push({
+        title: "Toner a 25%",
+        event: "system-toner-25",
+        tag: `toner-25-${ip}-${itemKey}-${item.percent}`,
+        issue: `${item.label}: ${item.percent}%`,
+        level: "aviso"
+      });
     }
   });
 
-  const key = issues.join(" | ");
+  const key = alerts.map((alert) => `${alert.title}:${alert.issue}`).join(" | ");
   if (!key) {
     tonerAlertState[ip] = "";
     return;
@@ -1850,10 +1895,19 @@ function maybeNotifyCriticalSupply(ip, info) {
   if (tonerAlertState[ip] === key) return;
   tonerAlertState[ip] = key;
 
-  const message = `Toner vazio em ${printerLabel} Ã¢â‚¬â€ ${key}`;
-  mostrarMensagem(message, "erro");
-
-  enviarNotificacaoApp("Toner vazio", message, `toner-${ip}-${key}`, { url: "html/impressoras.html" });
+  alerts.forEach((alert) => {
+    const message = `${alert.title} em ${printerLabel} - ${alert.issue}`;
+    mostrarMensagem(message, alert.level);
+    enviarNotificacaoApp(alert.title, message, alert.tag, { url: "html/impressoras.html" });
+    enviarNotificacaoCloudTonerApp({
+      requestId: alert.tag,
+      title: alert.title,
+      body: message,
+      event: alert.event,
+      tag: alert.tag,
+      url: tonerNotifyUrlApp()
+    });
+  });
 }
 
 function getTonerReplacementCandidatesApp(info) {
@@ -1912,12 +1966,20 @@ async function maybeNotifyTonerReplacement(ip, previousInfo, nextInfo) {
   const printerLabel = printer ? `${printer.modelo} - ${printer.localizacao}` : ip;
 
   for (const event of events) {
-    const key = `toner-change-${ip}-${event.after.key}-${event.before.percent}-${event.after.percent}`;
+    const key = `toner-replaced-${ip}-${event.after.key}-${event.before.percent}-${event.after.percent}`;
     if (tonerReplacementAlertState[key]) continue;
     tonerReplacementAlertState[key] = Date.now();
 
     const body = `${printerLabel}: ${event.after.label} passou de ${event.before.percent}% para ${event.after.percent}%.`;
     await enviarNotificacaoApp("Toner trocado", body, key, { url: "html/impressoras.html" });
+    enviarNotificacaoCloudTonerApp({
+      requestId: key,
+      title: "Toner trocado",
+      body,
+      event: "system-toner-replaced",
+      tag: key,
+      url: tonerNotifyUrlApp()
+    });
     mostrarMensagem(`Toner trocado: ${event.after.label} ${event.after.percent}%`);
     try {
       await db.collection("activityLog").add({
