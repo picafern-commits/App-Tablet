@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.46.0";
+const APP_VERSION = "1.47.0";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "";
@@ -7696,6 +7696,7 @@ async function registarServiceWorkerAppBraga() {
 async function verificarAtualizacao() {
   try {
     atualizarVersaoUI(APP_VERSION);
+    finalizarAtualizacaoSeAplicadaAppBraga();
     const isGithubPages = location.hostname === "picafern-commits.github.io";
     if (!isGithubPages) return;
 
@@ -7713,6 +7714,9 @@ async function verificarAtualizacao() {
 
     if (data && data.version && data.version !== APP_VERSION) {
       mostrarAvisoAtualizacaoDisponivel(data.version);
+    } else {
+      document.getElementById("updateBoxAppBraga")?.remove();
+      document.getElementById("updateOverlayAppBraga")?.remove();
     }
   } catch (e) {
     console.error("Erro a verificar updates", e);
@@ -7725,8 +7729,58 @@ function atualizarVersaoUI(versionValue = APP_VERSION) {
   nodes.forEach((node) => {
     if (!node) return;
     node.innerText = "v" + versionValue + " Premium";
-    node.title = "VersÃƒÂ£o atual da app";
+    node.title = "Versao atual da app";
   });
+  atualizarVersaoFixaAppBraga(versionValue);
+}
+
+function atualizarVersaoFixaAppBraga(versionValue = APP_VERSION) {
+  if (!document.body) return;
+  let node = document.getElementById("appBragaVersionFixed");
+  if (!node) {
+    node = document.createElement("div");
+    node.id = "appBragaVersionFixed";
+    node.className = "app-braga-version-fixed";
+    document.body.appendChild(node);
+  }
+  node.innerHTML = `<span>Versao</span><strong>v${versionValue}</strong>`;
+  node.title = `App Braga v${versionValue}`;
+}
+
+function getUpdateTargetVersionAppBraga() {
+  try {
+    return sessionStorage.getItem("appUpdateTargetVersion") || getCookieAppBraga("appUpdateTargetVersion") || "";
+  } catch (error) {
+    return getCookieAppBraga("appUpdateTargetVersion") || "";
+  }
+}
+
+function setUpdateTargetVersionAppBraga(version) {
+  try { sessionStorage.setItem("appUpdateTargetVersion", version); } catch (error) {}
+  setCookieAppBraga("appUpdateTargetVersion", version, 600);
+}
+
+function clearUpdateTargetVersionAppBraga() {
+  try { sessionStorage.removeItem("appUpdateTargetVersion"); } catch (error) {}
+  deleteCookieAppBraga("appUpdateTargetVersion");
+}
+
+function finalizarAtualizacaoSeAplicadaAppBraga() {
+  const target = getUpdateTargetVersionAppBraga();
+  if (!target || target !== APP_VERSION) return;
+  clearUpdateTargetVersionAppBraga();
+  deleteCookieAppBraga("appUpdateDismissedVersion");
+  document.getElementById("updateBoxAppBraga")?.remove();
+  document.getElementById("updateOverlayAppBraga")?.remove();
+  const url = new URL(window.location.href);
+  if (url.searchParams.has("update") || url.searchParams.has("v")) {
+    url.searchParams.delete("update");
+    url.searchParams.delete("v");
+    window.history.replaceState({}, "", url.toString());
+  }
+  if (typeof mostrarMensagem === "function") {
+    setTimeout(() => mostrarMensagem(`App atualizada para v${APP_VERSION}.`, "sucesso"), 500);
+  }
 }
 
 function mostrarAvisoAtualizacaoDisponivel(novaVersao) {
@@ -7827,6 +7881,15 @@ async function limparCacheAtualizacaoAppBraga() {
   } catch (error) {
     console.error("Erro a limpar cache:", error);
   }
+
+  try {
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((reg) => reg.unregister().catch(() => false)));
+    }
+  } catch (error) {
+    console.error("Erro a remover service worker antigo:", error);
+  }
 }
 
 async function atualizarAppObrigatorio(novaVersao = "") {
@@ -7850,7 +7913,7 @@ async function atualizarAppObrigatorio(novaVersao = "") {
   }
 
   deleteCookieAppBraga("appUpdateDismissedVersion");
-  setCookieAppBraga("appUpdateTargetVersion", versaoDestino, 300);
+  setUpdateTargetVersionAppBraga(versaoDestino);
   const targetUrl = new URL(window.location.href);
   targetUrl.searchParams.set("v", versaoDestino);
   targetUrl.searchParams.set("update", String(Date.now()));

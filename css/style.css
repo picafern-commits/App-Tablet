@@ -7175,6 +7175,45 @@ input:focus,select:focus,textarea:focus{outline:0!important;border-color:rgba(56
   opacity:.86;
   cursor:progress;
 }
+.app-braga-version-fixed{
+  position:fixed;
+  top:10px;
+  right:12px;
+  z-index:1200;
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  min-height:30px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(7,11,18,.78);
+  color:#e5f3ff;
+  border:1px solid rgba(56,189,248,.28);
+  box-shadow:0 10px 24px rgba(0,0,0,.26);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  font-size:11px;
+  font-weight:850;
+  pointer-events:none;
+}
+.app-braga-version-fixed span{
+  color:#93c5fd;
+}
+.app-braga-version-fixed strong{
+  color:#fff;
+  font-size:12px;
+}
+@media (max-width:768px){
+  .app-braga-version-fixed{
+    top:8px;
+    right:8px;
+    padding:5px 8px;
+    font-size:10px;
+  }
+  .app-braga-version-fixed strong{
+    font-size:11px;
+  }
+}
 
 body.dashboard-clean #personalToolsDashboard,#personalToolsDashboard.dashboard-tasks-only{display:grid!important;}
 .dashboard-shell{display:grid!important;gap:18px!important;}
