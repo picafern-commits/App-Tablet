@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.39.0";
+const APP_VERSION = "1.40.0";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "";
@@ -7820,7 +7820,7 @@ async function atualizarAppObrigatorio(novaVersao = "") {
 window.addEventListener("load", verificarAtualizacao);
 window.addEventListener("load", () => atualizarVersaoUI(APP_VERSION));
 
-/* ===== App Braga Firebase Notifications Rebuild v1.39.0 ===== */
+/* ===== App Braga Firebase Notifications Rebuild v1.40.0 ===== */
 (function initFirebaseNotificationsRebuild() {
   "use strict";
 

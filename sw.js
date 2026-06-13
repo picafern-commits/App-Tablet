@@ -119,4 +119,4 @@ self.addEventListener("notificationclick", (event) => {
   );
 });
 
-// APP BRAGA V1.39.0 workspace-devices-printers
+// APP BRAGA V1.40.0 zones-priorities

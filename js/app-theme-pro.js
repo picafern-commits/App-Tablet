@@ -183,6 +183,7 @@
     ["scanner-ia.html", "IA"],
     ["etiquetas-word.html", "ET"],
     ["manutencao-impressoras.html", "MN"],
+    ["zonas.html", "ZN"],
     ["computadores.html", "PC"],
     ["pistolas.html", "CK"],
     ["radios.html", "RD"],
@@ -320,6 +321,7 @@
         <a href="index.html">Dashboard</a>
         <a href="tarefas.html">Tarefas</a>
         <a href="add-toner.html">Toner</a>
+        <a href="zonas.html">Zonas</a>
         <a href="notificacoes.html">Notificacoes</a>
         <a href="config.html">Design</a>
       </nav>
@@ -390,6 +392,7 @@
       <a href="index.html">Hoje</a>
       <a href="tarefas.html">Tarefas</a>
       <a href="add-toner.html">Toner</a>
+      <a href="zonas.html">Zonas</a>
       <a href="notificacoes.html">Avisos</a>
     `;
   }

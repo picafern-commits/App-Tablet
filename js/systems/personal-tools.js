@@ -148,8 +148,8 @@
   function bootRealtime() {
     if (!isDashboard() && !isTasksPage()) return;
     const collections = isTasksPage()
-      ? ["personalTasks", "dailyChecks"]
-      : ["personalTasks"];
+      ? ["personalTasks", "dailyChecks", "printers", "impressoras", "manutencoes"]
+      : ["personalTasks", "printers", "impressoras", "manutencoes"];
     collections.forEach((name) => observeCollection(name));
   }
 
@@ -166,6 +166,16 @@
       root.innerHTML = `
         <section class="personal-dashboard-overview" id="personalDashboardOverview"></section>
         <section class="personal-alert-strip" id="personalInternalAlerts"></section>
+        <section class="personal-panel personal-priority-panel">
+          <div class="personal-panel-head">
+            <div>
+              <h2>Prioridade operacional</h2>
+              <p>Tarefas, toners e manutenções que merecem atenção primeiro.</p>
+            </div>
+            <a href="zonas.html" class="secondary-btn">Ver zonas</a>
+          </div>
+          <div id="personalOperationalPriority" class="personal-list"></div>
+        </section>
         <section class="personal-panel dashboard-task-panel">
           <div class="personal-panel-head">
             <div>
@@ -192,6 +202,16 @@
         root.innerHTML = `
           <section class="personal-dashboard-overview" id="personalDashboardOverview"></section>
           <section class="personal-alert-strip" id="personalInternalAlerts"></section>
+          <section class="personal-panel personal-priority-panel">
+            <div class="personal-panel-head">
+              <div>
+                <h2>Prioridade operacional</h2>
+                <p>Tarefas, toners e manutenções que merecem atenção primeiro.</p>
+              </div>
+              <a href="zonas.html" class="secondary-btn">Ver zonas</a>
+            </div>
+            <div id="personalOperationalPriority" class="personal-list"></div>
+          </section>
           <section class="personal-panel dashboard-task-panel">
             <div class="personal-panel-head">
               <div>
@@ -210,6 +230,24 @@
           </section>
         `;
       }
+    }
+
+    if (!root.querySelector("#personalOperationalPriority")) {
+      const taskPanel = root.querySelector(".dashboard-task-panel");
+      const priorityPanel = document.createElement("section");
+      priorityPanel.className = "personal-panel personal-priority-panel";
+      priorityPanel.innerHTML = `
+        <div class="personal-panel-head">
+          <div>
+            <h2>Prioridade operacional</h2>
+            <p>Tarefas, toners e manutenções que merecem atenção primeiro.</p>
+          </div>
+          <a href="zonas.html" class="secondary-btn">Ver zonas</a>
+        </div>
+        <div id="personalOperationalPriority" class="personal-list"></div>
+      `;
+      if (taskPanel?.parentNode) taskPanel.parentNode.insertBefore(priorityPanel, taskPanel);
+      else root.appendChild(priorityPanel);
     }
 
     root.dataset.dashboardReady = "1";
@@ -238,6 +276,7 @@
             <input id="personalTaskDue" type="date" aria-label="Data limite">
             <select id="personalTaskPriority">
               <option value="normal">Normal</option>
+              <option value="urgente">Urgente</option>
               <option value="alta">Alta</option>
               <option value="baixa">Baixa</option>
             </select>
@@ -247,6 +286,7 @@
             <input id="personalTaskSearch" type="search" placeholder="Pesquisar tarefas">
             <div class="personal-task-tabs" role="tablist" aria-label="Filtro de tarefas">
               <button type="button" data-task-filter="open" class="active">Abertas</button>
+              <button type="button" data-task-filter="priority">Prioridade</button>
               <button type="button" data-task-filter="today">Hoje</button>
               <button type="button" data-task-filter="overdue">Atrasadas</button>
               <button type="button" data-task-filter="done">Concluidas</button>
@@ -396,21 +436,85 @@
 
   function taskPriorityLabel(priority = "normal") {
     const key = String(priority || "normal").toLowerCase();
-    if (key === "alta") return "Alta";
+    if (key === "urgente" || key === "urgent" || key === "critica" || key === "critico") return "Urgente";
+    if (key === "alta" || key === "high") return "Alta";
     if (key === "baixa") return "Baixa";
     return "Normal";
   }
 
   function taskPriorityClass(priority = "normal") {
     const key = String(priority || "normal").toLowerCase();
-    return key === "alta" ? "high" : (key === "baixa" ? "low" : "normal");
+    if (key === "urgente" || key === "urgent" || key === "critica" || key === "critico") return "urgent";
+    return (key === "alta" || key === "high") ? "high" : (key === "baixa" || key === "low" ? "low" : "normal");
+  }
+
+  function taskPriorityWeight(priority = "normal") {
+    return { urgent: 0, high: 1, normal: 2, low: 3 }[taskPriorityClass(priority)] ?? 2;
+  }
+
+  function operationalPriorityItems(tasks = []) {
+    const items = [];
+    const today = todayKey();
+    tasks.filter((task) => !task.done).forEach((task) => {
+      const overdue = task.dueDate && task.dueDate < today;
+      const cls = overdue ? "urgent" : taskPriorityClass(task.priority);
+      if (cls === "low") return;
+      items.push({
+        title: task.title || "Tarefa",
+        detail: `${task.owner || "Sem responsavel"}${task.dueDate ? ` - ${task.dueDate}` : ""}`,
+        priority: cls,
+        href: "tarefas.html",
+        type: "Tarefa"
+      });
+    });
+    [...(state.collections.printers || []), ...(state.collections.impressoras || [])].forEach((printer) => {
+      const pct = getPercent(printer);
+      if (pct === null || pct > 25) return;
+      items.push({
+        title: equipmentLabel(printer, "Impressora"),
+        detail: `Toner ${pct}%${printer.localizacao ? ` - ${printer.localizacao}` : ""}`,
+        priority: pct <= 0 ? "urgent" : "high",
+        href: "impressoras.html",
+        type: "Toner"
+      });
+    });
+    (state.collections.manutencoes || []).forEach((item) => {
+      if (/resolvido|fechado|concluido|concluído/i.test(String(item.estado || ""))) return;
+      items.push({
+        title: equipmentLabel(item, "Manutencao"),
+        detail: `${item.motivo || item.estado || "Manutencao aberta"}${item.localizacao ? ` - ${item.localizacao}` : ""}`,
+        priority: "high",
+        href: "manutencao-impressoras.html",
+        type: "Manutencao"
+      });
+    });
+    return items.sort((a, b) => ({ urgent: 0, high: 1, normal: 2, low: 3 }[a.priority] - ({ urgent: 0, high: 1, normal: 2, low: 3 }[b.priority]))).slice(0, 6);
+  }
+
+  function renderOperationalPriority(tasks = []) {
+    const host = document.getElementById("personalOperationalPriority");
+    if (!host) return;
+    const items = operationalPriorityItems(tasks);
+    if (!items.length) {
+      host.innerHTML = `<div class="empty-state mini">Sem prioridades criticas neste momento.</div>`;
+      return;
+    }
+    host.innerHTML = items.map((item) => `
+      <a class="personal-priority-row ${item.priority}" href="${escapeHtml(item.href)}">
+        <div>
+          <strong>${escapeHtml(item.title)}</strong>
+          <small>${escapeHtml(item.type)} - ${escapeHtml(item.detail || "")}</small>
+        </div>
+        <span>${escapeHtml(taskPriorityLabel(item.priority))}</span>
+      </a>
+    `).join("");
   }
 
   function renderTaskStats(tasks = []) {
     const host = document.getElementById("personalTaskStats");
     const open = tasks.filter((item) => !item.done).length;
     const done = tasks.filter((item) => item.done).length;
-    const high = tasks.filter((item) => !item.done && String(item.priority || "").toLowerCase() === "alta").length;
+    const high = tasks.filter((item) => !item.done && ["urgent", "high"].includes(taskPriorityClass(item.priority))).length;
     const today = todayKey();
     const todayCount = tasks.filter((item) => {
       const created = getTimestamp(item.createdAt || item.updatedAt);
@@ -428,14 +532,17 @@
     if (dash) dash.innerHTML = html;
     renderTaskPlan(tasks, { open, done, high, todayCount, overdue });
     renderInternalAlerts(tasks, { open, done, high, todayCount, overdue });
+    renderOperationalPriority(tasks);
   }
 
   function renderInternalAlerts(tasks = [], stats = {}) {
     const today = todayKey();
-    const highTasks = tasks.filter((item) => !item.done && String(item.priority || "").toLowerCase() === "alta");
+    const urgentTasks = tasks.filter((item) => !item.done && taskPriorityClass(item.priority) === "urgent");
+    const highTasks = tasks.filter((item) => !item.done && taskPriorityClass(item.priority) === "high");
     const overdueTasks = tasks.filter((item) => !item.done && item.dueDate && item.dueDate < today);
     const todayTasks = tasks.filter((item) => !item.done && item.dueDate === today);
     const alerts = [];
+    if (urgentTasks.length) alerts.push({ level: "danger", title: `${urgentTasks.length} urgente(s)`, body: "Tratar agora." });
     if (overdueTasks.length) alerts.push({ level: "danger", title: `${overdueTasks.length} atrasada(s)`, body: "Resolver antes de novas tarefas." });
     if (highTasks.length) alerts.push({ level: "warn", title: `${highTasks.length} alta prioridade`, body: "Atencao primeiro." });
     if (todayTasks.length) alerts.push({ level: "info", title: `${todayTasks.length} para hoje`, body: "Plano diario ativo." });
@@ -459,7 +566,7 @@
     if (!host) return;
     const next = tasks
       .filter((item) => !item.done)
-      .sort((a, b) => String(a.dueDate || "9999-12-31").localeCompare(String(b.dueDate || "9999-12-31")) || getTimestamp(b.createdAt) - getTimestamp(a.createdAt))
+      .sort((a, b) => taskPriorityWeight(a.priority) - taskPriorityWeight(b.priority) || String(a.dueDate || "9999-12-31").localeCompare(String(b.dueDate || "9999-12-31")) || getTimestamp(b.createdAt) - getTimestamp(a.createdAt))
       .slice(0, 4);
     if (!next.length) {
       host.innerHTML = `<div class="empty-state mini">Sem tarefas abertas. Bom estado de trabalho.</div>`;
@@ -485,11 +592,12 @@
     const tasks = allTasks.filter((item) => {
       if (filter === "open" && item.done) return false;
       if (filter === "done" && !item.done) return false;
+      if (filter === "priority" && (item.done || !["urgent", "high"].includes(taskPriorityClass(item.priority)))) return false;
       if (filter === "today" && item.dueDate !== todayKey()) return false;
       if (filter === "overdue" && (item.done || !item.dueDate || item.dueDate >= todayKey())) return false;
       if (!query) return true;
       return normalize(`${item.title || ""} ${item.priority || ""} ${item.owner || ""} ${item.dueDate || ""}`).includes(query);
-    }).slice(0, limit);
+    }).sort((a, b) => taskPriorityWeight(a.priority) - taskPriorityWeight(b.priority) || getTimestamp(b.createdAt) - getTimestamp(a.createdAt)).slice(0, limit);
     if (!tasks.length) {
       host.innerHTML = `<div class="empty-state mini">Sem tarefas para este filtro.</div>`;
       return;
