@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.47.0";
+const APP_VERSION = "1.48.0";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "";
@@ -7700,8 +7700,6 @@ async function verificarAtualizacao() {
     const isGithubPages = location.hostname === "picafern-commits.github.io";
     if (!isGithubPages) return;
 
-    await registarServiceWorkerAppBraga();
-
     const res = await fetch(appVersionUrlAppBraga(), {
       cache: "no-store",
       headers: {
@@ -7968,8 +7966,10 @@ async function atualizarAppObrigatorio(novaVersao = "") {
   }
 }
 
-window.addEventListener("load", verificarAtualizacao);
-window.addEventListener("load", () => atualizarVersaoUI(APP_VERSION));
+window.addEventListener("load", () => {
+  atualizarVersaoUI(APP_VERSION);
+  verificarAtualizacao();
+});
 
 /* ===== App Braga Firebase Notifications Rebuild v1.40.0 ===== */
 (function initFirebaseNotificationsRebuild() {
