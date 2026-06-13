@@ -2,8 +2,18 @@
   "use strict";
 
   const COOKIE = "appBragaThemePro";
+  const DESIGN_COOKIE = "appBragaVisualDesign";
+  const DESIGN_STORAGE = "appBraga.visualDesign";
+  const WORKSPACE_COOKIE = "appBragaWorkspaceMode";
+  const WORKSPACE_STORAGE = "appBraga.workspaceMode";
   const LEGACY_COOKIE = "appAccentColor";
   const ONE_YEAR = 31536000;
+  const DEFAULT_WORKSPACE = {
+    mode: "tech",
+    density: "comfortable",
+    radius: "soft",
+    mobileActions: "on"
+  };
   const DEFAULT_THEME = {
     primary: "#ef4444",
     secondary: "#f97316",
@@ -97,6 +107,376 @@
     } catch (error) {}
   }
 
+  function designAssetPath(fileName) {
+    const inHtmlFolder = /\/html\//i.test(location.pathname || "");
+    return (inHtmlFolder ? "../css/" : "css/") + fileName + "?v=1.38.0";
+  }
+
+  function getCachedVisualDesign() {
+    try {
+      const stored = localStorage.getItem(DESIGN_STORAGE);
+      if (stored === "classic" || stored === "pro") return stored;
+    } catch (error) {}
+    const cookie = cookieGet(DESIGN_COOKIE);
+    return cookie === "classic" || cookie === "pro" ? cookie : "pro";
+  }
+
+  function syncDesignControls(mode) {
+    document.querySelectorAll("[data-design-mode]").forEach((button) => {
+      const active = button.getAttribute("data-design-mode") === mode;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-pressed", String(active));
+    });
+    const select = document.getElementById("appVisualDesignMode");
+    if (select) select.value = mode;
+  }
+
+  const TEXT_FIXES = [
+    ["NavegaÃ§Ã£o", "Navegacao"],
+    ["OperaÃ§Ã£o", "Operacao"],
+    ["AdministraÃ§Ã£o", "Administracao"],
+    ["ManutenÃ§Ã£o", "Manutencao"],
+    ["ConfiguraÃ§Ãµes", "Configuracoes"],
+    ["InformaÃ§Ãµes", "Informacoes"],
+    ["DiretÃ³rio", "Diretorio"],
+    ["HistÃ³rico", "Historico"],
+    ["DiagnÃ³stico", "Diagnostico"],
+    ["RÃ¡dios", "Radios"],
+    ["pÃ¡gina", "pagina"],
+    ["Toners disponÃƒÂ­veis", "Toners disponiveis"],
+    ["ManutenÃƒÂ§ÃƒÂµes", "Manutencoes"],
+    ["clÃ¡ssico", "classico"],
+    ["botoes", "botoes"],
+    ["â€¹", "<"],
+    ["â€º", ">"],
+    ["â­", "*"],
+    ["âš¡", "OP"],
+    ["âœ…", "OK"],
+    ["âž•", "+"],
+    ["âš™ï¸", "CFG"],
+    ["ðŸ ", "DB"],
+    ["ðŸ“¦", "ST"],
+    ["ðŸ–¨ï¸", "IMP"],
+    ["ðŸ§¾", "HIS"],
+    ["ðŸ“„", "IA"],
+    ["ðŸ·ï¸", "ETQ"],
+    ["ðŸ§°", "EQP"],
+    ["ðŸ› ï¸", "MAN"],
+    ["ðŸ’»", "PC"],
+    ["ðŸ“Ÿ", "CK"],
+    ["ðŸ“¡", "RAD"],
+    ["ðŸŒ", "INF"],
+    ["ðŸ”Œ", "NET"],
+    ["â„¹ï¸", "INFO"],
+    ["ðŸ‘¥", "USR"],
+    ["ðŸ©º", "DIA"]
+  ];
+
+  const SIDEBAR_CODES = [
+    ["index.html", "DB"],
+    ["stock.html", "ST"],
+    ["diretorio.html", "DR"],
+    ["impressoras.html", "IM"],
+    ["add-toner.html", "+"],
+    ["historico.html", "HS"],
+    ["tarefas.html", "TK"],
+    ["scanner-ia.html", "IA"],
+    ["etiquetas-word.html", "ET"],
+    ["manutencao-impressoras.html", "MN"],
+    ["computadores.html", "PC"],
+    ["pistolas.html", "CK"],
+    ["radios.html", "RD"],
+    ["portas.html", "PT"],
+    ["informacoes.html", "IN"],
+    ["users.html", "US"],
+    ["diagnostico.html", "DG"],
+    ["config.html", "CF"]
+  ];
+
+  const SIDEBAR_GROUP_CODES = {
+    "opera-o": "OP",
+    "equipamentos": "EQ",
+    "infraestrutura": "IN",
+    "administra-o": "AD"
+  };
+
+  function decodeMojibake(value) {
+    let text = String(value || "");
+    for (let i = 0; i < 3; i += 1) {
+      try {
+        const decoded = decodeURIComponent(escape(text));
+        if (!decoded || decoded === text) break;
+        text = decoded;
+      } catch (error) {
+        break;
+      }
+    }
+    return text;
+  }
+
+  function fixTextValue(value) {
+    const original = String(value || "");
+    let text = decodeMojibake(original);
+    TEXT_FIXES.forEach(([bad, good]) => {
+      text = text.split(bad).join(good);
+    });
+    if (/[ÃÂâð�]/.test(original)) {
+      text = text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
+    return text;
+  }
+
+  function sanitizeVisibleText() {
+    if (!document.body) return;
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        const tag = node.parentElement?.tagName;
+        return /^(SCRIPT|STYLE|NOSCRIPT)$/i.test(tag || "") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach((node) => {
+      const fixed = fixTextValue(node.nodeValue);
+      if (fixed !== node.nodeValue) node.nodeValue = fixed;
+    });
+    document.querySelectorAll("[placeholder],[title],[aria-label],option").forEach((node) => {
+      ["placeholder", "title", "aria-label"].forEach((attr) => {
+        if (!node.hasAttribute?.(attr)) return;
+        const fixed = fixTextValue(node.getAttribute(attr));
+        if (fixed !== node.getAttribute(attr)) node.setAttribute(attr, fixed);
+      });
+      if (node.tagName === "OPTION") node.textContent = fixTextValue(node.textContent);
+    });
+    document.querySelectorAll(".sidebar a[href]").forEach((link) => {
+      const href = link.getAttribute("href") || "";
+      const found = SIDEBAR_CODES.find(([page]) => href.endsWith(page));
+      if (found) link.setAttribute("data-icon", found[1]);
+    });
+    document.querySelectorAll(".sidebar-group-icon").forEach((node) => {
+      node.textContent = fixTextValue(node.textContent);
+    });
+    document.querySelectorAll(".sidebar-group[data-sidebar-group]").forEach((group) => {
+      const code = SIDEBAR_GROUP_CODES[group.getAttribute("data-sidebar-group") || ""];
+      const icon = group.querySelector(".sidebar-group-icon");
+      if (code && icon) icon.textContent = code;
+    });
+    document.querySelectorAll(".sidebar-section-title > span").forEach((node) => {
+      node.textContent = "FV";
+    });
+  }
+
+  function ensureClassicStylesheet(active) {
+    const id = "appDesignClassicStylesheet";
+    const existing = document.getElementById(id);
+    if (!active) {
+      existing?.remove();
+      return;
+    }
+    if (existing) return;
+    const link = document.createElement("link");
+    link.id = id;
+    link.rel = "stylesheet";
+    link.href = designAssetPath("app-design-classic.css");
+    (document.head || document.documentElement).appendChild(link);
+  }
+
+  function currentPageTitle() {
+    const hero = document.querySelector(".page-hero-title, .dashboard-header h1, main h1, .main h1");
+    const active = document.querySelector(".sidebar a.active .sidebar-link-text, .sidebar a.active");
+    return String(hero?.textContent || active?.textContent || document.title || "App Braga").trim();
+  }
+
+  function currentPageSubtitle() {
+    const page = currentPageTitle().toLowerCase();
+    if (page.includes("dashboard")) return "Visao operacional, tarefas e equipamentos importantes.";
+    if (page.includes("tarefas")) return "Planeamento do trabalho em aberto, prioridades e prazos.";
+    if (page.includes("toner")) return "Entrada rapida de movimentos e referencias.";
+    if (page.includes("equipamento")) return "Ficha tecnica, relacoes e historico.";
+    if (page.includes("config")) return "Preferencias, seguranca, aparencia e tema.";
+    return "Centro operacional App Braga.";
+  }
+
+  function ensureProCommandBar(mode) {
+    if (mode !== "pro" || !document.body) {
+      document.querySelector(".app-pro-commandbar")?.remove();
+      return;
+    }
+    const main = document.querySelector("main, .main, .main-content");
+    if (!main) return;
+    let bar = main.querySelector(":scope > .app-pro-commandbar");
+    if (!bar) {
+      bar = document.createElement("section");
+      bar.className = "app-pro-commandbar";
+      main.prepend(bar);
+    }
+    bar.innerHTML = `
+      <div class="app-pro-command-title">
+        <span class="app-pro-kicker">App Braga Pro</span>
+        <strong>${currentPageTitle()}</strong>
+        <small>${currentPageSubtitle()}</small>
+      </div>
+      <nav class="app-pro-command-actions" aria-label="Acoes rapidas">
+        <a href="index.html">Dashboard</a>
+        <a href="tarefas.html">Tarefas</a>
+        <a href="add-toner.html">Toner</a>
+        <a href="notificacoes.html">Notificacoes</a>
+        <a href="config.html">Design</a>
+      </nav>
+    `;
+    sanitizeVisibleText();
+  }
+
+  function normalizeWorkspace(input = {}) {
+    return {
+      mode: ["tech", "management"].includes(input.mode) ? input.mode : DEFAULT_WORKSPACE.mode,
+      density: ["compact", "comfortable"].includes(input.density) ? input.density : DEFAULT_WORKSPACE.density,
+      radius: ["sharp", "soft", "round"].includes(input.radius) ? input.radius : DEFAULT_WORKSPACE.radius,
+      mobileActions: input.mobileActions === "off" ? "off" : "on"
+    };
+  }
+
+  function parseWorkspace(value) {
+    try {
+      return normalizeWorkspace(value ? JSON.parse(value) : {});
+    } catch (error) {
+      return normalizeWorkspace({});
+    }
+  }
+
+  function getCachedWorkspace() {
+    try {
+      const stored = localStorage.getItem(WORKSPACE_STORAGE);
+      if (stored) return parseWorkspace(stored);
+    } catch (error) {}
+    return parseWorkspace(cookieGet(WORKSPACE_COOKIE));
+  }
+
+  function syncWorkspaceControls(workspaceInput) {
+    const workspace = normalizeWorkspace(workspaceInput || getCachedWorkspace());
+    document.querySelectorAll("[data-work-mode]").forEach((button) => {
+      const active = button.getAttribute("data-work-mode") === workspace.mode;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-pressed", String(active));
+    });
+    const map = {
+      appWorkMode: workspace.mode,
+      appDensityMode: workspace.density,
+      appRadiusMode: workspace.radius,
+      appMobileActions: workspace.mobileActions
+    };
+    Object.keys(map).forEach((id) => {
+      const node = document.getElementById(id);
+      if (node) node.value = map[id];
+    });
+  }
+
+  function ensureMobileActionDock(workspaceInput) {
+    const workspace = normalizeWorkspace(workspaceInput || getCachedWorkspace());
+    let dock = document.querySelector(".app-mobile-action-dock");
+    if (workspace.mobileActions === "off" || getCachedVisualDesign() !== "pro") {
+      dock?.remove();
+      return;
+    }
+    if (!document.body) return;
+    if (!dock) {
+      dock = document.createElement("nav");
+      dock.className = "app-mobile-action-dock";
+      dock.setAttribute("aria-label", "Acoes rapidas mobile");
+      document.body.appendChild(dock);
+    }
+    dock.innerHTML = `
+      <a href="index.html">Hoje</a>
+      <a href="tarefas.html">Tarefas</a>
+      <a href="add-toner.html">Toner</a>
+      <a href="notificacoes.html">Avisos</a>
+    `;
+  }
+
+  function applyWorkspace(workspaceInput = getCachedWorkspace(), options = {}) {
+    const workspace = normalizeWorkspace(workspaceInput);
+    const applyTo = (node) => {
+      if (!node?.classList) return;
+      node.classList.toggle("app-mode-tech", workspace.mode === "tech");
+      node.classList.toggle("app-mode-management", workspace.mode === "management");
+      node.classList.toggle("app-density-compact", workspace.density === "compact");
+      node.classList.toggle("app-density-comfortable", workspace.density === "comfortable");
+      node.classList.toggle("app-radius-sharp", workspace.radius === "sharp");
+      node.classList.toggle("app-radius-soft", workspace.radius === "soft");
+      node.classList.toggle("app-radius-round", workspace.radius === "round");
+      node.classList.toggle("app-mobile-actions-on", workspace.mobileActions === "on");
+      node.classList.toggle("app-mobile-actions-off", workspace.mobileActions === "off");
+      node.setAttribute("data-work-mode", workspace.mode);
+      node.setAttribute("data-density", workspace.density);
+    };
+    applyTo(document.documentElement);
+    applyTo(document.body);
+    const radiusValue = workspace.radius === "sharp" ? "8px" : (workspace.radius === "round" ? "24px" : "16px");
+    document.documentElement.style.setProperty("--app-control-radius", radiusValue);
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => ensureMobileActionDock(workspace), { once: true });
+    } else {
+      ensureMobileActionDock(workspace);
+    }
+    if (options.persist !== false) {
+      try { localStorage.setItem(WORKSPACE_STORAGE, JSON.stringify(workspace)); } catch (error) {}
+      cookieSet(WORKSPACE_COOKIE, JSON.stringify(workspace));
+    }
+    syncWorkspaceControls(workspace);
+    return workspace;
+  }
+
+  async function saveWorkspace(workspaceInput) {
+    const workspace = applyWorkspace(workspaceInput);
+    if (window.db?.collection) {
+      await window.db.collection("config").doc("layout").set({
+        workspaceMode: workspace,
+        updatedAt: Date.now()
+      }, { merge: true });
+    }
+    if (typeof window.mostrarMensagem === "function") window.mostrarMensagem("Modo de trabalho atualizado.");
+    return workspace;
+  }
+
+  function applyVisualDesign(modeInput = getCachedVisualDesign(), options = {}) {
+    const mode = modeInput === "classic" ? "classic" : "pro";
+    const applyTo = (node) => {
+      if (!node?.classList) return;
+      node.classList.toggle("app-design-classic", mode === "classic");
+      node.classList.toggle("app-design-pro", mode === "pro");
+      node.setAttribute("data-app-design", mode);
+    };
+    applyTo(document.documentElement);
+    applyTo(document.body);
+    ensureClassicStylesheet(mode === "classic");
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => ensureProCommandBar(mode), { once: true });
+    } else {
+      ensureProCommandBar(mode);
+    }
+    if (options.persist !== false) {
+      try { localStorage.setItem(DESIGN_STORAGE, mode); } catch (error) {}
+      cookieSet(DESIGN_COOKIE, mode);
+    }
+    syncDesignControls(mode);
+    applyWorkspace(getCachedWorkspace(), { persist: false });
+    return mode;
+  }
+
+  async function saveVisualDesign(modeInput) {
+    const mode = applyVisualDesign(modeInput);
+    if (window.db?.collection) {
+      await window.db.collection("config").doc("layout").set({
+        visualDesign: mode,
+        updatedAt: Date.now()
+      }, { merge: true });
+    }
+    if (typeof window.mostrarMensagem === "function") {
+      window.mostrarMensagem(mode === "classic" ? "Design clássico ativo." : "Design novo ativo.");
+    }
+    return mode;
+  }
+
   function normalizeTheme(theme) {
     const legacyAccent = hex(cookieGet(LEGACY_COOKIE), "");
     return {
@@ -153,6 +533,14 @@
       "--app-primary-soft": rgbaString(theme.primary, .16),
       "--app-primary-line": rgbaString(theme.primary, .30),
       "--app-primary-glow": rgbaString(theme.primary, .28),
+      "--app-secondary-soft": rgbaString(theme.secondary, .15),
+      "--app-secondary-line": rgbaString(theme.secondary, .28),
+      "--app-success": "#22c55e",
+      "--app-success-soft": "rgba(34, 197, 94, .14)",
+      "--app-warning": "#f59e0b",
+      "--app-warning-soft": "rgba(245, 158, 11, .15)",
+      "--app-danger": "#ef4444",
+      "--app-danger-soft": "rgba(239, 68, 68, .14)",
       "--app-accent": theme.primary,
       "--app-accent-hover": theme.secondary,
       "--app-accent-light": theme.secondary,
@@ -176,13 +564,27 @@
       "--ent-purple": theme.secondary,
       "--ent-orange": theme.primary,
       "--app-blue": theme.primary,
-      "--app-blue-soft": rgbaString(theme.primary, .16)
+      "--app-blue-soft": rgbaString(theme.primary, .16),
+      "--pro-bg": theme.background,
+      "--pro-bg-2": theme.background2,
+      "--pro-surface": theme.surface,
+      "--pro-surface-2": theme.surface2,
+      "--pro-line": "rgba(194,205,222,.16)",
+      "--pro-line-strong": rgbaString(theme.primary, .34),
+      "--pro-text": theme.text,
+      "--pro-muted": theme.muted,
+      "--pro-red": theme.primary,
+      "--pro-blue": theme.primary,
+      "--pro-green": "#22c55e",
+      "--pro-amber": "#f59e0b"
     };
 
     Object.keys(vars).forEach((key) => root.style.setProperty(key, vars[key]));
     root.classList.add("dark", "app-dark");
     document.body?.classList.add("dark", "app-dark");
     root.setAttribute("data-button-text-mode", theme.buttonTextMode);
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) metaTheme.setAttribute("content", theme.background2);
 
     if (options.persist !== false) {
       cookieSet(COOKIE, JSON.stringify(theme));
@@ -191,6 +593,7 @@
     }
 
     syncControls(theme);
+    applyWorkspace(getCachedWorkspace(), { persist: false });
     return theme;
   }
 
@@ -246,8 +649,42 @@
     });
   }
 
+  function readWorkspaceControls() {
+    return normalizeWorkspace({
+      mode: document.getElementById("appWorkMode")?.value || document.querySelector("[data-work-mode].active")?.getAttribute("data-work-mode"),
+      density: document.getElementById("appDensityMode")?.value,
+      radius: document.getElementById("appRadiusMode")?.value,
+      mobileActions: document.getElementById("appMobileActions")?.value
+    });
+  }
+
   function bindControls() {
     syncControls(getCachedTheme());
+    syncDesignControls(getCachedVisualDesign());
+    syncWorkspaceControls(getCachedWorkspace());
+    document.querySelectorAll("[data-design-mode]").forEach((button) => {
+      if (button.dataset.boundDesignMode) return;
+      button.dataset.boundDesignMode = "1";
+      button.addEventListener("click", () => saveVisualDesign(button.getAttribute("data-design-mode")).catch(console.error));
+    });
+    const designSelect = document.getElementById("appVisualDesignMode");
+    if (designSelect && !designSelect.dataset.boundDesignMode) {
+      designSelect.dataset.boundDesignMode = "1";
+      designSelect.addEventListener("change", () => saveVisualDesign(designSelect.value).catch(console.error));
+    }
+    document.querySelectorAll("[data-work-mode]").forEach((button) => {
+      if (button.dataset.boundWorkMode) return;
+      button.dataset.boundWorkMode = "1";
+      button.addEventListener("click", () => {
+        const workspace = { ...getCachedWorkspace(), mode: button.getAttribute("data-work-mode") };
+        saveWorkspace(workspace).catch(console.error);
+      });
+    });
+    document.querySelectorAll("[data-workspace-live]").forEach((node) => {
+      if (node.dataset.boundWorkspaceLive) return;
+      node.dataset.boundWorkspaceLive = "1";
+      node.addEventListener("change", () => saveWorkspace(readWorkspaceControls()).catch(console.error));
+    });
     document.querySelectorAll("[data-theme-preset]").forEach((button) => {
       const key = button.getAttribute("data-theme-preset");
       const preset = PRESETS[key];
@@ -275,6 +712,8 @@
         buttonTextMode: data.buttonTextMode
       };
       apply({ ...getCachedTheme(), ...nextTheme });
+      applyVisualDesign(data.visualDesign || getCachedVisualDesign(), { persist: false });
+      applyWorkspace(data.workspaceMode || getCachedWorkspace(), { persist: false });
       window.dispatchEvent(new CustomEvent("appbraga:layout", { detail: data }));
     }, (error) => console.error("Erro ao carregar tema:", error));
   }
@@ -294,20 +733,37 @@
     bindControls,
     connectFirestore,
     getCachedTheme,
-    normalizeTheme
+    normalizeTheme,
+    applyVisualDesign,
+    saveVisualDesign,
+    getCachedVisualDesign,
+    applyWorkspace,
+    saveWorkspace,
+    getCachedWorkspace,
+    readWorkspaceControls
   };
 
+  applyVisualDesign(getCachedVisualDesign(), { persist: false });
   apply(getCachedTheme(), { persist: false });
+  applyWorkspace(getCachedWorkspace(), { persist: false });
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
       apply(getCachedTheme(), { persist: false });
+      applyVisualDesign(getCachedVisualDesign(), { persist: false });
+      applyWorkspace(getCachedWorkspace(), { persist: false });
+      sanitizeVisibleText();
       bindControls();
       setTimeout(connectFirestore, 300);
+      setTimeout(sanitizeVisibleText, 900);
     });
   } else {
     apply(getCachedTheme(), { persist: false });
+    applyVisualDesign(getCachedVisualDesign(), { persist: false });
+    applyWorkspace(getCachedWorkspace(), { persist: false });
+    sanitizeVisibleText();
     bindControls();
     setTimeout(connectFirestore, 300);
+    setTimeout(sanitizeVisibleText, 900);
   }
 })();

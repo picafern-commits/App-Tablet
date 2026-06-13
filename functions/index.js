@@ -1,713 +1,265 @@
 "use strict";
 
 const admin = require("firebase-admin");
-const webpush = require("web-push");
-const { onDocumentCreated, onDocumentWritten } = require("firebase-functions/v2/firestore");
 const { onRequest } = require("firebase-functions/v2/https");
-const { setGlobalOptions } = require("firebase-functions/v2/options");
 const logger = require("firebase-functions/logger");
+const webpush = require("web-push");
 
 admin.initializeApp();
-setGlobalOptions({ region: "europe-west1", maxInstances: 10 });
 
-function envValue(name) {
-  return String(process.env[name] || "").trim();
+const db = admin.firestore();
+const DEVICE_COLLECTION = "notificationDevices";
+const INBOX_COLLECTION = "notificationInbox";
+const HISTORY_COLLECTION = "notificationHistory";
+const REGION = "europe-west1";
+
+function setCors(res) {
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
 }
 
-const APP_URL = "https://picafern-commits.github.io/App-Tablet/html/index.html";
-const VAPID_SUBJECT = envValue("APP_BRAGA_VAPID_SUBJECT") || "mailto:admin@appbraga.pt";
-const CONFIG_DOC = "config/cloudNotifications";
-const CLOUD_SETTINGS_DOC = "config/notificationCloudSettings";
-
-function normalizePercentValue(value) {
-  if (typeof value === "number" && Number.isFinite(value)) return Math.max(0, Math.min(100, Math.round(value)));
-  if (typeof value === "string") {
-    const match = value.replace(",", ".").match(/\d{1,3}(?:\.\d+)?/);
-    if (match) {
-      const parsed = Number(match[0]);
-      if (Number.isFinite(parsed)) return Math.max(0, Math.min(100, Math.round(parsed)));
-    }
+function envValue(...names) {
+  for (const name of names) {
+    const value = process.env[name];
+    if (value) return String(value).trim();
   }
-  return null;
+  return "";
 }
 
-function getTonerItems(fields = {}) {
-  const items = [];
-  const toner = fields.toner && typeof fields.toner === "object" ? fields.toner : {};
-  [
-    ["black", "Preto"],
-    ["cyan", "Ciano"],
-    ["magenta", "Magenta"],
-    ["yellow", "Amarelo"]
-  ].forEach(([key, label]) => {
-    const percent = normalizePercentValue(
-      toner[key] ??
-      fields[key] ??
-      fields[`${key}Percent`] ??
-      fields[`${key}_percent`]
-    );
-    if (percent !== null) items.push({ key, label, percent });
-  });
-
-  if (!items.length) {
-    const percent = normalizePercentValue(fields.percent ?? fields.tonerPercent ?? fields.toner_percent ?? fields.nivelToner ?? fields.nivel ?? fields.percentage);
-    if (percent !== null) items.push({ key: "black", label: "Preto", percent });
-  }
-
-  if (Array.isArray(fields.colors)) {
-    fields.colors.forEach((item) => {
-      if (!item) return;
-      const key = String(item.key || item.color || item.cor || "toner").toLowerCase();
-      if (items.some((existing) => existing.key === key)) return;
-      const percent = normalizePercentValue(item.percent ?? item.value ?? item.valor ?? item.nivel);
-      if (percent !== null) items.push({ key, label: item.label || item.cor || key, percent });
-    });
-  }
-
-  return items;
-}
-
-function getTonerReplacementEvents(beforeFields, afterFields) {
-  const before = getTonerItems(beforeFields);
-  const after = getTonerItems(afterFields);
-  const beforeMap = new Map(before.map((item) => [item.key, item]));
-  return after
-    .map((item) => ({ before: beforeMap.get(item.key), after: item }))
-    .filter(({ before: oldItem, after: newItem }) => oldItem && oldItem.percent <= 0 && newItem.percent >= 95);
-}
-
-function getTonerZeroEvents(beforeFields, afterFields) {
-  const before = getTonerItems(beforeFields);
-  const after = getTonerItems(afterFields);
-  const beforeMap = new Map(before.map((item) => [item.key, item]));
-  return after
-    .map((item) => ({ before: beforeMap.get(item.key), after: item }))
-    .filter(({ before: oldItem, after: newItem }) => newItem.percent <= 0 && (!oldItem || oldItem.percent > 0));
-}
-
-function getTonerLowEvents(beforeFields, afterFields, threshold = 25) {
-  const before = getTonerItems(beforeFields);
-  const after = getTonerItems(afterFields);
-  const beforeMap = new Map(before.map((item) => [item.key, item]));
-  return after
-    .map((item) => ({ before: beforeMap.get(item.key), after: item }))
-    .filter(({ before: oldItem, after: newItem }) => newItem.percent > 0 && newItem.percent <= threshold && (!oldItem || oldItem.percent > threshold));
-}
-
-function getPrinterLabel(fields = {}, id = "") {
-  const model = fields.modelo || fields.model || fields.name || "Impressora";
-  const loc = fields.localizacao || fields.location || fields.armazem || id;
-  return `${model} ${loc}`.trim();
-}
-
-function getUpdatedAt(item = {}) {
-  const value = item.updatedAt || item.createdAt || 0;
-  if (typeof value === "number") return value;
-  if (value && typeof value.toMillis === "function") return value.toMillis();
-  return Number(value) || 0;
-}
-
-function normalizeWebPushSubscription(item = {}) {
-  const direct = item.pushSubscription && typeof item.pushSubscription === "object" ? item.pushSubscription : null;
-  const endpoint = String(direct?.endpoint || item.endpoint || "").trim();
-  const keys = direct?.keys || item.keys || {};
-  const p256dh = keys.p256dh || item.p256dh || item.publicKey || "";
-  const auth = keys.auth || item.auth || item.authSecret || "";
-  if (!endpoint) return null;
-  return {
-    endpoint,
-    expirationTime: direct?.expirationTime || null,
-    keys: { p256dh, auth }
-  };
-}
-
-function hasValidWebPushSubscription(item = {}) {
-  const sub = normalizeWebPushSubscription(item);
-  return !!(sub?.endpoint && sub?.keys?.p256dh && sub?.keys?.auth);
-}
-
-function uniqueActiveDevices(items) {
-  const sorted = items
-    .filter((item) => item.active !== false)
-    .filter((item) => item.source !== "electron-native")
-    .filter((item) => item.source !== "web-local-no-push")
-    .filter((item) => item.token || hasValidWebPushSubscription(item))
-    .map((item) => ({ ...item, pushSubscription: normalizeWebPushSubscription(item) || item.pushSubscription }))
-    .sort((a, b) => getUpdatedAt(b) - getUpdatedAt(a));
-  const unique = new Map();
-  sorted.forEach((item) => {
-    const key = item.pushSubscription?.endpoint || item.endpoint || item.token || item.deviceKey || `${item.deviceType || ""}|${item.platform || ""}|${item.userAgent || item.id || ""}`;
-    if (!unique.has(key)) unique.set(key, item);
-  });
-  return Array.from(unique.values());
-}
-
-async function getNotificationConfig() {
-  const [layoutSnap, cloudSnap] = await Promise.all([
-    admin.firestore().doc("config/layout").get(),
-    admin.firestore().doc(CLOUD_SETTINGS_DOC).get()
-  ]);
-  const layout = layoutSnap.exists ? layoutSnap.data() || {} : {};
-  const cloud = cloudSnap.exists ? cloudSnap.data() || {} : {};
-  const alerts = cloud.alerts || {};
-  return {
-    ...layout,
-    ...cloud,
-    notificationEnabled: cloud.enabled ?? cloud.notificationEnabled ?? layout.notificationEnabled,
-    notifyTonerZero: alerts.tonerZero ?? layout.notifyTonerZero ?? layout.notificationTonerZero,
-    notifyTonerLow25: alerts.tonerLow25 ?? layout.notifyTonerLow25 ?? layout.notificationTonerLow25,
-    notifyTonerChange: alerts.tonerChange ?? layout.notifyTonerChange ?? layout.notificationTonerChange,
-    notifyStockMin: alerts.stockMin ?? layout.notifyStockMin ?? layout.notificationStockMin,
-    notifyMaintenance: alerts.maintenance ?? layout.notifyMaintenance ?? layout.notificationMaintenance,
-    notifyRadios: alerts.radios ?? layout.notifyRadios ?? layout.notificationRadios
-  };
-}
-
-async function getActiveNotificationDevices() {
-  const snap = await admin.firestore().collection("notificationTokens").where("active", "==", true).get();
-  const items = [];
-  snap.forEach((doc) => items.push({ id: doc.id, ref: doc.ref, ...doc.data() }));
-  return uniqueActiveDevices(items);
-}
-
-async function markDeviceInactive(item, reason) {
-  try {
-    await item.ref.set({
-      active: false,
-      disabledAt: Date.now(),
-      disabledReason: reason || "push-invalid"
-    }, { merge: true });
-  } catch (error) {
-    logger.warn("Nao foi possivel desativar dispositivo push", { id: item.id, error: error.message });
-  }
-}
-
-async function configureWebPush() {
-  let cloud = {};
-  try {
-    const snap = await admin.firestore().doc(CLOUD_SETTINGS_DOC).get();
-    cloud = snap.exists ? snap.data() || {} : {};
-  } catch (error) {
-    logger.warn("Nao foi possivel ler configuracao cloud Web Push", { error: error.message });
-  }
-
-  const publicKey = String(cloud.vapidPublicKey || cloud.notificationVapidKey || envValue("APP_BRAGA_VAPID_PUBLIC_KEY") || "").trim();
-  const privateKey = String(cloud.vapidPrivateKey || envValue("APP_BRAGA_VAPID_PRIVATE_KEY") || "").trim();
-  const subject = String(cloud.vapidSubject || VAPID_SUBJECT || "mailto:admin@appbraga.pt").trim();
+function getVapid() {
+  const publicKey = envValue("APP_BRAGA_VAPID_PUBLIC_KEY", "WEB_PUSH_PUBLIC_KEY", "VAPID_PUBLIC_KEY");
+  const privateKey = envValue("APP_BRAGA_VAPID_PRIVATE_KEY", "WEB_PUSH_PRIVATE_KEY", "VAPID_PRIVATE_KEY");
+  const subject = envValue("APP_BRAGA_VAPID_SUBJECT", "WEB_PUSH_SUBJECT", "VAPID_SUBJECT") || "mailto:admin@appbraga.pt";
   if (!publicKey || !privateKey) {
-    return {
-      ready: false,
-      source: cloud.vapidPublicKey || cloud.vapidPrivateKey ? "firestore-incomplete" : "missing",
-      publicKeyReady: !!publicKey,
-      privateKeyReady: !!privateKey
-    };
+    throw new Error("Faltam APP_BRAGA_VAPID_PUBLIC_KEY e APP_BRAGA_VAPID_PRIVATE_KEY nas variaveis da Firebase Function.");
   }
   webpush.setVapidDetails(subject, publicKey, privateKey);
-  return {
-    ready: true,
-    source: cloud.vapidPrivateKey ? "firestore" : "environment",
-    publicKeyReady: true,
-    privateKeyReady: true
-  };
+  return { publicKey, privateKey, subject };
 }
 
-async function sendFcm(item, title, body, data = {}) {
-  await admin.messaging().send({
-    token: item.token,
-    notification: { title, body },
-    data: Object.fromEntries(Object.entries(data).map(([key, value]) => [key, String(value ?? "")])),
-    webpush: {
-      notification: {
-        title,
-        body,
-        icon: "https://picafern-commits.github.io/App-Tablet/icon-192.png",
-        badge: "https://picafern-commits.github.io/App-Tablet/icon-192.png",
-        tag: data.event || data.collection || "app-braga"
-      },
-      fcmOptions: {
-        link: data.url || APP_URL
-      }
-    }
+function cleanText(value, fallback) {
+  const text = String(value || "").trim();
+  return text || fallback;
+}
+
+function deviceLabel(device = {}, id = "") {
+  return cleanText(device.deviceName || device.name || device.label, id || "dispositivo");
+}
+
+function hasWebPush(device = {}) {
+  const sub = device.webPush || device.standardWebPush || device.pushSubscription || {};
+  return !!(sub.endpoint && sub.keys && sub.keys.p256dh && sub.keys.auth);
+}
+
+function webPushSubscription(device = {}) {
+  return device.webPush || device.standardWebPush || device.pushSubscription || null;
+}
+
+async function writeInbox(deviceId, payload, requestId) {
+  await db.collection(INBOX_COLLECTION).add({
+    deviceId,
+    requestId,
+    title: payload.title,
+    body: payload.body,
+    url: payload.url,
+    tag: payload.tag,
+    read: false,
+    createdAt: admin.firestore.FieldValue.serverTimestamp()
   });
 }
 
-async function sendStandardWebPush(item, title, body, data = {}) {
-  const subscription = normalizeWebPushSubscription(item);
-  if (!subscription?.endpoint || !subscription?.keys?.p256dh || !subscription?.keys?.auth) {
-    throw new Error("Web Push subscription incompleta: faltam endpoint/keys.");
-  }
-  await webpush.sendNotification(subscription, JSON.stringify({
-    title,
-    body,
-    tag: data.event || data.collection || "app-braga",
-    requireInteraction: data.requireInteraction === "1" || data.requireInteraction === true,
+async function sendFcm(device, payload) {
+  const token = String(device.fcmToken || device.firebaseToken || "").trim();
+  if (!token) return { skipped: true };
+  await admin.messaging().send({
+    token,
+    notification: {
+      title: payload.title,
+      body: payload.body
+    },
     data: {
-      url: data.url || APP_URL,
-      ...data
+      url: payload.url,
+      tag: payload.tag,
+      requestId: payload.requestId
+    },
+    webpush: {
+      fcmOptions: { link: payload.url },
+      notification: {
+        title: payload.title,
+        body: payload.body,
+        tag: payload.tag,
+        requireInteraction: false,
+        icon: "/icon-192.png",
+        badge: "/icon-192.png"
+      }
+    }
+  });
+  return { sent: true };
+}
+
+async function sendStandardWebPush(device, payload) {
+  const subscription = webPushSubscription(device);
+  if (!subscription) return { skipped: true };
+  await webpush.sendNotification(subscription, JSON.stringify({
+    title: payload.title,
+    body: payload.body,
+    tag: payload.tag,
+    url: payload.url,
+    data: {
+      url: payload.url,
+      tag: payload.tag,
+      requestId: payload.requestId
     }
   }));
+  return { sent: true };
 }
 
-async function updateRuntimeStatus(data = {}) {
-  await admin.firestore().doc(CONFIG_DOC).set({
-    provider: "firebase-functions",
-    region: "europe-west1",
-    updatedAt: Date.now(),
-    ...data
-  }, { merge: true });
-}
-
-async function writeAudit(action, data = {}) {
+exports.notificationHealth = onRequest({ region: REGION }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
   try {
-    await admin.firestore().collection("auditLogs").add({
-      action,
-      source: "firebase-functions",
-      createdAt: Date.now(),
-      ...data
+    const vapid = getVapid();
+    const snap = await db.collection(DEVICE_COLLECTION).where("enabled", "==", true).get();
+    return res.json({
+      ok: true,
+      collection: DEVICE_COLLECTION,
+      activeDevices: snap.size,
+      vapidPublicReady: !!vapid.publicKey,
+      vapidPrivateReady: !!vapid.privateKey,
+      subject: vapid.subject
     });
   } catch (error) {
-    logger.warn("Falhou escrita de auditoria", { action, error: error.message });
+    return res.status(500).json({ ok: false, error: error.message });
   }
-}
+});
 
-async function writeNotificationHistory(data = {}) {
-  try {
-    await admin.firestore().collection("notificationHistory").add({
-      source: "firebase-functions",
-      createdAt: Date.now(),
-      ...data
-    });
-  } catch (error) {
-    logger.warn("Falhou escrita do historico de notificacoes", { error: error.message });
-  }
-}
+exports.sendNotificationBroadcast = onRequest({ region: REGION, timeoutSeconds: 60, memory: "256MiB" }, async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") return res.status(204).send("");
+  if (req.method !== "POST") return res.status(405).json({ ok: false, error: "Usa POST." });
 
-async function broadcast(title, body, data = {}) {
-  const allDevices = await getActiveNotificationDevices();
-  const excludeDeviceKey = data.excludeDeviceKey ? String(data.excludeDeviceKey) : "";
-  const excludeDeviceId = data.excludeDeviceId ? String(data.excludeDeviceId) : "";
-  const devices = allDevices.filter((item) => {
-    if (excludeDeviceKey && String(item.deviceKey || "") === excludeDeviceKey) return false;
-    if (excludeDeviceId && String(item.id || "") === excludeDeviceId) return false;
-    return true;
-  });
-  const webPushRuntime = await configureWebPush();
-  const canStandardWebPush = webPushRuntime.ready === true;
-  let sent = 0;
-  let failed = 0;
-  let fcmSent = 0;
-  let fcmFailed = 0;
-  let standardWebPushSent = 0;
-  let standardWebPushFailed = 0;
-  let fcmTargets = 0;
-  let standardWebPushTargets = 0;
-  let lastError = "";
-  const ignored = Math.max(0, allDevices.length - devices.length);
-  const sentDeviceIds = new Set();
-  const sendErrors = [];
-
-  async function tryPush(item, method, sender) {
-    try {
-      await sender();
-      sent += 1;
-      sentDeviceIds.add(item.id || item.deviceKey || item.token || item.endpoint || item.pushSubscription?.endpoint || method);
-      if (method === "fcm") fcmSent += 1;
-      if (method === "standard-web-push") standardWebPushSent += 1;
-      return true;
-    } catch (error) {
-      failed += 1;
-      if (method === "fcm") fcmFailed += 1;
-      if (method === "standard-web-push") standardWebPushFailed += 1;
-      const message = error?.message || String(error);
-      lastError = message;
-      sendErrors.push({ id: item.id, method, source: item.source || "", message });
-      logger.warn("Falhou envio push", { id: item.id, method, source: item.source, error: message });
-      if (/UNREGISTERED|NotRegistered|not registered|registration-token-not-registered/i.test(message) || error.statusCode === 404 || error.statusCode === 410) {
-        await markDeviceInactive(item, "push-unregistered");
-      }
-      return false;
-    }
-  }
-
-  for (const item of devices) {
-    // Importante: uma falha no FCM não pode impedir o Web Push standard do mesmo dispositivo.
-    if (item.token) {
-      fcmTargets += 1;
-      await tryPush(item, "fcm", () => sendFcm(item, title, body, data));
-    }
-    if (hasValidWebPushSubscription(item)) {
-      standardWebPushTargets += 1;
-      if (canStandardWebPush) {
-        await tryPush(item, "standard-web-push", () => sendStandardWebPush(item, title, body, data));
-      } else {
-        failed += 1;
-        standardWebPushFailed += 1;
-        lastError = "Faltam credenciais VAPID na configuracao cloud.";
-        sendErrors.push({ id: item.id, method: "standard-web-push", source: item.source || "", message: lastError });
-        logger.warn("Web Push standard sem VAPID cloud", { id: item.id, source: item.source, credentialSource: webPushRuntime.source });
-      }
-    }
-  }
-
-  if (sent <= 0 && !lastError) {
-    if (!devices.length) {
-      lastError = "Nao ha dispositivos ativos registados para receber push.";
-    } else if (standardWebPushTargets <= 0) {
-      lastError = "Nao ha nenhum dispositivo com Web Push standard. No iPhone/Android abre a app instalada e usa Reparar este dispositivo.";
-    } else if (!canStandardWebPush) {
-      lastError = "Faltam credenciais VAPID na configuracao cloud.";
-    } else {
-      lastError = "A cloud nao conseguiu enviar para nenhum dispositivo registado.";
-    }
-  }
-
-  logger.info("Resumo envio notificacoes cloud", {
-    totalDevices: allDevices.length,
-    targetDevices: devices.length,
-    ignored,
-    sent,
-    sentDevices: sentDeviceIds.size,
-    failed,
-    fcmTargets,
-    fcmSent,
-    fcmFailed,
-    standardWebPushTargets,
-    standardWebPushSent,
-    standardWebPushFailed,
-    excludedDeviceKey: excludeDeviceKey,
-    excludedDeviceId: excludeDeviceId,
-    standardWebPushReady: canStandardWebPush,
-    credentialSource: webPushRuntime.source,
-    error: lastError
-  });
-
-  await updateRuntimeStatus({
-    lastTitle: title,
-    lastBody: body,
-    lastEvent: data.event || data.collection || "manual",
-    lastSent: sent,
-    lastSentDevices: sentDeviceIds.size,
-    lastFailed: failed,
-    lastDeviceCount: devices.length,
-    lastTotalDeviceCount: allDevices.length,
-    lastIgnored: ignored,
-    lastExcludedDeviceKey: excludeDeviceKey,
-    lastExcludedDeviceId: excludeDeviceId,
-    lastFcmTargets: fcmTargets,
-    lastFcmSent: fcmSent,
-    lastFcmFailed: fcmFailed,
-    lastStandardWebPushTargets: standardWebPushTargets,
-    lastStandardWebPushSent: standardWebPushSent,
-    lastStandardWebPushFailed: standardWebPushFailed,
-    lastError,
-    lastErrors: sendErrors.slice(0, 10),
-    lastRunAt: Date.now(),
-    standardWebPushReady: canStandardWebPush,
-    credentialSource: webPushRuntime.source,
-    publicKeyReady: webPushRuntime.publicKeyReady,
-    privateKeyReady: webPushRuntime.privateKeyReady
-  });
-
-  await writeAudit("notification-broadcast", {
-    title,
-    body,
-    sent,
-    sentDevices: sentDeviceIds.size,
-    failed,
-    deviceCount: devices.length,
-    totalDeviceCount: allDevices.length,
-    ignored,
-    excludedDeviceKey: excludeDeviceKey,
-    excludedDeviceId: excludeDeviceId,
-    fcmTargets,
-    fcmSent,
-    fcmFailed,
-    standardWebPushTargets,
-    standardWebPushSent,
-    standardWebPushFailed,
-    event: data.event || data.collection || "manual",
-    collection: data.collection || "",
-    targetUrl: data.url || APP_URL,
-    credentialSource: webPushRuntime.source
-  });
-
-  await writeNotificationHistory({
-    title,
-    body,
-    sent,
-    sentDevices: sentDeviceIds.size,
-    failed,
-    deviceCount: devices.length,
-    totalDeviceCount: allDevices.length,
-    ignored,
-    fcmTargets,
-    fcmSent,
-    fcmFailed,
-    standardWebPushTargets,
-    standardWebPushSent,
-    standardWebPushFailed,
-    standardWebPushReady: canStandardWebPush,
-    credentialSource: webPushRuntime.source,
-    event: data.event || data.collection || "manual",
-    collection: data.collection || "",
-    targetUrl: data.url || APP_URL,
-    error: sent > 0 ? "" : lastError,
-    errors: sendErrors.slice(0, 10)
-  });
-
-  return {
-    sent,
-    sentDevices: sentDeviceIds.size,
-    failed,
-    ignored,
-    totalDevices: allDevices.length,
-    targetDevices: devices.length,
-    fcmTargets,
-    fcmSent,
-    fcmFailed,
-    standardWebPushTargets,
-    standardWebPushSent,
-    standardWebPushFailed,
-    standardWebPushReady: canStandardWebPush,
-    credentialSource: webPushRuntime.source,
-    error: sent > 0 ? "" : lastError,
-    errors: sendErrors.slice(0, 10)
+  const startedAt = Date.now();
+  const body = req.body || {};
+  const requestId = cleanText(body.requestId, `notif-${startedAt}`);
+  const senderDeviceId = cleanText(body.senderDeviceId, "");
+  const payload = {
+    requestId,
+    title: cleanText(body.title, "App Braga"),
+    body: cleanText(body.body, "Alerta App Braga"),
+    url: cleanText(body.url, "https://picafern-commits.github.io/App-Tablet/html/index.html"),
+    tag: cleanText(body.tag, requestId)
   };
-}
 
-exports.sendPushAlert = onRequest({
-  cors: true
-}, async (req, res) => {
-  res.set("Access-Control-Allow-Origin", req.get("origin") || "*");
-  res.set("Vary", "Origin");
-  res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.set("Access-Control-Allow-Headers", "Content-Type");
-  if (req.method === "OPTIONS") {
-    res.status(204).send("");
-    return;
-  }
-  if (req.method !== "POST") {
-    res.status(405).json({ ok: false, error: "Metodo nao permitido. Usa POST." });
-    return;
-  }
+  const result = {
+    ok: false,
+    requestId,
+    totalDevices: 0,
+    ignored: 0,
+    inboxWritten: 0,
+    fcmTargets: 0,
+    fcmSent: 0,
+    fcmFailed: 0,
+    webPushTargets: 0,
+    webPushSent: 0,
+    webPushFailed: 0,
+    failed: 0,
+    sent: 0,
+    errors: []
+  };
 
   try {
-    const payload = req.body && typeof req.body === "object" ? req.body : {};
-    const result = await broadcast(payload.title || "App Braga", payload.body || "Teste remoto de notificacao.", {
-      event: payload.event || payload.alertType || "manual-cloud-alert",
-      requestId: payload.requestId || "",
-      url: payload.url || "https://picafern-commits.github.io/App-Tablet/html/notificacoes.html",
-      excludeDeviceKey: payload.excludeDeviceKey || payload.requestedDeviceKey || "",
-      excludeDeviceId: payload.excludeDeviceId || payload.requestedDeviceDocId || "",
-      requestedBy: payload.requestedBy || "",
-      requestedFrom: payload.requestedFrom || "",
-      requireInteraction: payload.requireInteraction === true || payload.requireInteraction === "1" ? "1" : ""
+    getVapid();
+    const snap = await db.collection(DEVICE_COLLECTION).where("enabled", "==", true).get();
+    result.totalDevices = snap.size;
+
+    for (const doc of snap.docs) {
+      const device = { id: doc.id, ...doc.data() };
+      const deviceId = String(device.deviceId || doc.id);
+      if (senderDeviceId && deviceId === senderDeviceId) {
+        result.ignored += 1;
+        continue;
+      }
+
+      let delivered = false;
+      const token = String(device.fcmToken || device.firebaseToken || "").trim();
+      const usesDesktopInbox = device.desktopInbox === true || device.electron === true;
+
+      if (usesDesktopInbox) {
+        try {
+          await writeInbox(deviceId, payload, requestId);
+          result.inboxWritten += 1;
+          delivered = true;
+        } catch (error) {
+          result.errors.push({ deviceId, device: deviceLabel(device, deviceId), channel: "inbox", error: error.message });
+        }
+      }
+
+      if (!delivered && hasWebPush(device)) {
+        result.webPushTargets += 1;
+        try {
+          await sendStandardWebPush(device, payload);
+          result.webPushSent += 1;
+          delivered = true;
+        } catch (error) {
+          result.webPushFailed += 1;
+          result.errors.push({ deviceId, device: deviceLabel(device, deviceId), channel: "webpush", error: error.message });
+          if (error.statusCode === 404 || error.statusCode === 410) {
+            await doc.ref.set({
+              enabled: false,
+              disabledAt: admin.firestore.FieldValue.serverTimestamp(),
+              disabledReason: `webpush-${error.statusCode}`
+            }, { merge: true }).catch(() => null);
+          }
+        }
+      }
+
+      if (!delivered && token) {
+        result.fcmTargets += 1;
+        try {
+          await sendFcm(device, payload);
+          result.fcmSent += 1;
+          delivered = true;
+        } catch (error) {
+          result.fcmFailed += 1;
+          result.errors.push({ deviceId, device: deviceLabel(device, deviceId), channel: "fcm", error: error.message });
+          if (error.code === "messaging/registration-token-not-registered" || error.code === "messaging/invalid-registration-token") {
+            await doc.ref.set({
+              fcmToken: "",
+              fcmDisabledAt: admin.firestore.FieldValue.serverTimestamp(),
+              fcmDisabledReason: error.code
+            }, { merge: true }).catch(() => null);
+          }
+        }
+      }
+
+      if (!delivered) result.failed += 1;
+      else result.sent += 1;
+    }
+
+    result.ok = result.sent > 0 || result.inboxWritten > 0;
+    await db.collection(HISTORY_COLLECTION).add({
+      ...result,
+      title: payload.title,
+      body: payload.body,
+      senderDeviceId,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      durationMs: Date.now() - startedAt
     });
-    res.status(result.sent > 0 ? 200 : 500).json({
-      ok: result.sent > 0,
-      ...result
-    });
+    logger.info("sendNotificationBroadcast", result);
+    return res.json(result);
   } catch (error) {
-    logger.error("Falhou sendPushAlert", { error: error.message || String(error) });
-    res.status(500).json({
-      ok: false,
-      sent: 0,
-      failed: 0,
-      ignored: 0,
-      error: error.message || String(error)
-    });
+    result.error = error.message;
+    result.failed = Math.max(result.failed, result.totalDevices - result.ignored - result.sent);
+    await db.collection(HISTORY_COLLECTION).add({
+      ...result,
+      title: payload.title,
+      body: payload.body,
+      senderDeviceId,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      durationMs: Date.now() - startedAt
+    }).catch(() => null);
+    logger.error("sendNotificationBroadcast failed", error);
+    return res.status(500).json(result);
   }
-});
-
-exports.onNotificationRequestCreated = onDocumentCreated({
-  document: "notificationRequests/{requestId}"
-}, async (event) => {
-  const data = event.data?.data() || {};
-  const requestRef = event.data?.ref;
-  await requestRef?.set({
-    status: "processing",
-    processingAt: Date.now()
-  }, { merge: true });
-  await writeAudit("notification-test-request", {
-    requestId: event.params.requestId,
-    title: data.title || "App Braga",
-    event: data.event || "manual-remote-test"
-  });
-  try {
-    const result = await broadcast(data.title || "App Braga", data.body || "Teste remoto de notificacao.", {
-      event: data.event || "manual-remote-test",
-      requestId: event.params.requestId,
-      url: data.url || "https://picafern-commits.github.io/App-Tablet/html/notificacoes.html",
-      excludeDeviceKey: data.excludeDeviceKey || "",
-      excludeDeviceId: data.excludeDeviceId || data.requestedDeviceDocId || "",
-      requestedBy: data.requestedBy || "",
-      requireInteraction: data.requireInteraction === true ? "1" : ""
-    });
-    await requestRef?.set({
-      status: result.sent > 0 ? "sent" : "failed",
-      sent: result.sent,
-      sentDevices: result.sentDevices,
-      failed: result.failed,
-      ignored: result.ignored,
-      totalDevices: result.totalDevices,
-      targetDevices: result.targetDevices,
-      fcmTargets: result.fcmTargets,
-      fcmSent: result.fcmSent,
-      fcmFailed: result.fcmFailed,
-      standardWebPushReady: result.standardWebPushReady,
-      standardWebPushTargets: result.standardWebPushTargets,
-      standardWebPushSent: result.standardWebPushSent,
-      standardWebPushFailed: result.standardWebPushFailed,
-      credentialSource: result.credentialSource,
-      error: result.error || "",
-      errors: result.errors || [],
-      finishedAt: Date.now()
-    }, { merge: true });
-  } catch (error) {
-    await requestRef?.set({
-      status: "failed",
-      error: error.message || String(error),
-      finishedAt: Date.now()
-    }, { merge: true });
-    throw error;
-  }
-});
-
-exports.onPrinterWritten = onDocumentWritten({
-  document: "printers/{printerId}"
-}, async (event) => {
-  if (!event.data?.before.exists || !event.data?.after.exists) return;
-  const config = await getNotificationConfig();
-  if (config.notificationEnabled === false) return;
-
-  const before = event.data.before.data() || {};
-  const after = event.data.after.data() || {};
-  const label = getPrinterLabel(after, event.params.printerId);
-
-  if (config.notifyTonerZero !== false) {
-    const zeroEvents = getTonerZeroEvents(before, after);
-    for (const tonerEvent of zeroEvents) {
-      await broadcast("Toner a 0%", `${label}: ${tonerEvent.after.label} chegou a 0%.`, {
-        collection: "printers",
-        event: "toner-zero",
-        printerId: event.params.printerId,
-        color: tonerEvent.after.key,
-        afterPercent: tonerEvent.after.percent,
-        url: "https://picafern-commits.github.io/App-Tablet/html/impressoras.html"
-      });
-      await writeAudit("toner-zero", {
-        collection: "printers",
-        documentId: event.params.printerId,
-        printer: label,
-        color: tonerEvent.after.key,
-        afterPercent: tonerEvent.after.percent
-      });
-    }
-  }
-
-  if (config.notifyTonerLow25 !== false) {
-    const lowEvents = getTonerLowEvents(before, after, 25);
-    for (const tonerEvent of lowEvents) {
-      await broadcast("Toner a 25%", `${label}: ${tonerEvent.after.label} chegou a ${tonerEvent.after.percent}%.`, {
-        collection: "printers",
-        event: "toner-low-25",
-        printerId: event.params.printerId,
-        color: tonerEvent.after.key,
-        beforePercent: tonerEvent.before ? tonerEvent.before.percent : "",
-        afterPercent: tonerEvent.after.percent,
-        url: "https://picafern-commits.github.io/App-Tablet/html/impressoras.html"
-      });
-      await writeAudit("toner-low-25", {
-        collection: "printers",
-        documentId: event.params.printerId,
-        printer: label,
-        color: tonerEvent.after.key,
-        beforePercent: tonerEvent.before ? tonerEvent.before.percent : null,
-        afterPercent: tonerEvent.after.percent
-      });
-    }
-  }
-
-  if (config.notifyTonerChange !== false) {
-    const events = getTonerReplacementEvents(before, after);
-    for (const tonerEvent of events) {
-      await broadcast("Toner trocado", `${label}: ${tonerEvent.after.label} passou de ${tonerEvent.before.percent}% para ${tonerEvent.after.percent}%.`, {
-        collection: "printers",
-        event: "toner-replaced",
-        printerId: event.params.printerId,
-        color: tonerEvent.after.key,
-        beforePercent: tonerEvent.before.percent,
-        afterPercent: tonerEvent.after.percent,
-        url: "https://picafern-commits.github.io/App-Tablet/html/impressoras.html"
-      });
-      await writeAudit("toner-replaced", {
-        collection: "printers",
-        documentId: event.params.printerId,
-        printer: label,
-        color: tonerEvent.after.key,
-        beforePercent: tonerEvent.before.percent,
-        afterPercent: tonerEvent.after.percent
-      });
-    }
-  }
-});
-
-exports.onStockWritten = onDocumentWritten({
-  document: "stock/{stockId}"
-}, async (event) => {
-  if (!event.data?.after.exists) return;
-  const config = await getNotificationConfig();
-  if (config.notificationEnabled === false || config.notifyStockMin === false) return;
-  if (!event.data.before.exists) return;
-  await writeAudit("stock-updated", {
-    collection: "stock",
-    documentId: event.params.stockId
-  });
-  await broadcast("Stock atualizado", "Foi feita uma alteracao no stock.", {
-    collection: "stock",
-    event: "stock-updated",
-    stockId: event.params.stockId,
-    url: "https://picafern-commits.github.io/App-Tablet/html/stock.html"
-  });
-});
-
-exports.onManutencaoWritten = onDocumentWritten({
-  document: "manutencoes/{manutencaoId}"
-}, async (event) => {
-  if (!event.data?.after.exists) return;
-  const config = await getNotificationConfig();
-  if (config.notificationEnabled === false || config.notifyMaintenance === false) return;
-  const after = event.data.after.data() || {};
-  const label = after.modelo || after.numeroSerie || after.ip || "Manutencao";
-  await writeAudit(event.data.before.exists ? "maintenance-updated" : "maintenance-created", {
-    collection: "manutencoes",
-    documentId: event.params.manutencaoId,
-    label,
-    status: after.estado || ""
-  });
-  await broadcast(event.data.before.exists ? "Manutencao atualizada" : "Nova manutencao", `${label}: ${after.estado || "estado atualizado"}.`, {
-    collection: "manutencoes",
-    event: event.data.before.exists ? "maintenance-updated" : "maintenance-created",
-    manutencaoId: event.params.manutencaoId,
-    url: "https://picafern-commits.github.io/App-Tablet/html/manutencao-impressoras.html"
-  });
-});
-
-exports.onRadioWeeklyRecordCreated = onDocumentCreated({
-  document: "radioWeeklyRecords/{recordId}"
-}, async (event) => {
-  const config = await getNotificationConfig();
-  if (config.notificationEnabled === false || config.notifyRadios !== true) return;
-  const data = event.data?.data() || {};
-  await writeAudit("radio-weekly-created", {
-    collection: "radioWeeklyRecords",
-    documentId: event.params.recordId,
-    weekLabel: data.weekLabel || ""
-  });
-  await broadcast("Registo semanal de radios", data.weekLabel || "Foi criado um registo semanal de radios.", {
-    collection: "radioWeeklyRecords",
-    event: "radio-weekly-created",
-    recordId: event.params.recordId,
-    url: "https://picafern-commits.github.io/App-Tablet/html/radios.html"
-  });
 });

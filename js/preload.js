@@ -7,14 +7,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
   installUpdate: () => ipcRenderer.send("install_update"),
   getPrinterHTML: (ip) => ipcRenderer.invoke("printer:get-html", ip),
   getTonerSNMP: (ip) => ipcRenderer.invoke("printer:get-toner-snmp", ip),
-  showNotification: (payload) => ipcRenderer.invoke("app:notify", payload),
-  getNotificationStatus: () => ipcRenderer.invoke("app:notification-status"),
-  showNotificationDialogTest: () => ipcRenderer.invoke("app:notification-dialog-test"),
-  onNotificationTested: (cb) => ipcRenderer.on("app:notification-tested", (_event, payload) => cb(payload)),
-  startPushWatcher: () => ipcRenderer.invoke("app:push-watcher-start"),
-  getPushWatcherStatus: () => ipcRenderer.invoke("app:push-watcher-status"),
-  sendWebPushBroadcast: (payload) => ipcRenderer.invoke("app:send-web-push-broadcast", payload),
-  setPushVapidKeys: (payload) => ipcRenderer.invoke("app:set-push-vapid-keys", payload),
   importServiceAccount: () => ipcRenderer.invoke("app:import-service-account"),
   getAppInfo: () => ipcRenderer.invoke("app:get-info"),
   setFullscreen: (value) => ipcRenderer.invoke("app:set-fullscreen", value),
@@ -25,5 +17,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   openExternal: (url) => ipcRenderer.invoke("app:open-external", url),
   getBackupStatus: () => ipcRenderer.invoke("backup:status"),
   writeLocalBackup: (payload) => ipcRenderer.invoke("backup:write", payload),
-  openBackupFolder: () => ipcRenderer.invoke("backup:open-folder")
+  openBackupFolder: () => ipcRenderer.invoke("backup:open-folder"),
+  showNotification: (payload) => ipcRenderer.invoke("app:notify", payload),
+  getNotificationStatus: () => ipcRenderer.invoke("app:notification-status")
 });

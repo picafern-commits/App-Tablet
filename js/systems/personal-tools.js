@@ -138,15 +138,23 @@
       root.id = "personalToolsDashboard";
       root.className = "personal-dashboard dashboard-tasks-only";
       root.innerHTML = `
+        <section class="personal-dashboard-overview" id="personalDashboardOverview"></section>
+        <section class="personal-alert-strip" id="personalInternalAlerts"></section>
         <section class="personal-panel dashboard-task-panel">
           <div class="personal-panel-head">
             <div>
-              <h2>Tarefas</h2>
-              <p>As tarefas abertas ficam aqui para nao te esqueceres.</p>
+              <h2>Tarefas em aberto</h2>
+              <p>Prioridades do dia sincronizadas com a pagina Tarefas.</p>
             </div>
             <a href="tarefas.html" class="secondary-btn">Ver todas</a>
           </div>
           <div id="personalTaskList" class="personal-list personal-task-list dashboard-task-list"></div>
+        </section>
+        <section class="personal-dashboard-actions">
+          <a href="add-toner.html">Adicionar toner</a>
+          <a href="tarefas.html">Criar tarefa</a>
+          <a href="stock.html">Ver stock</a>
+          <a href="impressoras.html">Impressoras</a>
         </section>
       `;
       const metrics = document.querySelector(".enterprise-metrics");
@@ -156,15 +164,23 @@
       root.classList.add("dashboard-tasks-only");
       if (!root.querySelector("#personalTaskList")) {
         root.innerHTML = `
+          <section class="personal-dashboard-overview" id="personalDashboardOverview"></section>
+          <section class="personal-alert-strip" id="personalInternalAlerts"></section>
           <section class="personal-panel dashboard-task-panel">
             <div class="personal-panel-head">
               <div>
-                <h2>Tarefas</h2>
-                <p>As tarefas abertas ficam aqui para nao te esqueceres.</p>
+                <h2>Tarefas em aberto</h2>
+                <p>Prioridades do dia sincronizadas com a pagina Tarefas.</p>
               </div>
               <a href="tarefas.html" class="secondary-btn">Ver todas</a>
             </div>
             <div id="personalTaskList" class="personal-list personal-task-list dashboard-task-list"></div>
+          </section>
+          <section class="personal-dashboard-actions">
+            <a href="add-toner.html">Adicionar toner</a>
+            <a href="tarefas.html">Criar tarefa</a>
+            <a href="stock.html">Ver stock</a>
+            <a href="impressoras.html">Impressoras</a>
           </section>
         `;
       }
@@ -192,6 +208,8 @@
           </div>
           <div class="personal-task-composer">
             <input id="personalTaskQuickTitle" type="text" placeholder="Nova tarefa rapida">
+            <input id="personalTaskOwner" type="text" placeholder="Responsavel">
+            <input id="personalTaskDue" type="date" aria-label="Data limite">
             <select id="personalTaskPriority">
               <option value="normal">Normal</option>
               <option value="alta">Alta</option>
@@ -203,6 +221,8 @@
             <input id="personalTaskSearch" type="search" placeholder="Pesquisar tarefas">
             <div class="personal-task-tabs" role="tablist" aria-label="Filtro de tarefas">
               <button type="button" data-task-filter="open" class="active">Abertas</button>
+              <button type="button" data-task-filter="today">Hoje</button>
+              <button type="button" data-task-filter="overdue">Atrasadas</button>
               <button type="button" data-task-filter="done">Concluidas</button>
               <button type="button" data-task-filter="all">Todas</button>
             </div>
@@ -212,10 +232,22 @@
         <section class="personal-task-side">
           <div class="personal-panel">
             <div class="personal-panel-head">
-              <h2>Offline</h2>
+              <h2>Estado</h2>
               <button type="button" class="secondary-btn" data-personal-sync>Sincronizar</button>
             </div>
             <div id="personalOfflineStatus" class="personal-list"></div>
+          </div>
+          <div class="personal-panel">
+            <div class="personal-panel-head">
+              <h2>Plano rapido</h2>
+            </div>
+            <div id="personalTaskPlan" class="personal-list"></div>
+          </div>
+          <div class="personal-panel personal-priority-panel">
+            <div class="personal-panel-head">
+              <h2>Prioridades</h2>
+            </div>
+            <div id="personalPriorityPanel" class="personal-list"></div>
           </div>
           <div class="personal-panel">
             <div class="personal-panel-head">
@@ -306,11 +338,16 @@
   async function addTaskFromPage() {
     const input = document.getElementById("personalTaskQuickTitle");
     const select = document.getElementById("personalTaskPriority");
+    const owner = document.getElementById("personalTaskOwner");
+    const due = document.getElementById("personalTaskDue");
     const title = input?.value.trim() || "";
     if (!title) return toast("Tarefas", "Escreve uma tarefa primeiro.");
     const payload = {
       title,
       priority: select?.value || "normal",
+      owner: owner?.value.trim() || "",
+      dueDate: due?.value || "",
+      status: "open",
       done: false,
       createdAt: Date.now(),
       updatedAt: Date.now()
@@ -318,6 +355,8 @@
     if (!db() || !navigator.onLine) await queueOperation("personalTasks", null, payload, "add");
     else await db().collection("personalTasks").add(payload);
     input.value = "";
+    if (owner) owner.value = "";
+    if (due) due.value = "";
     input.focus();
   }
 
@@ -335,21 +374,69 @@
 
   function renderTaskStats(tasks = []) {
     const host = document.getElementById("personalTaskStats");
-    if (!host) return;
     const open = tasks.filter((item) => !item.done).length;
     const done = tasks.filter((item) => item.done).length;
     const high = tasks.filter((item) => !item.done && String(item.priority || "").toLowerCase() === "alta").length;
     const today = todayKey();
     const todayCount = tasks.filter((item) => {
       const created = getTimestamp(item.createdAt || item.updatedAt);
-      return created && new Date(created).toISOString().slice(0, 10) === today;
+      return item.dueDate === today || (created && new Date(created).toISOString().slice(0, 10) === today);
     }).length;
-    host.innerHTML = `
+    const overdue = tasks.filter((item) => !item.done && item.dueDate && item.dueDate < today).length;
+    const html = `
       <article class="personal-card ${open ? "is-warn" : "is-ok"}"><span>Abertas</span><strong>${open}</strong><small>Por concluir</small></article>
       <article class="personal-card ${high ? "is-warn" : "is-ok"}"><span>Alta prioridade</span><strong>${high}</strong><small>Atencao primeiro</small></article>
-      <article class="personal-card is-ok"><span>Concluidas</span><strong>${done}</strong><small>Total fechado</small></article>
-      <article class="personal-card ${todayCount ? "is-ok" : "is-warn"}"><span>Hoje</span><strong>${todayCount}</strong><small>Criadas hoje</small></article>
+      <article class="personal-card ${overdue ? "is-warn" : "is-ok"}"><span>Atrasadas</span><strong>${overdue}</strong><small>Com prazo vencido</small></article>
+      <article class="personal-card ${todayCount ? "is-ok" : "is-warn"}"><span>Hoje</span><strong>${todayCount}</strong><small>Criadas ou previstas</small></article>
     `;
+    if (host) host.innerHTML = html;
+    const dash = document.getElementById("personalDashboardOverview");
+    if (dash) dash.innerHTML = html;
+    renderTaskPlan(tasks, { open, done, high, todayCount, overdue });
+    renderInternalAlerts(tasks, { open, done, high, todayCount, overdue });
+  }
+
+  function renderInternalAlerts(tasks = [], stats = {}) {
+    const today = todayKey();
+    const highTasks = tasks.filter((item) => !item.done && String(item.priority || "").toLowerCase() === "alta");
+    const overdueTasks = tasks.filter((item) => !item.done && item.dueDate && item.dueDate < today);
+    const todayTasks = tasks.filter((item) => !item.done && item.dueDate === today);
+    const alerts = [];
+    if (overdueTasks.length) alerts.push({ level: "danger", title: `${overdueTasks.length} atrasada(s)`, body: "Resolver antes de novas tarefas." });
+    if (highTasks.length) alerts.push({ level: "warn", title: `${highTasks.length} alta prioridade`, body: "Atencao primeiro." });
+    if (todayTasks.length) alerts.push({ level: "info", title: `${todayTasks.length} para hoje`, body: "Plano diario ativo." });
+    if (!navigator.onLine || state.queueCount) alerts.push({ level: "warn", title: navigator.onLine ? "Fila offline" : "Sem rede", body: `${state.queueCount} item(ns) por sincronizar.` });
+    if (!alerts.length) alerts.push({ level: "ok", title: "Sem alertas internos", body: "Prioridades controladas." });
+
+    const html = alerts.slice(0, 4).map((alert) => `
+      <article class="personal-alert-card is-${alert.level}">
+        <strong>${escapeHtml(alert.title)}</strong>
+        <small>${escapeHtml(alert.body)}</small>
+      </article>
+    `).join("");
+    const dash = document.getElementById("personalInternalAlerts");
+    if (dash) dash.innerHTML = html;
+    const side = document.getElementById("personalPriorityPanel");
+    if (side) side.innerHTML = html;
+  }
+
+  function renderTaskPlan(tasks = [], stats = {}) {
+    const host = document.getElementById("personalTaskPlan");
+    if (!host) return;
+    const next = tasks
+      .filter((item) => !item.done)
+      .sort((a, b) => String(a.dueDate || "9999-12-31").localeCompare(String(b.dueDate || "9999-12-31")) || getTimestamp(b.createdAt) - getTimestamp(a.createdAt))
+      .slice(0, 4);
+    if (!next.length) {
+      host.innerHTML = `<div class="empty-state mini">Sem tarefas abertas. Bom estado de trabalho.</div>`;
+      return;
+    }
+    host.innerHTML = next.map((task) => `
+      <div class="personal-plan-row">
+        <strong>${escapeHtml(task.title)}</strong>
+        <small>${escapeHtml(task.owner || "Sem responsavel")} ${task.dueDate ? "- " + escapeHtml(task.dueDate) : ""}</small>
+      </div>
+    `).join("");
   }
 
   function renderTasks() {
@@ -364,8 +451,10 @@
     const tasks = allTasks.filter((item) => {
       if (filter === "open" && item.done) return false;
       if (filter === "done" && !item.done) return false;
+      if (filter === "today" && item.dueDate !== todayKey()) return false;
+      if (filter === "overdue" && (item.done || !item.dueDate || item.dueDate >= todayKey())) return false;
       if (!query) return true;
-      return normalize(`${item.title || ""} ${item.priority || ""}`).includes(query);
+      return normalize(`${item.title || ""} ${item.priority || ""} ${item.owner || ""} ${item.dueDate || ""}`).includes(query);
     }).slice(0, limit);
     if (!tasks.length) {
       host.innerHTML = `<div class="empty-state mini">Sem tarefas para este filtro.</div>`;
@@ -375,7 +464,7 @@
       <div class="personal-row personal-task-row ${task.done ? "is-done" : ""}">
         <div>
           <strong>${escapeHtml(task.title)}</strong>
-          <small>${TIME_FMT.format(new Date(getTimestamp(task.createdAt) || Date.now()))}</small>
+          <small>${escapeHtml(task.owner || "Sem responsavel")} - ${task.dueDate ? "Prazo " + escapeHtml(task.dueDate) : TIME_FMT.format(new Date(getTimestamp(task.createdAt) || Date.now()))}</small>
         </div>
         <span class="personal-task-priority ${taskPriorityClass(task.priority)}">${taskPriorityLabel(task.priority)}</span>
         <div class="personal-task-actions">
@@ -535,7 +624,7 @@
     }
     host.innerHTML = items.map((item) => `
       <div class="personal-history-item">
-        <strong>${escapeHtml(item.type)} Â· ${TIME_FMT.format(new Date(getTimestamp(item.createdAt) || Date.now()))}</strong>
+        <strong>${escapeHtml(item.type)} - ${TIME_FMT.format(new Date(getTimestamp(item.createdAt) || Date.now()))}</strong>
         <p>${escapeHtml(item.note || item.title || item.action || "")}</p>
         ${item.photoData ? `<img src="${item.photoData}" alt="Foto do equipamento">` : ""}
       </div>
@@ -664,6 +753,7 @@
     host.innerHTML = `
       <div class="personal-row"><div><strong>${navigator.onLine ? "Online" : "Offline"}</strong><small>${state.queueCount} item(ns) em fila</small></div></div>
     `;
+    renderInternalAlerts(state.collections.personalTasks || []);
   }
 
   function renderAll() {

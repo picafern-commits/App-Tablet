@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-<script src="../js/app-theme-pro.js?v=theme-pro-1"></script>
+<script src="../js/app-theme-pro.js?v=theme-pro-6"></script>
 <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
   <title>Configuracoes</title>
@@ -9,11 +9,11 @@
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/style.css?v=1.35.8">
+  <link rel="stylesheet" href="../css/style.css?v=1.38.0">
   <link rel="stylesheet" href="../css/autozitania-bragalis.css">
-  <link rel="stylesheet" href="../css/app-theme-pro.css?v=theme-pro-1">
+  <link rel="stylesheet" href="../css/app-theme-pro.css?v=theme-pro-6">
   <link rel="stylesheet" href="../css/enterprise/ops.css?v=ops-13">
-  <link rel="stylesheet" href="../css/systems/personal-tools.css?v=personal-4">
+  <link rel="stylesheet" href="../css/systems/personal-tools.css?v=personal-6">
   <link rel="stylesheet" href="../css/systems/global-search.css?v=global-search-2">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -103,26 +103,6 @@
     <span class="status-pill">Sistema Online</span>
   </div>
 
-  <div class="panel config-section">
-    <div class="section-header">
-      <div>
-        <h3>Dispositivo e notificações</h3>
-        <p class="section-subtitle">Regista este equipamento como PC de casa, PC de trabalho, tablet Android ou iPhone.</p>
-      </div>
-      <a class="secondary-btn" href="notificacoes.html">Abrir Notificações</a>
-    </div>
-    <div class="system-health-grid">
-      <div class="health-card">
-        <span>Identidade</span>
-        <strong id="configDeviceIdentityStatus">Gerida em Notificações</strong>
-      </div>
-      <div class="health-card">
-        <span>Receção cloud</span>
-        <strong>Web Push standard</strong>
-      </div>
-    </div>
-  </div>
-
   <div class="panel config-section theme-pro-card">
     <div class="section-header">
       <div>
@@ -130,11 +110,39 @@
         <p class="section-subtitle">Tema enterprise unico para a APP toda, sincronizado pela Firestore.</p>
       </div>
     </div>
+    <div class="design-system-switch" aria-label="Sistema visual da app">
+      <button class="design-mode-card" type="button" data-design-mode="pro" aria-pressed="true">
+        <strong>Novo Pro</strong>
+        <span>Sidebar nova, cards premium e paginas mais modernas.</span>
+      </button>
+      <button class="design-mode-card" type="button" data-design-mode="classic" aria-pressed="false">
+        <strong>Classico</strong>
+        <span>Visual antigo, mais simples, para comparar ou voltar atras.</span>
+      </button>
+      <select id="appVisualDesignMode" class="design-mode-select" aria-label="Sistema visual">
+        <option value="pro">Novo Pro</option>
+        <option value="classic">Classico</option>
+      </select>
+    </div>
     <div class="theme-pro-presets">
       <button class="theme-pro-preset" type="button" data-theme-preset="autozitania">Autozitania</button>
       <button class="theme-pro-preset" type="button" data-theme-preset="graphite">Grafite</button>
       <button class="theme-pro-preset" type="button" data-theme-preset="ocean">Oceano</button>
       <button class="theme-pro-preset" type="button" data-theme-preset="violet">Violeta</button>
+    </div>
+    <div class="workspace-mode-switch" aria-label="Modo de trabalho">
+      <button class="workspace-mode-card" type="button" data-work-mode="tech" aria-pressed="true">
+        <strong>Modo tecnico</strong>
+        <span>Mais rapido, compacto e virado para a operacao diaria.</span>
+      </button>
+      <button class="workspace-mode-card" type="button" data-work-mode="management" aria-pressed="false">
+        <strong>Modo gestao</strong>
+        <span>Mais resumo, prioridades e leitura geral do estado da app.</span>
+      </button>
+      <select id="appWorkMode" class="design-mode-select" aria-label="Modo de trabalho">
+        <option value="tech">Tecnico</option>
+        <option value="management">Gestao</option>
+      </select>
     </div>
     <div class="theme-pro-grid">
       <label class="theme-pro-field"><span>Cor principal</span><input id="appThemePrimary" data-theme-live type="color" value="#ef4444"></label>
@@ -146,6 +154,9 @@
       <label class="theme-pro-field"><span>Texto</span><input id="appThemeText" data-theme-live type="color" value="#f8fafc"></label>
       <label class="theme-pro-field"><span>Texto secundario</span><input id="appThemeMuted" data-theme-live type="color" value="#a8b0bd"></label>
       <label class="theme-pro-field"><span>Texto dos botoes</span><select id="appButtonTextMode" data-theme-live><option value="auto">Automatico</option><option value="light">Branco</option><option value="dark">Escuro</option></select></label>
+      <label class="theme-pro-field"><span>Densidade</span><select id="appDensityMode" data-workspace-live><option value="comfortable">Confortavel</option><option value="compact">Compacta</option></select></label>
+      <label class="theme-pro-field"><span>Cantos</span><select id="appRadiusMode" data-workspace-live><option value="soft">Suaves</option><option value="sharp">Retos</option><option value="round">Redondos</option></select></label>
+      <label class="theme-pro-field"><span>Acoes no telemovel</span><select id="appMobileActions" data-workspace-live><option value="on">Ligadas</option><option value="off">Desligadas</option></select></label>
     </div>
     <div class="theme-pro-actions">
       <button class="primary-btn" type="button" onclick="guardarTemaApp()">Guardar tema</button>
@@ -342,7 +353,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<script src="../js/app.js?v=1.35.8"></script>
+<script src="../js/app.js?v=1.38.0"></script>
 <script src="../js/systems/equipment/equipment-models.js?v=equipment-3"></script>
 <script src="../js/systems/global-search/global-search.js?v=global-search-2"></script>
   <script src="../js/core/helpers.js"></script>

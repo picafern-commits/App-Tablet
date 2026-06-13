@@ -32,13 +32,13 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.35.9";
+const APP_VERSION = "1.38.0";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
-const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "BE2xnhqmSPq85_kA6comGATxEseSoh8zY_EK_4NZsbiI1HJByjc1PgQqhTsUwPlr1ujuUSpSzp29AQeS1hnlHOQ";
-const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "notificationCloudSettings";
+const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "";
+const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "";
 const APP_BRAGA_NOTIFICATION_CONFIG_COLLECTION = "config";
-const APP_BRAGA_DEFAULT_VAPID_SUBJECT = "mailto:admin@appbraga.pt";
-const APP_BRAGA_DEVICE_PROFILE_STORAGE_KEY = "appBragaNotificationDeviceProfile";
+const APP_BRAGA_DEFAULT_VAPID_SUBJECT = "";
+const APP_BRAGA_DEVICE_PROFILE_STORAGE_KEY = "appBragaNotificationDeviceProfile.removed";
 
 function appBragaPageName() {
   const name = String(location.pathname || "").split("/").pop() || "index.html";
@@ -64,23 +64,6 @@ function appBragaUnsubscribeFirestoreListeners() {
 }
 
 window.addEventListener("beforeunload", appBragaUnsubscribeFirestoreListeners);
-
-function garantirLinkNotificacoesSidebarApp() {
-  const nav = document.querySelector(".sidebar-nav-pro");
-  if (!nav || nav.querySelector('a[href="notificacoes.html"]')) return;
-  const configLink = nav.querySelector('a[href="config.html"]');
-  if (!configLink?.parentElement) return;
-  const link = document.createElement("a");
-  link.href = "notificacoes.html";
-  link.dataset.icon = "🔔";
-  link.innerHTML = '<span class="sidebar-link-text">Notificações</span>';
-  if (/notificacoes\.html$/i.test(location.pathname)) link.classList.add("active");
-  configLink.parentElement.insertBefore(link, configLink);
-}
-
-document.addEventListener("DOMContentLoaded", garantirLinkNotificacoesSidebarApp);
-
-
 
 const BACKUP_KEYS_APP_BRAGA = {
   stock: "appBraga_backup_stock",
@@ -2391,6 +2374,7 @@ async function processarPedidoPushElectronApp(doc) {
 }
 
 async function iniciarPontePushElectronApp(showMessage = false) {
+  if (APP_NOTIFICATIONS_REBUILD_MODE) return false;
   if (!window.electronAPI?.sendWebPushBroadcast || !window.db?.collection) return false;
   if (electronPushBridgeState.started) {
     if (showMessage) mostrarMensagem("Ponte PC ja esta ligada.");
@@ -3846,6 +3830,14 @@ async function registarDispositivoPushApp(forceReset = false, options = {}) {
   }
 }
 
+maybeNotifyCriticalSupply = function () {};
+maybeNotifyTonerReplacement = function () {};
+enviarNotificacaoApp = async function () { return false; };
+verificarAlertasNotificacoesApp = async function () {};
+iniciarMonitorNotificacoesApp = function () {
+  clearInterval(appNotificationTimer);
+};
+
 async function obterTonerInfo(ip) {
   try {
     if (!window.electronAPI || !window.electronAPI.getTonerSNMP) return null;
@@ -5218,26 +5210,8 @@ async function verificarSistemasApp() {
   setHealthStatus("healthNetwork", navigator.onLine ? "Online" : "Offline", navigator.onLine ? "ok" : "bad");
   setHealthStatus("healthDevice", window.appBragaDeviceType || (document.body.classList.contains("device-phone") ? "TelemÃƒÂ³vel" : (document.body.classList.contains("device-tablet") ? "Tablet" : "PC")), "ok");
   setHealthStatus("healthPin", appSecurityState.biometricEnabled ? "Biometria ativa" : (appSecurityState.pinHash ? "PIN ativo" : "Desligado"), hasSecurityEnabledApp() ? "ok" : "warn");
-  const notifyPermission = notificationPermissionApp();
-  const notifyOk = notifyPermission === "granted" || notifyPermission === "electron";
-  if (window.electronAPI?.getNotificationStatus) {
-    const electronNotify = await window.electronAPI.getNotificationStatus().catch(() => null);
-    if (electronNotify?.ok) {
-      setHealthStatus("healthNotifications", electronNotify.supported ? "Electron OK" : "Electron sem toast", electronNotify.supported ? "ok" : "warn");
-    } else {
-      setHealthStatus("healthNotifications", "Electron erro", "bad");
-    }
-  } else {
-    setHealthStatus("healthNotifications", notifyOk ? "Ativas" : (notifyPermission === "unsupported" ? "Sem suporte" : "Sem permissao"), notifyOk ? "ok" : "warn");
-  }
-
-  if (window.db?.collection) {
-    const cloudDoc = await window.db.collection("config").doc("cloudNotifications").get().catch(() => null);
-    const cloudData = cloudDoc?.exists ? cloudDoc.data() || {} : null;
-    setHealthStatus("healthPushWatcher", cloudData ? "Cloud Functions OK" : "A aguardar", cloudData ? "ok" : "warn");
-  } else {
-    setHealthStatus("healthPushWatcher", "Sem Firestore", "warn");
-  }
+  setHealthStatus("healthNotifications", "Removido", "warn");
+  setHealthStatus("healthPushWatcher", "Removido", "warn");
   setHealthStatus("healthFirebase", window.firebase ? "Carregado" : "IndisponÃƒÂ­vel", window.firebase ? "ok" : "bad");
   setHealthStatus("healthAuth", window.firebase?.auth ? "Carregado" : "IndisponÃƒÂ­vel", window.firebase?.auth ? "ok" : "warn");
 
@@ -6300,7 +6274,6 @@ document.addEventListener("DOMContentLoaded", initRadiosPage);
 document.addEventListener("DOMContentLoaded", initInformacoesPage);
 document.addEventListener("DOMContentLoaded", initResolucaoApp);
 document.addEventListener("DOMContentLoaded", initFullscreenPreferidoApp);
-document.addEventListener("DOMContentLoaded", inicializarPaginaNotificacoesCloudApp);
 window.adicionarRadio = adicionarRadio;
 window.editarRadio = editarRadio;
 window.guardarRadio = guardarRadio;
@@ -6338,27 +6311,9 @@ window.removerPinApp = removerPinApp;
 window.ativarBiometriaApp = ativarBiometriaApp;
 window.removerBiometriaApp = removerBiometriaApp;
 window.bloquearAppAgora = bloquearAppAgora;
-window.atualizarEstadoNotificacoesApp = atualizarEstadoNotificacoesApp;
-window.ligarServicoNotificacoesApp = ligarServicoNotificacoesApp;
-window.importarServiceAccountNotificacoesApp = importarServiceAccountNotificacoesApp;
-window.configurarVapidPrivadaNotificacoesApp = configurarVapidPrivadaNotificacoesApp;
-window.toggleVapidPrivadaVisivelApp = toggleVapidPrivadaVisivelApp;
 window.desbloquearAppComPin = desbloquearAppComPin;
 window.desbloquearAppComBiometria = desbloquearAppComBiometria;
 window.entrarFullscreenApp = entrarFullscreenApp;
-window.carregarDispositivosNotificacoesApp = carregarDispositivosNotificacoesApp;
-window.registarDispositivoPushApp = registarDispositivoPushApp;
-window.guardarConfigNotificacoesApp = guardarConfigNotificacoesApp;
-window.verificarAlertasNotificacoesApp = verificarAlertasNotificacoesApp;
-window.testarNotificacaoApp = testarNotificacaoApp;
-window.testarPushRemotoNotificacoesApp = testarPushRemotoNotificacoesApp;
-window.pedirPermissaoNotificacoesApp = pedirPermissaoNotificacoesApp;
-window.guardarCloudNotificacoesApp = guardarCloudNotificacoesApp;
-window.guardarIdentidadeDispositivoNotificacoesApp = guardarIdentidadeDispositivoNotificacoesApp;
-window.repararDispositivoNotificacoesCloudApp = repararDispositivoNotificacoesCloudApp;
-window.testarCloudNotificacoesApp = testarCloudNotificacoesApp;
-window.enviarAlertaGeralNotificacoesApp = enviarAlertaGeralNotificacoesApp;
-window.atualizarPaginaNotificacoesCloudApp = atualizarPaginaNotificacoesCloudApp;
 window.verificarSistemasApp = verificarSistemasApp;
 window.adicionarInformacao = adicionarInformacao;
 window.selecionarInformacao = selecionarInformacao;
@@ -7802,6 +7757,395 @@ async function atualizarAppObrigatorio(novaVersao = "") {
 
 window.addEventListener("load", verificarAtualizacao);
 window.addEventListener("load", () => atualizarVersaoUI(APP_VERSION));
+
+/* ===== App Braga Firebase Notifications Rebuild v1.38.0 ===== */
+(function initFirebaseNotificationsRebuild() {
+  "use strict";
+
+  const PUBLIC_VAPID = "BE2xnhqmSPq85_kA6comGATxEseSoh8zY_EK_4NZsbiI1HJByjc1PgQqhTsUwPlr1ujuUSpSzp29AQeS1hnlHOQ";
+  const DEVICE_COLLECTION = "notificationDevices";
+  const INBOX_COLLECTION = "notificationInbox";
+  const HISTORY_COLLECTION = "notificationHistory";
+  const DEVICE_ID_KEY = "appBraga.firebaseNotificationDeviceId";
+  const DEVICE_PROFILE_KEY = "appBraga.firebaseNotificationProfile";
+  const PROCESSED_INBOX_KEY = "appBraga.firebaseNotificationInboxSeen";
+  const CLOUD_URL = "https://europe-west1-toner-manager-756c4.cloudfunctions.net/sendNotificationBroadcast";
+  const HEALTH_URL = "https://europe-west1-toner-manager-756c4.cloudfunctions.net/notificationHealth";
+  const startedAt = Date.now();
+  let inboxUnsubscribe = null;
+
+  function isNotificationsPage() {
+    return /notificacoes\.html$/i.test(location.pathname || "");
+  }
+
+  function dbReady() {
+    return window.db && typeof window.db.collection === "function";
+  }
+
+  function deviceId() {
+    let id = "";
+    try { id = localStorage.getItem(DEVICE_ID_KEY) || ""; } catch {}
+    if (!id) {
+      id = (crypto.randomUUID ? crypto.randomUUID() : `device-${Date.now()}-${Math.random().toString(16).slice(2)}`);
+      try { localStorage.setItem(DEVICE_ID_KEY, id); } catch {}
+    }
+    return id;
+  }
+
+  function profile() {
+    try {
+      const stored = JSON.parse(localStorage.getItem(DEVICE_PROFILE_KEY) || "{}");
+      if (stored && typeof stored === "object") return stored;
+    } catch {}
+    return {};
+  }
+
+  function saveProfile(next) {
+    const merged = { ...profile(), ...next };
+    try { localStorage.setItem(DEVICE_PROFILE_KEY, JSON.stringify(merged)); } catch {}
+    return merged;
+  }
+
+  function platformInfo() {
+    const ua = navigator.userAgent || "";
+    const electron = !!window.electronAPI;
+    const ios = /iPad|iPhone|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    const android = /Android/i.test(ua);
+    const standalone = window.matchMedia?.("(display-mode: standalone)")?.matches || window.navigator.standalone === true;
+    const role = profile().role || (electron ? "pc-casa" : (ios ? "iphone" : (android ? "android" : "pc-empresa")));
+    return {
+      electron,
+      ios,
+      android,
+      standalone,
+      role,
+      browser: navigator.userAgentData?.brands?.map((b) => b.brand).join(", ") || ua.slice(0, 120)
+    };
+  }
+
+  function defaultDeviceName() {
+    const info = platformInfo();
+    if (info.role === "pc-casa") return "PC de Casa";
+    if (info.role === "pc-empresa") return "PC de Empresa";
+    if (info.role === "iphone") return "iPhone";
+    if (info.role === "android") return "Android";
+    return info.electron ? "PC Electron" : "Dispositivo";
+  }
+
+  function setText(id, text, state = "") {
+    const node = document.getElementById(id);
+    if (!node) return;
+    node.textContent = text;
+    node.dataset.state = state;
+  }
+
+  function b64ToUint8(value) {
+    const padding = "=".repeat((4 - value.length % 4) % 4);
+    const base64 = `${value}${padding}`.replace(/-/g, "+").replace(/_/g, "/");
+    const raw = atob(base64);
+    return Uint8Array.from([...raw].map((char) => char.charCodeAt(0)));
+  }
+
+  async function ensureServiceWorker() {
+    if (!("serviceWorker" in navigator)) return null;
+    const swUrl = new URL("../sw.js", location.href);
+    await navigator.serviceWorker.register(swUrl.href, { scope: "../" }).catch(() => null);
+    return navigator.serviceWorker.ready.catch(() => null);
+  }
+
+  async function loadMessagingCompat() {
+    if (window.firebase?.messaging) return true;
+    await new Promise((resolve, reject) => {
+      const existing = document.querySelector("script[data-firebase-messaging]");
+      if (existing) {
+        existing.addEventListener("load", resolve, { once: true });
+        existing.addEventListener("error", reject, { once: true });
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js";
+      script.dataset.firebaseMessaging = "1";
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+    return !!window.firebase?.messaging;
+  }
+
+  async function requestPermission() {
+    if (!("Notification" in window)) return "unsupported";
+    if (Notification.permission === "granted") return "granted";
+    if (Notification.permission === "denied") return "denied";
+    return Notification.requestPermission();
+  }
+
+  async function registerWebPush(registration) {
+    if (!window.isSecureContext || !registration || !("PushManager" in window)) return null;
+    let subscription = await registration.pushManager.getSubscription();
+    if (!subscription) {
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: b64ToUint8(PUBLIC_VAPID)
+      });
+    }
+    return subscription.toJSON();
+  }
+
+  async function registerFcm(registration) {
+    try {
+      await loadMessagingCompat();
+      if (!window.firebase?.messaging || !registration) return "";
+      const supported = typeof window.firebase.messaging.isSupported === "function"
+        ? await Promise.resolve(window.firebase.messaging.isSupported()).catch(() => false)
+        : true;
+      if (!supported) return "";
+      return await window.firebase.messaging().getToken({
+        vapidKey: PUBLIC_VAPID,
+        serviceWorkerRegistration: registration
+      });
+    } catch (error) {
+      console.warn("FCM indisponivel neste dispositivo:", error);
+      return "";
+    }
+  }
+
+  async function registerCurrentDevice(options = {}) {
+    if (!dbReady()) throw new Error("Firebase/Firestore ainda nao esta pronto.");
+    const info = platformInfo();
+    const permission = await requestPermission();
+    if (permission !== "granted" && !info.electron) throw new Error("Permissao de notificacoes nao concedida.");
+    if (info.ios && !info.standalone) {
+      throw new Error("No iPhone, abre pelo icone instalado no ecra principal para receber push.");
+    }
+
+    const registration = await ensureServiceWorker();
+    const webPush = await registerWebPush(registration).catch((error) => {
+      console.warn("Web Push standard indisponivel:", error);
+      return null;
+    });
+    const fcmToken = await registerFcm(registration);
+    const currentProfile = saveProfile({
+      name: options.name || document.getElementById("firebaseNotifyDeviceName")?.value || profile().name || defaultDeviceName(),
+      role: options.role || document.getElementById("firebaseNotifyDeviceRole")?.value || profile().role || info.role
+    });
+    const id = deviceId();
+    const payload = {
+      deviceId: id,
+      enabled: true,
+      deviceName: currentProfile.name,
+      deviceRole: currentProfile.role,
+      platform: info.electron ? "electron" : (info.ios ? "ios-safari" : (info.android ? "android-chrome" : "web")),
+      electron: info.electron,
+      desktopInbox: info.electron || (!webPush && !fcmToken),
+      ios: info.ios,
+      android: info.android,
+      standalone: info.standalone,
+      permission,
+      webPush: webPush || null,
+      fcmToken: fcmToken || "",
+      publicVapidKey: PUBLIC_VAPID,
+      userAgent: navigator.userAgent || "",
+      browser: info.browser,
+      appVersion: APP_VERSION,
+      updatedAt: Date.now(),
+      lastSeenAt: Date.now()
+    };
+    await window.db.collection(DEVICE_COLLECTION).doc(id).set(payload, { merge: true });
+    startInboxListener();
+    renderNotificationsPage();
+    return payload;
+  }
+
+  function processedIds() {
+    try { return new Set(JSON.parse(localStorage.getItem(PROCESSED_INBOX_KEY) || "[]")); } catch { return new Set(); }
+  }
+
+  function rememberProcessed(id) {
+    const set = processedIds();
+    set.add(id);
+    const last = [...set].slice(-80);
+    try { localStorage.setItem(PROCESSED_INBOX_KEY, JSON.stringify(last)); } catch {}
+  }
+
+  async function showLocalNotification(item = {}) {
+    const title = item.title || "App Braga";
+    const body = item.body || "";
+    if (window.electronAPI?.showNotification) {
+      await window.electronAPI.showNotification({ title, body, tag: item.tag || item.requestId || "" });
+      return true;
+    }
+    const registration = await ensureServiceWorker();
+    if (registration?.showNotification) {
+      await registration.showNotification(title, {
+        body,
+        tag: item.tag || item.requestId || "app-braga",
+        icon: "../icon-192.png",
+        badge: "../icon-192.png",
+        data: { url: item.url || "html/index.html" }
+      });
+      return true;
+    }
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification(title, { body, tag: item.tag || item.requestId || "app-braga" });
+      return true;
+    }
+    return false;
+  }
+
+  function startInboxListener() {
+    if (!dbReady() || inboxUnsubscribe) return;
+    const id = deviceId();
+    inboxUnsubscribe = window.db.collection(INBOX_COLLECTION)
+      .where("deviceId", "==", id)
+      .where("read", "==", false)
+      .onSnapshot((snapshot) => {
+        snapshot.docChanges().forEach(async (change) => {
+          if (change.type === "removed") return;
+          const seen = processedIds();
+          if (seen.has(change.doc.id)) return;
+          const data = change.doc.data() || {};
+          const created = Number(data.createdAt?.toMillis?.() || data.createdAt || 0);
+          if (created && created < startedAt - 60000) return;
+          rememberProcessed(change.doc.id);
+          await showLocalNotification(data).catch(console.warn);
+          await change.doc.ref.set({ read: true, readAt: Date.now() }, { merge: true }).catch(() => null);
+        });
+      }, (error) => console.warn("Inbox notificacoes indisponivel:", error));
+  }
+
+  async function sendBroadcast(kind = "test") {
+    const message = document.getElementById("firebaseNotifyMessage")?.value || "";
+    const id = deviceId();
+    const payload = {
+      requestId: `app-${kind}-${Date.now()}`,
+      senderDeviceId: id,
+      title: kind === "alert" ? "Alerta geral - App Braga" : "Teste App Braga",
+      body: message || (kind === "alert" ? "Alerta enviado pela App Braga." : "Teste de notificacoes Firebase."),
+      url: "https://picafern-commits.github.io/App-Tablet/html/index.html",
+      tag: `app-braga-${kind}`
+    };
+    setText("firebaseNotifyLastResult", "A enviar pela Firebase...", "warn");
+    const response = await fetch(CLOUD_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || result.ok === false) {
+      throw new Error(result.error || result.errors?.[0]?.error || `Function respondeu ${response.status}`);
+    }
+    setText("firebaseNotifyLastResult", `Enviadas: ${result.sent || 0} | Inbox: ${result.inboxWritten || 0} | Falhas: ${result.failed || 0} | Ignorados: ${result.ignored || 0}`, "ok");
+    await refreshLists();
+    return result;
+  }
+
+  async function healthCheck() {
+    setText("firebaseNotifyCloudStatus", "A verificar...", "warn");
+    const response = await fetch(HEALTH_URL, { method: "POST" });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || result.ok === false) throw new Error(result.error || "Cloud Functions nao responderam.");
+    setText("firebaseNotifyCloudStatus", `Cloud OK - ${result.activeDevices || 0} dispositivo(s)`, "ok");
+    return result;
+  }
+
+  async function refreshLists() {
+    if (!isNotificationsPage() || !dbReady()) return;
+    const devicesHost = document.getElementById("firebaseNotifyDevices");
+    const historyHost = document.getElementById("firebaseNotifyHistory");
+    const devices = await window.db.collection(DEVICE_COLLECTION).get();
+    const rows = [];
+    devices.forEach((doc) => rows.push({ id: doc.id, ...doc.data() }));
+    rows.sort((a, b) => String(a.deviceRole || "").localeCompare(String(b.deviceRole || "")) || String(a.deviceName || "").localeCompare(String(b.deviceName || "")));
+    if (devicesHost) {
+      devicesHost.innerHTML = rows.length ? rows.map((item) => {
+        const ready = item.fcmToken ? "FCM" : (item.webPush?.endpoint ? "Web Push" : (item.desktopInbox ? "Desktop inbox" : "Sem push"));
+        const isThis = item.deviceId === deviceId();
+        return `
+          <article class="notification-device-card ${isThis ? "is-current" : ""}">
+            <div><strong>${escapeHtmlAppBraga(item.deviceName || item.deviceId || item.id)}</strong><small>${escapeHtmlAppBraga(item.deviceRole || item.platform || "")}</small></div>
+            <span class="notification-chip ${item.enabled === false ? "bad" : "ok"}">${item.enabled === false ? "Desligado" : "Ativo"}</span>
+            <span class="notification-chip">${escapeHtmlAppBraga(ready)}</span>
+          </article>
+        `;
+      }).join("") : `<div class="empty-state mini">Sem dispositivos registados.</div>`;
+    }
+    if (historyHost) {
+      const history = await window.db.collection(HISTORY_COLLECTION).get().catch(() => null);
+      const items = [];
+      history?.forEach((doc) => items.push({ id: doc.id, ...doc.data() }));
+      items.sort((a, b) => Number(b.createdAt?.toMillis?.() || b.createdAt || 0) - Number(a.createdAt?.toMillis?.() || a.createdAt || 0));
+      historyHost.innerHTML = items.slice(0, 10).map((item) => `
+        <article class="notification-history-item">
+          <strong>${escapeHtmlAppBraga(item.title || "Envio")}</strong>
+          <div class="notification-history-stats">
+            <span class="notification-chip ok">Enviadas: ${Number(item.sent || 0)}</span>
+            <span class="notification-chip">Inbox: ${Number(item.inboxWritten || 0)}</span>
+            <span class="notification-chip ${Number(item.failed || 0) ? "bad" : "ok"}">Falhas: ${Number(item.failed || 0)}</span>
+          </div>
+        </article>
+      `).join("") || `<div class="empty-state mini">Sem historico ainda.</div>`;
+    }
+  }
+
+  function renderNotificationsPage() {
+    if (!isNotificationsPage()) return;
+    const p = profile();
+    const info = platformInfo();
+    const nameInput = document.getElementById("firebaseNotifyDeviceName");
+    const roleInput = document.getElementById("firebaseNotifyDeviceRole");
+    if (nameInput && !nameInput.value) nameInput.value = p.name || defaultDeviceName();
+    if (roleInput) roleInput.value = p.role || info.role;
+    setText("firebaseNotifyDeviceId", deviceId(), "ok");
+    setText("firebaseNotifyEnvironment", info.electron ? "Electron desktop" : (info.ios ? "iPhone Safari/PWA" : (info.android ? "Android Chrome/PWA" : "Web/PWA")), "ok");
+    setText("firebaseNotifyPermission", ("Notification" in window ? Notification.permission : "sem Notification"), Notification.permission === "granted" ? "ok" : "warn");
+  }
+
+  function bindPage() {
+    if (!isNotificationsPage()) return;
+    renderNotificationsPage();
+    document.querySelector("[data-firebase-notify-register]")?.addEventListener("click", async () => {
+      try {
+        setText("firebaseNotifyLastResult", "A registar dispositivo...", "warn");
+        const item = await registerCurrentDevice({ force: true });
+        setText("firebaseNotifyLastResult", `Dispositivo registado: ${item.deviceName}`, "ok");
+      } catch (error) {
+        setText("firebaseNotifyLastResult", error.message || "Erro ao registar.", "bad");
+      }
+    });
+    document.querySelector("[data-firebase-notify-test]")?.addEventListener("click", async () => {
+      try { await sendBroadcast("test"); } catch (error) { setText("firebaseNotifyLastResult", error.message || "Erro no teste.", "bad"); }
+    });
+    document.querySelector("[data-firebase-notify-alert]")?.addEventListener("click", async () => {
+      try { await sendBroadcast("alert"); } catch (error) { setText("firebaseNotifyLastResult", error.message || "Erro no alerta.", "bad"); }
+    });
+    document.querySelector("[data-firebase-notify-health]")?.addEventListener("click", async () => {
+      try { await healthCheck(); } catch (error) { setText("firebaseNotifyCloudStatus", error.message || "Cloud indisponivel.", "bad"); }
+    });
+    document.querySelector("[data-firebase-notify-refresh]")?.addEventListener("click", refreshLists);
+    setTimeout(refreshLists, 800);
+  }
+
+  function boot() {
+    bindPage();
+    if (dbReady()) {
+      startInboxListener();
+      if (window.electronAPI) {
+        registerCurrentDevice({ name: profile().name || defaultDeviceName(), role: profile().role || platformInfo().role }).catch(() => null);
+      }
+    }
+  }
+
+  window.AppBragaFirebaseNotifications = {
+    registerCurrentDevice,
+    sendBroadcast,
+    healthCheck,
+    refreshLists,
+    deviceId
+  };
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => setTimeout(boot, 600));
+  else setTimeout(boot, 600);
+})();
 window.fecharAvisoAtualizacao = fecharAvisoAtualizacao;
 window.atualizarAppObrigatorio = atualizarAppObrigatorio;
 
@@ -12186,7 +12530,6 @@ window.testarCamerasStockQr = async function(){
     { href:"informacoes.html", label:"Informações", icon:"ℹ️" },
     { href:"users.html", label:"Users", icon:"👥" },
     { href:"diagnostico.html", label:"Diagnóstico", icon:"🩺" },
-    { href:"notificacoes.html", label:"Notificações", icon:"🔔" },
     { href:"config.html", label:"Configurações", icon:"⚙️" }
   ];
   function safeGetFavs(){
@@ -12494,6 +12837,7 @@ async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
 }
 
 (function initNotificacoesPro1353(){
+  if (APP_NOTIFICATIONS_REBUILD_MODE) return;
   if (!/notificacoes\.html$/i.test(location.pathname || "")) return;
   const run = () => {
     atualizarDiagnosticoPushAutomaticoApp();
@@ -12517,7 +12861,7 @@ async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
     "tarefas.html":"✅", "scanner-ia.html":"📄", "etiquetas-word.html":"🏷️",
     "impressoras.html":"🖨️", "manutencao-impressoras.html":"🛠️", "computadores.html":"💻",
     "pistolas.html":"📟", "radios.html":"📡", "portas.html":"🔌", "diretorio.html":"☎️",
-    "informacoes.html":"ℹ️", "users.html":"👥", "diagnostico.html":"🩺", "notificacoes.html":"🔔",
+    "informacoes.html":"ℹ️", "users.html":"👥", "diagnostico.html":"🩺",
     "config.html":"⚙️"
   };
 

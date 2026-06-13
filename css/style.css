@@ -6342,10 +6342,6 @@ body.app-role-consulta .danger {
   content: "✅" !important;
 }
 
-.sidebar a[href$="notificacoes.html"]::before {
-  content: "🔔" !important;
-}
-
 .sidebar a[href$="scanner-ia.html"]::before {
   content: "📄" !important;
 }
@@ -6911,3 +6907,1163 @@ aside.sidebar.sidebar-collapsible-pro,
 }
 @media (max-width:768px){.sidebar-collapse-toggle{display:none!important;}}
 /* ===== END APP BRAGA v1.35.8 ===== */
+/* ===== App Braga Pro Visual Upgrade v1.36.5 ===== */
+:root{
+  --pro-bg:#0f1115;
+  --pro-bg-2:#151821;
+  --pro-surface:#1b202a;
+  --pro-surface-2:#222835;
+  --pro-line:rgba(194,205,222,.16);
+  --pro-line-strong:rgba(194,205,222,.26);
+  --pro-text:#f5f7fb;
+  --pro-muted:#aeb8c8;
+  --pro-red:#ef4444;
+  --pro-blue:#38bdf8;
+  --pro-green:#22c55e;
+  --pro-amber:#f59e0b;
+  --pro-radius:14px;
+  --pro-shadow:0 20px 55px rgba(0,0,0,.36);
+}
+
+body{
+  background:linear-gradient(135deg,var(--pro-bg),#111318 52%,#141821)!important;
+  color:var(--pro-text)!important;
+}
+
+.main,main,.dashboard-container,.dashboard-shell{background:transparent!important;}
+
+.page-hero,.dashboard-header{
+  position:relative;
+  overflow:hidden;
+  border:1px solid var(--pro-line)!important;
+  border-radius:18px!important;
+  background:linear-gradient(135deg,rgba(31,36,48,.94),rgba(19,22,30,.96))!important;
+  box-shadow:var(--pro-shadow)!important;
+  padding:22px 24px!important;
+}
+.page-hero::after,.dashboard-header::after{
+  content:"";
+  position:absolute;
+  inset:auto 22px 0 22px;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(56,189,248,.7),rgba(239,68,68,.45),transparent);
+}
+.page-hero-title,.dashboard-header h1,.main h1{letter-spacing:0!important;font-weight:950!important;color:#fff!important;}
+.status-pill,.version-pill{border:1px solid rgba(34,197,94,.22)!important;background:rgba(34,197,94,.10)!important;color:#bbf7d0!important;border-radius:999px!important;min-height:30px!important;padding:6px 11px!important;}
+
+.panel,.dashboard-panel,.personal-panel,.config-section,.stock-card,.history-card,.pc-card,.dashboard-card,.card,.box,.printer-card,.network-card,.pistol-card,.equipment-detail-card,.equipment-result-card,.equipment-type-card,.modal-content,.modal-card{
+  background:linear-gradient(145deg,rgba(34,40,53,.96),rgba(23,27,36,.96))!important;
+  border:1px solid var(--pro-line)!important;
+  border-radius:var(--pro-radius)!important;
+  box-shadow:0 14px 36px rgba(0,0,0,.26)!important;
+  color:var(--pro-text)!important;
+}
+.panel:hover,.dashboard-panel:hover,.personal-panel:hover,.stock-card:hover,.history-card:hover,.pc-card:hover,.dashboard-card:hover,.equipment-result-card:hover,.equipment-type-card:hover{border-color:var(--pro-line-strong)!important;}
+.section-header,.panel-title-row,.personal-panel-head{gap:16px!important;align-items:center!important;}
+.section-header h2,.section-header h3,.panel-title-row h2,.personal-panel-head h2{color:#fff!important;font-weight:950!important;letter-spacing:0!important;}
+.section-subtitle,.personal-panel-head p,.panel-title-row p,.meta-line,.meta-value,small{color:var(--pro-muted)!important;}
+
+button,.primary-btn,.secondary-btn,.small-btn,.action-btn,.btn-edit,.btn-remove{border-radius:10px!important;font-weight:850!important;letter-spacing:0!important;}
+.primary-btn,button.primary-btn{background:linear-gradient(135deg,#ef4444,#b91c1c)!important;border:1px solid rgba(248,113,113,.36)!important;color:#fff!important;box-shadow:0 12px 30px rgba(239,68,68,.20)!important;}
+.secondary-btn,button.secondary-btn,.small-btn,.action-btn,.btn-edit{background:rgba(255,255,255,.055)!important;border:1px solid var(--pro-line)!important;color:#eef2ff!important;}
+.secondary-btn:hover,.small-btn:hover,.action-btn:hover,.btn-edit:hover{background:rgba(56,189,248,.10)!important;border-color:rgba(56,189,248,.38)!important;}
+.btn-remove,.danger,button.danger{background:rgba(239,68,68,.11)!important;border-color:rgba(248,113,113,.28)!important;color:#fecaca!important;}
+input,select,textarea{background:rgba(12,15,22,.74)!important;border:1px solid var(--pro-line)!important;color:var(--pro-text)!important;border-radius:10px!important;box-shadow:none!important;}
+input:focus,select:focus,textarea:focus{outline:0!important;border-color:rgba(56,189,248,.55)!important;box-shadow:0 0 0 3px rgba(56,189,248,.13)!important;}
+
+.sidebar{background:linear-gradient(180deg,#11141b,#0d1016)!important;border-right:1px solid rgba(194,205,222,.10)!important;box-shadow:12px 0 40px rgba(0,0,0,.28)!important;}
+.premium-brand,.brand{border-bottom:1px solid rgba(194,205,222,.10)!important;}
+.brand-badge{border-radius:10px!important;background:linear-gradient(135deg,#ef4444,#38bdf8)!important;color:#fff!important;}
+.sidebar-section-title,.sidebar-group-toggle{color:#f8fafc!important;}
+.sidebar a,.sidebar-group-toggle{border-radius:10px!important;}
+.sidebar a::before{
+  display:inline-grid!important;
+  place-items:center!important;
+  width:28px!important;
+  height:28px!important;
+  border:1px solid rgba(56,189,248,.20)!important;
+  border-radius:9px!important;
+  background:rgba(56,189,248,.075)!important;
+  color:#7dd3fc!important;
+  font-size:14px!important;
+  line-height:1!important;
+  filter:none!important;
+}
+.sidebar a.active,.sidebar a:hover,.sidebar-group-toggle:hover{background:linear-gradient(135deg,rgba(239,68,68,.14),rgba(56,189,248,.10))!important;border-color:rgba(255,255,255,.10)!important;}
+.sidebar a.active::before{background:rgba(239,68,68,.16)!important;border-color:rgba(239,68,68,.32)!important;color:#fecaca!important;}
+.sidebar a[href$="index.html"]::before{content:"⌂"!important;}
+.sidebar a[href$="stock.html"]::before{content:"▦"!important;}
+.sidebar a[href$="diretorio.html"]::before{content:"☎"!important;}
+.sidebar a[href$="impressoras.html"]::before{content:"▤"!important;}
+.sidebar a[href$="add-toner.html"]::before{content:"+"!important;}
+.sidebar a[href$="historico.html"]::before{content:"↗"!important;}
+.sidebar a[href$="tarefas.html"]::before{content:"✓"!important;}
+.sidebar a[href$="scanner-ia.html"]::before{content:"⌗"!important;}
+.sidebar a[href$="etiquetas-word.html"]::before{content:"⌑"!important;}
+.sidebar a[href$="manutencao-impressoras.html"]::before{content:"⚙"!important;}
+.sidebar a[href$="computadores.html"]::before{content:"▣"!important;}
+.sidebar a[href$="pistolas.html"]::before{content:"▥"!important;}
+.sidebar a[href$="radios.html"]::before{content:"≋"!important;}
+.sidebar a[href$="portas.html"]::before{content:"⌁"!important;}
+.sidebar a[href$="informacoes.html"]::before{content:"i"!important;}
+.sidebar a[href$="users.html"]::before{content:"◉"!important;}
+.sidebar a[href$="diagnostico.html"]::before{content:"◆"!important;}
+.sidebar a[href$="config.html"]::before{content:"⚙"!important;}
+
+body.dashboard-clean #personalToolsDashboard,#personalToolsDashboard.dashboard-tasks-only{display:grid!important;}
+.dashboard-shell{display:grid!important;gap:18px!important;}
+.enterprise-metrics,.stats-grid,.metric-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:14px!important;}
+.metric-card,.stat-card,.personal-card{border-radius:14px!important;border:1px solid var(--pro-line)!important;background:linear-gradient(145deg,rgba(35,41,54,.96),rgba(20,24,32,.96))!important;box-shadow:0 12px 32px rgba(0,0,0,.24)!important;min-height:118px!important;}
+.metric-card strong,.stat-card strong,.personal-card strong{color:#fff!important;font-size:clamp(28px,3vw,44px)!important;}
+
+.dashboard-tasks-only{margin:0!important;}
+.dashboard-task-panel{border-color:rgba(56,189,248,.22)!important;}
+.dashboard-task-panel .personal-panel-head{padding-bottom:12px!important;border-bottom:1px solid rgba(194,205,222,.10)!important;}
+.dashboard-task-list{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;}
+.personal-row,.personal-task-row{min-height:70px!important;border-radius:12px!important;background:rgba(255,255,255,.045)!important;border:1px solid rgba(194,205,222,.13)!important;}
+.personal-task-row.is-done{opacity:.72!important;}
+.personal-task-priority{border-radius:999px!important;padding:6px 9px!important;font-weight:900!important;}
+.personal-task-priority.high,.personal-task-priority.alta{background:rgba(239,68,68,.14)!important;border-color:rgba(239,68,68,.34)!important;color:#fecaca!important;}
+.personal-task-priority.normal{background:rgba(56,189,248,.12)!important;border-color:rgba(56,189,248,.30)!important;color:#bae6fd!important;}
+.personal-task-priority.low,.personal-task-priority.baixa{background:rgba(34,197,94,.12)!important;border-color:rgba(34,197,94,.28)!important;color:#bbf7d0!important;}
+
+#personalTasksPage{gap:18px!important;}
+.personal-task-metrics{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:14px!important;}
+.personal-task-layout{display:grid!important;grid-template-columns:minmax(0,1.5fr) minmax(280px,.65fr)!important;gap:18px!important;}
+.personal-task-composer,.personal-task-toolbar{background:rgba(255,255,255,.035)!important;border:1px solid rgba(194,205,222,.10)!important;border-radius:12px!important;padding:12px!important;}
+.personal-task-tabs{background:rgba(0,0,0,.16)!important;border:1px solid rgba(194,205,222,.10)!important;border-radius:12px!important;padding:4px!important;}
+.personal-task-tabs button.active{background:rgba(56,189,248,.14)!important;color:#e0f2fe!important;border-color:rgba(56,189,248,.26)!important;}
+
+body:has(#equipamento) .main,body:has(#personalTasksPage) .main,body:has(.equipment-detail-shell) .main,body:has(.dashboard-shell) .main{max-width:none!important;}
+body:has(#equipamento) .form-grid,body:has(#equipamento) .config-form-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:14px!important;}
+body:has(#equipamento) .panel:first-of-type{border-color:rgba(239,68,68,.22)!important;}
+body:has(#equipamento) .panel:first-of-type::before{content:"Operação rápida";display:inline-flex;margin-bottom:12px;color:#fecaca;font-weight:950;font-size:13px;text-transform:uppercase;}
+.equipment-detail-shell,.equipment-detail-grid{gap:16px!important;}
+.equipment-detail-hero,.equipment-detail-card:first-child{border-color:rgba(56,189,248,.24)!important;}
+.equipment-detail-meta,.equipment-meta-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))!important;gap:10px!important;}
+.equipment-detail-actions,.card-actions,.modal-actions{display:flex!important;gap:10px!important;flex-wrap:wrap!important;}
+.equipment-result-card,.equipment-type-card{text-decoration:none!important;}
+.empty-state,.empty-state.mini{border:1px dashed rgba(194,205,222,.22)!important;background:rgba(255,255,255,.035)!important;color:var(--pro-muted)!important;border-radius:12px!important;}
+
+@media(max-width:1100px){
+  .enterprise-metrics,.stats-grid,.metric-grid,.personal-task-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  .personal-task-layout{grid-template-columns:1fr!important;}
+}
+@media(max-width:760px){
+  .page-hero,.dashboard-header{padding:18px!important;border-radius:14px!important;}
+  .enterprise-metrics,.stats-grid,.metric-grid,.dashboard-task-list,.personal-task-metrics,body:has(#equipamento) .form-grid,body:has(#equipamento) .config-form-grid{grid-template-columns:1fr!important;}
+  .personal-row,.personal-task-row{align-items:stretch!important;}
+  .personal-task-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;}
+}
+
+@media(min-width:769px){
+  body:not(.sidebar-collapsed) .main,
+  body:not(.sidebar-collapsed) main,
+  body:not(.sidebar-collapsed) .main-content{
+    max-width:none!important;
+    width:calc(100vw - var(--app-sidebar-expanded,260px))!important;
+  }
+  body.sidebar-collapsed .main,
+  body.sidebar-collapsed main,
+  body.sidebar-collapsed .main-content{
+    max-width:none!important;
+    width:calc(100vw - var(--app-sidebar-collapsed,86px))!important;
+  }
+}
+
+/* ===== App Braga Pro Layout System v1.36.8 ===== */
+body.app-design-pro{
+  --pro-nav:292px;
+  --pro-nav-collapsed:94px;
+  --pro-page-gap:18px;
+  --pro-page-pad:20px;
+}
+
+/* ===== App Braga Unified Theme + Workspace v1.37.0 ===== */
+body.app-design-pro,
+body.app-design-pro *{
+  scrollbar-color: var(--app-primary, #ef4444) rgba(255,255,255,.06);
+}
+
+body.app-design-pro{
+  --pro-bg: var(--app-bg, #151515);
+  --pro-bg-2: var(--app-bg-2, #101114);
+  --pro-surface: var(--app-surface, rgba(28,28,30,.92));
+  --pro-surface-2: var(--app-surface-2, rgba(36,36,40,.88));
+  --pro-line: var(--app-border, rgba(255,255,255,.11));
+  --pro-line-strong: var(--app-primary-line, rgba(239,68,68,.30));
+  --pro-text: var(--app-text, #f8fafc);
+  --pro-muted: var(--app-muted, #a8b0bd);
+  --pro-red: var(--app-primary, #ef4444);
+  --pro-blue: var(--app-primary, #ef4444);
+  --pro-green: var(--app-success, #22c55e);
+  --pro-amber: var(--app-warning, #f59e0b);
+  background:
+    radial-gradient(circle at 12% 0%, rgb(var(--app-primary-rgb, 239 68 68) / .10), transparent 34rem),
+    radial-gradient(circle at 90% 6%, rgb(var(--app-secondary-rgb, 249 115 22) / .08), transparent 32rem),
+    linear-gradient(135deg,var(--app-bg, #151515),var(--app-bg-2, #101114))!important;
+}
+
+body.app-design-pro .sidebar{
+  background:
+    linear-gradient(180deg,color-mix(in srgb,var(--app-bg-2, #101114) 82%,var(--app-primary, #ef4444) 18%),var(--app-bg-2, #101114))!important;
+  border-color: var(--app-primary-line, rgba(239,68,68,.30))!important;
+}
+
+body.app-design-pro .brand-badge{
+  background: var(--app-gradient, linear-gradient(135deg,var(--app-primary),var(--app-secondary)))!important;
+  color: var(--app-button-text, #fff)!important;
+}
+
+body.app-design-pro .sidebar a::before,
+body.app-design-pro .sidebar-pro-groups .sidebar-nav-pro a[data-icon]::before{
+  content: attr(data-icon)!important;
+  width:30px!important;
+  min-width:30px!important;
+  height:30px!important;
+  border-radius:10px!important;
+  color:var(--app-button-text, #fff)!important;
+  background:var(--app-primary-soft, rgba(239,68,68,.16))!important;
+  border:1px solid var(--app-primary-line, rgba(239,68,68,.30))!important;
+  font-size:11px!important;
+  font-weight:950!important;
+  letter-spacing:0!important;
+}
+
+body.app-design-pro .sidebar a.active::before,
+body.app-design-pro .sidebar a:hover::before{
+  background:var(--app-gradient, linear-gradient(135deg,var(--app-primary),var(--app-secondary)))!important;
+  color:var(--app-button-text, #fff)!important;
+  border-color:transparent!important;
+}
+
+body.app-design-pro .sidebar a.active,
+body.app-design-pro .sidebar a:hover,
+body.app-design-pro .sidebar-group-toggle:hover{
+  background:linear-gradient(135deg,var(--app-primary-soft, rgba(239,68,68,.16)),var(--app-secondary-soft, rgba(249,115,22,.12)))!important;
+  border-color:var(--app-primary-line, rgba(239,68,68,.30))!important;
+}
+
+body.app-design-pro .app-pro-kicker,
+body.app-design-pro .sidebar-section-title,
+body.app-design-pro .app-pro-command-title small,
+body.app-design-pro th{
+  color:color-mix(in srgb,var(--app-primary, #ef4444) 62%,var(--app-text, #fff))!important;
+}
+
+body.app-design-pro .app-pro-commandbar,
+body.app-design-pro .panel,
+body.app-design-pro .dashboard-panel,
+body.app-design-pro .personal-panel,
+body.app-design-pro .config-section,
+body.app-design-pro .card,
+body.app-design-pro .stock-card,
+body.app-design-pro .history-card,
+body.app-design-pro .pc-card,
+body.app-design-pro .printer-card,
+body.app-design-pro .network-card,
+body.app-design-pro .pistol-card,
+body.app-design-pro .equipment-detail-card,
+body.app-design-pro .equipment-result-card,
+body.app-design-pro .equipment-type-card,
+body.app-design-pro .table-wrap,
+body.app-design-pro .modal-content,
+body.app-design-pro .modal-card{
+  background:
+    linear-gradient(135deg,rgb(var(--app-primary-rgb, 239 68 68) / .09),rgb(var(--app-secondary-rgb, 249 115 22) / .055)),
+    linear-gradient(145deg,var(--app-surface, rgba(28,28,30,.92)),var(--app-surface-2, rgba(36,36,40,.88)))!important;
+  border-color:var(--app-border, rgba(255,255,255,.11))!important;
+  color:var(--app-text, #f8fafc)!important;
+}
+
+body.app-design-pro .metric-card,
+body.app-design-pro .stat-card,
+body.app-design-pro .personal-card{
+  background:
+    linear-gradient(145deg,rgb(var(--app-primary-rgb, 239 68 68) / .10),rgb(var(--app-secondary-rgb, 249 115 22) / .06)),
+    linear-gradient(145deg,var(--app-surface, rgba(28,28,30,.92)),var(--app-surface-2, rgba(36,36,40,.88)))!important;
+  border-color:var(--app-border, rgba(255,255,255,.11))!important;
+}
+
+body.app-design-pro .metric-card::after,
+body.app-design-pro .stat-card::after,
+body.app-design-pro .personal-card::after,
+body.app-design-pro .page-hero::after,
+body.app-design-pro .dashboard-header::after{
+  background:linear-gradient(90deg,var(--app-primary, #ef4444),var(--app-secondary, #f97316))!important;
+}
+
+body.app-design-pro .primary-btn,
+body.app-design-pro button.primary-btn,
+body.app-design-pro button[type="submit"],
+body.app-design-pro .add-btn,
+body.app-design-pro .save-btn{
+  background:var(--app-gradient, linear-gradient(135deg,var(--app-primary),var(--app-secondary)))!important;
+  border-color:transparent!important;
+  color:var(--app-button-text, #fff)!important;
+  box-shadow:0 14px 32px var(--app-primary-glow, rgba(239,68,68,.28))!important;
+}
+
+body.app-design-pro .secondary-btn:hover,
+body.app-design-pro .small-btn:hover,
+body.app-design-pro .action-btn:hover,
+body.app-design-pro .btn-edit:hover,
+body.app-design-pro .app-pro-command-actions a:hover{
+  background:var(--app-primary-soft, rgba(239,68,68,.16))!important;
+  border-color:var(--app-primary-line, rgba(239,68,68,.30))!important;
+}
+
+body.app-design-pro input:focus,
+body.app-design-pro select:focus,
+body.app-design-pro textarea:focus{
+  border-color:var(--app-primary, #ef4444)!important;
+  box-shadow:0 0 0 3px var(--app-primary-soft, rgba(239,68,68,.16))!important;
+}
+
+body.app-design-pro .personal-dashboard-overview{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:14px!important;
+}
+
+body.app-design-pro .personal-dashboard-actions{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:12px!important;
+}
+
+body.app-design-pro .personal-dashboard-actions a{
+  min-height:58px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border-radius:16px!important;
+  border:1px solid var(--app-primary-line, rgba(239,68,68,.30))!important;
+  background:linear-gradient(135deg,var(--app-primary-soft, rgba(239,68,68,.16)),rgba(255,255,255,.045))!important;
+  color:var(--app-text, #f8fafc)!important;
+  text-decoration:none!important;
+  font-weight:950!important;
+}
+
+body.app-design-pro .personal-task-composer{
+  grid-template-columns:minmax(220px,1.1fr) minmax(150px,.55fr) minmax(145px,.45fr) minmax(130px,.4fr) auto!important;
+}
+
+body.app-design-pro .personal-task-tabs{
+  display:flex!important;
+  flex-wrap:wrap!important;
+}
+
+body.app-design-pro .personal-task-tabs button.active{
+  background:var(--app-gradient, linear-gradient(135deg,var(--app-primary),var(--app-secondary)))!important;
+  color:var(--app-button-text, #fff)!important;
+}
+
+body.app-design-pro .personal-task-priority.normal{
+  background:var(--app-primary-soft, rgba(239,68,68,.16))!important;
+  border-color:var(--app-primary-line, rgba(239,68,68,.30))!important;
+  color:color-mix(in srgb,var(--app-primary, #ef4444) 55%,#fff)!important;
+}
+body.app-design-pro .diag-dot.is-running,
+body.app-design-pro .scanner-step span:first-child,
+body.app-design-pro .scanner-btn.primary{
+  background:var(--app-gradient, linear-gradient(135deg,var(--app-primary),var(--app-secondary)))!important;
+  color:var(--app-button-text, #fff)!important;
+  box-shadow:0 10px 24px var(--app-primary-glow, rgba(239,68,68,.24))!important;
+}
+body.app-design-pro .scanner-step,
+body.app-design-pro .scanner-ocr-box,
+body.app-design-pro .scanner-field label,
+body.app-design-pro .scanner-badge,
+body.app-design-pro .radio-status-pill.assigned{
+  color:color-mix(in srgb,var(--app-primary, #ef4444) 60%,#fff)!important;
+}
+body.app-design-pro .scanner-input-wrap,
+body.app-design-pro .scanner-badge,
+body.app-design-pro .radio-status-pill.assigned{
+  background:var(--app-primary-soft, rgba(239,68,68,.16))!important;
+  border-color:var(--app-primary-line, rgba(239,68,68,.30))!important;
+}
+body.app-design-pro .scanner-input-wrap:hover,
+body.app-design-pro .scanner-btn:hover:not(:disabled){
+  background:var(--app-secondary-soft, rgba(249,115,22,.14))!important;
+  border-color:var(--app-secondary-line, rgba(249,115,22,.28))!important;
+}
+body.app-design-pro .scanner-preview-frame{
+  background:
+    radial-gradient(circle at 30% 15%,rgb(var(--app-primary-rgb, 239 68 68) / .12),transparent 32rem),
+    var(--app-surface, rgba(28,28,30,.92))!important;
+  border-color:var(--app-border, rgba(255,255,255,.11))!important;
+}
+body.app-design-pro{
+  --ui-edit-bg:var(--app-primary-soft, rgba(239,68,68,.16));
+  --ui-edit-text:color-mix(in srgb,var(--app-primary, #ef4444) 60%,#fff);
+  --ui-edit-border:var(--app-primary-line, rgba(239,68,68,.30));
+}
+
+/* ===== App Braga Work Modes + Mobile v1.37.0 ===== */
+body.app-design-pro .panel,
+body.app-design-pro .dashboard-panel,
+body.app-design-pro .personal-panel,
+body.app-design-pro .config-section,
+body.app-design-pro .card,
+body.app-design-pro .metric-card,
+body.app-design-pro .stat-card,
+body.app-design-pro .personal-card,
+body.app-design-pro input,
+body.app-design-pro select,
+body.app-design-pro textarea,
+body.app-design-pro button,
+body.app-design-pro .primary-btn,
+body.app-design-pro .secondary-btn,
+body.app-design-pro .app-pro-commandbar,
+body.app-design-pro .sidebar,
+body.app-design-pro .sidebar a,
+body.app-design-pro .sidebar-group,
+body.app-design-pro .sidebar-group-toggle{
+  border-radius:var(--app-control-radius,16px)!important;
+}
+
+body.app-design-pro.app-radius-round{
+  --app-control-radius:24px;
+}
+
+body.app-design-pro.app-radius-soft{
+  --app-control-radius:16px;
+}
+
+body.app-design-pro.app-radius-sharp{
+  --app-control-radius:8px;
+}
+
+body.app-design-pro.app-density-compact .main,
+body.app-design-pro.app-density-compact main,
+body.app-design-pro.app-density-compact .main-content{
+  gap:12px!important;
+  padding-top:12px!important;
+  padding-bottom:18px!important;
+}
+
+body.app-design-pro.app-density-compact .panel,
+body.app-design-pro.app-density-compact .dashboard-panel,
+body.app-design-pro.app-density-compact .personal-panel,
+body.app-design-pro.app-density-compact .config-section{
+  padding:12px!important;
+}
+
+body.app-design-pro.app-density-compact .metric-card,
+body.app-design-pro.app-density-compact .stat-card,
+body.app-design-pro.app-density-compact .personal-card{
+  min-height:92px!important;
+  padding:14px!important;
+}
+
+body.app-design-pro.app-density-compact .app-pro-commandbar{
+  min-height:62px!important;
+  padding:12px 14px!important;
+}
+
+body.app-design-pro.app-mode-tech .app-pro-command-actions a[href$="config.html"],
+body.app-design-pro.app-mode-tech .app-pro-command-actions a[href$="index.html"]{
+  display:none!important;
+}
+
+body.app-design-pro.app-mode-tech .personal-dashboard-overview{
+  display:none!important;
+}
+
+body.app-design-pro.app-mode-tech .personal-dashboard-actions a{
+  min-height:70px!important;
+  font-size:15px!important;
+}
+
+body.app-design-pro.app-mode-management .personal-dashboard-actions{
+  order:8;
+}
+
+body.app-design-pro.app-mode-management .dashboard-task-panel{
+  border-color:var(--app-primary-line, rgba(239,68,68,.30))!important;
+}
+
+.personal-alert-strip{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:12px!important;
+}
+
+.personal-alert-card{
+  min-height:76px;
+  display:grid;
+  align-content:center;
+  gap:5px;
+  padding:14px;
+  border-radius:var(--app-control-radius,16px);
+  border:1px solid var(--app-border,rgba(255,255,255,.11));
+  background:rgba(255,255,255,.045);
+}
+
+.personal-alert-card strong,
+.personal-alert-card small{
+  display:block;
+}
+
+.personal-alert-card strong{
+  color:var(--app-text,#fff);
+  font-size:14px;
+  font-weight:950;
+}
+
+.personal-alert-card small{
+  color:var(--app-muted,#a8b0bd);
+}
+
+.personal-alert-card.is-danger{
+  background:var(--app-danger-soft,rgba(239,68,68,.14));
+  border-color:rgba(239,68,68,.34);
+}
+
+.personal-alert-card.is-warn{
+  background:var(--app-warning-soft,rgba(245,158,11,.15));
+  border-color:rgba(245,158,11,.34);
+}
+
+.personal-alert-card.is-info{
+  background:var(--app-primary-soft,rgba(239,68,68,.16));
+  border-color:var(--app-primary-line,rgba(239,68,68,.30));
+}
+
+.personal-alert-card.is-ok{
+  background:var(--app-success-soft,rgba(34,197,94,.14));
+  border-color:rgba(34,197,94,.30);
+}
+
+.app-mobile-action-dock{
+  display:none;
+}
+
+@media(max-width:900px){
+  body.app-design-pro.app-mobile-actions-on{
+    padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))!important;
+  }
+
+  body.app-design-pro.app-mobile-actions-on .main,
+  body.app-design-pro.app-mobile-actions-on main,
+  body.app-design-pro.app-mobile-actions-on .main-content{
+    padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))!important;
+  }
+
+  body.app-design-pro.app-mobile-actions-on .app-mobile-action-dock{
+    position:fixed;
+    left:12px;
+    right:12px;
+    bottom:calc(10px + env(safe-area-inset-bottom,0px));
+    z-index:10020;
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:8px;
+    padding:8px;
+    border:1px solid var(--app-primary-line,rgba(239,68,68,.30));
+    border-radius:22px;
+    background:
+      linear-gradient(135deg,rgb(var(--app-primary-rgb,239 68 68) / .10),rgb(var(--app-secondary-rgb,249 115 22) / .06)),
+      rgba(12,15,21,.94);
+    box-shadow:0 18px 60px rgba(0,0,0,.45);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+  }
+
+  body.app-design-pro .app-mobile-action-dock a{
+    min-height:46px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:15px;
+    text-decoration:none;
+    font-size:12px;
+    font-weight:950;
+    color:var(--app-text,#fff)!important;
+    background:rgba(255,255,255,.055);
+    border:1px solid rgba(255,255,255,.08);
+  }
+
+  body.app-design-pro .app-mobile-action-dock a:active{
+    background:var(--app-gradient,linear-gradient(135deg,var(--app-primary),var(--app-secondary)));
+    color:var(--app-button-text,#fff)!important;
+  }
+
+  .personal-alert-strip{
+    grid-template-columns:1fr 1fr!important;
+  }
+}
+
+@media(max-width:640px){
+  .personal-alert-strip{
+    grid-template-columns:1fr!important;
+  }
+}
+
+/* ===== App Braga Firebase Notifications v1.38.0 ===== */
+.notification-cloud-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:14px;
+}
+
+.notification-cloud-card{
+  min-height:118px;
+  display:grid;
+  align-content:center;
+  gap:7px;
+}
+
+.notification-cloud-card span,
+.notification-cloud-card small{
+  color:var(--app-muted,#a8b0bd);
+}
+
+.notification-cloud-card strong{
+  color:var(--app-text,#fff);
+  font-size:clamp(18px,1.4vw,26px);
+  line-height:1.1;
+}
+
+[data-state="ok"]{
+  color:var(--app-success,#22c55e)!important;
+}
+
+[data-state="warn"]{
+  color:var(--app-warning,#f59e0b)!important;
+}
+
+[data-state="bad"]{
+  color:var(--app-danger,#ef4444)!important;
+}
+
+.notification-device-list,
+.notification-history-list{
+  display:grid;
+  gap:10px;
+}
+
+.notification-device-card,
+.notification-history-item{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto auto;
+  gap:10px;
+  align-items:center;
+  padding:13px;
+  border:1px solid var(--app-border,rgba(255,255,255,.11));
+  border-radius:var(--app-control-radius,16px);
+  background:rgba(255,255,255,.04);
+}
+
+.notification-device-card.is-current{
+  border-color:var(--app-primary-line,rgba(239,68,68,.30));
+  background:var(--app-primary-soft,rgba(239,68,68,.16));
+}
+
+.notification-device-card strong,
+.notification-device-card small,
+.notification-history-item strong{
+  display:block;
+}
+
+.notification-device-card small{
+  margin-top:3px;
+  color:var(--app-muted,#a8b0bd);
+}
+
+.notification-chip{
+  min-height:30px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 10px;
+  border-radius:999px;
+  border:1px solid var(--app-border,rgba(255,255,255,.11));
+  background:rgba(255,255,255,.05);
+  color:var(--app-text,#fff);
+  font-size:12px;
+  font-weight:900;
+  white-space:nowrap;
+}
+
+.notification-chip.ok{
+  color:var(--app-success,#22c55e);
+  background:var(--app-success-soft,rgba(34,197,94,.14));
+  border-color:rgba(34,197,94,.30);
+}
+
+.notification-chip.bad{
+  color:#fecaca;
+  background:var(--app-danger-soft,rgba(239,68,68,.14));
+  border-color:rgba(239,68,68,.32);
+}
+
+.notification-history-stats{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  justify-content:flex-end;
+}
+
+@media(max-width:1100px){
+  .notification-cloud-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+
+@media(max-width:720px){
+  .notification-cloud-grid,
+  .notification-device-card,
+  .notification-history-item{
+    grid-template-columns:1fr;
+  }
+
+  .notification-history-stats{
+    justify-content:flex-start;
+  }
+}
+
+body.app-design-pro .personal-task-priority.high,
+body.app-design-pro .personal-task-priority.alta{
+  background:var(--app-danger-soft, rgba(239,68,68,.14))!important;
+  border-color:rgba(239,68,68,.35)!important;
+  color:#fecaca!important;
+}
+
+body.app-design-pro .personal-task-priority.low,
+body.app-design-pro .personal-task-priority.baixa{
+  background:var(--app-success-soft, rgba(34,197,94,.14))!important;
+  border-color:rgba(34,197,94,.30)!important;
+  color:#bbf7d0!important;
+}
+
+body.app-design-pro .personal-plan-row{
+  padding:12px!important;
+  border-radius:14px!important;
+  border:1px solid var(--app-border, rgba(255,255,255,.11))!important;
+  background:rgba(255,255,255,.04)!important;
+}
+
+body.app-design-pro .personal-plan-row strong,
+body.app-design-pro .personal-plan-row small{
+  display:block!important;
+}
+
+body.app-design-pro .personal-plan-row small{
+  margin-top:4px!important;
+  color:var(--app-muted, #a8b0bd)!important;
+}
+
+body.app-design-pro .app-sidebar-overlay{
+  background:rgba(0,0,0,.48)!important;
+  backdrop-filter:blur(7px)!important;
+  -webkit-backdrop-filter:blur(7px)!important;
+}
+
+@media(max-width:1180px){
+  body.app-design-pro .personal-dashboard-overview,
+  body.app-design-pro .personal-dashboard-actions,
+  body.app-design-pro .enterprise-metrics,
+  body.app-design-pro .stats-grid,
+  body.app-design-pro .metric-grid,
+  body.app-design-pro .personal-task-metrics{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+
+  body.app-design-pro .personal-task-composer{
+    grid-template-columns:1fr 1fr!important;
+  }
+
+  body.app-design-pro .personal-task-composer button{
+    grid-column:1/-1!important;
+  }
+}
+
+@media(max-width:900px){
+  body.app-design-pro{
+    --pro-page-pad:14px;
+  }
+
+  body.app-design-pro .main,
+  body.app-design-pro main,
+  body.app-design-pro .main-content{
+    min-height:100svh!important;
+    padding:calc(76px + env(safe-area-inset-top,0px)) 14px calc(28px + env(safe-area-inset-bottom,0px))!important;
+  }
+
+  body.app-design-pro .app-pro-commandbar{
+    min-height:auto!important;
+    gap:12px!important;
+    border-radius:18px!important;
+  }
+
+  body.app-design-pro .app-pro-command-actions{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    width:100%!important;
+  }
+
+  body.app-design-pro .app-pro-command-actions a,
+  body.app-design-pro button,
+  body.app-design-pro .primary-btn,
+  body.app-design-pro .secondary-btn{
+    min-height:44px!important;
+  }
+}
+
+@media(max-width:680px){
+  body.app-design-pro .personal-dashboard-overview,
+  body.app-design-pro .personal-dashboard-actions,
+  body.app-design-pro .enterprise-metrics,
+  body.app-design-pro .stats-grid,
+  body.app-design-pro .metric-grid,
+  body.app-design-pro .personal-task-metrics,
+  body.app-design-pro .personal-task-composer,
+  body.app-design-pro .personal-task-toolbar{
+    grid-template-columns:1fr!important;
+  }
+
+  body.app-design-pro .personal-task-tabs{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+  }
+
+  body.app-design-pro .personal-task-row{
+    grid-template-columns:1fr!important;
+  }
+}
+
+body.app-design-pro .sidebar{
+  top:16px!important;
+  left:16px!important;
+  bottom:16px!important;
+  height:auto!important;
+  width:var(--pro-nav)!important;
+  min-width:var(--pro-nav)!important;
+  max-width:var(--pro-nav)!important;
+  padding:16px!important;
+  border-radius:22px!important;
+  background:
+    linear-gradient(180deg,rgba(21,25,34,.96),rgba(12,15,21,.98))!important;
+  border:1px solid rgba(194,205,222,.14)!important;
+  box-shadow:0 24px 70px rgba(0,0,0,.42)!important;
+}
+
+body.app-design-pro .brand,
+body.app-design-pro .premium-brand{
+  min-height:72px!important;
+  padding:10px 6px 16px!important;
+  margin-bottom:10px!important;
+}
+
+body.app-design-pro .brand h2{
+  font-size:18px!important;
+  letter-spacing:0!important;
+}
+
+body.app-design-pro .sidebar-brand-subtitle{
+  font-size:12px!important;
+}
+
+body.app-design-pro .sidebar-nav-pro{
+  display:grid!important;
+  gap:12px!important;
+}
+
+body.app-design-pro .sidebar-favorites,
+body.app-design-pro .sidebar-group{
+  padding:8px!important;
+  border:1px solid rgba(194,205,222,.08)!important;
+  border-radius:16px!important;
+  background:rgba(255,255,255,.025)!important;
+}
+
+body.app-design-pro .sidebar-section-title{
+  padding:4px 8px 8px!important;
+  font-size:12px!important;
+  text-transform:uppercase!important;
+  letter-spacing:.08em!important;
+  color:#9fb2ca!important;
+}
+
+body.app-design-pro .sidebar a,
+body.app-design-pro .sidebar-group-toggle{
+  min-height:44px!important;
+  padding:8px 10px!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  border:1px solid transparent!important;
+}
+
+body.app-design-pro .sidebar a.active{
+  background:linear-gradient(135deg,rgba(239,68,68,.18),rgba(56,189,248,.12))!important;
+  border-color:rgba(248,113,113,.22)!important;
+}
+
+body.app-design-pro .main,
+body.app-design-pro main,
+body.app-design-pro .main-content{
+  padding:16px 18px 28px!important;
+  margin-left:calc(var(--pro-nav) + 32px)!important;
+  width:calc(100vw - var(--pro-nav) - 32px)!important;
+  max-width:none!important;
+  display:grid!important;
+  gap:var(--pro-page-gap)!important;
+}
+
+body.app-design-pro.sidebar-collapsed .sidebar{
+  width:var(--pro-nav-collapsed)!important;
+  min-width:var(--pro-nav-collapsed)!important;
+  max-width:var(--pro-nav-collapsed)!important;
+}
+
+body.app-design-pro.sidebar-collapsed .main,
+body.app-design-pro.sidebar-collapsed main,
+body.app-design-pro.sidebar-collapsed .main-content{
+  margin-left:calc(var(--pro-nav-collapsed) + 32px)!important;
+  width:calc(100vw - var(--pro-nav-collapsed) - 32px)!important;
+}
+
+body.app-design-pro .app-pro-commandbar{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:18px!important;
+  min-height:82px!important;
+  padding:16px 18px!important;
+  border-radius:22px!important;
+  background:
+    linear-gradient(135deg,rgba(35,41,54,.96),rgba(18,22,30,.98))!important;
+  border:1px solid rgba(194,205,222,.16)!important;
+  box-shadow:0 20px 60px rgba(0,0,0,.32)!important;
+}
+
+body.app-design-pro .app-pro-command-title{
+  display:grid!important;
+  gap:2px!important;
+  min-width:0!important;
+}
+
+body.app-design-pro .app-pro-kicker{
+  color:#7dd3fc!important;
+  font-size:12px!important;
+  font-weight:950!important;
+  text-transform:uppercase!important;
+  letter-spacing:.08em!important;
+}
+
+body.app-design-pro .app-pro-command-title strong{
+  color:#fff!important;
+  font-size:clamp(24px,2.2vw,36px)!important;
+  line-height:1.05!important;
+  font-weight:950!important;
+  letter-spacing:0!important;
+}
+
+body.app-design-pro .app-pro-command-title small{
+  color:#aeb8c8!important;
+  font-size:14px!important;
+}
+
+body.app-design-pro .app-pro-command-actions{
+  display:flex!important;
+  gap:8px!important;
+  flex-wrap:wrap!important;
+  justify-content:flex-end!important;
+}
+
+body.app-design-pro .app-pro-command-actions a{
+  min-height:38px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:0 12px!important;
+  border-radius:11px!important;
+  text-decoration:none!important;
+  color:#eaf2ff!important;
+  background:rgba(255,255,255,.06)!important;
+  border:1px solid rgba(194,205,222,.14)!important;
+  font-weight:850!important;
+}
+
+body.app-design-pro .app-pro-command-actions a:hover{
+  background:rgba(56,189,248,.12)!important;
+  border-color:rgba(56,189,248,.34)!important;
+}
+
+body.app-design-pro .page-hero,
+body.app-design-pro .dashboard-header{
+  display:none!important;
+}
+
+body.app-design-pro .panel,
+body.app-design-pro .dashboard-panel,
+body.app-design-pro .personal-panel,
+body.app-design-pro .config-section{
+  padding:18px!important;
+  border-radius:18px!important;
+}
+
+body.app-design-pro .metric-card,
+body.app-design-pro .stat-card,
+body.app-design-pro .personal-card{
+  position:relative!important;
+  overflow:hidden!important;
+}
+
+body.app-design-pro .metric-card::after,
+body.app-design-pro .stat-card::after,
+body.app-design-pro .personal-card::after{
+  content:""!important;
+  position:absolute!important;
+  inset:auto 14px 0 14px!important;
+  height:2px!important;
+  background:linear-gradient(90deg,rgba(239,68,68,.8),rgba(56,189,248,.7))!important;
+}
+
+body.app-design-pro .dashboard-task-list,
+body.app-design-pro .personal-list{
+  gap:12px!important;
+}
+
+body.app-design-pro .personal-row{
+  padding:14px!important;
+  border-radius:15px!important;
+}
+
+body.app-design-pro table,
+body.app-design-pro .table-wrap{
+  border-radius:16px!important;
+  overflow:hidden!important;
+}
+
+body.app-design-pro th{
+  background:rgba(255,255,255,.06)!important;
+  color:#dbeafe!important;
+}
+
+body.app-design-pro td{
+  border-color:rgba(194,205,222,.09)!important;
+}
+
+body.app-design-pro .design-system-switch{
+  padding:12px!important;
+  border-radius:18px!important;
+  background:rgba(255,255,255,.035)!important;
+  border:1px solid rgba(194,205,222,.12)!important;
+}
+
+@media(max-width:900px){
+  body.app-design-pro .sidebar{
+    top:0!important;
+    left:0!important;
+    bottom:0!important;
+    width:min(330px,88vw)!important;
+    min-width:min(330px,88vw)!important;
+    max-width:min(330px,88vw)!important;
+    border-radius:0 22px 22px 0!important;
+  }
+  body.app-design-pro .main,
+  body.app-design-pro main,
+  body.app-design-pro .main-content{
+    margin-left:0!important;
+    width:100vw!important;
+    padding:78px 14px 28px!important;
+  }
+  body.app-design-pro .app-pro-commandbar{
+    display:grid!important;
+    align-items:start!important;
+  }
+  body.app-design-pro .app-pro-command-actions{
+    justify-content:flex-start!important;
+  }
+}
+
+/* ===== App Braga Unified Theme Final Pass v1.37.0 ===== */
+body.app-design-pro .sidebar{
+  background:
+    linear-gradient(180deg,color-mix(in srgb,var(--app-bg-2, #101114) 82%,var(--app-primary, #ef4444) 18%),var(--app-bg-2, #101114))!important;
+  border-color:var(--app-primary-line, rgba(239,68,68,.30))!important;
+}
+body.app-design-pro .sidebar a.active,
+body.app-design-pro .sidebar a:hover,
+body.app-design-pro .sidebar-group-toggle:hover{
+  background:linear-gradient(135deg,var(--app-primary-soft, rgba(239,68,68,.16)),var(--app-secondary-soft, rgba(249,115,22,.12)))!important;
+  border-color:var(--app-primary-line, rgba(239,68,68,.30))!important;
+}
+body.app-design-pro .sidebar a::before,
+body.app-design-pro .sidebar-pro-groups .sidebar-nav-pro a[data-icon]::before{
+  content:attr(data-icon)!important;
+  color:var(--app-button-text, #fff)!important;
+  background:var(--app-primary-soft, rgba(239,68,68,.16))!important;
+  border-color:var(--app-primary-line, rgba(239,68,68,.30))!important;
+  font-size:11px!important;
+  font-weight:950!important;
+  letter-spacing:0!important;
+}
+body.app-design-pro .sidebar a.active::before,
+body.app-design-pro .sidebar a:hover::before,
+body.app-design-pro .brand-badge,
+body.app-design-pro .primary-btn,
+body.app-design-pro button.primary-btn,
+body.app-design-pro button[type="submit"],
+body.app-design-pro .add-btn,
+body.app-design-pro .save-btn,
+body.app-design-pro .personal-task-tabs button.active{
+  background:var(--app-gradient, linear-gradient(135deg,var(--app-primary),var(--app-secondary)))!important;
+  color:var(--app-button-text, #fff)!important;
+  border-color:transparent!important;
+}
+body.app-design-pro .app-pro-commandbar,
+body.app-design-pro .panel,
+body.app-design-pro .dashboard-panel,
+body.app-design-pro .personal-panel,
+body.app-design-pro .config-section,
+body.app-design-pro .card,
+body.app-design-pro .stock-card,
+body.app-design-pro .history-card,
+body.app-design-pro .pc-card,
+body.app-design-pro .printer-card,
+body.app-design-pro .network-card,
+body.app-design-pro .pistol-card,
+body.app-design-pro .equipment-detail-card,
+body.app-design-pro .equipment-result-card,
+body.app-design-pro .equipment-type-card,
+body.app-design-pro .table-wrap,
+body.app-design-pro .modal-content,
+body.app-design-pro .modal-card{
+  background:
+    linear-gradient(135deg,rgb(var(--app-primary-rgb, 239 68 68) / .09),rgb(var(--app-secondary-rgb, 249 115 22) / .055)),
+    linear-gradient(145deg,var(--app-surface, rgba(28,28,30,.92)),var(--app-surface-2, rgba(36,36,40,.88)))!important;
+  border-color:var(--app-border, rgba(255,255,255,.11))!important;
+}
+body.app-design-pro .app-pro-kicker,
+body.app-design-pro .app-pro-command-title small,
+body.app-design-pro .sidebar-section-title,
+body.app-design-pro th{
+  color:color-mix(in srgb,var(--app-primary, #ef4444) 62%,var(--app-text, #fff))!important;
+}
+body.app-design-pro .app-pro-command-actions a:hover,
+body.app-design-pro .secondary-btn:hover,
+body.app-design-pro .small-btn:hover,
+body.app-design-pro .action-btn:hover,
+body.app-design-pro .btn-edit:hover{
+  background:var(--app-primary-soft, rgba(239,68,68,.16))!important;
+  border-color:var(--app-primary-line, rgba(239,68,68,.30))!important;
+}
+body.app-design-pro .metric-card::after,
+body.app-design-pro .stat-card::after,
+body.app-design-pro .personal-card::after{
+  background:linear-gradient(90deg,var(--app-primary, #ef4444),var(--app-secondary, #f97316))!important;
+}
+body.app-design-pro th{
+  background:rgba(255,255,255,.06)!important;
+}
+body.app-design-pro .personal-task-priority.normal{
+  background:var(--app-primary-soft, rgba(239,68,68,.16))!important;
+  border-color:var(--app-primary-line, rgba(239,68,68,.30))!important;
+  color:color-mix(in srgb,var(--app-primary, #ef4444) 55%,#fff)!important;
+}

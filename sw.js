@@ -1,71 +1,12 @@
-const APP_BRAGA_SW = "app-braga-runtime-v70";
-const APP_BRAGA_FIREBASE_CONFIG = {
-  apiKey: "AIzaSyCSgw4rhBLW5mq4QClulubf6e0hf5lDJbo",
-  authDomain: "toner-manager-756c4.firebaseapp.com",
-  databaseURL: "https://toner-manager-756c4-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "toner-manager-756c4",
-  storageBucket: "toner-manager-756c4.firebasestorage.app",
-  messagingSenderId: "1004492465437",
-  appId: "1:1004492465437:web:6a745933c51fc17b04adf4"
-};
-
-function appBragaNotificationOptions(payload = {}) {
-  const data = payload.data || {};
-  const requireInteraction = data.requireInteraction === true ||
-    data.requireInteraction === "1" ||
-    data.requireInteraction === "true" ||
-    payload.requireInteraction === true ||
-    payload.requireInteraction === "1" ||
-    payload.requireInteraction === "true";
-  return {
-    body: payload.body || data.body || "",
-    icon: data.icon || "./icon-192.png",
-    badge: data.badge || "./icon-192.png",
-    tag: payload.tag || data.tag || data.event || "app-braga-push",
-    renotify: true,
-    requireInteraction,
-    data: {
-      url: data.url || payload.url || "./index.html",
-      ...data
-    }
-  };
-}
-
-function appBragaShowNotification(payload = {}) {
-  const title = payload.title || payload?.notification?.title || payload?.data?.title || "App Braga";
-  const normalized = {
-    ...(payload.notification || {}),
-    ...payload,
-    ...(payload.data || {})
-  };
-  return self.registration.showNotification(title, appBragaNotificationOptions(normalized));
-}
-
-try {
-  importScripts("https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js");
-  importScripts("https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js");
-  if (self.firebase && !firebase.apps.length) firebase.initializeApp(APP_BRAGA_FIREBASE_CONFIG);
-  if (self.firebase && firebase.messaging) {
-    const messaging = firebase.messaging();
-    messaging.onBackgroundMessage((payload) => {
-      return appBragaShowNotification({
-        ...(payload.notification || {}),
-        data: payload.data || {},
-        tag: payload?.data?.tag || "app-braga-fcm"
-      });
-    });
-  }
-} catch (error) {
-  console.log("Firebase Messaging indisponivel no SW", error);
-}
+const APP_BRAGA_SW = "app-braga-runtime-v76";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./html/index.html",
+  "./html/notificacoes.html",
   "./html/computadores.html",
   "./html/equipamento.html",
   "./html/impressoras.html",
-  "./html/notificacoes.html",
   "./html/radios.html",
   "./html/scanner-ia.html",
   "./html/stock.html",
@@ -138,10 +79,6 @@ self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
   }
-  if (event.data && event.data.type === "APP_BRAGA_NOTIFY") {
-    const payload = event.data.payload || {};
-    event.waitUntil(appBragaShowNotification(payload));
-  }
 });
 
 self.addEventListener("push", (event) => {
@@ -151,21 +88,35 @@ self.addEventListener("push", (event) => {
   } catch (error) {
     payload = { title: "App Braga", body: event.data ? event.data.text() : "Nova notificacao" };
   }
-  event.waitUntil(appBragaShowNotification(payload));
+  const title = payload.title || payload.notification?.title || "App Braga";
+  const body = payload.body || payload.notification?.body || "Nova notificacao App Braga";
+  const data = payload.data || payload;
+  event.waitUntil(self.registration.showNotification(title, {
+    body,
+    tag: payload.tag || data.tag || "app-braga",
+    icon: "./icon-192.png",
+    badge: "./icon-192.png",
+    data: {
+      url: data.url || payload.url || "./html/index.html",
+      requestId: data.requestId || payload.requestId || ""
+    }
+  }));
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const targetUrl = event.notification.data && event.notification.data.url ? event.notification.data.url : "./index.html";
+  const target = event.notification.data?.url || "./html/index.html";
   event.waitUntil(
-    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if ("focus" in client) return client.focus();
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientsList) => {
+      for (const client of clientsList) {
+        if ("focus" in client) {
+          client.navigate(target).catch(() => null);
+          return client.focus();
+        }
       }
-      if (clients.openWindow) return clients.openWindow(targetUrl);
-      return null;
+      return self.clients.openWindow(target);
     })
   );
 });
 
-// APP BRAGA V1.33.4 safe-area-diretorio-edit
+// APP BRAGA V1.38.0 firebase-notifications

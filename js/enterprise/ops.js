@@ -15,9 +15,6 @@
     { name: "manutencoes", label: "Manutencao", page: "manutencao-impressoras.html", fields: ["modelo", "serie", "ip", "estado", "motivo", "user"] },
     { name: "informacoes", label: "Informacao", page: "informacoes.html", fields: ["titulo", "obs", "texto"] },
     { name: "etiquetasWord", label: "Etiqueta Word", page: "etiquetas-word.html", fields: ["titulo", "data", "user", "descricao"] },
-    { name: "notificationTokens", label: "Dispositivo push", page: "config.html", fields: ["deviceName", "deviceType", "source", "permission", "token"] },
-    { name: "notificationDevices", label: "Dispositivo push", page: "config.html", fields: ["name", "deviceName", "platform", "token", "lastSeenAt"] },
-    { name: "pushDevices", label: "Dispositivo push", page: "config.html", fields: ["name", "deviceName", "platform", "token", "lastSeenAt"] },
     { name: "auditLogs", label: "Auditoria", page: "historico.html", fields: ["action", "path", "collection", "event", "title"] }
   ];
 
@@ -423,7 +420,6 @@
           });
           state.collectionCache[collection.name] = next;
           rebuildSearchIndex();
-          handleCollectionNotifications(collection, previous, next);
           if (collection.name === "printers" || collection.name === "impressoras") {
             updateLowTonerFromPrinters();
           }
@@ -471,37 +467,6 @@
     target.querySelectorAll("[data-page]").forEach((node) => {
       node.addEventListener("click", () => { location.href = node.dataset.page; });
     });
-  }
-
-  async function sendAppNotification(title, body, tag) {
-    try {
-      if (window.appNotificationState && window.appNotificationState.enabled === false) return;
-      if ("Notification" in window && Notification.permission === "granted") {
-        const reg = await navigator.serviceWorker?.getRegistration?.();
-        if (reg?.active) {
-          reg.active.postMessage({ type: "APP_BRAGA_NOTIFY", payload: { title, body, tag, data: { url: location.href } } });
-          return;
-        }
-        new Notification(title, { body, tag, icon: "../icon-192.png" });
-      }
-      toast(title, body);
-    } catch (error) {
-      toast(title, body);
-    }
-  }
-
-  function handleCollectionNotifications(collection, previous, next) {
-    if (!state.firstSnapshot[collection.name]) {
-      state.firstSnapshot[collection.name] = true;
-      return;
-    }
-    const added = Object.keys(next).filter((id) => !previous[id]);
-    const changed = Object.keys(next).filter((id) => previous[id] && JSON.stringify(previous[id]) !== JSON.stringify(next[id]));
-    if (!added.length && !changed.length) return;
-
-    const label = collection.label;
-    const count = added.length + changed.length;
-    sendAppNotification("App Braga", `${label}: ${count} alteracao${count === 1 ? "" : "es"}.`, `app-braga-${collection.name}`);
   }
 
   function updateLowTonerFromPrinters() {
@@ -568,16 +533,14 @@
       const node = document.getElementById(id);
       if (node) node.textContent = String(value);
     };
-    const tokens = Object.values(state.collectionCache.notificationTokens || {})
-      .filter((item) => item.active !== false && (item.token || item.pushSubscription?.endpoint));
     const manutencoes = Object.values(state.collectionCache.manutencoes || {})
       .filter((item) => !/resolvido|fechado|concluido|concluído/i.test(String(item.estado || "")));
     const audit = Object.values(state.collectionCache.auditLogs || {});
-    set("dashboardOpsPushCount", tokens.length);
+    set("dashboardOpsPushCount", "0");
     set("dashboardOpsMaintenanceCount", manutencoes.length);
     set("dashboardOpsAuditCount", audit.length);
     const pushDetail = document.getElementById("dashboardOpsPushDetail");
-    if (pushDetail) pushDetail.textContent = tokens.length ? "Prontos para receber" : "Sem dispositivos ativos";
+    if (pushDetail) pushDetail.textContent = "Sistema removido";
     const sync = document.getElementById("dashboardOpsSync");
     if (sync) sync.textContent = `Sync ${new Date().toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" })}`;
     renderLowTonerDashboard();
@@ -699,7 +662,6 @@
   }, { passive: true });
   window.AppBragaEnterpriseOps = {
     refresh: init,
-    updateLowTonerFromPrinters,
-    sendAppNotification
+    updateLowTonerFromPrinters
   };
 })();

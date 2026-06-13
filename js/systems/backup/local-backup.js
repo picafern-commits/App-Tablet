@@ -17,7 +17,6 @@
     "radioHistory",
     "informacoes",
     "etiquetasWord",
-    "notificationTokens",
     "config"
   ];
 
