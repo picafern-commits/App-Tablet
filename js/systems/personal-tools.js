@@ -3,6 +3,7 @@
 
   const DB_NAME = "app-braga-offline-queue";
   const DB_STORE = "queue";
+  const TASK_NOTIFY_URL = "https://europe-west1-toner-manager-756c4.cloudfunctions.net/sendNotificationBroadcast";
   const DATE_FMT = new Intl.DateTimeFormat("pt-PT", { day: "2-digit", month: "2-digit", year: "numeric" });
   const TIME_FMT = new Intl.DateTimeFormat("pt-PT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 
@@ -30,6 +31,31 @@
 
   function db() {
     return window.db && typeof window.db.collection === "function" ? window.db : null;
+  }
+
+  async function notifyTaskCreated(task = {}, taskId = "") {
+    if (!navigator.onLine || !task?.title) return;
+    const priority = String(task.priority || "").toLowerCase();
+    const high = priority === "alta" || priority === "high" || priority === "urgente";
+    const details = [task.owner ? `Responsavel: ${task.owner}` : "", task.dueDate ? `Prazo: ${task.dueDate}` : ""].filter(Boolean).join(" - ");
+    try {
+      const response = await fetch(TASK_NOTIFY_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestId: `task-client-${taskId || Date.now()}`,
+          title: high ? "Tarefa importante" : "Nova tarefa",
+          body: `${task.title}${details ? ` - ${details}` : ""}`,
+          event: high ? "task-client-high" : "task-client-created",
+          url: "https://picafern-commits.github.io/App-Tablet/html/tarefas.html",
+          tag: `task-client-${taskId || task.title}`
+        })
+      });
+      return response.ok;
+    } catch (error) {
+      console.warn("Nao foi possivel enviar notificacao da tarefa:", error);
+    }
+    return false;
   }
 
   function escapeHtml(value) {
@@ -332,7 +358,10 @@
     if (!title) return;
     const payload = { title: title.trim(), done: false, createdAt: Date.now(), updatedAt: Date.now() };
     if (!db() || !navigator.onLine) return queueOperation("personalTasks", null, payload, "add");
-    await db().collection("personalTasks").add(payload);
+    const ref = await db().collection("personalTasks").add(payload);
+    if (await notifyTaskCreated(payload, ref.id)) {
+      await ref.set({ notificationClientSent: true, notificationClientSentAt: Date.now() }, { merge: true });
+    }
   }
 
   async function addTaskFromPage() {
@@ -353,7 +382,12 @@
       updatedAt: Date.now()
     };
     if (!db() || !navigator.onLine) await queueOperation("personalTasks", null, payload, "add");
-    else await db().collection("personalTasks").add(payload);
+    else {
+      const ref = await db().collection("personalTasks").add(payload);
+      if (await notifyTaskCreated(payload, ref.id)) {
+        await ref.set({ notificationClientSent: true, notificationClientSentAt: Date.now() }, { merge: true });
+      }
+    }
     input.value = "";
     if (owner) owner.value = "";
     if (due) due.value = "";

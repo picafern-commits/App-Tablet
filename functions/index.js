@@ -527,10 +527,17 @@ function isHighPriorityTask(task = {}) {
   return priority === "alta" || priority === "high" || priority === "urgente" || task.important === true || task.importante === true;
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 exports.onPersonalTaskNotification = onDocumentCreated(
   { ...BACKGROUND_OPTIONS, document: "personalTasks/{taskId}" },
   async (event) => {
-    const task = event.data?.data() || {};
+    await sleep(3500);
+    const latestDoc = await db.collection("personalTasks").doc(event.params.taskId).get().catch(() => null);
+    const task = latestDoc?.exists ? latestDoc.data() || {} : event.data?.data() || {};
+    if (task.notificationClientSent === true) return null;
     if (task.done === true || task.status === "done" || task.status === "closed") return null;
 
     const title = cleanText(task.title || task.titulo || task.nome, "Nova tarefa");
