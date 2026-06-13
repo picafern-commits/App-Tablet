@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.54.2";
+const APP_VERSION = "1.54.3";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "";
@@ -13285,9 +13285,10 @@ async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
 })();
 /* ===== END APP BRAGA v1.35.8 ===== */
 
-/* ===== APP BRAGA v1.54.2 - SIDEBAR NOVA GLOBAL ===== */
+/* ===== APP BRAGA v1.54.3 - SIDEBAR NOVA GLOBAL ===== */
 (function(){
   const COLLAPSE_KEY = "appBraga.sidebar.v1541.collapsed";
+  const GROUP_KEY = "appBraga.sidebar.v1543.groups";
   const ICONS = {
     dashboard: '<path d="M3 13h8V3H3v10Z"/><path d="M13 21h8V11h-8v10Z"/><path d="M13 9h8V3h-8v6Z"/><path d="M3 21h8v-6H3v6Z"/>',
     tasks: '<path d="M9 11l2 2 4-5"/><path d="M20 6 9 17l-5-5"/><path d="M4 4h16v16H4z"/>',
@@ -13379,6 +13380,26 @@ async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
     }catch(e){}
   }
 
+  function groupId(title){
+    return String(title || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  }
+
+  function readGroups(){
+    try{
+      return JSON.parse(localStorage.getItem(GROUP_KEY) || "{}") || {};
+    }catch(e){
+      return {};
+    }
+  }
+
+  function saveGroup(id, open){
+    try{
+      const state = readGroups();
+      state[id] = !!open;
+      localStorage.setItem(GROUP_KEY, JSON.stringify(state));
+    }catch(e){}
+  }
+
   function applyCollapsed(value, persist){
     const active = !!value && isDesktop();
     document.documentElement.classList.toggle("sidebar-collapsed", active);
@@ -13398,11 +13419,29 @@ async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
     return `<a class="app-sidebar-v4-link${active}" href="${item[0]}"${aria}><span class="app-sidebar-v4-icon"><svg viewBox="0 0 24 24" aria-hidden="true">${icon}</svg></span><span class="app-sidebar-v4-text">${item[1]}</span></a>`;
   }
 
+  function groupHtml(group, current, state){
+    const id = groupId(group.title);
+    const hasCurrent = group.items.some((item) => item[0] === current);
+    const open = Object.prototype.hasOwnProperty.call(state, id) ? state[id] !== false : hasCurrent || group.title === "Operacao";
+    return `
+      <section class="app-sidebar-v4-group${open ? " open" : ""}" data-sidebar-v4-group="${id}">
+        <button class="app-sidebar-v4-group-toggle" type="button" aria-expanded="${open ? "true" : "false"}">
+          <span>${group.title}</span>
+          <span class="app-sidebar-v4-group-chevron">${open ? "-" : "+"}</span>
+        </button>
+        <div class="app-sidebar-v4-group-links">
+          ${group.items.map((item) => itemHtml(item, current)).join("")}
+        </div>
+      </section>
+    `;
+  }
+
   function render(){
     const sidebars = getSidebars();
     const sidebar = sidebars[0] || getSidebar();
     if (!sidebar) return;
     const current = currentFile();
+    const groupState = readGroups();
     sidebars.slice(1).forEach((extra) => {
       extra.setAttribute("data-app-sidebar-v4-extra", "1");
       extra.setAttribute("aria-hidden", "true");
@@ -13422,12 +13461,7 @@ async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
         <button class="app-sidebar-v4-collapse" type="button" aria-label="Recolher sidebar" aria-pressed="false">&lt;</button>
       </div>
       <nav class="app-sidebar-v4-nav" aria-label="Menu principal">
-        ${GROUPS.map((group) => `
-          <section class="app-sidebar-v4-group">
-            <p>${group.title}</p>
-            ${group.items.map((item) => itemHtml(item, current)).join("")}
-          </section>
-        `).join("")}
+        ${GROUPS.map((group) => groupHtml(group, current, groupState)).join("")}
       </nav>
     `;
     const button = sidebar.querySelector(".app-sidebar-v4-collapse");
@@ -13438,6 +13472,20 @@ async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
         applyCollapsed(!document.body.classList.contains("sidebar-collapsed"), true);
       });
     }
+    sidebar.querySelectorAll(".app-sidebar-v4-group-toggle").forEach((groupButton) => {
+      groupButton.addEventListener("click", function(event){
+        event.preventDefault();
+        event.stopPropagation();
+        const group = groupButton.closest(".app-sidebar-v4-group");
+        if (!group) return;
+        const open = !group.classList.contains("open");
+        group.classList.toggle("open", open);
+        groupButton.setAttribute("aria-expanded", open ? "true" : "false");
+        const chevron = groupButton.querySelector(".app-sidebar-v4-group-chevron");
+        if (chevron) chevron.textContent = open ? "-" : "+";
+        saveGroup(group.dataset.sidebarV4Group || groupId(groupButton.textContent), open);
+      });
+    });
     applyCollapsed(readCollapsed(), false);
   }
 
@@ -13452,4 +13500,4 @@ async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
   window.addEventListener("pageshow", () => setTimeout(init, 80));
   window.addEventListener("resize", () => setTimeout(() => applyCollapsed(readCollapsed(), false), 120));
 })();
-/* ===== END APP BRAGA v1.54.2 - SIDEBAR NOVA GLOBAL ===== */
+/* ===== END APP BRAGA v1.54.3 - SIDEBAR NOVA GLOBAL ===== */
