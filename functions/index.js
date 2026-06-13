@@ -12,10 +12,11 @@ const DEVICE_COLLECTION = "notificationDevices";
 const INBOX_COLLECTION = "notificationInbox";
 const HISTORY_COLLECTION = "notificationHistory";
 const REGION = "europe-west1";
+const PUBLIC_HTTP_OPTIONS = { region: REGION, cors: true, invoker: "public" };
 
 function setCors(res) {
   res.set("Access-Control-Allow-Origin", "*");
-  res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
 }
 
@@ -115,7 +116,7 @@ async function sendStandardWebPush(device, payload) {
   return { sent: true };
 }
 
-exports.notificationHealth = onRequest({ region: REGION }, async (req, res) => {
+exports.notificationHealth = onRequest(PUBLIC_HTTP_OPTIONS, async (req, res) => {
   setCors(res);
   if (req.method === "OPTIONS") return res.status(204).send("");
   try {
@@ -134,7 +135,7 @@ exports.notificationHealth = onRequest({ region: REGION }, async (req, res) => {
   }
 });
 
-exports.sendNotificationBroadcast = onRequest({ region: REGION, timeoutSeconds: 60, memory: "256MiB" }, async (req, res) => {
+async function handleNotificationBroadcast(req, res) {
   setCors(res);
   if (req.method === "OPTIONS") return res.status(204).send("");
   if (req.method !== "POST") return res.status(405).json({ ok: false, error: "Usa POST." });
@@ -262,4 +263,7 @@ exports.sendNotificationBroadcast = onRequest({ region: REGION, timeoutSeconds: 
     logger.error("sendNotificationBroadcast failed", error);
     return res.status(500).json(result);
   }
-});
+}
+
+exports.sendNotificationBroadcast = onRequest({ ...PUBLIC_HTTP_OPTIONS, timeoutSeconds: 60, memory: "256MiB" }, handleNotificationBroadcast);
+exports.sendPushAlert = onRequest({ ...PUBLIC_HTTP_OPTIONS, timeoutSeconds: 60, memory: "256MiB" }, handleNotificationBroadcast);

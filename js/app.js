@@ -8025,11 +8025,16 @@ window.addEventListener("load", () => atualizarVersaoUI(APP_VERSION));
       tag: `app-braga-${kind}`
     };
     setText("firebaseNotifyLastResult", "A enviar pela Firebase...", "warn");
-    const response = await fetch(CLOUD_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
+    let response;
+    try {
+      response = await fetch(CLOUD_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+    } catch (error) {
+      throw new Error(`Nao consegui ligar a Cloud Function. Verifica deploy, acesso publico/CORS e quota Firebase. Detalhe: ${error.message || error}`);
+    }
     const result = await response.json().catch(() => ({}));
     if (!response.ok || result.ok === false) {
       throw new Error(result.error || result.errors?.[0]?.error || `Function respondeu ${response.status}`);
@@ -8041,7 +8046,12 @@ window.addEventListener("load", () => atualizarVersaoUI(APP_VERSION));
 
   async function healthCheck() {
     setText("firebaseNotifyCloudStatus", "A verificar...", "warn");
-    const response = await fetch(HEALTH_URL, { method: "POST" });
+    let response;
+    try {
+      response = await fetch(HEALTH_URL, { method: "POST" });
+    } catch (error) {
+      throw new Error(`Nao consegui ligar a Cloud Function. Verifica deploy, acesso publico/CORS e quota Firebase. Detalhe: ${error.message || error}`);
+    }
     const result = await response.json().catch(() => ({}));
     if (!response.ok || result.ok === false) throw new Error(result.error || "Cloud Functions nao responderam.");
     setText("firebaseNotifyCloudStatus", `Cloud OK - ${result.activeDevices || 0} dispositivo(s)`, "ok");

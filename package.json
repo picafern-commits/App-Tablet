@@ -1,6 +1,6 @@
 {
   "name": "app-braga",
-  "version": "1.35.8",
+  "version": "1.38.0",
   "description": "App Braga - gestao de toners e computadores",
   "main": "js/main.js",
   "author": "Ricardo Fernandes",
@@ -12,7 +12,7 @@
     "setup": "electron-builder --win nsis",
     "dist": "electron-builder --win nsis",
     "functions:lint": "npm --prefix functions run lint",
-    "functions:deploy": "firebase deploy --only functions"
+    "functions:deploy": "firebase deploy --only functions --project toner-manager-756c4"
   },
   "devDependencies": {
     "electron": "41.2.0",
