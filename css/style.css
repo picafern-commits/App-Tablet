@@ -8308,3 +8308,74 @@ body.app-design-pro .personal-task-priority.normal{
   border-color:var(--app-primary-line, rgba(239,68,68,.30))!important;
   color:color-mix(in srgb,var(--app-primary, #ef4444) 55%,#fff)!important;
 }
+/* ===== APP BRAGA v1.54.5 - RESTAURAR SIDEBAR ANTIGA ===== */
+@media (min-width:769px){
+  :root{
+    --app-sidebar-expanded:250px;
+    --app-sidebar-collapsed:88px;
+  }
+
+  html body aside.sidebar,
+  html body .sidebar.sidebar-pro-groups,
+  html body .sidebar.sidebar-collapsible-pro,
+  html body #sidebar,
+  html body .enterprise-sidebar{
+    position:fixed!important;
+    top:0!important;
+    left:0!important;
+    bottom:0!important;
+    height:100vh!important;
+    max-height:100vh!important;
+    width:var(--app-sidebar-expanded)!important;
+    min-width:var(--app-sidebar-expanded)!important;
+    max-width:var(--app-sidebar-expanded)!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    overscroll-behavior:contain!important;
+    -webkit-overflow-scrolling:touch!important;
+    z-index:1000!important;
+  }
+
+  html body aside.sidebar .sidebar-nav-pro,
+  html body .sidebar.sidebar-pro-groups .sidebar-nav-pro,
+  html body .sidebar.sidebar-collapsible-pro .sidebar-nav-pro{
+    display:block!important;
+    overflow:visible!important;
+    min-height:0!important;
+  }
+
+  html body:not(.sidebar-collapsed) .main,
+  html body:not(.sidebar-collapsed) main,
+  html body:not(.sidebar-collapsed) .main-content,
+  html body:not(.sidebar-collapsed) .page-content,
+  html body:not(.sidebar-collapsed) .dashboard-container,
+  html body:not(.sidebar-collapsed) .content,
+  html body:not(.sidebar-collapsed) .content-area{
+    margin-left:var(--app-sidebar-expanded)!important;
+    width:calc(100vw - var(--app-sidebar-expanded))!important;
+    max-width:calc(100vw - var(--app-sidebar-expanded))!important;
+  }
+
+  html body.sidebar-collapsed aside.sidebar,
+  html body.sidebar-collapsed .sidebar.sidebar-pro-groups,
+  html body.sidebar-collapsed .sidebar.sidebar-collapsible-pro,
+  html body.sidebar-collapsed #sidebar,
+  html body.sidebar-collapsed .enterprise-sidebar{
+    width:var(--app-sidebar-collapsed)!important;
+    min-width:var(--app-sidebar-collapsed)!important;
+    max-width:var(--app-sidebar-collapsed)!important;
+  }
+
+  html body.sidebar-collapsed .main,
+  html body.sidebar-collapsed main,
+  html body.sidebar-collapsed .main-content,
+  html body.sidebar-collapsed .page-content,
+  html body.sidebar-collapsed .dashboard-container,
+  html body.sidebar-collapsed .content,
+  html body.sidebar-collapsed .content-area{
+    margin-left:var(--app-sidebar-collapsed)!important;
+    width:calc(100vw - var(--app-sidebar-collapsed))!important;
+    max-width:calc(100vw - var(--app-sidebar-collapsed))!important;
+  }
+}
+/* ===== END APP BRAGA v1.54.5 - RESTAURAR SIDEBAR ANTIGA ===== */
