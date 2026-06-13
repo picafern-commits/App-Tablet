@@ -821,6 +821,23 @@ body{
     font-weight: 950 !important;
   }
 
+  .app-mobile-sidebar-icon svg {
+    width: 19px !important;
+    height: 19px !important;
+    display: block !important;
+    fill: none !important;
+    stroke: currentColor !important;
+    stroke-width: 2 !important;
+    stroke-linecap: round !important;
+    stroke-linejoin: round !important;
+  }
+
+  .app-mobile-sidebar-new a.active .app-mobile-sidebar-icon {
+    color: #fff !important;
+    background: linear-gradient(135deg, #06b6d4, #2563eb) !important;
+    border-color: transparent !important;
+  }
+
   body.sidebar-open {
     overflow: hidden !important;
   }

@@ -7470,7 +7470,7 @@ body.app-design-pro .personal-task-priority.normal{
   color:color-mix(in srgb,var(--app-primary, #ef4444) 55%,#fff)!important;
 }
 
-/* ===== APP BRAGA v1.54.1 - SIDEBAR NOVA GLOBAL ===== */
+/* ===== APP BRAGA v1.54.2 - SIDEBAR NOVA GLOBAL ===== */
 :root{
   --app-sidebar-v4-width: 292px;
   --app-sidebar-v4-collapsed-width: 88px;
@@ -7662,6 +7662,17 @@ body.app-design-pro .sidebar.app-sidebar-v4 .app-sidebar-v4-link.active{
   border:1px solid rgba(125,211,252,.22)!important;
 }
 
+.app-sidebar-v4-icon svg{
+  width:19px!important;
+  height:19px!important;
+  display:block!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:2!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+
 .app-sidebar-v4-link.active .app-sidebar-v4-icon,
 .app-sidebar-v4-link:hover .app-sidebar-v4-icon{
   color:#fff!important;
@@ -7797,7 +7808,7 @@ body.app-design-pro.sidebar-collapsed .main-content{
     max-width:100%!important;
   }
 }
-/* ===== END APP BRAGA v1.54.1 - SIDEBAR NOVA GLOBAL ===== */
+/* ===== END APP BRAGA v1.54.2 - SIDEBAR NOVA GLOBAL ===== */
 body.app-design-pro .diag-dot.is-running,
 body.app-design-pro .scanner-step span:first-child,
 body.app-design-pro .scanner-btn.primary{
