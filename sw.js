@@ -119,4 +119,4 @@ self.addEventListener("notificationclick", (event) => {
   );
 });
 
-// APP BRAGA V1.42.0 sidebar-uniform-performance
+// APP BRAGA V1.43.0 diagnostico-limpo

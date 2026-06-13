@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.42.0";
+const APP_VERSION = "1.43.0";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "";
@@ -12377,12 +12377,28 @@ window.testarCamerasStockQr = async function(){
   const LOG_KEY = "appBraga_diagnosticLogs_v1";
   const LAST_READ_KEY = "appBraga_lastScannerRead";
   const LAST_LABEL_KEY = "appBraga_lastEtiquetaWordPayload";
-  const MAX_LOGS = 80;
+  const MAX_LOGS = 40;
+  const DIAGNOSTIC_NOISE_PATTERNS = [
+    /@firebase\/firestore.*WebChannel transport errored/i,
+    /Firestore .*Connection.*WebChannel transport errored/i,
+    /WebChannel transport errored/i
+  ];
 
   function nowText(){ try { return new Date().toLocaleString("pt-PT"); } catch(e){ return String(new Date()); } }
-  function readLogs(){ try { return JSON.parse(localStorage.getItem(LOG_KEY) || "[]"); } catch(e){ return []; } }
+  function isDiagnosticNoise(message, extra){
+    const text = `${message || ""} ${extra || ""}`;
+    return DIAGNOSTIC_NOISE_PATTERNS.some((pattern) => pattern.test(text));
+  }
+  function readLogs(){
+    try {
+      return JSON.parse(localStorage.getItem(LOG_KEY) || "[]").filter((item) => !isDiagnosticNoise(item?.message, item?.extra));
+    } catch(e){
+      return [];
+    }
+  }
   function writeLogs(logs){ try { localStorage.setItem(LOG_KEY, JSON.stringify((logs || []).slice(0, MAX_LOGS))); } catch(e){} }
   function addLog(level, source, message, extra){
+    if (isDiagnosticNoise(message, extra)) return;
     const item = { time: nowText(), level: level || "info", source: source || "app", message: String(message || ""), extra: extra ? String(extra).slice(0,900) : "" };
     const logs = readLogs(); logs.unshift(item); writeLogs(logs);
     try { atualizarLogsDiagnosticoAppBraga(); } catch(e){}
@@ -12491,24 +12507,24 @@ window.testarCamerasStockQr = async function(){
   function card(label, value, status){ return `<div class="diagnostic-card ${esc(status||"")}"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`; }
   async function executarDiagnosticoAppBraga(){
     const checks = [];
-    checks.push(["VersÃ£o", (typeof APP_VERSION !== "undefined" ? APP_VERSION : "1.30.0"), "ok"]);
+    checks.push(["Versao", (typeof APP_VERSION !== "undefined" ? APP_VERSION : "1.30.0"), "ok"]);
     checks.push(["Rede", navigator.onLine ? "Online" : "Offline", navigator.onLine ? "ok" : "warn"]);
-    checks.push(["Firebase", window.firebase ? "Carregado" : "NÃ£o carregado", window.firebase ? "ok" : "error"]);
-    checks.push(["Firestore", (typeof getDbAppBraga === "function" && getDbAppBraga()) ? "DisponÃ­vel" : "IndisponÃ­vel", (typeof getDbAppBraga === "function" && getDbAppBraga()) ? "ok" : "error"]);
-    checks.push(["CÃ¢mara", (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ? "Suportada" : "NÃ£o suportada", (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ? "ok" : "warn"]);
+    checks.push(["Firebase", window.firebase ? "Carregado" : "Nao carregado", window.firebase ? "ok" : "error"]);
+    checks.push(["Firestore", (typeof getDbAppBraga === "function" && getDbAppBraga()) ? "Disponivel" : "Indisponivel", (typeof getDbAppBraga === "function" && getDbAppBraga()) ? "ok" : "error"]);
+    checks.push(["Camara", (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ? "Suportada" : "Nao suportada", (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ? "ok" : "warn"]);
     checks.push(["Scanner QR", typeof Html5Qrcode !== "undefined" ? "Biblioteca OK" : "Biblioteca ausente", typeof Html5Qrcode !== "undefined" ? "ok" : "warn"]);
     checks.push(["OCR", typeof Tesseract !== "undefined" ? "Biblioteca OK" : "Biblioteca ausente", typeof Tesseract !== "undefined" ? "ok" : "warn"]);
     checks.push(["Word/Etiquetas", typeof docx !== "undefined" ? "Biblioteca OK" : "Biblioteca ausente", typeof docx !== "undefined" ? "ok" : "warn"]);
     checks.push(["Cache local", (()=>{try{localStorage.setItem("__test","1");localStorage.removeItem("__test");return "OK"}catch(e){return "Bloqueada"}})(), "ok"]);
     const host = document.getElementById("diagnosticGrid"); if(host) host.innerHTML = checks.map(x => card(x[0],x[1],x[2])).join("");
-    atualizarLogsDiagnosticoAppBraga(); addLog("info", "diagnÃ³stico", "VerificaÃ§Ã£o executada");
+    atualizarLogsDiagnosticoAppBraga(); addLog("info", "diagnostico", "Verificacao executada");
   }
   window.executarDiagnosticoAppBraga = executarDiagnosticoAppBraga;
 
   function atualizarLogsDiagnosticoAppBraga(){
     const host = document.getElementById("diagnosticLogs"); if(!host) return;
     const logs = readLogs();
-    host.innerHTML = logs.length ? logs.map(l => `<div class="diagnostic-log-item ${esc(l.level)}"><span class="log-time">${esc(l.time)} Â· ${esc(l.level)} Â· ${esc(l.source)}</span>${esc(l.message)}${l.extra ? "\n"+esc(l.extra) : ""}</div>`).join("") : `<div class="diagnostic-log-item">Sem erros registados.</div>`;
+    host.innerHTML = logs.length ? logs.map(l => `<div class="diagnostic-log-item ${esc(l.level)}"><span class="log-time">${esc(l.time)} - ${esc(l.level)} - ${esc(l.source)}</span>${esc(l.message)}${l.extra ? "\n"+esc(l.extra) : ""}</div>`).join("") : `<div class="diagnostic-log-item">Sem erros registados.</div>`;
   }
   window.atualizarLogsDiagnosticoAppBraga = atualizarLogsDiagnosticoAppBraga;
   function limparLogsDiagnosticoAppBraga(){ writeLogs([]); atualizarLogsDiagnosticoAppBraga(); if(typeof mostrarMensagem === "function") mostrarMensagem("Logs limpos.", "sucesso"); }
