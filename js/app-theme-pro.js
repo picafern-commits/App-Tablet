@@ -319,6 +319,23 @@
     addSidebarLink(infraLinks, "zonas.html", "ZN", "Zonas", "portas.html");
   }
 
+  function applyLayoutData(data = {}) {
+    const nextTheme = data.themePro || {
+      primary: data.accentColor,
+      secondary: data.accentColor2,
+      buttonTextMode: data.buttonTextMode
+    };
+    apply({ ...getCachedTheme(), ...nextTheme });
+    applyVisualDesign(data.visualDesign || getCachedVisualDesign(), { persist: false });
+    applyWorkspace(data.workspaceMode || getCachedWorkspace(), { persist: false });
+    window.dispatchEvent(new CustomEvent("appbraga:layout", { detail: data }));
+  }
+
+  function isConfigPage() {
+    const page = (window.location.pathname.split("/").pop() || "index.html").toLowerCase();
+    return page === "config.html";
+  }
+
   function ensureClassicStylesheet(active) {
     const id = "appDesignClassicStylesheet";
     const existing = document.getElementById(id);
@@ -759,18 +776,16 @@
   function connectFirestore() {
     if (!window.db?.collection || window.__appThemeProFirestoreBound) return;
     window.__appThemeProFirestoreBound = true;
-    window.__appThemeProUnsubscribe = window.db.collection("config").doc("layout").onSnapshot((doc) => {
-      const data = doc.exists ? doc.data() : {};
-      const nextTheme = data.themePro || {
-        primary: data.accentColor,
-        secondary: data.accentColor2,
-        buttonTextMode: data.buttonTextMode
-      };
-      apply({ ...getCachedTheme(), ...nextTheme });
-      applyVisualDesign(data.visualDesign || getCachedVisualDesign(), { persist: false });
-      applyWorkspace(data.workspaceMode || getCachedWorkspace(), { persist: false });
-      window.dispatchEvent(new CustomEvent("appbraga:layout", { detail: data }));
-    }, (error) => console.error("Erro ao carregar tema:", error));
+    const layoutRef = window.db.collection("config").doc("layout");
+    if (isConfigPage()) {
+      window.__appThemeProUnsubscribe = layoutRef.onSnapshot((doc) => {
+        applyLayoutData(doc.exists ? doc.data() : {});
+      }, (error) => console.error("Erro ao carregar tema:", error));
+      return;
+    }
+    layoutRef.get().then((doc) => {
+      applyLayoutData(doc.exists ? doc.data() : {});
+    }).catch((error) => console.error("Erro ao carregar tema:", error));
   }
 
   window.addEventListener("beforeunload", () => {

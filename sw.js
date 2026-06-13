@@ -119,4 +119,4 @@ self.addEventListener("notificationclick", (event) => {
   );
 });
 
-// APP BRAGA V1.41.0 sidebar-pages
+// APP BRAGA V1.42.0 sidebar-uniform-performance

@@ -6380,7 +6380,7 @@ body.app-role-consulta .danger {
 
 /* v1.30.3 clean dashboard/sidebar */
 #personalToolsDashboard{display:none!important;}
-.sidebar a[href="equipamento.html"]{display:none!important;}
+.sidebar a[href="equipamento.html"]{display:flex!important;}
 
 
 /* ===== APP BRAGA v1.31.8 — Dashboard tarefas + equipamentos abaixo dos contadores ===== */
@@ -7008,7 +7008,60 @@ input:focus,select:focus,textarea:focus{outline:0!important;border-color:rgba(56
 .sidebar a[href$="informacoes.html"]::before{content:"i"!important;}
 .sidebar a[href$="users.html"]::before{content:"◉"!important;}
 .sidebar a[href$="diagnostico.html"]::before{content:"◆"!important;}
+.sidebar a[href$="equipamento.html"]::before{content:"▣"!important;}
+.sidebar a[href$="zonas.html"]::before{content:"⌖"!important;}
 .sidebar a[href$="config.html"]::before{content:"⚙"!important;}
+
+/* ===== App Braga v1.42: sidebar uniforme e modo tablet mais leve ===== */
+.sidebar a[href$="equipamento.html"]{
+  display:flex!important;
+}
+.sidebar a[href$="equipamento.html"]::before{
+  content:"▣"!important;
+}
+.sidebar a[href$="zonas.html"]::before{
+  content:"⌖"!important;
+}
+.sidebar a[href$="notificacoes.html"]::before{
+  content:"!"!important;
+}
+.sidebar a[href$="equipamento.html"]::before,
+.sidebar a[href$="zonas.html"]::before,
+.sidebar a[href$="notificacoes.html"]::before{
+  font-family:Arial,Helvetica,sans-serif!important;
+  font-weight:900!important;
+  line-height:1!important;
+}
+
+@media (max-width:1180px), (pointer:coarse){
+  .panel,
+  .modal-card,
+  .stock-card,
+  .stat-card,
+  .metric-card,
+  .dashboard-card,
+  .history-card,
+  .task-card,
+  .equipment-card,
+  .zone-card{
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+    box-shadow:0 10px 24px rgba(0,0,0,.18)!important;
+  }
+  .sidebar a,
+  .sidebar-group-toggle,
+  button,
+  .primary-btn,
+  .secondary-btn{
+    transition:background-color .12s ease,border-color .12s ease,color .12s ease!important;
+  }
+  .panel:hover,
+  .dashboard-card:hover,
+  .stock-card:hover,
+  .history-card:hover{
+    transform:none!important;
+  }
+}
 
 body.dashboard-clean #personalToolsDashboard,#personalToolsDashboard.dashboard-tasks-only{display:grid!important;}
 .dashboard-shell{display:grid!important;gap:18px!important;}
