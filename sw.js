@@ -1,4 +1,4 @@
-const APP_BRAGA_SW = "app-braga-runtime-v76";
+const APP_BRAGA_SW = "app-braga-runtime-v78";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -119,4 +119,4 @@ self.addEventListener("notificationclick", (event) => {
   );
 });
 
-// APP BRAGA V1.43.0 diagnostico-limpo
+// APP BRAGA V1.45.0 splash-app-icon

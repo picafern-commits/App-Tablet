@@ -7063,6 +7063,119 @@ input:focus,select:focus,textarea:focus{outline:0!important;border-color:rgba(56
   }
 }
 
+/* ===== App Braga v1.44: arranque e atualizacao com progresso ===== */
+.app-braga-splash{
+  position:fixed;
+  inset:0;
+  z-index:99998;
+  display:grid;
+  place-items:center;
+  padding:22px;
+  background:
+    radial-gradient(circle at 28% 22%,rgba(56,189,248,.22),transparent 34%),
+    radial-gradient(circle at 72% 70%,rgba(239,68,68,.18),transparent 32%),
+    #070b12;
+  color:#fff;
+  transition:opacity .36s ease,visibility .36s ease;
+}
+.app-braga-splash.is-leaving{
+  opacity:0;
+  visibility:hidden;
+}
+.app-braga-splash-card{
+  width:min(420px,92vw);
+  display:grid;
+  grid-template-columns:76px 1fr;
+  align-items:center;
+  gap:16px;
+  padding:22px;
+  border-radius:26px;
+  background:linear-gradient(145deg,rgba(15,23,42,.94),rgba(8,13,22,.92));
+  border:1px solid rgba(148,163,184,.24);
+  box-shadow:0 28px 70px rgba(0,0,0,.42);
+}
+.app-braga-splash-logo{
+  width:76px;
+  height:76px;
+  display:grid;
+  place-items:center;
+  border-radius:24px;
+  background:rgba(255,255,255,.08);
+  box-shadow:0 16px 38px rgba(56,189,248,.24);
+  overflow:hidden;
+}
+.app-braga-splash-logo img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.app-braga-splash-card strong{
+  display:block;
+  font-size:28px;
+  line-height:1;
+  margin-bottom:7px;
+}
+.app-braga-splash-card span{
+  color:#cbd5e1;
+  font-weight:800;
+}
+.app-braga-splash-bar{
+  grid-column:1 / -1;
+  height:9px;
+  overflow:hidden;
+  border-radius:999px;
+  background:rgba(255,255,255,.10);
+}
+.app-braga-splash-bar i{
+  display:block;
+  height:100%;
+  width:42%;
+  border-radius:inherit;
+  background:linear-gradient(90deg,#38bdf8,#2563eb,#ef4444);
+  animation:appBragaSplashRun 1.1s ease-in-out infinite alternate;
+}
+@keyframes appBragaSplashRun{
+  from{transform:translateX(-18%);}
+  to{transform:translateX(155%);}
+}
+.update-box-appbraga{
+  overflow:hidden!important;
+}
+.update-box-appbraga.is-updating{
+  pointer-events:auto;
+}
+.update-progress-appbraga{
+  display:grid;
+  gap:8px;
+  margin:16px 0 4px;
+}
+.update-progress-appbraga span{
+  height:12px;
+  overflow:hidden;
+  border-radius:999px;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.10);
+}
+.update-progress-appbraga i{
+  display:block;
+  height:100%;
+  width:0%;
+  border-radius:999px;
+  background:linear-gradient(90deg,#38bdf8,#2563eb,#ef4444);
+  box-shadow:0 0 20px rgba(56,189,248,.35);
+  transition:width .28s ease;
+}
+.update-progress-appbraga small{
+  color:#dbeafe;
+  font-weight:850;
+  min-height:18px;
+}
+.update-box-appbraga .primary-btn[disabled]{
+  opacity:.86;
+  cursor:progress;
+}
+
 body.dashboard-clean #personalToolsDashboard,#personalToolsDashboard.dashboard-tasks-only{display:grid!important;}
 .dashboard-shell{display:grid!important;gap:18px!important;}
 .enterprise-metrics,.stats-grid,.metric-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:14px!important;}

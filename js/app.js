@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.43.0";
+const APP_VERSION = "1.45.0";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "";
@@ -48,6 +48,37 @@ function appBragaPageName() {
 function appBragaIsPage(...names) {
   const current = appBragaPageName();
   return names.some((name) => current === String(name || "").toLowerCase());
+}
+
+function iniciarLoadingInicialAppBraga() {
+  if (!document.body || document.getElementById("appBragaSplash")) return;
+  const iconPath = location.pathname.includes("/html/") ? "../icon-192.png" : "icon-192.png";
+  const splash = document.createElement("div");
+  splash.id = "appBragaSplash";
+  splash.className = "app-braga-splash";
+  splash.innerHTML = `
+    <div class="app-braga-splash-card">
+      <div class="app-braga-splash-logo"><img src="${iconPath}" alt="App Braga"></div>
+      <div>
+        <strong>App Braga</strong>
+        <span>A preparar o centro operacional</span>
+      </div>
+      <div class="app-braga-splash-bar"><i></i></div>
+    </div>
+  `;
+  document.body.appendChild(splash);
+  const close = () => {
+    splash.classList.add("is-leaving");
+    setTimeout(() => splash.remove(), 420);
+  };
+  window.addEventListener("load", () => setTimeout(close, 520), { once: true });
+  setTimeout(close, 3200);
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", iniciarLoadingInicialAppBraga, { once: true });
+} else {
+  iniciarLoadingInicialAppBraga();
 }
 
 function appBragaBindFirestoreListener(key, shouldBind, bindFn) {
@@ -7704,17 +7735,45 @@ function mostrarAvisoAtualizacaoDisponivel(novaVersao) {
   box.dataset.version = novaVersao;
 
   box.innerHTML = `
-    <div class="update-title">AtualizaÃƒÂ§ÃƒÂ£o disponÃƒÂ­vel</div>
+    <div class="update-title">Atualizacao disponivel</div>
     <div class="update-subtitle">
-      Existe uma versÃƒÂ£o nova. Podes atualizar agora ou continuar a trabalhar.<br><br>
+      Existe uma versao nova. Podes atualizar agora ou continuar a trabalhar.<br><br>
       Atual: v${APP_VERSION} Premium<br>
       Nova: v${novaVersao} Premium
+    </div>
+    <div class="update-progress-appbraga" aria-hidden="true">
+      <span><i style="width:0%"></i></span>
+      <small>Pronta para atualizar</small>
     </div>
     <div class="update-actions">
       <button class="ghost-btn" onclick="fecharAvisoAtualizacao()">Continuar</button>
       <button class="primary-btn" onclick="atualizarAppObrigatorio('${String(novaVersao).replace(/'/g, "\\'")}')">Atualizar agora</button>
     </div>
   `;
+}
+
+function atualizarProgressoUpdateAppBraga(percent, text) {
+  const box = document.getElementById("updateBoxAppBraga");
+  if (!box) return;
+  const safePercent = Math.max(0, Math.min(100, Number(percent) || 0));
+  const bar = box.querySelector(".update-progress-appbraga i");
+  const label = box.querySelector(".update-progress-appbraga small");
+  if (bar) bar.style.width = `${safePercent}%`;
+  if (label) label.textContent = text || `${safePercent}%`;
+}
+
+function waitAppBraga(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function esperarServiceWorkerControlarAppBraga(timeoutMs = 1600) {
+  if (!("serviceWorker" in navigator)) return;
+  await Promise.race([
+    new Promise((resolve) => {
+      navigator.serviceWorker.addEventListener("controllerchange", resolve, { once: true });
+    }),
+    waitAppBraga(timeoutMs)
+  ]);
 }
 
 function fecharAvisoAtualizacao() {
@@ -7766,14 +7825,25 @@ async function limparCacheAtualizacaoAppBraga() {
 async function atualizarAppObrigatorio(novaVersao = "") {
   const box = document.getElementById("updateBoxAppBraga");
   const versaoDestino = String(novaVersao || box?.dataset.version || APP_VERSION || Date.now()).trim();
+  if (box?.dataset.updating === "1") return;
   if (box) {
+    box.dataset.updating = "1";
+    box.classList.add("is-updating");
     box.innerHTML = `
       <div class="update-title">A atualizar...</div>
-      <div class="update-subtitle">A limpar cache e a carregar a versao ${versaoDestino} da app.</div>
+      <div class="update-subtitle">A preparar a versao ${versaoDestino}. Mantem esta pagina aberta.</div>
+      <div class="update-progress-appbraga" role="progressbar" aria-label="Progresso da atualizacao">
+        <span><i style="width:4%"></i></span>
+        <small>A iniciar...</small>
+      </div>
+      <div class="update-actions">
+        <button class="primary-btn" type="button" disabled>A atualizar</button>
+      </div>
     `;
   }
 
   deleteCookieAppBraga("appUpdateDismissedVersion");
+  setCookieAppBraga("appUpdateTargetVersion", versaoDestino, 300);
   const targetUrl = new URL(window.location.href);
   targetUrl.searchParams.set("v", versaoDestino);
   targetUrl.searchParams.set("update", String(Date.now()));
@@ -7781,7 +7851,18 @@ async function atualizarAppObrigatorio(novaVersao = "") {
   const currentBefore = window.location.href;
 
   try {
+    atualizarProgressoUpdateAppBraga(12, "A procurar a nova versao...");
+    await registarServiceWorkerAppBraga();
+    await waitAppBraga(250);
+    atualizarProgressoUpdateAppBraga(32, "A limpar ficheiros antigos...");
     await limparCacheAtualizacaoAppBraga();
+    atualizarProgressoUpdateAppBraga(58, "A ativar a nova app...");
+    await esperarServiceWorkerControlarAppBraga();
+    atualizarProgressoUpdateAppBraga(78, "A confirmar ficheiros novos...");
+    await fetch(appVersionUrlAppBraga(), { cache: "no-store" }).catch(() => null);
+    await fetch(APP_REMOTE_BASE + "js/app.js?v=" + encodeURIComponent(versaoDestino) + "&t=" + Date.now(), { cache: "no-store" }).catch(() => null);
+    atualizarProgressoUpdateAppBraga(100, "Atualizacao pronta. A abrir...");
+    await waitAppBraga(450);
   } finally {
     try {
       window.location.replace(target);
