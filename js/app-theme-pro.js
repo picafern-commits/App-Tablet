@@ -132,125 +132,94 @@
   }
 
   const TEXT_FIXES = [
-    ["NavegaÃƒÂ§ÃƒÂ£o", "Navegação"],
-    ["NavegaÃ§Ã£o", "Navegação"],
-    ["Navegacao", "Navegação"],
-    ["OperaÃƒÂ§ÃƒÂ£o", "Operação"],
-    ["OperaÃ§Ã£o", "Operação"],
-    ["Operacao", "Operação"],
-    ["AdministraÃƒÂ§ÃƒÂ£o", "Administração"],
-    ["AdministraÃ§Ã£o", "Administração"],
-    ["Administracao", "Administração"],
-    ["ManutenÃƒÂ§ÃƒÂ£o", "Manutenção"],
-    ["ManutenÃ§Ã£o", "Manutenção"],
-    ["Manutencao", "Manutenção"],
-    ["ConfiguraÃƒÂ§ÃƒÂµes", "Configurações"],
-    ["ConfiguraÃ§Ãµes", "Configurações"],
-    ["Configuracoes", "Configurações"],
-    ["InformaÃƒÂ§ÃƒÂµes", "Informações"],
-    ["InformaÃ§Ãµes", "Informações"],
-    ["Informacoes", "Informações"],
-    ["DiretÃƒÂ³rio", "Diretório"],
-    ["DiretÃ³rio", "Diretório"],
-    ["Diretorio", "Diretório"],
-    ["HistÃƒÂ³rico", "Histórico"],
-    ["HistÃ³rico", "Histórico"],
-    ["Historico", "Histórico"],
-    ["DiagnÃƒÂ³stico", "Diagnóstico"],
-    ["DiagnÃ³stico", "Diagnóstico"],
-    ["Diagnostico", "Diagnóstico"],
-    ["RÃƒÂ¡dios", "Rádios"],
-    ["RÃ¡dios", "Rádios"],
-    ["Radios", "Rádios"],
-    ["pÃƒÂ¡gina", "página"],
-    ["pÃ¡gina", "página"],
-    ["pagina", "página"],
-    ["pÃƒÂ¡ginas", "páginas"],
-    ["pÃ¡ginas", "páginas"],
-    ["paginas", "páginas"],
-    ["Toners disponÃƒÆ’Ã‚Â­veis", "Toners disponíveis"],
-    ["Toners disponÃƒÂ­veis", "Toners disponíveis"],
-    ["Toners disponiveis", "Toners disponíveis"],
-    ["ManutenÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Âµes", "Manutenções"],
-    ["ManutenÃƒÂ§ÃƒÂµes", "Manutenções"],
-    ["Manutencoes", "Manutenções"],
-    ["clÃƒÂ¡ssico", "clássico"],
-    ["classico", "clássico"],
-    ["botÃƒÂµes", "botões"],
-    ["botoes", "botões"],
-    ["cÃƒÂ¢mara", "câmara"],
-    ["cÃ¢mara", "câmara"],
-    ["CÃƒÂ¢mara", "Câmara"],
-    ["CÃ¢mara", "Câmara"],
-    ["SÃƒÂ©rie", "Série"],
-    ["SÃ©rie", "Série"],
-    ["CÃƒÂ³digo", "Código"],
-    ["CÃ³digo", "Código"],
-    ["LocalizaÃƒÂ§ÃƒÂ£o", "Localização"],
-    ["LocalizaÃ§Ã£o", "Localização"],
-    ["ReferÃƒÂªncia", "Referência"],
-    ["ReferÃªncia", "Referência"],
-    ["ÃƒÅ¡ltimos", "Últimos"],
-    ["Ãšltimos", "Últimos"],
-    ["ÃƒÂºltimos", "últimos"],
-    ["Ãºltimos", "últimos"],
-    ["ÃƒÂ­", "í"], ["ÃƒÂ¡", "á"], ["ÃƒÂ©", "é"], ["ÃƒÂ³", "ó"],
-    ["ÃƒÂº", "ú"], ["ÃƒÂ£", "ã"], ["ÃƒÂµ", "õ"], ["ÃƒÂ§", "ç"],
-    ["ÃƒÂ¢", "â"], ["ÃƒÂª", "ê"], ["ÃƒÂ ", "à"], ["Ã‚Âº", "º"],
+    ["NavegaÃƒÂ§ÃƒÂ£o", "Navega\u00e7\u00e3o"],
+    ["NavegaÃ§Ã£o", "Navega\u00e7\u00e3o"],
+    ["Navegacao", "Navega\u00e7\u00e3o"],
+    ["OperaÃƒÂ§ÃƒÂ£o", "Opera\u00e7\u00e3o"],
+    ["OperaÃ§Ã£o", "Opera\u00e7\u00e3o"],
+    ["Operacao", "Opera\u00e7\u00e3o"],
+    ["AdministraÃƒÂ§ÃƒÂ£o", "Administra\u00e7\u00e3o"],
+    ["AdministraÃ§Ã£o", "Administra\u00e7\u00e3o"],
+    ["Administracao", "Administra\u00e7\u00e3o"],
+    ["ManutenÃƒÂ§ÃƒÂ£o", "Manuten\u00e7\u00e3o"],
+    ["ManutenÃ§Ã£o", "Manuten\u00e7\u00e3o"],
+    ["Manutencao", "Manuten\u00e7\u00e3o"],
+    ["ConfiguraÃƒÂ§ÃƒÂµes", "Configura\u00e7\u00f5es"],
+    ["ConfiguraÃ§Ãµes", "Configura\u00e7\u00f5es"],
+    ["Configuracoes", "Configura\u00e7\u00f5es"],
+    ["InformaÃƒÂ§ÃƒÂµes", "Informa\u00e7\u00f5es"],
+    ["InformaÃ§Ãµes", "Informa\u00e7\u00f5es"],
+    ["Informacoes", "Informa\u00e7\u00f5es"],
+    ["DiretÃƒÂ³rio", "Diret\u00f3rio"],
+    ["DiretÃ³rio", "Diret\u00f3rio"],
+    ["Diretorio", "Diret\u00f3rio"],
+    ["HistÃƒÂ³rico", "Hist\u00f3rico"],
+    ["HistÃ³rico", "Hist\u00f3rico"],
+    ["Historico", "Hist\u00f3rico"],
+    ["DiagnÃƒÂ³stico", "Diagn\u00f3stico"],
+    ["DiagnÃ³stico", "Diagn\u00f3stico"],
+    ["Diagnostico", "Diagn\u00f3stico"],
+    ["RÃƒÂ¡dios", "R\u00e1dios"],
+    ["RÃ¡dios", "R\u00e1dios"],
+    ["Radios", "R\u00e1dios"],
+    ["pÃƒÂ¡gina", "p\u00e1gina"],
+    ["pÃ¡gina", "p\u00e1gina"],
+    ["pagina", "p\u00e1gina"],
+    ["pÃƒÂ¡ginas", "p\u00e1ginas"],
+    ["pÃ¡ginas", "p\u00e1ginas"],
+    ["paginas", "p\u00e1ginas"],
+    ["Toners disponÃƒÂ­veis", "Toners dispon\u00edveis"],
+    ["Toners disponiveis", "Toners dispon\u00edveis"],
+    ["ManutenÃƒÂ§ÃƒÂµes", "Manuten\u00e7\u00f5es"],
+    ["Manutencoes", "Manuten\u00e7\u00f5es"],
+    ["clÃƒÂ¡ssico", "cl\u00e1ssico"],
+    ["classico", "cl\u00e1ssico"],
+    ["botÃƒÂµes", "bot\u00f5es"],
+    ["botoes", "bot\u00f5es"],
+    ["cÃƒÂ¢mara", "c\u00e2mara"],
+    ["cÃ¢mara", "c\u00e2mara"],
+    ["CÃƒÂ¢mara", "C\u00e2mara"],
+    ["CÃ¢mara", "C\u00e2mara"],
+    ["SÃƒÂ©rie", "S\u00e9rie"],
+    ["SÃ©rie", "S\u00e9rie"],
+    ["CÃƒÂ³digo", "C\u00f3digo"],
+    ["CÃ³digo", "C\u00f3digo"],
+    ["LocalizaÃƒÂ§ÃƒÂ£o", "Localiza\u00e7\u00e3o"],
+    ["LocalizaÃ§Ã£o", "Localiza\u00e7\u00e3o"],
+    ["ReferÃƒÂªncia", "Refer\u00eancia"],
+    ["ReferÃªncia", "Refer\u00eancia"],
+    ["ÃƒÅ¡ltimos", "\u00daltimos"],
+    ["Ãšltimos", "\u00daltimos"],
+    ["ÃƒÂºltimos", "\u00faltimos"],
+    ["Ãºltimos", "\u00faltimos"],
+    ["Ã‚Âº", "\u00ba"],
     ["Ã‚Â·", " - "],
-    ["Ã¢â‚¬Â¹", "‹"],
-    ["Ã¢â‚¬Âº", "›"],
-    ["Ã¢Â­Â", "★"],
-    ["Ã¢Å¡Â¡", "⚡"],
-    ["Ã¢Å“â€¦", "✓"],
-    ["Ã¢Å¾â€¢", "+"],
-    ["Ã¢Å¡â„¢Ã¯Â¸Â", "⚙"],
-    ["Ã¢â€žÂ¹Ã¯Â¸Â", "i"],
-    ["Ã¢ËœÅ½Ã¯Â¸Â", "☎"],
-    ["Ã°Å¸ÂÂ ", "⌂"],
-    ["Ã°Å¸â€œÂ¦", "▦"],
-    ["Ã°Å¸â€“Â¨Ã¯Â¸Â", "▤"],
-    ["Ã°Å¸Â§Â¾", "↺"],
-    ["Ã°Å¸â€œâ€ž", "◫"],
-    ["Ã°Å¸ÂÂ·Ã¯Â¸Â", "⌑"],
-    ["Ã°Å¸Â§Â°", "▧"],
-    ["Ã°Å¸â€ºÂ Ã¯Â¸Â", "⚒"],
-    ["Ã°Å¸â€™Â»", "▣"],
-    ["Ã°Å¸â€œÅ¸", "▥"],
-    ["Ã°Å¸â€œÂ¡", "≋"],
-    ["Ã°Å¸Å’Â", "◎"],
-    ["Ã°Å¸â€Å’", "⌁"],
-    ["Ã°Å¸â€˜Â¥", "◉"],
-    ["Ã°Å¸Â©Âº", "◆"]
+    ["â€¹", "<"], ["â€º", ">"],
+    ["Ã¢â‚¬Â¹", "<"], ["Ã¢â‚¬Âº", ">"],
+    ["ðŸ ", "DB"], ["ðŸ“¦", "ST"], ["ðŸ–¨ï¸", "IP"],
+    ["ðŸ§¾", "HT"], ["ðŸ“„", "IA"], ["ðŸ·ï¸", "ET"],
+    ["ðŸ§°", "EQ"], ["ðŸ› ï¸", "MN"], ["ðŸ’»", "PC"],
+    ["ðŸ“Ÿ", "CK"], ["ðŸ“¡", "RD"], ["ðŸŒ", "IF"],
+    ["ðŸ”Œ", "PR"], ["â˜Žï¸", "DR"], ["â„¹ï¸", "IN"],
+    ["ðŸ‘¥", "US"], ["ðŸ©º", "DG"], ["âš™ï¸", "CF"],
+    ["â­", "*"], ["âœ¦", "*"], ["âœ…", "OK"], ["âž•", "+"], ["âš¡", "OP"]
   ];
 
   const SIDEBAR_CODES = [
-    ["index.html", "⌂"],
-    ["stock.html", "▦"],
-    ["diretorio.html", "☎"],
-    ["impressoras.html", "▤"],
-    ["add-toner.html", "+"],
-    ["historico.html", "↺"],
-    ["tarefas.html", "✓"],
-    ["scanner-ia.html", "◫"],
-    ["etiquetas-word.html", "⌑"],
-    ["manutencao-impressoras.html", "⚒"],
-    ["zonas.html", "⌖"],
-    ["computadores.html", "▣"],
-    ["pistolas.html", "▥"],
-    ["radios.html", "≋"],
-    ["portas.html", "⌁"],
-    ["informacoes.html", "i"],
-    ["users.html", "◉"],
-    ["diagnostico.html", "◆"],
-    ["config.html", "⚙"]
+    ["index.html", "DB"], ["stock.html", "ST"], ["diretorio.html", "DR"],
+    ["impressoras.html", "IP"], ["add-toner.html", "+"], ["historico.html", "HT"],
+    ["tarefas.html", "TF"], ["scanner-ia.html", "IA"], ["etiquetas-word.html", "ET"],
+    ["manutencao-impressoras.html", "MN"], ["zonas.html", "ZN"], ["computadores.html", "PC"],
+    ["pistolas.html", "CK"], ["radios.html", "RD"], ["portas.html", "PR"],
+    ["informacoes.html", "IN"], ["users.html", "US"], ["diagnostico.html", "DG"],
+    ["config.html", "CF"]
   ];
 
   const SIDEBAR_GROUP_CODES = {
-    "opera-o": "⚡",
-    "equipamentos": "▧",
-    "infraestrutura": "◎",
-    "administra-o": "⚙"
+    "opera-o": "OP",
+    "equipamentos": "EQ",
+    "infraestrutura": "IF",
+    "administra-o": "AD"
   };
 
   function decodeMojibake(value) {
@@ -312,92 +281,12 @@
       if (code && icon) icon.textContent = code;
     });
     document.querySelectorAll(".sidebar-section-title > span").forEach((node) => {
-      node.textContent = "★";
+      node.textContent = "*";
     });
   }
 
   function ensureSidebarPageLinks() {
-    if (!document.body) return;
-    const nav = document.querySelector(".sidebar-nav-pro, .sidebar nav");
-    if (!nav) return;
-
-    const ensureGroup = (key, icon, label) => {
-      let group = nav.querySelector(`.sidebar-group[data-sidebar-group="${key}"]`);
-      if (!group) {
-        group = document.createElement("section");
-        group.className = "sidebar-group";
-        group.setAttribute("data-sidebar-group", key);
-        group.innerHTML = `
-          <button class="sidebar-group-toggle" type="button">
-            <span class="sidebar-group-icon">${icon}</span>
-            <span class="sidebar-group-title">${label}</span>
-            <span class="sidebar-group-chevron">›</span>
-          </button>
-          <div class="sidebar-group-links"></div>
-        `;
-        nav.appendChild(group);
-      }
-      let links = group.querySelector(".sidebar-group-links");
-      if (!links) {
-        links = document.createElement("div");
-        links.className = "sidebar-group-links";
-        group.appendChild(links);
-      }
-      return links;
-    };
-
-    const addSidebarLink = (host, href, icon, text, beforeHref = "") => {
-      if (!host || host.querySelector(`a[href="${href}"]`)) return;
-      const link = document.createElement("a");
-      link.href = href;
-      link.setAttribute("data-icon", icon);
-      link.innerHTML = `<span class="sidebar-link-text">${text}</span>`;
-      const currentPage = (window.location.pathname.split("/").pop() || "index.html").toLowerCase();
-      if (currentPage === href.toLowerCase()) {
-        link.classList.add("active");
-        host.closest(".sidebar-group")?.classList.add("is-open");
-      }
-      const before = beforeHref ? host.querySelector(`a[href="${beforeHref}"]`) : null;
-      if (before) before.insertAdjacentElement("beforebegin", link);
-      else host.appendChild(link);
-    };
-
-    const equipmentLinks = ensureGroup("equipamentos", "EQ", "Equipamentos");
-    const infraLinks = ensureGroup("infraestrutura", "IN", "Infraestrutura");
-    addSidebarLink(equipmentLinks, "equipamento.html", "EQ", "Fichas Equipamento", "manutencao-impressoras.html");
-    addSidebarLink(infraLinks, "zonas.html", "ZN", "Zonas", "portas.html");
-  }
-
-  function applyLayoutData(data = {}) {
-    const nextTheme = data.themePro || {
-      primary: data.accentColor,
-      secondary: data.accentColor2,
-      buttonTextMode: data.buttonTextMode
-    };
-    apply({ ...getCachedTheme(), ...nextTheme });
-    applyVisualDesign(data.visualDesign || getCachedVisualDesign(), { persist: false });
-    applyWorkspace(data.workspaceMode || getCachedWorkspace(), { persist: false });
-    window.dispatchEvent(new CustomEvent("appbraga:layout", { detail: data }));
-  }
-
-  function isConfigPage() {
-    const page = (window.location.pathname.split("/").pop() || "index.html").toLowerCase();
-    return page === "config.html";
-  }
-
-  function ensureClassicStylesheet(active) {
-    const id = "appDesignClassicStylesheet";
-    const existing = document.getElementById(id);
-    if (!active) {
-      existing?.remove();
-      return;
-    }
-    if (existing) return;
-    const link = document.createElement("link");
-    link.id = id;
-    link.rel = "stylesheet";
-    link.href = designAssetPath("app-design-classic.css");
-    (document.head || document.documentElement).appendChild(link);
+    return;
   }
 
   function currentPageTitle() {
