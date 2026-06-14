@@ -13260,42 +13260,6 @@ async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
 })();
 /* ===== END APP BRAGA v1.35.8 - SIDEBAR COLAPSAVEL PRO ===== */
 
-/* ===== APP BRAGA v1.54.7 - REMOVER SIDEBAR ===== */
-(function(){
-  function removeSidebarSystems(){
-    document.body?.classList.remove("sidebar-open", "sidebar-collapsed");
-    document.documentElement?.classList.remove("sidebar-open", "sidebar-collapsed");
-    document.querySelectorAll([
-      "aside.sidebar",
-      ".sidebar",
-      "#sidebar",
-      ".enterprise-sidebar",
-      ".sidebar-pro-groups",
-      ".sidebar-collapsible-pro",
-      ".app-mobile-sidebar-new",
-      ".app-sidebar-overlay",
-      ".app-menu-toggle",
-      ".sidebar-collapse-toggle"
-    ].join(",")).forEach((node) => node.remove());
-  }
-
-  function startSidebarKillSwitch(){
-    removeSidebarSystems();
-    const observer = new MutationObserver(removeSidebarSystems);
-    observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
-    window.addEventListener("pageshow", removeSidebarSystems);
-    window.addEventListener("resize", removeSidebarSystems);
-    setTimeout(removeSidebarSystems, 50);
-    setTimeout(removeSidebarSystems, 250);
-    setTimeout(removeSidebarSystems, 1000);
-  }
-
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", startSidebarKillSwitch, { once: true });
-  else startSidebarKillSwitch();
-})();
-/* ===== END APP BRAGA v1.54.7 - REMOVER SIDEBAR ===== */
-
-
 /* ===== APP BRAGA v1.35.8 - SIDEBAR COLLAPSE HARDENING ===== */
 (function(){
   const KEY = "appBraga.sidebar.collapsed.v1358";
