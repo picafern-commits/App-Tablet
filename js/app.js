@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.54.9";
+const APP_VERSION = "1.55.0";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "";
@@ -12844,7 +12844,7 @@ window.testarCamerasStockQr = async function(){
     const file = String(href || "").split("?")[0].split("#")[0].split("/").pop().toLowerCase();
     const map = {
       "index.html":"DB", "add-toner.html":"+", "stock.html":"ST", "historico.html":"HT",
-      "tarefas.html":"TF", "scanner-ia.html":"IA", "etiquetas-word.html":"ET",
+      "tarefas.html":"\u2713", "scanner-ia.html":"\u25A3", "etiquetas-word.html":"ET",
       "impressoras.html":"IP", "manutencao-impressoras.html":"MN", "computadores.html":"PC",
       "pistolas.html":"CK", "radios.html":"RD", "portas.html":"PR", "diretorio.html":"DR",
       "informacoes.html":"IN", "users.html":"US", "diagnostico.html":"DG", "config.html":"CF",

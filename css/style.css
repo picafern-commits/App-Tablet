@@ -8426,3 +8426,47 @@ body.dashboard-clean #personalToolsDashboard.is-empty-dashboard-block,
   line-height:1!important;
 }
 /* ===== END APP BRAGA v1.54.8 - CORRECAO SIDEBAR ===== */
+
+/* ===== APP BRAGA v1.55.0 - SIDEBAR SEM FUGAS ===== */
+html body aside.sidebar,
+html body .sidebar.sidebar-pro-groups,
+html body .sidebar.sidebar-collapsible-pro{
+  overflow-x:hidden!important;
+  clip-path:inset(0)!important;
+  contain:paint!important;
+}
+
+html body aside.sidebar .sidebar-nav-pro,
+html body aside.sidebar .sidebar-favorites,
+html body aside.sidebar .sidebar-fav-list,
+html body aside.sidebar .sidebar-group,
+html body aside.sidebar .sidebar-group-links,
+html body .sidebar.sidebar-pro-groups .sidebar-nav-pro,
+html body .sidebar.sidebar-pro-groups .sidebar-favorites,
+html body .sidebar.sidebar-pro-groups .sidebar-fav-list,
+html body .sidebar.sidebar-pro-groups .sidebar-group,
+html body .sidebar.sidebar-pro-groups .sidebar-group-links{
+  max-width:100%!important;
+  overflow-x:hidden!important;
+}
+
+html body aside.sidebar a,
+html body .sidebar.sidebar-pro-groups a,
+html body .sidebar.sidebar-collapsible-pro a{
+  max-width:100%!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+
+body > .sidebar-nav-pro,
+body > .sidebar-group,
+body > .sidebar-group-links,
+body > .sidebar-fav-list,
+main .sidebar-nav-pro,
+.main .sidebar-nav-pro,
+.dashboard-shell .sidebar-nav-pro,
+.dashboard-container .sidebar-nav-pro{
+  display:none!important;
+}
+/* ===== END APP BRAGA v1.55.0 - SIDEBAR SEM FUGAS ===== */

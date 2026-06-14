@@ -305,8 +305,8 @@
       "Computadores", "Pistolas CK65", "Radios", "Zonas", "Portas Rede", "Informacoes",
       "Users", "Diagnostico", "Configuracoes"
     ].map((value) => normalizeSidebarLabel(value)));
-    document.querySelectorAll(".sidebar-nav-pro").forEach((nav) => {
-      if (!nav.closest(".sidebar, aside.sidebar, .app-mobile-sidebar-new")) nav.remove();
+    document.querySelectorAll(".sidebar-nav-pro, .sidebar-group, .sidebar-group-links, .sidebar-fav-list").forEach((node) => {
+      if (!node.closest(".sidebar, aside.sidebar, .app-mobile-sidebar-new")) node.remove();
     });
     document.querySelectorAll('a[href*=".html"]').forEach((link) => {
       if (link.closest(".sidebar, aside.sidebar, .app-mobile-sidebar-new, .app-pro-commandbar, .personal-dashboard-actions, .dashboard-task-panel")) return;
