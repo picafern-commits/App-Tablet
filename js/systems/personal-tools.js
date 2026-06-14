@@ -580,6 +580,11 @@
     `).join("");
   }
 
+  function setDashboardTasksEmpty(isEmpty) {
+    if (!isDashboard()) return;
+    document.getElementById("personalToolsDashboard")?.classList.toggle("is-empty-dashboard-block", !!isEmpty);
+  }
+
   function renderTasks() {
     const host = document.getElementById("personalTaskList");
     if (!host) return;
@@ -600,8 +605,10 @@
     }).sort((a, b) => taskPriorityWeight(a.priority) - taskPriorityWeight(b.priority) || getTimestamp(b.createdAt) - getTimestamp(a.createdAt)).slice(0, limit);
     if (!tasks.length) {
       host.innerHTML = `<div class="empty-state mini">Sem tarefas para este filtro.</div>`;
+      setDashboardTasksEmpty(true);
       return;
     }
+    setDashboardTasksEmpty(false);
     host.innerHTML = tasks.map((task) => `
       <div class="personal-row personal-task-row ${task.done ? "is-done" : ""}">
         <div>

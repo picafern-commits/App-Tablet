@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.54.5";
+const APP_VERSION = "1.54.6";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "";
@@ -12840,10 +12840,22 @@ window.testarCamerasStockQr = async function(){
     const p = (location.pathname || "").split("/").pop() || "index.html";
     return p === "" ? "index.html" : p;
   }
+  function sidebarIconForHref(href, fallback){
+    const file = String(href || "").split("?")[0].split("#")[0].split("/").pop().toLowerCase();
+    const map = {
+      "index.html":"DB", "add-toner.html":"+", "stock.html":"ST", "historico.html":"HT",
+      "tarefas.html":"TF", "scanner-ia.html":"IA", "etiquetas-word.html":"ET",
+      "impressoras.html":"IP", "manutencao-impressoras.html":"MN", "computadores.html":"PC",
+      "pistolas.html":"CK", "radios.html":"RD", "portas.html":"PR", "diretorio.html":"DR",
+      "informacoes.html":"IN", "users.html":"US", "diagnostico.html":"DG", "config.html":"CF",
+      "zonas.html":"ZN"
+    };
+    return map[file] || fallback || "";
+  }
   function linkFor(page){
     const a = document.createElement("a");
     a.href = page.href;
-    a.dataset.icon = page.icon;
+    a.dataset.icon = sidebarIconForHref(page.href, page.icon);
     if(currentFile() === page.href) a.classList.add("active");
     a.innerHTML = `<span class="sidebar-link-text">${page.label}</span>`;
     return a;
@@ -13163,18 +13175,39 @@ async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
   function readCollapsed(){ try { return localStorage.getItem(STORAGE_KEY) === "1"; } catch(e){ return false; } }
   function saveCollapsed(value){ try { localStorage.setItem(STORAGE_KEY, value ? "1" : "0"); } catch(e){} }
   function currentFile(){ return ((location.pathname || "").split("/").pop() || "index.html").toLowerCase(); }
+  function cleanIconForHref(href, fallback){
+    const map = {
+      "index.html":"DB", "add-toner.html":"+", "stock.html":"ST", "historico.html":"HT",
+      "tarefas.html":"TF", "scanner-ia.html":"IA", "etiquetas-word.html":"ET",
+      "impressoras.html":"IP", "manutencao-impressoras.html":"MN", "computadores.html":"PC",
+      "pistolas.html":"CK", "radios.html":"RD", "portas.html":"PR", "diretorio.html":"DR",
+      "informacoes.html":"IN", "users.html":"US", "diagnostico.html":"DG", "config.html":"CF",
+      "zonas.html":"ZN"
+    };
+    return map[href] || fallback || "";
+  }
 
   function ensureIcons(sidebar){
     const current = currentFile();
     sidebar.querySelectorAll("a[href]").forEach((link) => {
       const href = (link.getAttribute("href") || "").split("?")[0].split("#")[0].split("/").pop().toLowerCase();
-      if (PAGE_ICONS[href] && !link.dataset.icon) link.dataset.icon = PAGE_ICONS[href];
+      const icon = cleanIconForHref(href, PAGE_ICONS[href]);
+      if (icon) link.dataset.icon = icon;
       const text = (link.querySelector(".sidebar-link-text")?.textContent || link.textContent || "").replace(/\s+/g," ").trim();
       if (text) link.setAttribute("title", text);
       if (href === current) {
         link.classList.add("active");
         link.setAttribute("aria-current", "page");
       }
+    });
+    sidebar.querySelectorAll(".sidebar-group-toggle").forEach((toggle) => {
+      const label = (toggle.textContent || "").toLowerCase();
+      const icon = toggle.querySelector(".sidebar-group-icon");
+      if (!icon) return;
+      if (label.includes("oper")) icon.textContent = "OP";
+      else if (label.includes("equip")) icon.textContent = "EQ";
+      else if (label.includes("infra")) icon.textContent = "IF";
+      else if (label.includes("admin")) icon.textContent = "AD";
     });
   }
 

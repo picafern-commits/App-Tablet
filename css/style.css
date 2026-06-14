@@ -8379,3 +8379,25 @@ body.app-design-pro .personal-task-priority.normal{
   }
 }
 /* ===== END APP BRAGA v1.54.5 - RESTAURAR SIDEBAR ANTIGA ===== */
+
+/* ===== APP BRAGA v1.54.6 - DASHBOARD SEM BLOCOS VAZIOS ===== */
+body.dashboard-clean #personalToolsDashboard.is-empty-dashboard-block,
+#personalToolsDashboard.dashboard-tasks-only.is-empty-dashboard-block{
+  display:none!important;
+  min-height:0!important;
+  height:0!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+}
+
+.dashboard-fullwidth:has(#listaDashboardStock:empty),
+.dashboard-fullwidth:has(#listaDashboardStock .empty-state:only-child){
+  display:none!important;
+  min-height:0!important;
+  height:0!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+}
+/* ===== END APP BRAGA v1.54.6 - DASHBOARD SEM BLOCOS VAZIOS ===== */
