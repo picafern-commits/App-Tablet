@@ -289,6 +289,36 @@
     return;
   }
 
+  function normalizeSidebarLabel(value) {
+    return String(value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLowerCase();
+  }
+
+  function removeOrphanSidebarLinks() {
+    const pageLabels = new Set([
+      "Dashboard", "Stock", "Diretorio", "Directorio", "Adicionar Toner", "Historico",
+      "Tarefas", "Scanner IA", "Etiquetas Word", "Impressoras", "Manutencao Impressoras",
+      "Computadores", "Pistolas CK65", "Radios", "Zonas", "Portas Rede", "Informacoes",
+      "Users", "Diagnostico", "Configuracoes"
+    ].map((value) => normalizeSidebarLabel(value)));
+    document.querySelectorAll('a[href$=".html"]').forEach((link) => {
+      if (link.closest(".sidebar, aside.sidebar, .app-mobile-sidebar-new, nav.sidebar-nav-pro, .app-pro-commandbar, .personal-dashboard-actions, .dashboard-task-panel")) return;
+      const text = normalizeSidebarLabel(link.textContent || "");
+      const href = String(link.getAttribute("href") || "");
+      const looksLikeSidebarLink = pageLabels.has(text) || /^(index|stock|diretorio|add-toner|historico|tarefas|scanner-ia|etiquetas-word|impressoras|manutencao-impressoras|computadores|pistolas|radios|zonas|portas|informacoes|users|diagnostico|config)\.html$/i.test(href.split("/").pop() || "");
+      if (!looksLikeSidebarLink) return;
+      const parent = link.parentElement;
+      link.remove();
+      if (parent && !parent.closest(".sidebar") && parent.children.length === 0 && !String(parent.textContent || "").trim()) {
+        parent.remove();
+      }
+    });
+  }
+
   function currentPageTitle() {
     const hero = document.querySelector(".page-hero-title, .dashboard-header h1, main h1, .main h1");
     const active = document.querySelector(".sidebar a.active .sidebar-link-text, .sidebar a.active");
@@ -306,6 +336,8 @@
   }
 
   function ensureProCommandBar(mode) {
+    document.querySelector(".app-pro-commandbar")?.remove();
+    return;
     if (mode !== "pro" || !document.body) {
       document.querySelector(".app-pro-commandbar")?.remove();
       return;
@@ -381,6 +413,8 @@
   }
 
   function ensureMobileActionDock(workspaceInput) {
+    document.querySelector(".app-mobile-action-dock")?.remove();
+    return;
     const workspace = normalizeWorkspace(workspaceInput || getCachedWorkspace());
     let dock = document.querySelector(".app-mobile-action-dock");
     const isPhoneSize = window.matchMedia?.("(max-width: 767px)")?.matches;
@@ -713,6 +747,11 @@
     });
   }
 
+  function isConfigPage() {
+    const page = String(location.pathname || "").split("/").pop().toLowerCase();
+    return page === "config.html";
+  }
+
   function connectFirestore() {
     if (!window.db?.collection || window.__appThemeProFirestoreBound) return;
     window.__appThemeProFirestoreBound = true;
@@ -764,12 +803,15 @@
       applyWorkspace(getCachedWorkspace(), { persist: false });
       ensureSidebarPageLinks();
       sanitizeVisibleText();
+      removeOrphanSidebarLinks();
       bindControls();
       setTimeout(connectFirestore, 300);
       setTimeout(() => {
         ensureSidebarPageLinks();
         sanitizeVisibleText();
+        removeOrphanSidebarLinks();
       }, 900);
+      setTimeout(removeOrphanSidebarLinks, 1800);
     });
   } else {
     apply(getCachedTheme(), { persist: false });
@@ -777,11 +819,14 @@
     applyWorkspace(getCachedWorkspace(), { persist: false });
     ensureSidebarPageLinks();
     sanitizeVisibleText();
+    removeOrphanSidebarLinks();
     bindControls();
     setTimeout(connectFirestore, 300);
     setTimeout(() => {
       ensureSidebarPageLinks();
       sanitizeVisibleText();
+      removeOrphanSidebarLinks();
     }, 900);
+    setTimeout(removeOrphanSidebarLinks, 1800);
   }
 })();
