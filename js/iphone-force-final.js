@@ -111,6 +111,19 @@
     var sidebar = document.querySelector(".sidebar");
     if (!sidebar) return;
 
+    if (!isMobile()) {
+      document.body.classList.remove("sidebar-open", "iphone-fit-locked", "app-mobile-actions-on");
+      document.documentElement.classList.remove("iphone-fit-locked");
+      document.querySelectorAll(".app-menu-toggle, .app-sidebar-overlay, .app-mobile-action-dock").forEach(function (node) {
+        node.remove();
+      });
+      sidebar.classList.remove("app-open");
+      sidebar.style.removeProperty("transform");
+      sidebar.style.removeProperty("pointer-events");
+      sidebar.style.removeProperty("visibility");
+      return;
+    }
+
     normalizeSidebarLinks(sidebar);
     forceFullscreenLayout();
 

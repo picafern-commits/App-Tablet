@@ -53,7 +53,7 @@
       });
       return response.ok;
     } catch (error) {
-      console.warn("Nao foi possivel enviar notificacao da tarefa:", error);
+      console.warn("Não foi possível enviar notificação da tarefa:", error);
     }
     return false;
   }
@@ -180,7 +180,7 @@
           <div class="personal-panel-head">
             <div>
               <h2>Tarefas em aberto</h2>
-              <p>Prioridades do dia sincronizadas com a pagina Tarefas.</p>
+              <p>Prioridades do dia sincronizadas com a página Tarefas.</p>
             </div>
             <a href="tarefas.html" class="secondary-btn">Ver todas</a>
           </div>
@@ -216,7 +216,7 @@
             <div class="personal-panel-head">
               <div>
                 <h2>Tarefas em aberto</h2>
-                <p>Prioridades do dia sincronizadas com a pagina Tarefas.</p>
+                <p>Prioridades do dia sincronizadas com a página Tarefas.</p>
               </div>
               <a href="tarefas.html" class="secondary-btn">Ver todas</a>
             </div>
@@ -266,13 +266,13 @@
           <div class="personal-panel-head">
             <div>
               <h2>Tarefas</h2>
-              <p>Organizacao diaria para manutencao, stock e seguimento.</p>
+              <p>Organização diária para manutenção, stock e seguimento.</p>
             </div>
             <button type="button" class="primary-btn" data-personal-add-task>Adicionar tarefa</button>
           </div>
           <div class="personal-task-composer">
-            <input id="personalTaskQuickTitle" type="text" placeholder="Nova tarefa rapida">
-            <input id="personalTaskOwner" type="text" placeholder="Responsavel">
+            <input id="personalTaskQuickTitle" type="text" placeholder="Nova tarefa rápida">
+            <input id="personalTaskOwner" type="text" placeholder="Responsável">
             <input id="personalTaskDue" type="date" aria-label="Data limite">
             <select id="personalTaskPriority">
               <option value="normal">Normal</option>
@@ -364,7 +364,7 @@
       return percent !== null && percent < 25;
     });
     const stockLow = (state.collections.stock || []).filter((item) => Number(item.quantidade ?? item.qtd ?? item.stock ?? 1) <= Number(item.minimo ?? item.min ?? 0));
-    const maintenance = (state.collections.manutencoes || []).filter((item) => !/resolvido|fechado|concluido|concluÃ­do/i.test(String(item.estado || "")));
+    const maintenance = (state.collections.manutencoes || []).filter((item) => !/resolvido|fechado|concluido|concluído/i.test(String(item.estado || "")));
     const week = weekRange();
     const weeklyRecords = (state.collections.radioWeeklyRecords || []).filter((item) => {
       const t = getTimestamp(item.createdAt || item.updatedAt || item.weekStart);

@@ -132,83 +132,70 @@
   }
 
   const TEXT_FIXES = [
-    ["NavegaÃƒÂ§ÃƒÂ£o", "Navega\u00e7\u00e3o"],
-    ["NavegaÃ§Ã£o", "Navega\u00e7\u00e3o"],
-    ["Navegacao", "Navega\u00e7\u00e3o"],
-    ["OperaÃƒÂ§ÃƒÂ£o", "Opera\u00e7\u00e3o"],
-    ["OperaÃ§Ã£o", "Opera\u00e7\u00e3o"],
-    ["Operacao", "Opera\u00e7\u00e3o"],
-    ["AdministraÃƒÂ§ÃƒÂ£o", "Administra\u00e7\u00e3o"],
-    ["AdministraÃ§Ã£o", "Administra\u00e7\u00e3o"],
-    ["Administracao", "Administra\u00e7\u00e3o"],
-    ["ManutenÃƒÂ§ÃƒÂ£o", "Manuten\u00e7\u00e3o"],
-    ["ManutenÃ§Ã£o", "Manuten\u00e7\u00e3o"],
-    ["Manutencao", "Manuten\u00e7\u00e3o"],
-    ["ConfiguraÃƒÂ§ÃƒÂµes", "Configura\u00e7\u00f5es"],
-    ["ConfiguraÃ§Ãµes", "Configura\u00e7\u00f5es"],
-    ["Configuracoes", "Configura\u00e7\u00f5es"],
-    ["InformaÃƒÂ§ÃƒÂµes", "Informa\u00e7\u00f5es"],
-    ["InformaÃ§Ãµes", "Informa\u00e7\u00f5es"],
-    ["Informacoes", "Informa\u00e7\u00f5es"],
-    ["DiretÃƒÂ³rio", "Diret\u00f3rio"],
-    ["DiretÃ³rio", "Diret\u00f3rio"],
-    ["Diretorio", "Diret\u00f3rio"],
-    ["HistÃƒÂ³rico", "Hist\u00f3rico"],
-    ["HistÃ³rico", "Hist\u00f3rico"],
-    ["Historico", "Hist\u00f3rico"],
-    ["DiagnÃƒÂ³stico", "Diagn\u00f3stico"],
-    ["DiagnÃ³stico", "Diagn\u00f3stico"],
-    ["Diagnostico", "Diagn\u00f3stico"],
-    ["RÃƒÂ¡dios", "R\u00e1dios"],
-    ["RÃ¡dios", "R\u00e1dios"],
-    ["Radios", "R\u00e1dios"],
-    ["pÃƒÂ¡gina", "p\u00e1gina"],
-    ["pÃ¡gina", "p\u00e1gina"],
-    ["pagina", "p\u00e1gina"],
-    ["pÃƒÂ¡ginas", "p\u00e1ginas"],
-    ["pÃ¡ginas", "p\u00e1ginas"],
-    ["paginas", "p\u00e1ginas"],
-    ["Toners disponÃƒÂ­veis", "Toners dispon\u00edveis"],
-    ["Toners disponiveis", "Toners dispon\u00edveis"],
-    ["ManutenÃƒÂ§ÃƒÂµes", "Manuten\u00e7\u00f5es"],
-    ["Manutencoes", "Manuten\u00e7\u00f5es"],
-    ["clÃƒÂ¡ssico", "cl\u00e1ssico"],
-    ["classico", "cl\u00e1ssico"],
-    ["botÃƒÂµes", "bot\u00f5es"],
-    ["botoes", "bot\u00f5es"],
-    ["cÃƒÂ¢mara", "c\u00e2mara"],
-    ["cÃ¢mara", "c\u00e2mara"],
-    ["CÃƒÂ¢mara", "C\u00e2mara"],
-    ["CÃ¢mara", "C\u00e2mara"],
-    ["SÃƒÂ©rie", "S\u00e9rie"],
-    ["SÃ©rie", "S\u00e9rie"],
-    ["CÃƒÂ³digo", "C\u00f3digo"],
-    ["CÃ³digo", "C\u00f3digo"],
-    ["LocalizaÃƒÂ§ÃƒÂ£o", "Localiza\u00e7\u00e3o"],
-    ["LocalizaÃ§Ã£o", "Localiza\u00e7\u00e3o"],
-    ["ReferÃƒÂªncia", "Refer\u00eancia"],
-    ["ReferÃªncia", "Refer\u00eancia"],
-    ["ÃƒÅ¡ltimos", "\u00daltimos"],
-    ["Ãšltimos", "\u00daltimos"],
-    ["ÃƒÂºltimos", "\u00faltimos"],
-    ["Ãºltimos", "\u00faltimos"],
-    ["Ã‚Âº", "\u00ba"],
-    ["Ã‚Â·", " - "],
-    ["â€¹", "<"], ["â€º", ">"],
-    ["Ã¢â‚¬Â¹", "<"], ["Ã¢â‚¬Âº", ">"],
-    ["ðŸ ", "DB"], ["ðŸ“¦", "ST"], ["ðŸ–¨ï¸", "IP"],
-    ["ðŸ§¾", "HT"], ["ðŸ“„", "IA"], ["ðŸ·ï¸", "ET"],
-    ["ðŸ§°", "EQ"], ["ðŸ› ï¸", "MN"], ["ðŸ’»", "PC"],
-    ["ðŸ“Ÿ", "CK"], ["ðŸ“¡", "RD"], ["ðŸŒ", "IF"],
-    ["ðŸ”Œ", "PR"], ["â˜Žï¸", "DR"], ["â„¹ï¸", "IN"],
-    ["ðŸ‘¥", "US"], ["ðŸ©º", "DG"], ["âš™ï¸", "CF"],
-    ["â­", "*"], ["âœ¦", "*"], ["âœ…", "OK"], ["âž•", "+"], ["âš¡", "OP"]
+    ["Nao", "Não"],
+    ["nao", "não"],
+    ["possivel", "possível"],
+    ["Possivel", "Possível"],
+    ["notificacao", "notificação"],
+    ["Notificacao", "Notificação"],
+    ["notificacoes", "notificações"],
+    ["Notificacoes", "Notificações"],
+    ["Navegacao", "Navegação"],
+    ["Operacao", "Operação"],
+    ["Administracao", "Administração"],
+    ["Manutencao", "Manutenção"],
+    ["manutencao", "manutenção"],
+    ["Configuracoes", "Configurações"],
+    ["Informacoes", "Informações"],
+    ["Diretorio", "Diretório"],
+    ["Historico", "Histórico"],
+    ["historico", "histórico"],
+    ["Diagnostico", "Diagnóstico"],
+    ["Radios", "Rádios"],
+    ["Visao", "Visão"],
+    ["visao", "visão"],
+    ["pagina", "página"],
+    ["paginas", "páginas"],
+    ["Pagina", "Página"],
+    ["Paginas", "Páginas"],
+    ["rapida", "rápida"],
+    ["Rapida", "Rápida"],
+    ["rapido", "rápido"],
+    ["Rapido", "Rápido"],
+    ["tecnica", "técnica"],
+    ["Tecnica", "Técnica"],
+    ["relacoes", "relações"],
+    ["Relacoes", "Relações"],
+    ["seguranca", "segurança"],
+    ["Seguranca", "Segurança"],
+    ["aparencia", "aparência"],
+    ["Aparencia", "Aparência"],
+    ["Preferencias", "Preferências"],
+    ["preferencias", "preferências"],
+    ["Organizacao", "Organização"],
+    ["organizacao", "organização"],
+    ["Responsavel", "Responsável"],
+    ["responsavel", "responsável"],
+    ["padrao", "padrão"],
+    ["Padrao", "Padrão"],
+    ["Toners disponiveis", "Toners disponíveis"],
+    ["Manutencoes", "Manutenções"],
+    ["classico", "clássico"],
+    ["botoes", "botões"],
+    ["camara", "câmara"],
+    ["Camara", "Câmara"],
+    ["Serie", "Série"],
+    ["Codigo", "Código"],
+    ["Localizacao", "Localização"],
+    ["Referencia", "Referência"],
+    ["Ultimos", "Últimos"],
+    ["ultimos", "últimos"]
   ];
 
   const SIDEBAR_CODES = [
     ["index.html", "DB"], ["stock.html", "ST"], ["diretorio.html", "DR"],
     ["impressoras.html", "IP"], ["add-toner.html", "+"], ["historico.html", "HT"],
-    ["tarefas.html", "\u2713"], ["scanner-ia.html", "\u25A3"], ["etiquetas-word.html", "ET"],
+    ["tarefas.html", "TF"], ["scanner-ia.html", "IA"], ["etiquetas-word.html", "ET"],
     ["manutencao-impressoras.html", "MN"], ["zonas.html", "ZN"], ["computadores.html", "PC"],
     ["pistolas.html", "CK"], ["radios.html", "RD"], ["portas.html", "PR"],
     ["informacoes.html", "IN"], ["users.html", "US"], ["diagnostico.html", "DG"],
@@ -308,8 +295,9 @@
     document.querySelectorAll(".sidebar-nav-pro, .sidebar-group, .sidebar-group-links, .sidebar-fav-list").forEach((node) => {
       if (!node.closest(".sidebar, aside.sidebar, .app-mobile-sidebar-new")) node.remove();
     });
+    document.querySelectorAll(".app-pro-commandbar, body > .personal-dashboard-actions").forEach((node) => node.remove());
     document.querySelectorAll('a[href*=".html"]').forEach((link) => {
-      if (link.closest(".sidebar, aside.sidebar, .app-mobile-sidebar-new, .app-pro-commandbar, .personal-dashboard-actions, .dashboard-task-panel")) return;
+      if (link.closest(".sidebar, aside.sidebar, .app-mobile-sidebar-new, .personal-dashboard-actions, .dashboard-task-panel")) return;
       const text = normalizeSidebarLabel(link.textContent || "");
       const href = String(link.getAttribute("href") || "");
       const looksLikeSidebarLink = pageLabels.has(text) || /^(index|stock|diretorio|add-toner|historico|tarefas|scanner-ia|etiquetas-word|impressoras|manutencao-impressoras|computadores|pistolas|radios|zonas|portas|informacoes|users|diagnostico|config)\.html$/i.test(href.split("/").pop() || "");
@@ -322,6 +310,22 @@
     });
   }
 
+  function watchOrphanSidebarLinks() {
+    if (!document.body || !window.MutationObserver || document.body.dataset.sidebarOrphanWatch === "1") return;
+    document.body.dataset.sidebarOrphanWatch = "1";
+    let timer = null;
+    const schedule = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        sanitizeVisibleText();
+        removeOrphanSidebarLinks();
+      }, 90);
+    };
+    const observer = new MutationObserver(schedule);
+    observer.observe(document.body, { childList: true, subtree: true });
+    window.setTimeout(() => observer.disconnect(), 30000);
+  }
+
   function currentPageTitle() {
     const hero = document.querySelector(".page-hero-title, .dashboard-header h1, main h1, .main h1");
     const active = document.querySelector(".sidebar a.active .sidebar-link-text, .sidebar a.active");
@@ -330,44 +334,16 @@
 
   function currentPageSubtitle() {
     const page = currentPageTitle().toLowerCase();
-    if (page.includes("dashboard")) return "Visao operacional, tarefas e equipamentos importantes.";
+    if (page.includes("dashboard")) return "Visão operacional, tarefas e equipamentos importantes.";
     if (page.includes("tarefas")) return "Planeamento do trabalho em aberto, prioridades e prazos.";
-    if (page.includes("toner")) return "Entrada rapida de movimentos e referencias.";
-    if (page.includes("equipamento")) return "Ficha tecnica, relacoes e historico.";
-    if (page.includes("config")) return "Preferencias, seguranca, aparencia e tema.";
+    if (page.includes("toner")) return "Entrada rápida de movimentos e referências.";
+    if (page.includes("equipamento")) return "Ficha técnica, relações e histórico.";
+    if (page.includes("config")) return "Preferências, segurança, aparência e tema.";
     return "Centro operacional App Braga.";
   }
 
-  function ensureProCommandBar(mode) {
-    document.querySelector(".app-pro-commandbar")?.remove();
-    return;
-    if (mode !== "pro" || !document.body) {
-      document.querySelector(".app-pro-commandbar")?.remove();
-      return;
-    }
-    const main = document.querySelector("main, .main, .main-content");
-    if (!main) return;
-    let bar = main.querySelector(":scope > .app-pro-commandbar");
-    if (!bar) {
-      bar = document.createElement("section");
-      bar.className = "app-pro-commandbar";
-      main.prepend(bar);
-    }
-    bar.innerHTML = `
-      <div class="app-pro-command-title">
-        <span class="app-pro-kicker">App Braga Pro</span>
-        <strong>${currentPageTitle()}</strong>
-        <small>${currentPageSubtitle()}</small>
-      </div>
-      <nav class="app-pro-command-actions" aria-label="Acoes rapidas">
-        <a href="index.html">Dashboard</a>
-        <a href="tarefas.html">Tarefas</a>
-        <a href="add-toner.html">Toner</a>
-        <a href="notificacoes.html">Notificacoes</a>
-        <a href="config.html">Design</a>
-      </nav>
-    `;
-    sanitizeVisibleText();
+  function ensureProCommandBar() {
+    document.querySelectorAll(".app-pro-commandbar").forEach((node) => node.remove());
   }
 
   function normalizeWorkspace(input = {}) {
@@ -415,30 +391,8 @@
     });
   }
 
-  function ensureMobileActionDock(workspaceInput) {
-    document.querySelector(".app-mobile-action-dock")?.remove();
-    return;
-    const workspace = normalizeWorkspace(workspaceInput || getCachedWorkspace());
-    let dock = document.querySelector(".app-mobile-action-dock");
-    const isPhoneSize = window.matchMedia?.("(max-width: 767px)")?.matches;
-    const isTouchOnly = window.matchMedia?.("(hover: none) and (pointer: coarse)")?.matches;
-    if (workspace.mobileActions === "off" || getCachedVisualDesign() !== "pro" || isPhoneSize || isTouchOnly) {
-      dock?.remove();
-      return;
-    }
-    if (!document.body) return;
-    if (!dock) {
-      dock = document.createElement("nav");
-      dock.className = "app-mobile-action-dock";
-      dock.setAttribute("aria-label", "Acoes rapidas mobile");
-      document.body.appendChild(dock);
-    }
-    dock.innerHTML = `
-      <a href="index.html">Hoje</a>
-      <a href="tarefas.html">Tarefas</a>
-      <a href="add-toner.html">Toner</a>
-      <a href="notificacoes.html">Avisos</a>
-    `;
+  function ensureMobileActionDock() {
+    document.querySelectorAll(".app-mobile-action-dock").forEach((node) => node.remove());
   }
 
   function applyWorkspace(workspaceInput = getCachedWorkspace(), options = {}) {
@@ -815,6 +769,8 @@
         removeOrphanSidebarLinks();
       }, 900);
       setTimeout(removeOrphanSidebarLinks, 1800);
+      setTimeout(removeOrphanSidebarLinks, 3200);
+      watchOrphanSidebarLinks();
     });
   } else {
     apply(getCachedTheme(), { persist: false });
@@ -831,5 +787,7 @@
       removeOrphanSidebarLinks();
     }, 900);
     setTimeout(removeOrphanSidebarLinks, 1800);
+    setTimeout(removeOrphanSidebarLinks, 3200);
+    watchOrphanSidebarLinks();
   }
 })();
