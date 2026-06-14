@@ -208,7 +208,7 @@
   const SIDEBAR_CODES = [
     ["index.html", "DB"], ["stock.html", "ST"], ["diretorio.html", "DR"],
     ["impressoras.html", "IP"], ["add-toner.html", "+"], ["historico.html", "HT"],
-    ["tarefas.html", "TF"], ["scanner-ia.html", "IA"], ["etiquetas-word.html", "ET"],
+    ["tarefas.html", "\u2713"], ["scanner-ia.html", "\u25A3"], ["etiquetas-word.html", "ET"],
     ["manutencao-impressoras.html", "MN"], ["zonas.html", "ZN"], ["computadores.html", "PC"],
     ["pistolas.html", "CK"], ["radios.html", "RD"], ["portas.html", "PR"],
     ["informacoes.html", "IN"], ["users.html", "US"], ["diagnostico.html", "DG"],
@@ -305,8 +305,11 @@
       "Computadores", "Pistolas CK65", "Radios", "Zonas", "Portas Rede", "Informacoes",
       "Users", "Diagnostico", "Configuracoes"
     ].map((value) => normalizeSidebarLabel(value)));
-    document.querySelectorAll('a[href$=".html"]').forEach((link) => {
-      if (link.closest(".sidebar, aside.sidebar, .app-mobile-sidebar-new, nav.sidebar-nav-pro, .app-pro-commandbar, .personal-dashboard-actions, .dashboard-task-panel")) return;
+    document.querySelectorAll(".sidebar-nav-pro").forEach((nav) => {
+      if (!nav.closest(".sidebar, aside.sidebar, .app-mobile-sidebar-new")) nav.remove();
+    });
+    document.querySelectorAll('a[href*=".html"]').forEach((link) => {
+      if (link.closest(".sidebar, aside.sidebar, .app-mobile-sidebar-new, .app-pro-commandbar, .personal-dashboard-actions, .dashboard-task-panel")) return;
       const text = normalizeSidebarLabel(link.textContent || "");
       const href = String(link.getAttribute("href") || "");
       const looksLikeSidebarLink = pageLabels.has(text) || /^(index|stock|diretorio|add-toner|historico|tarefas|scanner-ia|etiquetas-word|impressoras|manutencao-impressoras|computadores|pistolas|radios|zonas|portas|informacoes|users|diagnostico|config)\.html$/i.test(href.split("/").pop() || "");

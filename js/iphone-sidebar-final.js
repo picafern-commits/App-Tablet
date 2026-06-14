@@ -7,11 +7,11 @@
       title: "Operacao",
       items: [
         ["index.html", "Hoje", "HJ"],
-        ["tarefas.html", "Tarefas", "TF"],
+        ["tarefas.html", "Tarefas", "\u2713"],
         ["add-toner.html", "Adicionar Toner", "TN"],
         ["stock.html", "Stock", "ST"],
         ["historico.html", "Historico", "HT"],
-        ["scanner-ia.html", "Scanner IA", "IA"],
+        ["scanner-ia.html", "Scanner IA", "\u25A3"],
         ["etiquetas-word.html", "Etiquetas Word", "ET"]
       ]
     },
