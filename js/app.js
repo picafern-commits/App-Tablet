@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.55.3";
+const APP_VERSION = "1.55.4";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "";
@@ -1734,6 +1734,17 @@ function tonerNotifyUrlApp() {
   return "https://picafern-commits.github.io/App-Tablet/html/impressoras.html";
 }
 
+function shouldSendTonerCloudAlertApp(tag, ttlMs = 1000 * 60 * 60 * 8) {
+  const key = `appBraga.tonerCloudAlert.${tag}`;
+  const now = Date.now();
+  try {
+    const last = Number(localStorage.getItem(key) || 0);
+    if (last && now - last < ttlMs) return false;
+    localStorage.setItem(key, String(now));
+  } catch (error) {}
+  return true;
+}
+
 async function enviarNotificacaoCloudTonerApp(payload = {}) {
   if (!navigator.onLine || !payload.title || !payload.body) return false;
   try {
@@ -1936,6 +1947,7 @@ function maybeNotifyCriticalSupply(ip, info) {
     const message = `${alert.title} em ${printerLabel} - ${alert.issue}`;
     mostrarMensagem(message, alert.level);
     enviarNotificacaoApp(alert.title, message, alert.tag, { url: "html/impressoras.html" });
+    if (!shouldSendTonerCloudAlertApp(alert.tag)) return;
     enviarNotificacaoCloudTonerApp({
       requestId: alert.tag,
       title: alert.title,
@@ -2009,7 +2021,7 @@ async function maybeNotifyTonerReplacement(ip, previousInfo, nextInfo) {
 
     const body = `${printerLabel}: ${event.after.label} passou de ${event.before.percent}% para ${event.after.percent}%.`;
     await enviarNotificacaoApp("Toner trocado", body, key, { url: "html/impressoras.html" });
-    enviarNotificacaoCloudTonerApp({
+    if (shouldSendTonerCloudAlertApp(key, 1000 * 60 * 60 * 24)) enviarNotificacaoCloudTonerApp({
       requestId: key,
       title: "Toner trocado",
       body,
@@ -3928,14 +3940,6 @@ async function registarDispositivoPushApp(forceReset = false, options = {}) {
     mostrarMensagem(friendly, "erro");
   }
 }
-
-maybeNotifyCriticalSupply = function () {};
-maybeNotifyTonerReplacement = function () {};
-enviarNotificacaoApp = async function () { return false; };
-verificarAlertasNotificacoesApp = async function () {};
-iniciarMonitorNotificacoesApp = function () {
-  clearInterval(appNotificationTimer);
-};
 
 async function obterTonerInfo(ip) {
   try {
