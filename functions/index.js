@@ -476,32 +476,32 @@ function changedTonerEvents(beforeData = {}, afterData = {}, printerId = "") {
     const beforePercent = before ? before.percent : null;
     const afterPercent = after.percent;
 
-    if ((beforePercent === null || beforePercent > 0) && afterPercent <= 0) {
+    if (afterPercent === 0 && beforePercent !== 0) {
       events.push({
         event: "system-toner-zero",
-        title: "Toner a 0%",
-        body: `${label}: ${after.label} ficou a 0%.`,
+        title: "🚨 IMPORTANTE: Toner a 0%",
+        body: `${label}: ${after.label} chegou a 0%. Trocar toner assim que possível.`,
         tag: `toner-zero-${printerId}-${after.key}-${afterPercent}`,
         url: `${APP_URL}impressoras.html`
       });
       return;
     }
 
-    if ((beforePercent === null || beforePercent > 25) && afterPercent > 0 && afterPercent <= 25) {
+    if (afterPercent === 25 && beforePercent !== 25) {
       events.push({
         event: "system-toner-25",
-        title: "Toner a 25%",
-        body: `${label}: ${after.label} está a ${afterPercent}%.`,
+        title: "⚠️ Toner a 25%",
+        body: `${label}: ${after.label} chegou a 25%.`,
         tag: `toner-25-${printerId}-${after.key}-${afterPercent}`,
         url: `${APP_URL}impressoras.html`
       });
       return;
     }
 
-    if (beforePercent !== null && beforePercent <= 0 && afterPercent >= 95) {
+    if (beforePercent === 0 && (afterPercent === 99 || afterPercent === 100)) {
       events.push({
         event: "system-toner-replaced",
-        title: "Toner trocado",
+        title: "✅ Toner reposto",
         body: `${label}: ${after.label} passou de ${beforePercent}% para ${afterPercent}%.`,
         tag: `toner-replaced-${printerId}-${after.key}-${beforePercent}-${afterPercent}`,
         url: `${APP_URL}impressoras.html`

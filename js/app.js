@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.58.2";
+const APP_VERSION = "1.58.3";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "";
@@ -1731,6 +1731,40 @@ function isDashboardTonerLow(percentagem) {
   return typeof percentagem === "number" && percentagem <= DASHBOARD_TONER_LOW_THRESHOLD;
 }
 
+function normalizeTonerPercentApp(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return null;
+  return Math.max(0, Math.min(100, Math.round(number)));
+}
+
+function isTonerAtWarning25App(percentagem) {
+  return normalizeTonerPercentApp(percentagem) === DASHBOARD_TONER_LOW_THRESHOLD;
+}
+
+function isTonerReplacedFromZeroApp(percentagem) {
+  const value = normalizeTonerPercentApp(percentagem);
+  return value === 99 || value === 100;
+}
+
+function getPreviousTonerPercentApp(previousInfo, itemKey) {
+  if (!previousInfo) return null;
+  const items = Array.isArray(previousInfo.colors) && previousInfo.colors.length
+    ? previousInfo.colors
+    : (typeof previousInfo.percent === "number" ? [{ key: "black", label: "Preto", percent: previousInfo.percent }] : []);
+  const found = items.find((item) => String(item.key || item.label || "toner").toLowerCase() === itemKey);
+  return found ? normalizeTonerPercentApp(found.percent) : null;
+}
+
+function tonerTransitionShouldNotifyApp(kind, previousPercent, nextPercent) {
+  const before = normalizeTonerPercentApp(previousPercent);
+  const after = normalizeTonerPercentApp(nextPercent);
+  if (after === null) return false;
+  if (kind === "zero") return after === 0 && before !== 0;
+  if (kind === "warning25") return after === 25 && before !== 25;
+  if (kind === "replaced") return before === 0 && (after === 99 || after === 100);
+  return false;
+}
+
 function tonerNotifyUrlApp() {
   return "https://picafern-commits.github.io/App-Tablet/html/impressoras.html";
 }
@@ -1907,7 +1941,7 @@ function gerarHTMLToners(info) {
   return `<div class="printer-toners-grid">${blocks.join("")}</div>`;
 }
 
-function maybeNotifyCriticalSupply(ip, info) {
+function maybeNotifyCriticalSupply(ip, info, previousInfo = null) {
   if (!info) return;
 
   const printer = impressorasData.find(i => i.ip === ip);
@@ -1919,38 +1953,40 @@ function maybeNotifyCriticalSupply(ip, info) {
 
   tonerItems.forEach((item) => {
     const itemKey = String(item.key || item.label || "toner").toLowerCase();
-    if (appNotificationState.tonerZero && isTonerEmpty(item.percent)) {
+    const afterPercent = normalizeTonerPercentApp(item.percent);
+    const beforePercent = getPreviousTonerPercentApp(previousInfo, itemKey);
+    const label = item.label || "Toner";
+
+    if (appNotificationState.tonerZero && tonerTransitionShouldNotifyApp("zero", beforePercent, afterPercent)) {
       alerts.push({
-        title: "Toner a 0%",
+        title: "🚨 IMPORTANTE: Toner a 0%",
         event: "system-toner-zero",
-        tag: `toner-zero-${ip}-${itemKey}-${item.percent}`,
-        issue: `${item.label}: ${item.percent}%`,
-        level: "erro"
+        tag: `toner-zero-${ip}-${itemKey}-${Date.now()}`,
+        issue: `${label}: 0%`,
+        level: "erro",
+        body: `${printerLabel}: ${label} chegou a 0%. Trocar toner assim que possível.`,
+        ttlMs: 1000 * 60 * 60 * 6
       });
-    } else if (appNotificationState.tonerLow25 && isDashboardTonerLow(item.percent)) {
+    } else if (appNotificationState.tonerLow25 && tonerTransitionShouldNotifyApp("warning25", beforePercent, afterPercent)) {
       alerts.push({
-        title: "Toner a 25%",
+        title: "⚠️ Toner a 25%",
         event: "system-toner-25",
-        tag: `toner-25-${ip}-${itemKey}-${item.percent}`,
-        issue: `${item.label}: ${item.percent}%`,
-        level: "aviso"
+        tag: `toner-25-${ip}-${itemKey}-${Date.now()}`,
+        issue: `${label}: 25%`,
+        level: "aviso",
+        body: `${printerLabel}: ${label} chegou a 25%.`,
+        ttlMs: 1000 * 60 * 60 * 12
       });
     }
   });
 
-  const key = alerts.map((alert) => `${alert.title}:${alert.issue}`).join(" | ");
-  if (!key) {
-    tonerAlertState[ip] = "";
-    return;
-  }
-  if (tonerAlertState[ip] === key) return;
-  tonerAlertState[ip] = key;
+  if (!alerts.length) return;
 
   alerts.forEach((alert) => {
-    const message = `${alert.title} em ${printerLabel} - ${alert.issue}`;
+    const message = alert.body || `${alert.title} em ${printerLabel} - ${alert.issue}`;
     mostrarMensagem(message, alert.level);
     enviarNotificacaoApp(alert.title, message, alert.tag, { url: "html/impressoras.html" });
-    if (!shouldSendTonerCloudAlertApp(alert.tag)) return;
+    if (!shouldSendTonerCloudAlertApp(alert.tag, alert.ttlMs)) return;
     enviarNotificacaoCloudTonerApp({
       requestId: alert.tag,
       title: alert.title,
@@ -1985,7 +2021,7 @@ function getTonerReplacementEventsApp(previousInfo, nextInfo) {
 
   return next
     .map((item) => ({ before: previousMap[item.key], after: item }))
-    .filter(({ before, after }) => before && before.percent <= 0 && after.percent >= 95);
+    .filter(({ before, after }) => before && before.percent <= 0 && isTonerReplacedFromZeroApp(after.percent));
 }
 
 function normalizeVapidPublicKeyApp(value) {
@@ -2018,23 +2054,23 @@ async function maybeNotifyTonerReplacement(ip, previousInfo, nextInfo) {
   const printerLabel = printer ? `${printer.modelo} - ${printer.localizacao}` : ip;
 
   for (const event of events) {
-    const key = `toner-replaced-${ip}-${event.after.key}-${event.before.percent}-${event.after.percent}`;
+    const key = `toner-replaced-${ip}-${event.after.key}-${event.before.percent}-${event.after.percent}-${Date.now()}`;
     if (tonerReplacementAlertState[key]) continue;
     tonerReplacementAlertState[key] = Date.now();
 
     const body = `${printerLabel}: ${event.after.label} passou de ${event.before.percent}% para ${event.after.percent}%.`;
-    await enviarNotificacaoApp("Toner trocado", body, key, { url: "html/impressoras.html" });
+    await enviarNotificacaoApp("✅ Toner reposto", body, key, { url: "html/impressoras.html" });
     if (shouldSendTonerCloudAlertApp(key, 1000 * 60 * 60 * 24)) {
       enviarNotificacaoCloudTonerApp({
         requestId: key,
-        title: "Toner trocado",
+        title: "✅ Toner reposto",
         body,
         event: "system-toner-replaced",
         tag: key,
         url: tonerNotifyUrlApp()
       });
     }
-    mostrarMensagem(`Toner trocado: ${event.after.label} ${event.after.percent}%`);
+    mostrarMensagem(`Toner reposto: ${event.after.label} ${event.after.percent}%`);
     try {
       await db.collection("activityLog").add({
         type: "toner-replaced",
@@ -6694,7 +6730,7 @@ function bindPrintersFirebaseRealtime() {
       printerFirebaseState[ip] = Object.assign({}, data, { ip });
       tonerInfoState[ip] = mapped;
       maybeNotifyTonerReplacement(ip, previousMapped, mapped);
-      maybeNotifyCriticalSupply(ip, mapped);
+      maybeNotifyCriticalSupply(ip, mapped, previousMapped);
     });
 
     renderDashboardCards();
@@ -13145,50 +13181,6 @@ async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
   function readCollapsed(){ try { return localStorage.getItem(COLLAPSE_KEY) === "1"; } catch(e){ return false; } }
   function saveCollapsed(v){ try { localStorage.setItem(COLLAPSE_KEY, v ? "1" : "0"); } catch(e){} }
 
-
-  const APP_BRAGA_ICON_CODE_MAP = {
-    '*':'⭐','FV':'⭐','FAV':'⭐',
-    'OP':'⚡','EQ':'🧰','IN':'🌐','INF':'🌐','AD':'⚙️','ADM':'⚙️',
-    'CFG':'⚙️','DB':'🏠','ST':'📦','IMP':'🖨️','HIS':'🧾','OK':'✅','+':'➕',
-    'IA':'📄','ETQ':'🏷️','EQP':'🧰','MAN':'🛠️','PC':'💻','CK':'📟','RAD':'📡',
-    'NET':'🔌','INFO':'ℹ️','USR':'👥','DIA':'🩺','DR':'☎️','NOT':'🔔','NTF':'🔔','TON':'🧴'
-  };
-  const APP_BRAGA_PAGE_EMOJIS = {
-    "index.html":"🏠","stock.html":"📦","diretorio.html":"☎️","impressoras.html":"🖨️",
-    "add-toner.html":"➕","historico.html":"🧾","tarefas.html":"✅","equipas-semanais.html":"👥",
-    "scanner-ia.html":"📄","etiquetas-word.html":"🏷️","manutencao-impressoras.html":"🛠️",
-    "computadores.html":"💻","pistolas.html":"📟","radios.html":"📡","portas.html":"🔌",
-    "informacoes.html":"ℹ️","users.html":"👥","diagnostico.html":"🩺","notificacoes.html":"🔔",
-    "config.html":"⚙️","assistente.html":"🎙️"
-  };
-  const APP_BRAGA_GROUP_EMOJIS = {
-    "favoritos":"⭐","operacao":"⚡","equipamentos":"🧰","infraestrutura":"🌐","administracao":"⚙️"
-  };
-  function normalizeSidebarIconValue(value, fallback){
-    const raw = String(value || "").trim();
-    if (!raw) return fallback || "•";
-    const upper = raw.toUpperCase();
-    return APP_BRAGA_ICON_CODE_MAP[raw] || APP_BRAGA_ICON_CODE_MAP[upper] || raw;
-  }
-  function forceSidebarEmojis(){
-    const sidebar = getSidebar();
-    if (!sidebar) return;
-    sidebar.querySelectorAll("a[href]").forEach(link => {
-      const href = (link.getAttribute("href") || "").split("?")[0].split("#")[0].split("/").pop().toLowerCase();
-      const fallback = APP_BRAGA_PAGE_EMOJIS[href] || normalizeSidebarIconValue(link.dataset.icon, "•");
-      link.dataset.icon = normalizeSidebarIconValue(link.dataset.icon, fallback);
-    });
-    sidebar.querySelectorAll(".sidebar-group[data-sidebar-group]").forEach(group => {
-      const icon = group.querySelector(".sidebar-group-icon");
-      if (!icon) return;
-      const key = group.dataset.sidebarGroup || "";
-      icon.textContent = normalizeSidebarIconValue(icon.textContent, APP_BRAGA_GROUP_EMOJIS[key] || "📁");
-    });
-    sidebar.querySelectorAll(".sidebar-section-title > span").forEach(node => {
-      node.textContent = normalizeSidebarIconValue(node.textContent, "⭐");
-    });
-  }
-
   function cleanOverlays(){
     const overlays = Array.from(document.querySelectorAll(".app-sidebar-overlay"));
     overlays.forEach((ov, index) => {
@@ -13267,7 +13259,6 @@ async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
       const brand = sidebar.querySelector(".premium-brand, .brand, .sidebar-brand-card, .brand-block") || sidebar.firstElementChild;
       if (brand) brand.appendChild(btn); else sidebar.prepend(btn);
     }
-    forceSidebarEmojis();
     restoreGroups();
     applyCollapsed(readCollapsed(), false);
     cleanOverlays();
