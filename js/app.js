@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.58.6";
+const APP_VERSION = "1.58.7";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "";
@@ -4695,12 +4695,13 @@ const appSecurityState = {
   biometricEnabled: false,
   biometricCredentialId: "",
   lockTimeoutMinutes: 0,
-  quickLockEnabled: false,
-  quickLockLoaded: false,
   unlocked: false,
   timer: null,
   overlay: null,
-  autoUnlockTimer: null
+  autoUnlockTimer: null,
+  quickLockEnabled: false,
+  quickLocked: false,
+  quickLockButton: null
 };
 
 function normalizarCorApp(value) {
@@ -4848,8 +4849,7 @@ function initResolucaoApp() {
     setCookieAppBraga("appButtonTextMode", data.buttonTextMode || getButtonTextMode(), 31536000);
     if (typeof aplicarModoTextoBotoes === "function") aplicarModoTextoBotoes(data.buttonTextMode || getButtonTextMode());
     aplicarConfigNotificacoesApp(data);
-    aplicarSegurancaApp(data.pinHash || "", data.lockTimeoutMinutes || 0, data.pinLength || 0, data.authMethod || "pin", data.biometricEnabled || false, data.biometricCredentialId || "");
-    aplicarBloqueioRapidoApp(Boolean(data.quickLockEnabled));
+    aplicarSegurancaApp(data.pinHash || "", data.lockTimeoutMinutes || 0, data.pinLength || 0, data.authMethod || "pin", data.biometricEnabled || false, data.biometricCredentialId || "", data.quickLockEnabled || false);
   };
   if (!window.__appBragaLayoutEventBound) {
     window.__appBragaLayoutEventBound = true;
@@ -4933,6 +4933,67 @@ async function hashAppPin(pin) {
   return `fallback-${Math.abs(hash)}`;
 }
 
+
+function setQuickLockInput(enabled) {
+  const button = document.getElementById("appQuickLockToggle");
+  const label = document.getElementById("appQuickLockStatus");
+  const active = Boolean(enabled);
+  if (button) {
+    button.textContent = active ? "Desativar" : "Ativar";
+    button.classList.toggle("danger", active);
+  }
+  if (label) label.textContent = active ? "Ativo" : "Desligado";
+}
+
+function atualizarBotaoBloqueioRapidoApp() {
+  let button = document.getElementById("appQuickLockButton");
+  if (!appSecurityState.quickLockEnabled) {
+    button?.remove();
+    appSecurityState.quickLockButton = null;
+    return;
+  }
+  if (!document.body || appBragaIsPage("login.html")) return;
+  if (!button) {
+    button = document.createElement("button");
+    button.id = "appQuickLockButton";
+    button.className = "app-quick-lock-button";
+    button.type = "button";
+    button.title = "Bloqueio rápido da app";
+    button.setAttribute("aria-label", "Bloqueio rápido da app");
+    button.textContent = "🔒";
+    button.addEventListener("click", bloquearAppRapido);
+    document.body.appendChild(button);
+  }
+  appSecurityState.quickLockButton = button;
+}
+
+async function alternarBloqueioRapidoApp() {
+  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponível.", "erro");
+  const quickLockEnabled = !appSecurityState.quickLockEnabled;
+  try {
+    await window.db.collection("config").doc("layout").set({
+      quickLockEnabled,
+      updatedAt: Date.now()
+    }, { merge: true });
+    appSecurityState.quickLockEnabled = quickLockEnabled;
+    setQuickLockInput(quickLockEnabled);
+    atualizarBotaoBloqueioRapidoApp();
+    mostrarMensagem(quickLockEnabled ? "Bloqueio rápido ativado." : "Bloqueio rápido desativado.");
+  } catch (error) {
+    console.error(error);
+    mostrarMensagem("Erro ao guardar bloqueio rápido.", "erro");
+  }
+}
+
+function bloquearAppRapido() {
+  if (!appSecurityState.quickLockEnabled) return;
+  mostrarBloqueioApp(true);
+}
+
+function desbloquearBloqueioRapidoApp() {
+  esconderBloqueioApp();
+}
+
 function setLockTimeoutInput(value) {
   const select = document.getElementById("appLockTimeout");
   if (select) select.value = String(Math.max(0, Number(value) || 0));
@@ -4941,91 +5002,6 @@ function setLockTimeoutInput(value) {
 function setAuthMethodInput(value) {
   const select = document.getElementById("appAuthMethod");
   if (select) select.value = ["pin", "biometric", "both"].includes(value) ? value : "pin";
-}
-
-function setQuickLockControlsApp(enabled = appSecurityState.quickLockEnabled) {
-  const active = Boolean(enabled);
-  const status = document.getElementById("quickLockStatus");
-  const button = document.getElementById("quickLockToggleBtn");
-  if (status) {
-    status.textContent = active
-      ? "Ativo - o atalho de bloqueio rapido aparece na app."
-      : "Desativado - o atalho fica escondido.";
-  }
-  if (button) {
-    button.textContent = active ? "Desativar" : "Ativar";
-    button.classList.toggle("danger", active);
-  }
-}
-
-function shouldShowQuickLockButtonApp() {
-  const page = appBragaPageName();
-  return Boolean(appSecurityState.quickLockEnabled && page !== "login.html");
-}
-
-function renderQuickLockButtonApp() {
-  let button = document.getElementById("appQuickLockButton");
-  if (!shouldShowQuickLockButtonApp()) {
-    if (button) button.remove();
-    return;
-  }
-  if (!button) {
-    button = document.createElement("button");
-    button.id = "appQuickLockButton";
-    button.className = "app-quick-lock-button";
-    button.type = "button";
-    button.title = "Bloqueio rapido da app";
-    button.setAttribute("aria-label", "Bloqueio rapido da app");
-    button.textContent = "🔒";
-    button.addEventListener("click", bloquearAppRapido);
-    document.body.appendChild(button);
-  }
-  const ready = hasSecurityEnabledApp();
-  button.disabled = !ready;
-  button.classList.toggle("is-disabled", !ready);
-}
-
-function aplicarBloqueioRapidoApp(enabled = false) {
-  appSecurityState.quickLockEnabled = Boolean(enabled);
-  appSecurityState.quickLockLoaded = true;
-  setQuickLockControlsApp(appSecurityState.quickLockEnabled);
-  renderQuickLockButtonApp();
-}
-
-async function initBloqueioRapidoApp() {
-  setQuickLockControlsApp(appSecurityState.quickLockEnabled);
-  renderQuickLockButtonApp();
-  if (appSecurityState.quickLockLoaded || !window.db || !window.db.collection) return;
-  try {
-    const doc = await window.db.collection("config").doc("layout").get();
-    const data = doc.exists ? (doc.data() || {}) : {};
-    aplicarBloqueioRapidoApp(Boolean(data.quickLockEnabled));
-  } catch (error) {
-    console.warn("Nao foi possivel carregar bloqueio rapido:", error);
-    setQuickLockControlsApp(false);
-  }
-}
-
-async function toggleBloqueioRapidoApp() {
-  if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponível.", "erro");
-  const nextEnabled = !appSecurityState.quickLockEnabled;
-  try {
-    await window.db.collection("config").doc("layout").set({
-      quickLockEnabled: nextEnabled,
-      updatedAt: Date.now()
-    }, { merge: true });
-    aplicarBloqueioRapidoApp(nextEnabled);
-    mostrarMensagem(nextEnabled ? "Bloqueio rapido ativado." : "Bloqueio rapido desativado.");
-  } catch (error) {
-    console.error(error);
-    mostrarMensagem("Erro ao guardar bloqueio rapido.", "erro");
-  }
-}
-
-function bloquearAppRapido() {
-  if (!appSecurityState.quickLockEnabled) return;
-  if (!hasSecurityEnabledApp()) return mostrarMensagem("Define um PIN primeiro para usar o bloqueio rapido.", "erro");
-  mostrarBloqueioApp();
 }
 
 function getSecurityTokenApp() {
@@ -5067,6 +5043,7 @@ function bufferFromBase64UrlApp(value) {
 function renderAppLockOverlayContent(overlay) {
   const canUsePin = Boolean(appSecurityState.pinHash && appSecurityState.authMethod !== "biometric");
   const canUseBio = Boolean(appSecurityState.biometricEnabled && appSecurityState.biometricCredentialId && appSecurityState.authMethod !== "pin");
+  const canUseSimpleConfirm = Boolean(appSecurityState.quickLocked && !canUsePin && !canUseBio);
   overlay.innerHTML = `
     <div class="app-lock-card">
       <div class="brand-badge">BR</div>
@@ -5075,6 +5052,7 @@ function renderAppLockOverlayContent(overlay) {
       ${canUseBio ? `<button class="primary-btn biometric-unlock-btn" type="button" onclick="desbloquearAppComBiometria()">Face ID / impressão digital</button>` : ""}
       ${canUsePin ? `<input id="appPinUnlock" type="password" inputmode="numeric" maxlength="12" placeholder="PIN" autocomplete="off">
       <button class="secondary-btn" type="button" onclick="desbloquearAppComPin()">Desbloquear com PIN</button>` : ""}
+      ${canUseSimpleConfirm ? `<button class="primary-btn" type="button" onclick="desbloquearBloqueioRapidoApp()">Desbloquear</button><small>Bloqueio rápido sem terminar sessão.</small>` : ""}
       <small id="appPinError"></small>
     </div>
   `;
@@ -5098,8 +5076,9 @@ function criarAppLockOverlay() {
   return overlay;
 }
 
-function mostrarBloqueioApp() {
-  if (!hasSecurityEnabledApp()) return;
+function mostrarBloqueioApp(forceQuickLock = false) {
+  if (!hasSecurityEnabledApp() && !forceQuickLock) return;
+  appSecurityState.quickLocked = Boolean(forceQuickLock);
   limparSessaoPinApp();
   const overlay = criarAppLockOverlay();
   renderAppLockOverlayContent(overlay);
@@ -5114,6 +5093,7 @@ function mostrarBloqueioApp() {
 
 function esconderBloqueioApp() {
   appSecurityState.overlay?.classList.remove("show");
+  appSecurityState.quickLocked = false;
   appSecurityState.unlocked = true;
   renovarSessaoPinApp();
   reiniciarTemporizadorBloqueioApp();
@@ -5148,7 +5128,7 @@ function reiniciarTemporizadorBloqueioApp() {
   appSecurityState.timer = setTimeout(() => mostrarBloqueioApp(), appSecurityState.lockTimeoutMinutes * 60000);
 }
 
-function aplicarSegurancaApp(pinHash, lockTimeoutMinutes, pinLength = 0, authMethod = "pin", biometricEnabled = false, biometricCredentialId = "") {
+function aplicarSegurancaApp(pinHash, lockTimeoutMinutes, pinLength = 0, authMethod = "pin", biometricEnabled = false, biometricCredentialId = "", quickLockEnabled = false) {
   const previousToken = getSecurityTokenApp();
   appSecurityState.pinHash = String(pinHash || "");
   appSecurityState.pinLength = Math.max(0, Number(pinLength) || 0);
@@ -5156,9 +5136,11 @@ function aplicarSegurancaApp(pinHash, lockTimeoutMinutes, pinLength = 0, authMet
   appSecurityState.biometricEnabled = Boolean(biometricEnabled);
   appSecurityState.biometricCredentialId = String(biometricCredentialId || "");
   appSecurityState.lockTimeoutMinutes = Math.max(0, Number(lockTimeoutMinutes) || 0);
+  appSecurityState.quickLockEnabled = Boolean(quickLockEnabled);
+  setQuickLockInput(appSecurityState.quickLockEnabled);
+  atualizarBotaoBloqueioRapidoApp();
   setLockTimeoutInput(appSecurityState.lockTimeoutMinutes);
   setAuthMethodInput(appSecurityState.authMethod);
-  renderQuickLockButtonApp();
   if (!hasSecurityEnabledApp()) {
     appSecurityState.unlocked = true;
     limparSessaoPinApp();
@@ -5352,7 +5334,7 @@ async function guardarTempoBloqueioApp(value) {
       lockTimeoutMinutes,
       updatedAt: Date.now()
     }, { merge: true });
-    aplicarSegurancaApp(appSecurityState.pinHash, lockTimeoutMinutes, appSecurityState.pinLength, appSecurityState.authMethod, appSecurityState.biometricEnabled, appSecurityState.biometricCredentialId);
+    aplicarSegurancaApp(appSecurityState.pinHash, lockTimeoutMinutes, appSecurityState.pinLength, appSecurityState.authMethod, appSecurityState.biometricEnabled, appSecurityState.biometricCredentialId, appSecurityState.quickLockEnabled);
     mostrarMensagem("Tempo de bloqueio atualizado.");
   } catch (error) {
     console.error(error);
@@ -5381,14 +5363,11 @@ async function removerPinApp() {
 }
 
 function bloquearAppAgora() {
-  if (!hasSecurityEnabledApp()) return mostrarMensagem("Define um PIN primeiro.", "erro");
+  if (!appSecurityState.pinHash && !appSecurityState.biometricCredentialId) return mostrarMensagem("Define um PIN primeiro.", "erro");
   mostrarBloqueioApp();
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  initAppSecurityActivity();
-  setTimeout(initBloqueioRapidoApp, 350);
-});
+document.addEventListener("DOMContentLoaded", initAppSecurityActivity);
 
 function setHealthStatus(id, label, state = "ok") {
   const node = document.getElementById(id);
@@ -6503,8 +6482,6 @@ window.removerPinApp = removerPinApp;
 window.ativarBiometriaApp = ativarBiometriaApp;
 window.removerBiometriaApp = removerBiometriaApp;
 window.bloquearAppAgora = bloquearAppAgora;
-window.bloquearAppRapido = bloquearAppRapido;
-window.toggleBloqueioRapidoApp = toggleBloqueioRapidoApp;
 window.desbloquearAppComPin = desbloquearAppComPin;
 window.desbloquearAppComBiometria = desbloquearAppComBiometria;
 window.entrarFullscreenApp = entrarFullscreenApp;

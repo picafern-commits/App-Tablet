@@ -8549,3 +8549,43 @@ aside.sidebar a[href]::before,
   text-transform: none !important;
 }
 /* ===== END App Braga v1.58.4 ===== */
+
+
+/* ===== App Braga v1.58.7 - Bloqueio rapido seguro ===== */
+.quick-lock-config-card{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin:16px 0 6px;
+  padding:14px 16px;
+  border:1px solid var(--line, rgba(148,163,184,.24));
+  border-radius:16px;
+  background:rgba(255,255,255,.05);
+}
+.quick-lock-config-card strong{display:block;font-weight:900;margin-bottom:4px;}
+.quick-lock-config-card span{display:block;color:var(--muted,#94a3b8);font-size:.92rem;}
+.quick-lock-config-actions{display:flex;align-items:center;gap:10px;white-space:nowrap;}
+.quick-lock-config-actions small{font-weight:800;color:var(--muted,#94a3b8);}
+.app-quick-lock-button{
+  position:fixed;
+  right:18px;
+  bottom:18px;
+  z-index:9998;
+  width:52px;
+  height:52px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.22);
+  background:linear-gradient(135deg,var(--app-accent,#ef4444),var(--app-accent-hover,#b91c1c));
+  color:#fff;
+  font-size:22px;
+  box-shadow:0 18px 40px rgba(0,0,0,.28);
+  cursor:pointer;
+}
+.app-quick-lock-button:hover{transform:translateY(-1px);}
+@media (max-width:768px){
+  .quick-lock-config-card{align-items:flex-start;flex-direction:column;}
+  .quick-lock-config-actions{width:100%;justify-content:space-between;}
+  .app-quick-lock-button{right:14px;bottom:14px;width:48px;height:48px;border-radius:16px;}
+}
+/* ===== END App Braga v1.58.7 ===== */
