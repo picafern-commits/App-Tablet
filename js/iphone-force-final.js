@@ -18,8 +18,6 @@
     ["config.html", "Configurações"]
   ];
 
-  var APP_BRAGA_SIDEBAR_EMOJI_MAP = {"index.html": "🏠", "add-toner.html": "➕", "stock.html": "📦", "historico.html": "🕒", "tarefas.html": "✅", "scanner-ia.html": "📄", "etiquetas-word.html": "🏷️", "impressoras.html": "🖨️", "manutencao-impressoras.html": "🛠️", "computadores.html": "💻", "pistolas.html": "📱", "radios.html": "📡", "portas.html": "🌐", "diretorio.html": "📇", "informacoes.html": "ℹ️", "users.html": "👥", "diagnostico.html": "🩺", "config.html": "⚙️", "notificacoes.html": "🔔", "equipas-semanais.html": "👥", "equipamento.html": "🧾", "zonas.html": "🗺️"};
-
   function isMobile() {
     return window.innerWidth <= 768;
   }
@@ -39,7 +37,6 @@
       LINKS.forEach(function (item) {
         var a = document.createElement("a");
         a.href = item[0];
-        a.setAttribute("data-icon", APP_BRAGA_SIDEBAR_EMOJI_MAP[item[0]] || "•");
         a.innerHTML = '<span class="sidebar-link-text">' + item[1] + '</span>';
         if (current === item[0]) a.classList.add("active");
         sidebar.appendChild(a);
@@ -54,7 +51,7 @@
       // Corrigir links que ficaram só com uma letra quando o CSS antigo encolhe.
       var href = (a.getAttribute("href") || "").split("/").pop();
       var known = LINKS.find(function (x) { return x[0] === href; });
-      if (known) { label = known[1]; a.setAttribute("data-icon", APP_BRAGA_SIDEBAR_EMOJI_MAP[href] || a.getAttribute("data-icon") || "•"); }
+      if (known) label = known[1];
 
       if (!a.querySelector(".sidebar-link-text")) {
         a.innerHTML = '<span class="sidebar-link-text">' + label + '</span>';
@@ -67,65 +64,28 @@
   function forceFullscreenLayout() {
     if (!isMobile()) return;
 
-    document.documentElement.classList.remove("sidebar-collapsed");
-    document.body.classList.remove("sidebar-collapsed", "app-mobile-actions-on");
-    document.documentElement.classList.add("iphone-fit-locked");
-    document.body.classList.add("iphone-fit-locked");
-
-    document.querySelectorAll(".app-mobile-action-dock").forEach(function (dock) {
-      dock.remove();
-    });
-
-    document.documentElement.style.setProperty("width", "100%", "important");
-    document.documentElement.style.setProperty("max-width", "100%", "important");
-    document.documentElement.style.setProperty("overflow-x", "hidden", "important");
-    document.body.style.setProperty("width", "100%", "important");
-    document.body.style.setProperty("max-width", "100%", "important");
+    document.documentElement.style.setProperty("width", "100vw", "important");
+    document.body.style.setProperty("width", "100vw", "important");
     document.body.style.setProperty("margin", "0", "important");
-    document.body.style.setProperty("padding-left", "0", "important");
-    document.body.style.setProperty("padding-right", "0", "important");
-    document.body.style.setProperty("padding-bottom", "0", "important");
+    document.body.style.setProperty("padding", "0", "important");
     document.body.style.setProperty("display", "block", "important");
     document.body.style.setProperty("overflow-x", "hidden", "important");
 
-    var nodes = document.querySelectorAll(".app, .main, main, .main-content, .page-content, .dashboard-container, .content-area, .dashboard-shell, .content, .page, .page-shell");
-    nodes.forEach(function (main) {
+    var main = document.querySelector(".main, main, .main-content, .page-content, .dashboard-container, .content-area, .dashboard-shell");
+    if (main) {
       main.style.setProperty("margin-left", "0", "important");
-      main.style.setProperty("margin-right", "0", "important");
       main.style.setProperty("left", "0", "important");
-      main.style.setProperty("right", "auto", "important");
-      main.style.setProperty("width", "100%", "important");
-      main.style.setProperty("max-width", "100%", "important");
-      main.style.setProperty("min-width", "0", "important");
-      main.style.setProperty("padding-left", "max(12px, env(safe-area-inset-left, 0px))", "important");
-      main.style.setProperty("padding-right", "max(12px, env(safe-area-inset-right, 0px))", "important");
+      main.style.setProperty("width", "100vw", "important");
+      main.style.setProperty("max-width", "100vw", "important");
+      main.style.setProperty("padding-left", "12px", "important");
+      main.style.setProperty("padding-right", "12px", "important");
       main.style.setProperty("box-sizing", "border-box", "important");
-      main.style.setProperty("overflow-x", "hidden", "important");
-    });
-
-    document.querySelectorAll(".panel, .card, .premium-card, .stat-card, .metric-card, .stock-card, .config-card, .table-wrap, .scanner-panel, .personal-panel").forEach(function (node) {
-      node.style.setProperty("max-width", "100%", "important");
-      node.style.setProperty("min-width", "0", "important");
-      node.style.setProperty("box-sizing", "border-box", "important");
-    });
+    }
   }
 
   function setupMenu() {
     var sidebar = document.querySelector(".sidebar");
     if (!sidebar) return;
-
-    if (!isMobile()) {
-      document.body.classList.remove("sidebar-open", "iphone-fit-locked", "app-mobile-actions-on");
-      document.documentElement.classList.remove("iphone-fit-locked");
-      document.querySelectorAll(".app-menu-toggle, .app-sidebar-overlay, .app-mobile-action-dock").forEach(function (node) {
-        node.remove();
-      });
-      sidebar.classList.remove("app-open");
-      sidebar.style.removeProperty("transform");
-      sidebar.style.removeProperty("pointer-events");
-      sidebar.style.removeProperty("visibility");
-      return;
-    }
 
     normalizeSidebarLinks(sidebar);
     forceFullscreenLayout();
@@ -210,10 +170,6 @@
       setupMenu();
       forceFullscreenLayout();
     }, 1000);
-    setTimeout(function () {
-      setupMenu();
-      forceFullscreenLayout();
-    }, 2200);
   }
 
   if (document.readyState === "loading") {
@@ -239,24 +195,5 @@
     sidebar.style.removeProperty("transform");
     sidebar.style.removeProperty("pointer-events");
     sidebar.style.removeProperty("visibility");
-    forceFullscreenLayout();
   });
-
-  if (window.MutationObserver) {
-    var fitTimer = null;
-    new MutationObserver(function () {
-      if (!isMobile()) return;
-      clearTimeout(fitTimer);
-      fitTimer = setTimeout(forceFullscreenLayout, 40);
-    }).observe(document.documentElement, {
-      attributes: true,
-      childList: true,
-      subtree: true,
-      attributeFilter: ["class", "style"]
-    });
-  }
-
-  setInterval(function () {
-    if (isMobile()) forceFullscreenLayout();
-  }, 1500);
 })();

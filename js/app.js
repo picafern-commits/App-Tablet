@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.55.3";
+const APP_VERSION = "1.58.1";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "";
@@ -623,7 +623,7 @@ function carregarUsersLocal() {
 
 
 /* =========================
-   IMPRESSORAS / MANUTENCAO
+   IMPRESSORAS / MANUTEN??O
 ========================= */
 function obterEstadoImpressora(ip) {
   const relacionados = manutencoesGlobal.filter(m => m.ip === ip);
@@ -1107,20 +1107,20 @@ function renderDashboardResumoInteligente() {
       <div class="summary-card">
         <h4>Criticidade Real</h4>
         <div class="summary-value">${buckets.critical}</div>
-        <div class="meta-line">${critLabel} - toner a 0%</div>
+        <div class="meta-line">${critLabel} ? toner a 0%</div>
       </div>
       <div class="summary-card">
         <h4>Atenção</h4>
         <div class="summary-value">${buckets.warning}</div>
-        <div class="meta-line">${warnLabel} - sem avisos intermédios de toner</div>
+        <div class="meta-line">${warnLabel} · sem avisos intermédios de toner</div>
       </div>
       <div class="summary-card">
         <h4>Top Localizações</h4>
         <ul class="summary-list">${topLocs.length ? topLocs.map(([k,v]) => `<li>${k} - ${v}</li>`).join("") : "<li>Sem dados ainda</li>"}</ul>
       </div>
       <div class="summary-card">
-        <h4>Últimos Movimentos</h4>
-        <ul class="summary-list">${ultimos.length ? ultimos.map(item => `<li>${item.equipamento || "-"} - ${item.cor || "-"} - ${item.localizacao || "-"}</li>`).join("") : "<li>Sem histórico ainda</li>"}</ul>
+        <h4>?ltimos Movimentos</h4>
+        <ul class="summary-list">${ultimos.length ? ultimos.map(item => `<li>${item.equipamento || "-"} · ${item.cor || "-"} · ${item.localizacao || "-"}</li>`).join("") : "<li>Sem histórico ainda</li>"}</ul>
       </div>
     </div>`;
 }
@@ -1438,7 +1438,7 @@ function renderPCCards(items) {
 
   lista.innerHTML = items.map((d, index) => {
     const htmlPassos = (d.passos || []).map(p => `
-      <div class="meta-line">${p.feito ? "OK" : "X"} <span class="meta-value">${p.passo}</span></div>
+      <div class="meta-line">${p.feito ? "OK" : "Falhou"} <span class="meta-value">${p.passo}</span></div>
     `).join("");
 
     return `
@@ -1472,7 +1472,7 @@ function renderPCCards(items) {
     const progress = Math.round((done / total) * 100);
     const statusClass = progress >= 100 ? "ok" : (progress >= 60 ? "warn" : "bad");
     const htmlPassos = steps.map(p => `
-      <div class="computer-step ${p.feito ? "OK" : "X"}">
+      <div class="computer-step ${p.feito ? "is-done" : "is-open"}">
         <span class="computer-step-dot"></span>
         <span>${escapeHtmlAppBraga(p.passo || "-")}</span>
       </div>
@@ -1553,7 +1553,7 @@ async function apagarPC(id) {
 }
 
 /* =========================
-   MANUTENCAO
+   MANUTEN??O
 ========================= */
 async function guardarManutencao() {
   const tecnico = el("manutencaoTecnico")?.value || "";
@@ -1735,6 +1735,19 @@ function tonerNotifyUrlApp() {
   return "https://picafern-commits.github.io/App-Tablet/html/impressoras.html";
 }
 
+function shouldSendTonerCloudAlertApp(tag, ttlMs = 1000 * 60 * 60 * 8) {
+  const key = `appBraga.tonerCloudAlert.${tag}`;
+  const now = Date.now();
+  try {
+    const last = Number(localStorage.getItem(key) || 0);
+    if (last && now - last < ttlMs) return false;
+    localStorage.setItem(key, String(now));
+  } catch (error) {
+    console.warn("Nao foi possivel guardar anti-spam de notificacao toner:", error);
+  }
+  return true;
+}
+
 async function enviarNotificacaoCloudTonerApp(payload = {}) {
   if (!navigator.onLine || !payload.title || !payload.body) return false;
   try {
@@ -1762,7 +1775,7 @@ function corBarraToner(percentagem, cor = "black") {
 
   const value = Math.max(0, Math.min(100, Number(percentagem)));
 
-  // Resíduo é ao contrário: quanto maior pior.
+  // Resíduo ? ao contrário: quanto maior pior.
   if (cor === "waste") {
     if (value >= 85) return "#dc2626"; // vermelho
     if (value >= 65) return "#f97316"; // laranja
@@ -1937,6 +1950,7 @@ function maybeNotifyCriticalSupply(ip, info) {
     const message = `${alert.title} em ${printerLabel} - ${alert.issue}`;
     mostrarMensagem(message, alert.level);
     enviarNotificacaoApp(alert.title, message, alert.tag, { url: "html/impressoras.html" });
+    if (!shouldSendTonerCloudAlertApp(alert.tag)) return;
     enviarNotificacaoCloudTonerApp({
       requestId: alert.tag,
       title: alert.title,
@@ -2010,14 +2024,16 @@ async function maybeNotifyTonerReplacement(ip, previousInfo, nextInfo) {
 
     const body = `${printerLabel}: ${event.after.label} passou de ${event.before.percent}% para ${event.after.percent}%.`;
     await enviarNotificacaoApp("Toner trocado", body, key, { url: "html/impressoras.html" });
-    enviarNotificacaoCloudTonerApp({
-      requestId: key,
-      title: "Toner trocado",
-      body,
-      event: "system-toner-replaced",
-      tag: key,
-      url: tonerNotifyUrlApp()
-    });
+    if (shouldSendTonerCloudAlertApp(key, 1000 * 60 * 60 * 24)) {
+      enviarNotificacaoCloudTonerApp({
+        requestId: key,
+        title: "Toner trocado",
+        body,
+        event: "system-toner-replaced",
+        tag: key,
+        url: tonerNotifyUrlApp()
+      });
+    }
     mostrarMensagem(`Toner trocado: ${event.after.label} ${event.after.percent}%`);
     try {
       await db.collection("activityLog").add({
@@ -3930,14 +3946,6 @@ async function registarDispositivoPushApp(forceReset = false, options = {}) {
   }
 }
 
-maybeNotifyCriticalSupply = function () {};
-maybeNotifyTonerReplacement = function () {};
-enviarNotificacaoApp = async function () { return false; };
-verificarAlertasNotificacoesApp = async function () {};
-iniciarMonitorNotificacoesApp = function () {
-  clearInterval(appNotificationTimer);
-};
-
 async function obterTonerInfo(ip) {
   try {
     if (!window.electronAPI || !window.electronAPI.getTonerSNMP) return null;
@@ -4040,7 +4048,7 @@ function abrirHistoricoImpressora(item) {
       <div class="section-header">
         <div>
           <h3>${item.modelo} - ${item.serie}</h3>
-          <p class="section-subtitle">${item.armazem} - ${item.localizacao}</p>
+          <p class="section-subtitle">${item.armazem} ? ${item.localizacao}</p>
         </div>
       </div>
 
@@ -4050,8 +4058,8 @@ function abrirHistoricoImpressora(item) {
           <div class="summary-value">${itens.length}</div>
         </div>
         <div class="summary-card">
-          <h4>Último Registo</h4>
-          <div class="meta-line">${ultimo ? `${ultimo.cor || "-"} - ${ultimo.data || "Sem Data"}` : "Sem registos"}</div>
+          <h4>?ltimo Registo</h4>
+          <div class="meta-line">${ultimo ? `${ultimo.cor || "-"} ? ${ultimo.data || "Sem Data"}` : "Sem registos"}</div>
         </div>
       </div>
 
@@ -4248,7 +4256,7 @@ function renderPistolas(lista = window.pistolasData) {
       <div class="pc-name">${p.nome || "-"}</div>
  
       <div class="meta-line">
-        Nº:
+        N?:
         <span class="meta-value">${p.num || "-"}</span>
       </div>
  
@@ -4258,12 +4266,12 @@ function renderPistolas(lista = window.pistolasData) {
       </div>
  
       <div class="meta-line">
-        CNº:
+        CN:
         <span class="meta-value">${p.cn || "-"}</span>
       </div>
  
       <div class="meta-line">
-        SNº:
+        SN:
         <span class="meta-value">${p.sn || "-"}</span>
       </div>
  
@@ -4553,7 +4561,7 @@ usersList.sort((a,b)=>{
       <div class="meta-line">Pass Eye Peak: <span class="meta-value">${u.pass_eye_peak || "-"}</span></div>
       <div class="meta-line">Op. Pistola: <span class="meta-value">${u.op_pistola || "-"}</span></div>
       <div class="meta-line">Pass Pistola: <span class="meta-value">${u.pass_pistola || "-"}</span></div>
-      <div class="meta-line">Nº: <span class="meta-value">${u.nome_pc || "-"}</span></div>
+      <div class="meta-line">Nome PC: <span class="meta-value">${u.nome_pc || "-"}</span></div>
       <div class="meta-line">TeamViewer: <span class="meta-value">${u.teamviewer || "-"}</span></div>
       <div class="meta-line">User MO365: <span class="meta-value">${u.user_mo365 || "-"}</span></div>
       <div class="meta-line">Pw MO365: <span class="meta-value">${u.pw_mo365 || "-"}</span></div>
@@ -4770,7 +4778,7 @@ function setSessionAppBraga(name, value) {
   try {
     window.sessionStorage?.setItem(name, String(value || ""));
   } catch (error) {
-    console.warn("Sessão temporária indisponível", error);
+    console.warn("Sess\u00e3o tempor\u00e1ria indispon\u00edvel", error);
   }
 }
 
@@ -4778,7 +4786,7 @@ function deleteSessionAppBraga(name) {
   try {
     window.sessionStorage?.removeItem(name);
   } catch (error) {
-    console.warn("Sessão temporária indisponível", error);
+    console.warn("Sess\u00e3o tempor\u00e1ria indispon\u00edvel", error);
   }
 }
 
@@ -5377,10 +5385,10 @@ function initDeviceViewportMode() {
       Android tablets em Chrome/Samsung/desktop mode podem ter largura > 1400px.
       Antes a APP marcava isso como PC.
       Agora:
-      - Android + touch + ecrã grande = tablet
+      - Android + touch + ecr? grande = tablet
       - iPad = tablet
-      - telemóveis continuam phone
-      - só é PC quando NAO é Android/iPad touch tablet
+      - telem?veis continuam phone
+      - s? ? PC quando N?O ? Android/iPad touch tablet
     */
     const isPhone =
       isIosPhone ||
@@ -5482,11 +5490,11 @@ function getRadioWeekInfo(date = new Date()) {
 }
 
 function radioUserLabel(user) {
-  return user?.nome || user?.user_pc_eye || user?.email_bragalis || user?.user_mo365 || "User sem nome";
+  return userá.nome || userá.user_pc_eye || userá.email_bragalis || userá.user_mo365 || "User sem nome";
 }
 
 function radioUserId(user) {
-  return user?.id || user?.firebaseId || user?.idDoc || user?._ref || radioUserLabel(user);
+  return userá.id || userá.firebaseId || userá.idDoc || userá._ref || radioUserLabel(user);
 }
 
 function radioCssEscape(value) {
@@ -5583,7 +5591,7 @@ function renderRadios() {
       <div class="radio-card-icon">${radioDeviceImageHtml(item)}</div>
       <div class="radio-card-main">
         <strong>${safeRefHtml(item.nome || "Sem nome")}</strong>
-        <small>MAC ${safeRefHtml(item.mac || "-")} - Série ${safeRefHtml(item.serial || item.numeroSerie || "-")}</small>
+        <small>MAC ${safeRefHtml(item.mac || "-")} ? Série ${safeRefHtml(item.serial || item.numeroSerie || "-")}</small>
         <div class="radio-status-pill ${assigned ? "assigned" : "available"}">${assigned ? "Atribuído" : "Disponível"}</div>
         <div class="radio-card-user">${assigned ? `User: ${safeRefHtml(currentUser)}` : "Sem user atribuído"}</div>
         ${assignedAt ? `<small>Atribuído em ${safeRefHtml(assignedAt)}</small>` : ""}
@@ -5806,7 +5814,7 @@ function renderRadioWeeklyForm() {
   const weekInfo = editRecord ? getRadioWeekInfo(new Date(Number(editRecord.startAt || Date.now()))) : getRadioWeeklySelectedInfo();
   const record = editRecord || getRadioWeeklyRecord(weekInfo.key);
   const saved = Array.isArray(record?.assignments) ? record.assignments : [];
-  if (label) label.textContent = editRecord ? `${getRadioWeeklyRecordId(editRecord)} - ${weekInfo.label}` : weekInfo.label;
+  if (label) label.textContent = editRecord ? `${getRadioWeeklyRecordId(editRecord)} ? ${weekInfo.label}` : weekInfo.label;
 
   const users = (radioUsersData.length ? radioUsersData : window.usersData || [])
     .slice()
@@ -6252,7 +6260,7 @@ function abrirHistoricoRadio(id) {
   const title = document.getElementById("radioHistoryTitle");
   const list = document.getElementById("radioHistoryList");
 
-  if (title) title.textContent = `Histórico - ${radio.nome || "Rádio"}`;
+  if (title) title.textContent = `Histórico ? ${radio.nome || "Rádio"}`;
   if (list) list.innerHTML = `<div class="reference-empty">A carregar histórico...</div>`;
 
   const modal = document.getElementById("radioHistoryModal");
@@ -6313,7 +6321,7 @@ function atualizarRadioSelectOptions() {
     .sort((a, b) => String(a.nome || a.serial || a.mac || "").localeCompare(String(b.nome || b.serial || b.mac || ""), "pt", { numeric: true, sensitivity: "base" }));
 
   select.innerHTML = `<option value="">Selecionar rádio...</option>` + lista.map((radio) => {
-    const label = `${radio.nome || "Rádio"}${radio.mac ? " - " + radio.mac : ""}${radio.serial ? " - " + radio.serial : ""}`;
+    const label = `${radio.nome || "Rádio"}${radio.mac ? " ? " + radio.mac : ""}${radio.serial ? " ? " + radio.serial : ""}`;
     return `<option value="${safeRefHtml(radio.id)}"${String(radio.id) === String(current) ? " selected" : ""}>${safeRefHtml(label)}</option>`;
   }).join("");
 
@@ -6348,7 +6356,7 @@ function atualizarRadioSelecionado(id = null) {
       info.textContent = "Seleciona um rádio para mexer.";
     } else {
       const user = radioCurrentUserName(radio);
-      info.textContent = `${radio.nome || "Rádio"} - MAC ${radio.mac || "-"} - Série ${radio.serial || radio.numeroSerie || "-"} - ${user ? "User: " + user : "Disponível"}`;
+      info.textContent = `${radio.nome || "Rádio"} ? MAC ${radio.mac || "-"} ? Série ${radio.serial || radio.numeroSerie || "-"} ? ${user ? "User: " + user : "Disponível"}`;
     }
   }
 }
@@ -6752,7 +6760,7 @@ testarTodasAsImpressoras = async function() {
 
 const __originalAbrirIP = abrirIP;
 abrirIP = function(ip) {
-  // No tablet/web o IP fica só de leitura
+  // No tablet/web o IP fica s? de leitura
   const webMode = !(window.electronAPI && window.electronAPI.getTonerSNMP);
   if (webMode) return;
   return __originalAbrirIP(ip);
@@ -6816,7 +6824,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
 /* =========================
-   DIAGNOSTICO DO TONER
+   DIAGNÓSTICO DO TONER
 ========================= */
 const tonerDiagnosticsState = {
   running: false,
@@ -6898,7 +6906,7 @@ function renderTonerDiagnostics() {
   logEl.innerHTML = tonerDiagnosticsState.log.map(item => `
     <div class="diagnostics-log-item">
       <span class="diag-time">${item.time}</span>
-      <strong>${item.ip}</strong> - ${item.message}
+      <strong>${item.ip}</strong> ? ${item.message}
     </div>
   `).join("");
 }
@@ -6922,7 +6930,7 @@ function updateTonerDiagnosticStatus(status, partial = {}) {
 function summarizeTonerInfo(info) {
   if (!info) return "sem leitura";
   if (Array.isArray(info.colors) && info.colors.length) {
-    return info.colors.map(c => `${c.label || c.key}: ${typeof c.percent === "number" ? Math.round(c.percent) : "N/D"}%`).join(" - ");
+    return info.colors.map(c => `${c.label || c.key}: ${typeof c.percent === "number" ? Math.round(c.percent) : "N/D"}%`).join(" ? ");
   }
   if (typeof info.percent === "number") return `Preto: ${Math.round(info.percent)}%`;
   return "sem percentagem";
@@ -6967,7 +6975,7 @@ async function testarSistemaToner() {
 window.testarSistemaToner = testarSistemaToner;
 
 /* =========================
-   VERSAO / ONLINE-OFFLINE
+   VERSÃO / ONLINE-OFFLINE
 ========================= */
 const APP_BRAGA_VERSION = `v${APP_VERSION} Premium`;
 
@@ -7229,7 +7237,7 @@ async function startScannerStable() {
     return;
   }
   if (scannerAtivoStable) {
-    mostrarMensagem("A câmara já está aberta.", "erro");
+    mostrarMensagem("A cãmara já está aberta.", "erro");
     return;
   }
 
@@ -7245,7 +7253,7 @@ async function startScannerStable() {
       async (decodedText) => {
         enhanceScannerStatus("Código lido. A processar automaticamente...");
 
-        // 1º tenta usar o QR como etiqueta de toner existente em Stock.
+        // 1? tenta usar o QR como etiqueta de toner existente em Stock.
         // Se encontrar, passa automaticamente de Stock para Histórico.
         const passouStockHistorico = await usarPorCodigoEtiquetaToner(decodedText);
         if (!passouStockHistorico) {
@@ -7258,11 +7266,11 @@ async function startScannerStable() {
       () => {}
     );
     scannerAtivoStable = true;
-    enhanceScannerStatus("Câmara iniciada. À espera de leitura inteligente.");
-    mostrarMensagem("Câmara iniciada.");
+    enhanceScannerStatus("Cãmara iniciada. À espera de leitura inteligente.");
+    mostrarMensagem("Cãmara iniciada.");
   } catch (e) {
     console.error("Erro ao iniciar scanner:", e);
-    mostrarMensagem("Não foi possível abrir a câmara.", "erro");
+    mostrarMensagem("Não foi possível abrir a cãmara.", "erro");
   }
 }
 
@@ -7381,7 +7389,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 /* =========================
-   ETIQUETA WORD AUTOMATICA
+   ETIQUETA WORD AUTOMÁTICA
 ========================= */
 function formatDatePTAppBraga(valor) {
   const raw = String(valor || "").trim();
@@ -7423,7 +7431,7 @@ function extrairDadosEtiquetaWord() {
   const dataEtiqueta = formatDatePTAppBraga(dataFolha || dataScan);
 
   return {
-    serie: serie || "SEM SERIE",
+    serie: serie || "SEM SÉRIE",
     localCurto: localCurto || "Sem Localização",
     armazem: armazem || "",
     dataEtiqueta: dataEtiqueta || formatDatePTAppBraga(dataScan) || "Sem Data",
@@ -7572,7 +7580,7 @@ window.gerarWordEtiquetaFromForm = gerarWordEtiquetaFromForm;
 
 
 /* =========================
-   PORTAS FIREBASE FALLBACK + MIGRACAO
+   PORTAS FIREBASE FALLBACK + MIGRAÇÃO
 ========================= */
 async function migrarPortasParaFirebase() {
   if (!window.db) {
@@ -8255,6 +8263,16 @@ window.addEventListener("load", () => {
     return { label: "Reparar", state: "warn", channel: "Sem push" };
   }
 
+
+  function notificationAlertTitleFromMessageAppBraga(message = "") {
+    const text = String(message || "").trim();
+    if (text.startsWith("📞")) return "📞 Preciso de ajuda - App Braga";
+    if (text.startsWith("📦")) return "📦 Armazém - App Braga";
+    if (text.startsWith("🖨️") || text.startsWith("🖨")) return "🖨️ Impressoras - App Braga";
+    if (text.startsWith("🚚")) return "🚚 Logística - App Braga";
+    return "🚨 Alerta geral - App Braga";
+  }
+
   async function sendBroadcast(kind = "test", targetDevice = null) {
     const message = document.getElementById("firebaseNotifyMessage")?.value || "";
     const id = deviceId();
@@ -8263,7 +8281,7 @@ window.addEventListener("load", () => {
       requestId: `app-${kind}-${Date.now()}`,
       senderDeviceId: targetId ? "" : id,
       targetDeviceId: targetId,
-      title: kind === "alert" ? "Alerta geral - App Braga" : (targetId ? `Teste ${targetDevice?.deviceName || "dispositivo"}` : "Teste App Braga"),
+      title: kind === "alert" ? notificationAlertTitleFromMessageAppBraga(message) : (targetId ? `Teste ${targetDevice?.deviceName || "dispositivo"}` : "Teste App Braga"),
       body: message || (kind === "alert" ? "Alerta enviado pela App Braga." : "Teste de notificacoes Firebase."),
       url: "https://picafern-commits.github.io/App-Tablet/html/index.html",
       tag: targetId ? `app-braga-${kind}-${targetId}` : `app-braga-${kind}`
@@ -8712,7 +8730,7 @@ async function guardarEdicaoUser() {
 
 
 async function apagarUser(ref) {
-  if (!confirm("Queres apagar este user?")) return;
+  if (!confirm("Queres apagar este userá")) return;
   try {
     if (typeof ref === "string" && window.db) {
       await db.collection("users").doc(ref).delete();
@@ -8762,8 +8780,7 @@ function getEquipmentFichaIdAppBraga(item = {}, index = 0, localPrefix = "local"
 }
 
 function getEquipmentFichaHrefAppBraga(tipo, item = {}, index = 0, localPrefix = "local") {
-  const id = getEquipmentFichaIdAppBraga(item, index, localPrefix);
-  return `equipamento.html?tipo=${encodeURIComponent(tipo)}&id=${encodeURIComponent(String(id))}`;
+  return "#";
 }
 
 function equipmentFichaLinkAppBraga(tipo, item = {}, index = 0, localPrefix = "local", label = "Ver ficha", className = "secondary-btn") {
@@ -8846,7 +8863,7 @@ function imprimirUser(user) {
     .join("");
 
   // =========================
-  // TITULO
+  // TÍTULO
   // =========================
 
   const titulo =
@@ -9260,7 +9277,7 @@ window.addEventListener("load", modoVisualInit);
 function getTopConsumoEquipamentos(limit = 4) {
   const map = new Map();
   historicoGlobal.forEach(item => {
-    const key = `${item.equipamento || "-"} - ${item.localizacao || "-"}`;
+    const key = `${item.equipamento || "-"} ? ${item.localizacao || "-"}`;
     map.set(key, (map.get(key) || 0) + 1);
   });
   return [...map.entries()].sort((a,b) => b[1]-a[1]).slice(0, limit);
@@ -9283,7 +9300,7 @@ function getTopProblemasDoDia(limit = 3) {
   }
   if (ultimos.length) {
     const u = ultimos[0];
-    problems.push(`Último movimento: ${u.equipamento || "-"} - ${u.cor || "-"} - ${u.localizacao || "-"}.`);
+    problems.push(`?ltimo movimento: ${u.equipamento || "-"} · ${u.cor || "-"} · ${u.localizacao || "-"}.`);
   }
 
   return problems.slice(0, limit);
@@ -9297,7 +9314,7 @@ function getPrioridadeMaximaGestor(limit = 4) {
     const crit = colors.filter(c => isTonerEmpty(c.percent));
     if (crit.length) {
       rows.push({
-        label: `${item.modelo} - ${item.localizacao}`,
+        label: `${item.modelo} ? ${item.localizacao}`,
         detail: crit.map(c => `${c.label}: ${c.percent}%`).join(" | ")
       });
     }
@@ -9375,7 +9392,7 @@ function renderModoGestorExtremo() {
 
   if (problemas) {
     problemas.innerHTML = topProb.length
-      ? topProb.map(txt => `<div class="gestor-alert-card"><h4>Ponto de gestão</h4><div class="meta-line">${txt}</div></div>`).join("")
+      ? topProb.map(txt => `<div class="gestor-alert-card"><h4>Ponto de gestáo</h4><div class="meta-line">${txt}</div></div>`).join("")
       : `<div class="gestor-alert-card"><h4>Sem alertas do dia</h4><div class="meta-line">Ainda não há dados suficientes para destacar problemas.</div></div>`;
   }
 }
@@ -9661,7 +9678,7 @@ async function importBackupCompletoApp(event) {
     };
     const selected = Object.entries(collections).filter(([, rows]) => Array.isArray(rows) && rows.length);
     if (!selected.length) return mostrarMensagem("Backup sem dados importáveis.", "erro");
-    if (!confirm(`Importar backup completo? Isto vai adicionar ${selected.reduce((sum, [, rows]) => sum + rows.length, 0)} registos as colecoes.`)) return;
+    if (!confirm(`Importar backup completo? Isto vai adicionar ${selected.reduce((sum, [, rows]) => sum + rows.length, 0)} registos às coleções.`)) return;
 
     for (const [collection, rows] of selected) {
       for (const row of rows) {
@@ -9814,7 +9831,7 @@ function buildAlertasInteligentes() {
       const info = tonerInfoState[item.ip] || null;
       const colors = Array.isArray(info?.colors) ? info.colors : [];
       const crit = colors.filter(c => isTonerEmpty(c.percent));
-      if (crit.length) rows.push({ tipo: "printer", titulo: `${item.modelo} - ${item.localizacao}`, detalhe: crit.map(c => `${c.label}: ${c.percent}%`).join(" | ") });
+      if (crit.length) rows.push({ tipo: "printer", titulo: `${item.modelo} ? ${item.localizacao}`, detalhe: crit.map(c => `${c.label}: ${c.percent}%`).join(" | ") });
     });
   }
   return rows.slice(0, 8);
@@ -9917,7 +9934,7 @@ function montarPayloadEtiquetaPartilhada(extra = {}) {
   const origem = extra.origem || "scan";
   const codigoEtiqueta = extra.codigoEtiqueta || getCodigoEtiquetaAtualAppBraga();
   return {
-    serie: info.serie || extra.serie || "SEM SERIE",
+    serie: info.serie || extra.serie || "SEM SÉRIE",
     localCurto: info.localCurto || "Sem Localização",
     armazem: info.armazem || extra.armazem || "",
     localizacao: info.localizacaoRaw || loc || "Sem Localização",
@@ -10345,17 +10362,6 @@ window.addEventListener("DOMContentLoaded", () => {
   bindEtiquetasWordRealtime();
 });
 
-
-
-/* =========================================================
-   APP BRAGA - SIDEBAR BRINKA + DASHBOARD CLEAN
-   ========================================================= */
-(function(){
-  function closestPanel(el){while(el&&el!==document.body){if(el.classList&&el.classList.contains('panel'))return el;el=el.parentElement;}return null;}
-  function initBrinkaSidebar(){var sidebar=document.querySelector('.sidebar');if(!sidebar)return;if(!document.querySelector('.app-menu-toggle')){var btn=document.createElement('button');btn.className='app-menu-toggle';btn.type='button';btn.setAttribute('aria-label','Abrir menu');btn.textContent='MENU';document.body.appendChild(btn);}if(!document.querySelector('.app-sidebar-overlay')){var ov=document.createElement('div');ov.className='app-sidebar-overlay';document.body.appendChild(ov);}var btn=document.querySelector('.app-menu-toggle');var overlay=document.querySelector('.app-sidebar-overlay');function open(){sidebar.classList.add('app-open');overlay.classList.add('show');btn.textContent='X';}function close(){sidebar.classList.remove('app-open');overlay.classList.remove('show');btn.textContent='MENU';}btn.onclick=function(e){e.preventDefault();e.stopPropagation();sidebar.classList.contains('app-open')?close():open();};overlay.onclick=close;sidebar.querySelectorAll('a').forEach(function(a){a.addEventListener('click',close);});}
-  function cleanDashboard(){return;}
-  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){initBrinkaSidebar();cleanDashboard();});}else{initBrinkaSidebar();cleanDashboard();}
-})();
 
 
 /* =========================
@@ -11071,7 +11077,7 @@ function _unused(){
 
 
 
-/* ORDENACAO ALFANUMERICA USERS */
+/* ORDENAÇÃO ALFANUMÉRICA USERS */
 setInterval(() => {
   try{
     if(Array.isArray(window.usersData)){
@@ -11088,7 +11094,7 @@ setInterval(() => {
 
 
 
-/* ===== ORGANIZACAO ALFANUMERICA
+/* ===== ORGANIZAÇÃO ALFANUMÉRICA ===== */
 
 function ordenarColecaoAlfaNumerica(lista,campo="nome"){
 
@@ -11162,7 +11168,7 @@ setInterval(()=>{
 
 
 
-/* ===== ORDENACAO ALFANUMERICA SEGURA ===== */
+/* ===== ORDENAÇÃO ALFANUMÉRICA SEGURA ===== */
 
 window.safeOrdenacaoAlfa = function(lista,campo="nome"){
 
@@ -11286,7 +11292,7 @@ window.renderPistolas = function(lista){
         </div>
 
         <div class="meta-line">
-          Nº: ${p.num || "-"}
+          N?: ${p.num || "-"}
         </div>
 
         <div class="meta-line">
@@ -11396,11 +11402,9 @@ window.renderPistolas = function(lista){
 
   lista = Array.isArray(lista)
     ? sortPistolasNaturally(lista)
-    : getListaPistolas();
+    : sortPistolasNaturally(getListaPistolas());
 
-  if(typeof oldRender === "function"){
-    return oldRender(lista);
-  }
+  return oldRender(lista);
 
 };
 
@@ -11408,7 +11412,14 @@ window.guardarEdicaoPistola = async function(){
 
   try{
 
-    const pistola = window.pistolaAtual || {};
+    const pistola = window.pistolaAtual;
+
+    if(!pistola){
+
+      alert("Nenhuma Pistola foi selecionada");
+      return;
+
+    }
 
     const id =
       pistola.idDoc ||
@@ -11416,10 +11427,14 @@ window.guardarEdicaoPistola = async function(){
       pistola.docId;
 
     if(!id){
-      throw new Error("Pistola sem ID");
+
+      alert("ID da pistola inválido");
+      return;
+
     }
 
     const dados = {
+
       nome:
         document.querySelector("#editP_nome")?.value || "",
 
@@ -11446,6 +11461,7 @@ window.guardarEdicaoPistola = async function(){
 
       prontas:
         document.querySelector("#editP_prontas")?.value || ""
+
     };
 
     await window.db
@@ -11536,7 +11552,7 @@ window.verMaisPistola = function(id){
   alert(
 `Nome: ${pistola.nome || "-"}
 
-Nº: ${pistola.num || "-"}
+N?: ${pistola.num || "-"}
 
 Password: ${pistola.password || "-"}
 
@@ -11624,7 +11640,7 @@ window.renderPistolas = function(lista){
         </div>
 
         <div class="meta-line">
-          Nº:
+          N?:
           <span class="meta-value">
             ${p.num || "-"}
           </span>
@@ -11842,7 +11858,7 @@ window.editarPistola = function(id) {
 window.guardarEdicaoPistola = async function() {
   const dados = pistolaPayloadFromForm();
   if (!dados.nome && !dados.num) {
-    mostrarMensagem("Preenche pelo menos o numero ou o nome da pistola.", "erro");
+    mostrarMensagem("Preenche pelo menos o número ou o nome da pistola.", "erro");
     return;
   }
 
@@ -11905,7 +11921,7 @@ window.renderPistolas = function(lista) {
     return `
       <div class="pc-card pistol-card">
         <div class="pc-name">${safeRefHtml(pistola.nome || "Pistola CK65")}</div>
-        <div class="meta-line">Nº: <span class="meta-value">${safeRefHtml(pistola.num || "-")}</span></div>
+        <div class="meta-line">N?: <span class="meta-value">${safeRefHtml(pistola.num || "-")}</span></div>
         <div class="meta-line">Operador: <span class="meta-value">${safeRefHtml(pistola.operador || "-")}</span></div>
         <div class="meta-line">Armazém: <span class="meta-value">${safeRefHtml(pistola.armazem || "-")}</span></div>
         <div class="meta-line">CN: <span class="meta-value">${safeRefHtml(pistola.cn || "-")}</span></div>
@@ -12002,33 +12018,7 @@ document.addEventListener("change", function(e) {
 /* ===== END BUTTON TEXT AFTER COLOR CHANGE PATCH ===== */
 
 
-/* ===== IPHONE SIDEBAR TEXT PATCH ===== */
-(function(){
-  function fixSidebarText(){
-    document.body.classList.toggle("is-iphone-layout", window.innerWidth <= 768);
 
-    var sidebar = document.querySelector(".sidebar");
-    if (!sidebar) return;
-
-    sidebar.querySelectorAll("a").forEach(function(a){
-      var hasElement = Array.from(a.childNodes).some(function(n){ return n.nodeType === 1 && n.tagName !== "BR"; });
-      var text = (a.textContent || "").trim();
-
-      if (!a.querySelector(".sidebar-link-text") && text) {
-        a.innerHTML = '<span class="sidebar-link-text">' + text + '</span>';
-      }
-    });
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", fixSidebarText);
-  } else {
-    fixSidebarText();
-  }
-
-  window.addEventListener("resize", fixSidebarText);
-})();
-/* ===== END IPHONE SIDEBAR TEXT PATCH ===== */
 
 
 /* ===== ANDROID TABLET SCALE JS ===== */
@@ -12214,7 +12204,7 @@ function tocarBipStockQr() {
       try { ctx.close(); } catch(e) {}
     }, 260);
   } catch (e) {
-    // Sem som se o browser bloquear áudio.
+    // Sem som se o browser bloquear ?udio.
   }
 }
 
@@ -12277,7 +12267,7 @@ async function escolherCameraTraseiraStockQr() {
 
     const cameras = await Html5Qrcode.getCameras();
     if (!Array.isArray(cameras) || !cameras.length) {
-      throw new Error("Nenhuma câmera encontrada pelo navegador.");
+      throw new Error("Nenhuma cãmara encontrada pelo navegador.");
     }
 
     const rear = cameras.find((cam) => {
@@ -12294,7 +12284,7 @@ async function escolherCameraTraseiraStockQr() {
     const chosen = rear || cameras[cameras.length - 1] || cameras[0];
     return chosen && chosen.id ? chosen.id : { facingMode: { ideal: "environment" } };
   } catch (error) {
-    console.error("Erro ao escolher câmera:", error);
+    console.error("Erro ao escolher cãmara:", error);
     throw error;
   }
 }
@@ -12304,22 +12294,22 @@ function mensagemErroCameraStockQr(error) {
   const message = String(error && error.message || error || "");
 
   if (/NotAllowed|Permission|denied/i.test(name + " " + message)) {
-    return "Câmera bloqueada. Vai às definições do Safari e permite a câmera para este site.";
+    return "Cãmara bloqueada. Vai às definições do Safari e permite a cãmara para este site.";
   }
 
   if (/NotFound|DevicesNotFound/i.test(name + " " + message)) {
-    return "Não encontrei câmera disponível no iPhone.";
+    return "Não encontrei cãmara disponível no iPhone.";
   }
 
   if (/NotReadable|TrackStart/i.test(name + " " + message)) {
-    return "A câmera está ocupada por outra app. Fecha a câmera/WhatsApp e tenta outra vez.";
+    return "A cãmara está ocupada por outra app. Fecha a cãmara/WhatsApp e tenta outra vez.";
   }
 
   if (/Overconstrained|Constraint/i.test(name + " " + message)) {
-    return "O iPhone recusou a câmera traseira. Vou tentar outra câmera.";
+    return "O iPhone recusou a cãmara traseira. Vou tentar outra cãmara.";
   }
 
-  return "Erro ao abrir câmera: " + (message || name || "erro desconhecido");
+  return "Erro ao abrir cãmara: " + (message || name || "erro desconhecido");
 }
 
 
@@ -12460,8 +12450,8 @@ async function startStockQrScanner() {
     setTimeout(forcarVideoStockQrVisivel, 800);
     const previewFrameOk = document.getElementById("stockQrPreviewFrame");
     if (previewFrameOk) previewFrameOk.classList.remove("loading");
-    setStockQrStatus("Câmera ligada. Aponta para o QR da etiqueta.");
-    mostrarMensagem("Câmera QR ligada.");
+    setStockQrStatus("Cãmara ligada. Aponta para o QR da etiqueta.");
+    mostrarMensagem("Cãmara QR ligada.");
   } catch (error) {
     console.error("Erro scanner QR Stock:", error);
     const previewFrameError = document.getElementById("stockQrPreviewFrame");
@@ -12501,8 +12491,8 @@ window.testarCamerasStockQr = async function(){
   try{
     await garantirHtml5QrcodeStock();
     const cams = await Html5Qrcode.getCameras();
-    console.log("Câmeras disponíveis:", cams);
-    setStockQrStatus("Câmeras encontradas: " + (cams || []).map(c => c.label || c.id).join(" | "));
+    console.log("Cãmaras disponíveis:", cams);
+    setStockQrStatus("Cãmaras encontradas: " + (cams || []).map(c => c.label || c.id).join(" | "));
     return cams;
   }catch(e){
     console.error(e);
@@ -12512,7 +12502,7 @@ window.testarCamerasStockQr = async function(){
 };
 
 /* =========================
-   APP BRAGA v1.30.7 - DIAGNOSTICO + UX SEGURO
+   APP BRAGA v1.30.7 — DIAGNÓSTICO + UX SEGURO
    Não altera autenticação, roles ou estrutura Firebase.
 ========================= */
 (function(){
@@ -12798,19 +12788,19 @@ window.testarCamerasStockQr = async function(){
   const DEFAULT_FAVS = ["index.html", "stock.html", "diretorio.html", "impressoras.html"];
   const PAGES = [
     { href:"index.html", label:"Dashboard", icon:"🏠" },
-    { href:"add-toner.html", label:"Adicionar Toner", icon:"+" },
+    { href:"add-toner.html", label:"Adicionar Toner", icon:"➕" },
     { href:"stock.html", label:"Stock", icon:"📦" },
-    { href:"historico.html", label:"Histórico", icon:"🕒" },
-    { href:"tarefas.html", label:"Tarefas", icon:"✅" },
-    { href:"scanner-ia.html", label:"Scanner IA", icon:"📄" },
+    { href:"historico.html", label:"Histórico", icon:"🧾" },
+    { href:"tarefas.html", label:"Tarefas", icon:"✓" },
+    { href:"scanner-ia.html", label:"Scanner IA", icon:"▣" },
     { href:"etiquetas-word.html", label:"Etiquetas Word", icon:"🏷️" },
     { href:"impressoras.html", label:"Impressoras", icon:"🖨️" },
     { href:"manutencao-impressoras.html", label:"Manutenção Impressoras", icon:"🛠️" },
     { href:"computadores.html", label:"Computadores", icon:"💻" },
-    { href:"pistolas.html", label:"Pistolas CK65", icon:"📱" },
+    { href:"pistolas.html", label:"Pistolas CK65", icon:"📟" },
     { href:"radios.html", label:"Rádios", icon:"📡" },
-    { href:"portas.html", label:"Portas Rede", icon:"🌐" },
-    { href:"diretorio.html", label:"Diretório", icon:"📇" },
+    { href:"portas.html", label:"Portas Rede", icon:"🔌" },
+    { href:"diretorio.html", label:"Diretório", icon:"☎️" },
     { href:"informacoes.html", label:"Informações", icon:"ℹ️" },
     { href:"users.html", label:"Users", icon:"👥" },
     { href:"diagnostico.html", label:"Diagnóstico", icon:"🩺" },
@@ -12830,22 +12820,10 @@ window.testarCamerasStockQr = async function(){
     const p = (location.pathname || "").split("/").pop() || "index.html";
     return p === "" ? "index.html" : p;
   }
-  function sidebarIconForHref(href, fallback){
-    const file = String(href || "").split("?")[0].split("#")[0].split("/").pop().toLowerCase();
-    const map = {
-      "index.html":"🏠", "add-toner.html":"+", "stock.html":"📦", "historico.html":"🕒",
-      "tarefas.html":"✅", "scanner-ia.html":"📄", "etiquetas-word.html":"🏷️",
-      "impressoras.html":"🖨️", "manutencao-impressoras.html":"🛠️", "computadores.html":"💻",
-      "pistolas.html":"📱", "radios.html":"📡", "portas.html":"🌐", "diretorio.html":"📇",
-      "informacoes.html":"ℹ️", "users.html":"👥", "diagnostico.html":"🩺", "config.html":"⚙️",
-      "zonas.html":"🗺️"
-    };
-    return map[file] || fallback || "";
-  }
   function linkFor(page){
     const a = document.createElement("a");
     a.href = page.href;
-    a.dataset.icon = sidebarIconForHref(page.href, page.icon);
+    a.dataset.icon = page.icon;
     if(currentFile() === page.href) a.classList.add("active");
     a.innerHTML = `<span class="sidebar-link-text">${page.label}</span>`;
     return a;
@@ -12858,13 +12836,13 @@ window.testarCamerasStockQr = async function(){
     section.innerHTML = `
       <div class="sidebar-section-title">
         <span><span>⭐</span><strong> Favoritos</strong></span>
-        <button class="sidebar-fav-edit" type="button" title="Editar favoritos" aria-label="Editar favoritos">⭐</button>
+        <button class="sidebar-fav-edit" type="button" title="Editar favoritos" aria-label="Editar favoritos">✦</button>
       </div>
       <div class="sidebar-fav-list"></div>
     `;
     const list = section.querySelector(".sidebar-fav-list");
     if(!pages.length){
-      list.innerHTML = '<div class="empty-favs">Sem favoritos. Carrega em ⭐ para escolher.</div>';
+      list.innerHTML = '<div class="empty-favs">Sem favoritos. Carrega em ✦ para escolher.</div>';
     }else{
       pages.forEach(p => list.appendChild(linkFor(p)));
     }
@@ -12913,7 +12891,7 @@ window.testarCamerasStockQr = async function(){
 })();
 /* ===== END APP BRAGA V1.33.4 - FAVORITOS EDITAVEIS SIDEBAR ===== */
 
-/* ===== APP BRAGA v1.35.6 - NOTIFICACOES: ESTADO, HISTORICO E REPARACAO ===== */
+/* ===== APP BRAGA v1.35.6 - NOTIFICAÇÕES: ESTADO, HISTÓRICO E REPARAÇÃO ===== */
 function setPushDiagValueApp(id, text, state = "") {
   const el = document.getElementById(id);
   if (!el) return;
@@ -12995,7 +12973,7 @@ function renderCloudDevicesNotificacoesApp(items = []) {
   const webPushItems = activeItems.filter((item) => item.pushSubscription?.endpoint || item.endpoint);
   const remoteItems = activeItems.filter((item) => item.pushSubscription?.endpoint || item.endpoint || item.token);
   setCloudNotificationTextApp("cloudDevicesStatus", `${activeItems.length} registados`, activeItems.length ? "ok" : "warn");
-  setCloudNotificationTextApp("cloudDevicesDetail", `${webPushItems.length} Web Push  -  ${remoteItems.length} remotos prontos`);
+  setCloudNotificationTextApp("cloudDevicesDetail", `${webPushItems.length} Web Push · ${remoteItems.length} remotos prontos`);
 
   if (!activeItems.length) {
     host.innerHTML = `<div class="empty-state mini">Ainda não há dispositivos registados.</div>`;
@@ -13020,7 +12998,7 @@ function renderCloudDevicesNotificacoesApp(items = []) {
           const updated = formatTimestampApp(item.updatedAt || item.createdAt);
           return `
             <tr class="${isCurrent ? "is-current" : ""}">
-              <td data-label="Dispositivo"><div class="notification-device-main"><strong>${escapeHtmlAppBraga(device)}${isCurrent ? "  -  Este" : ""}</strong><small>${escapeHtmlAppBraga(endpoint)}</small></div></td>
+              <td data-label="Dispositivo"><div class="notification-device-main"><strong>${escapeHtmlAppBraga(device)}${isCurrent ? " · Este" : ""}</strong><small>${escapeHtmlAppBraga(endpoint)}</small></div></td>
               <td data-label="Tipo"><span class="notification-chip">${escapeHtmlAppBraga(role)}</span></td>
               <td data-label="Push"><span class="notification-chip ${readiness.hasStandard ? "ok" : (readiness.hasFcm ? "ok" : "warn")}">${escapeHtmlAppBraga(mode)}</span></td>
               <td data-label="Último contacto">${escapeHtmlAppBraga(updated)}</td>
@@ -13103,7 +13081,7 @@ async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
       <div class="notification-history-item">
         <div>
           <strong>${escapeHtmlAppBraga(item.title || item.event || "Notificação")}</strong>
-          <small>${escapeHtmlAppBraga(item.body || "")}  -  ${escapeHtmlAppBraga(formatTimestampApp(item.createdAt || item.lastRunAt))}</small>
+          <small>${escapeHtmlAppBraga(item.body || "")} · ${escapeHtmlAppBraga(formatTimestampApp(item.createdAt || item.lastRunAt))}</small>
           ${item.error ? `<small>Erro: ${escapeHtmlAppBraga(item.error)}</small>` : ""}
         </div>
         <div class="notification-history-stats">
@@ -13148,205 +13126,154 @@ async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
 /* ===== END APP BRAGA v1.35.6 ===== */
 
 
-/* ===== APP BRAGA v1.35.8 - SIDEBAR COLAPSAVEL PRO ===== */
+
+
+
+
+
+/* ===== APP BRAGA v1.56.1 - SIDEBAR OPERACIONAL FINAL ===== */
 (function(){
-  const STORAGE_KEY = "appBraga.sidebar.collapsed.v1357";
-  const DESKTOP_QUERY = "(min-width: 769px)";
-  const PAGE_ICONS = {
-    "index.html":"🏠", "add-toner.html":"+", "stock.html":"📦", "historico.html":"🕒",
-    "tarefas.html":"✅", "scanner-ia.html":"📄", "etiquetas-word.html":"🏷️",
-    "impressoras.html":"🖨️", "manutencao-impressoras.html":"🛠️", "computadores.html":"💻",
-    "pistolas.html":"📱", "radios.html":"📡", "portas.html":"🌐", "diretorio.html":"📇",
-    "informacoes.html":"ℹ️", "users.html":"👥", "diagnostico.html":"🩺",
-    "config.html":"⚙️"
-  };
+  const GROUP_KEY = "appBraga.sidebar.groups.open.v1557";
+  const COLLAPSE_KEY = "appBraga.sidebar.collapsed.v1557";
+  const DESKTOP = "(min-width: 769px)";
 
-  function isDesktop(){ return window.matchMedia && window.matchMedia(DESKTOP_QUERY).matches; }
-  function readCollapsed(){ try { return localStorage.getItem(STORAGE_KEY) === "1"; } catch(e){ return false; } }
-  function saveCollapsed(value){ try { localStorage.setItem(STORAGE_KEY, value ? "1" : "0"); } catch(e){} }
-  function currentFile(){ return ((location.pathname || "").split("/").pop() || "index.html").toLowerCase(); }
-  function cleanIconForHref(href, fallback){
-    const map = {
-      "index.html":"🏠", "add-toner.html":"+", "stock.html":"📦", "historico.html":"🕒",
-      "tarefas.html":"✅", "scanner-ia.html":"📄", "etiquetas-word.html":"🏷️",
-      "impressoras.html":"🖨️", "manutencao-impressoras.html":"🛠️", "computadores.html":"💻",
-      "pistolas.html":"📱", "radios.html":"📡", "portas.html":"🌐", "diretorio.html":"📇",
-      "informacoes.html":"ℹ️", "users.html":"👥", "diagnostico.html":"🩺", "config.html":"⚙️",
-      "zonas.html":"🗺️"
-    };
-    return map[href] || fallback || "";
-  }
+  function isDesktop(){ return !window.matchMedia || window.matchMedia(DESKTOP).matches; }
+  function getSidebar(){ return document.querySelector("aside.sidebar, .sidebar"); }
+  function currentPage(){ return ((location.pathname || "").split("/").pop() || "index.html").toLowerCase(); }
+  function readJSON(key, fallback){ try { return JSON.parse(localStorage.getItem(key) || ""); } catch(e){ return fallback; } }
+  function writeJSON(key, value){ try { localStorage.setItem(key, JSON.stringify(value)); } catch(e){} }
+  function readCollapsed(){ try { return localStorage.getItem(COLLAPSE_KEY) === "1"; } catch(e){ return false; } }
+  function saveCollapsed(v){ try { localStorage.setItem(COLLAPSE_KEY, v ? "1" : "0"); } catch(e){} }
 
-  function ensureIcons(sidebar){
-    const current = currentFile();
-    sidebar.querySelectorAll("a[href]").forEach((link) => {
-      const href = (link.getAttribute("href") || "").split("?")[0].split("#")[0].split("/").pop().toLowerCase();
-      const icon = cleanIconForHref(href, PAGE_ICONS[href]);
-      if (icon) link.dataset.icon = icon;
-      const text = (link.querySelector(".sidebar-link-text")?.textContent || link.textContent || "").replace(/\s+/g," ").trim();
-      if (text) link.setAttribute("title", text);
-      if (href === current) {
-        link.classList.add("active");
-        link.setAttribute("aria-current", "page");
-      }
-    });
-    sidebar.querySelectorAll(".sidebar-group-toggle").forEach((toggle) => {
-      const label = (toggle.textContent || "").toLowerCase();
-      const icon = toggle.querySelector(".sidebar-group-icon");
-      if (!icon) return;
-      if (label.includes("oper")) icon.textContent = "🧰";
-      else if (label.includes("equip")) icon.textContent = "🖨️";
-      else if (label.includes("infra")) icon.textContent = "🌐";
-      else if (label.includes("admin")) icon.textContent = "⚙️";
+  function cleanOverlays(){
+    const overlays = Array.from(document.querySelectorAll(".app-sidebar-overlay"));
+    overlays.forEach((ov, index) => {
+      if (index > 0) { ov.remove(); return; }
+      const opened = document.body.classList.contains("sidebar-open") || getSidebar()?.classList.contains("app-open");
+      if (!opened) ov.classList.remove("show");
+      ov.style.pointerEvents = opened ? "auto" : "none";
     });
   }
 
-  function ensureCollapseButton(sidebar){
-    if (sidebar.querySelector(".sidebar-collapse-toggle")) return sidebar.querySelector(".sidebar-collapse-toggle");
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "sidebar-collapse-toggle";
-    button.setAttribute("aria-label", "Colapsar sidebar");
-    button.setAttribute("title", "Colapsar/expandir sidebar");
-    button.innerHTML = "<";
-    const brand = sidebar.querySelector(".sidebar-brand-card, .premium-brand, .brand, .brand-block") || sidebar.firstElementChild;
-    if (brand && brand.classList && (brand.classList.contains("sidebar-brand-card") || brand.classList.contains("premium-brand") || brand.classList.contains("brand") || brand.classList.contains("brand-block"))) brand.appendChild(button);
-    else sidebar.insertBefore(button, sidebar.firstChild);
-    button.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      const next = !document.body.classList.contains("sidebar-collapsed");
-      applyCollapsed(next, true);
+  function setGroup(group, open, persist){
+    if (!group) return;
+    group.classList.toggle("is-open", !!open);
+    const btn = group.querySelector(".sidebar-group-toggle");
+    if (btn) btn.setAttribute("aria-expanded", open ? "true" : "false");
+    if (persist) saveGroups();
+  }
+
+  function saveGroups(){
+    const sidebar = getSidebar();
+    if (!sidebar) return;
+    const state = {};
+    sidebar.querySelectorAll(".sidebar-group[data-sidebar-group]").forEach(group => {
+      state[group.dataset.sidebarGroup] = group.classList.contains("is-open");
     });
-    return button;
+    writeJSON(GROUP_KEY, state);
+  }
+
+  function restoreGroups(){
+    const sidebar = getSidebar();
+    if (!sidebar) return;
+    const state = readJSON(GROUP_KEY, null);
+    const current = currentPage();
+    sidebar.querySelectorAll(".sidebar-group[data-sidebar-group]").forEach(group => {
+      const hasCurrent = !!group.querySelector(`a[href$="${current}"]`);
+      const shouldOpen = state && Object.prototype.hasOwnProperty.call(state, group.dataset.sidebarGroup)
+        ? !!state[group.dataset.sidebarGroup]
+        : hasCurrent;
+      setGroup(group, shouldOpen, false);
+    });
   }
 
   function applyCollapsed(collapsed, persist){
-    const canCollapse = isDesktop();
-    document.body.classList.toggle("sidebar-collapsed", !!collapsed && canCollapse);
-    document.documentElement.classList.toggle("sidebar-collapsed", !!collapsed && canCollapse);
-    document.querySelectorAll(".sidebar-collapse-toggle").forEach((btn) => {
-      const active = !!collapsed && canCollapse;
-      btn.innerHTML = active ? ">" : "<";
-      btn.setAttribute("aria-label", active ? "Expandir sidebar" : "Colapsar sidebar");
+    const active = !!collapsed && isDesktop();
+    document.documentElement.classList.toggle("sidebar-collapsed", active);
+    document.body.classList.toggle("sidebar-collapsed", active);
+    document.querySelectorAll(".sidebar-collapse-toggle").forEach(btn => {
+      btn.textContent = active ? "›" : "‹";
       btn.setAttribute("aria-pressed", active ? "true" : "false");
+      btn.setAttribute("aria-label", active ? "Expandir sidebar" : "Colapsar sidebar");
     });
-    if (persist) saveCollapsed(!!collapsed && canCollapse);
+    if (persist) saveCollapsed(active);
   }
 
-  function init(){
-    const sidebar = document.querySelector(".sidebar-pro-groups, aside.sidebar, .sidebar");
-    if (!sidebar) return;
-    sidebar.classList.add("sidebar-pro-groups", "sidebar-collapsible-pro");
-    ensureIcons(sidebar);
-    ensureCollapseButton(sidebar);
-    applyCollapsed(readCollapsed(), false);
-  }
-
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
-  else init();
-  window.addEventListener("pageshow", () => setTimeout(init, 40));
-  window.addEventListener("resize", () => setTimeout(() => applyCollapsed(readCollapsed(), false), 90));
-})();
-/* ===== END APP BRAGA v1.35.8 - SIDEBAR COLAPSAVEL PRO ===== */
-
-/* ===== APP BRAGA v1.35.8 - SIDEBAR COLLAPSE HARDENING ===== */
-(function(){
-  const KEY = "appBraga.sidebar.collapsed.v1358";
-  const OLD_KEYS = ["appBraga.sidebar.collapsed.v1357"];
-  function desktop(){ return !window.matchMedia || window.matchMedia("(min-width:769px)").matches; }
-  function read(){
-    try{
-      const v = localStorage.getItem(KEY);
-      if (v === "1" || v === "0") return v === "1";
-      for (const k of OLD_KEYS){ const old = localStorage.getItem(k); if (old === "1" || old === "0") return old === "1"; }
-    }catch(e){}
-    return false;
-  }
-  function save(v){ try{ localStorage.setItem(KEY, v ? "1" : "0"); }catch(e){} }
-  function getSidebar(){ return document.querySelector("aside.sidebar, .sidebar-pro-groups, .enterprise-sidebar, #sidebar"); }
-  function ensure(){
+  function ensureSidebarReady(){
     const sidebar = getSidebar();
-    if(!sidebar) return;
-    sidebar.classList.add("sidebar-pro-groups", "sidebar-collapsible-pro");
-    let btn = sidebar.querySelector(".sidebar-collapse-toggle");
-    if(!btn){
-      btn = document.createElement("button");
+    if (!sidebar) return;
+    sidebar.classList.add("sidebar-pro-groups", "sidebar-collapsible-pro", "sidebar-ready-final");
+    sidebar.style.pointerEvents = "auto";
+    sidebar.querySelectorAll("a[href]").forEach(link => {
+      link.style.pointerEvents = "auto";
+      const text = (link.querySelector(".sidebar-link-text")?.textContent || link.textContent || "").replace(/\s+/g, " ").trim();
+      if (text) link.title = text;
+      const href = (link.getAttribute("href") || "").split("?")[0].split("#")[0].split("/").pop().toLowerCase();
+      link.classList.toggle("active", href === currentPage());
+      if (href === currentPage()) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    });
+    if (!sidebar.querySelector(".sidebar-collapse-toggle")) {
+      const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "sidebar-collapse-toggle";
       btn.title = "Colapsar/expandir sidebar";
       btn.setAttribute("aria-label", "Colapsar sidebar");
-      btn.textContent = "<";
-      const brand = sidebar.querySelector(".premium-brand, .sidebar-brand-card, .brand, .brand-block") || sidebar.firstElementChild;
-      if(brand) brand.appendChild(btn); else sidebar.prepend(btn);
+      btn.textContent = "‹";
+      const brand = sidebar.querySelector(".premium-brand, .brand, .sidebar-brand-card, .brand-block") || sidebar.firstElementChild;
+      if (brand) brand.appendChild(btn); else sidebar.prepend(btn);
     }
-    if(btn.dataset.collapseBound !== "1"){
-      btn.dataset.collapseBound = "1";
-      btn.addEventListener("click", function(ev){
-        ev.preventDefault(); ev.stopPropagation();
-        const next = !document.body.classList.contains("sidebar-collapsed");
-        apply(next, true);
-      }, true);
+    restoreGroups();
+    applyCollapsed(readCollapsed(), false);
+    cleanOverlays();
+  }
+
+  document.addEventListener("click", function(event){
+    const collapse = event.target.closest?.(".sidebar-collapse-toggle");
+    if (collapse) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      applyCollapsed(!document.body.classList.contains("sidebar-collapsed"), true);
+      return;
     }
-    apply(read(), false);
-  }
-  function apply(collapsed, persist){
-    const active = !!collapsed && desktop();
-    document.body.classList.toggle("sidebar-collapsed", active);
-    document.documentElement.classList.toggle("sidebar-collapsed", active);
-    document.querySelectorAll(".sidebar-collapse-toggle").forEach(function(btn){
-      btn.textContent = active ? ">" : "<";
-      btn.setAttribute("aria-pressed", active ? "true" : "false");
-      btn.setAttribute("aria-label", active ? "Expandir sidebar" : "Colapsar sidebar");
-    });
-    if(persist) save(active);
-  }
-  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", ensure); else ensure();
-  window.addEventListener("pageshow", function(){ setTimeout(ensure, 50); });
-  window.addEventListener("resize", function(){ setTimeout(function(){ apply(read(), false); }, 80); });
-})();
-/* ===== END APP BRAGA v1.35.8 ===== */
 
+    const toggle = event.target.closest?.(".sidebar-group-toggle");
+    if (toggle && toggle.closest(".sidebar")) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      const group = toggle.closest(".sidebar-group");
+      setGroup(group, !group.classList.contains("is-open"), true);
+      cleanOverlays();
+      return;
+    }
 
-/* ===== APP BRAGA v1.58.0 - SIDEBAR EMOJIS UNIFICADOS ===== */
-(function(){
-  const ICONS = {
-    "index.html":"🏠", "add-toner.html":"➕", "stock.html":"📦", "historico.html":"🕒",
-    "tarefas.html":"✅", "scanner-ia.html":"📄", "etiquetas-word.html":"🏷️",
-    "impressoras.html":"🖨️", "manutencao-impressoras.html":"🛠️", "computadores.html":"💻",
-    "pistolas.html":"📱", "radios.html":"📡", "portas.html":"🌐", "diretorio.html":"📇",
-    "informacoes.html":"ℹ️", "users.html":"👥", "diagnostico.html":"🩺", "config.html":"⚙️",
-    "notificacoes.html":"🔔", "equipas-semanais.html":"👥", "equipamento.html":"🧾", "zonas.html":"🗺️"
-  };
-  const GROUPS = {"opera-o":"🧰", "operacao":"🧰", "operação":"🧰", "equipamentos":"🖨️", "infraestrutura":"🌐", "administra-o":"⚙️", "administracao":"⚙️", "administração":"⚙️"};
-  function fileOf(href){ return String(href||"").split("?")[0].split("#")[0].split("/").pop().toLowerCase() || "index.html"; }
-  function apply(){
-    document.querySelectorAll("aside.sidebar a[href], .sidebar a[href], .app-mobile-sidebar-new a[href]").forEach(a=>{
-      const icon = ICONS[fileOf(a.getAttribute("href"))];
-      if(icon) a.setAttribute("data-icon", icon);
-    });
-    document.querySelectorAll(".sidebar-group[data-sidebar-group]").forEach(g=>{
-      const icon = GROUPS[String(g.getAttribute("data-sidebar-group")||"").toLowerCase()];
-      const node = g.querySelector(".sidebar-group-icon");
-      if(icon && node) node.textContent = icon;
-    });
-    document.querySelectorAll(".sidebar-group-toggle").forEach(btn=>{
-      const label = (btn.textContent||"").toLowerCase();
-      const node = btn.querySelector(".sidebar-group-icon");
-      if(!node) return;
-      if(label.includes("opera")) node.textContent = "🧰";
-      else if(label.includes("equip")) node.textContent = "🖨️";
-      else if(label.includes("infra")) node.textContent = "🌐";
-      else if(label.includes("admin")) node.textContent = "⚙️";
-    });
-    document.querySelectorAll(".sidebar-section-title > span").forEach(s=>{ if(/favoritos/i.test(s.parentElement?.textContent||"")) s.textContent="⭐"; });
+    const link = event.target.closest?.(".sidebar a[href]");
+    if (link) {
+      saveGroups();
+      cleanOverlays();
+      // Deixar a navegacao normal acontecer. Este handler existe em capture para impedir scripts antigos de anularem o clique.
+    }
+  }, true);
+
+  function boot(){
+    ensureSidebarReady();
+    setTimeout(ensureSidebarReady, 80);
+    setTimeout(ensureSidebarReady, 350);
+    setTimeout(ensureSidebarReady, 900);
   }
-  window.AppBragaApplySidebarEmojis = apply;
-  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", apply); else apply();
-  [50,150,350,800,1600,3000].forEach(t=>setTimeout(apply,t));
-  if(window.MutationObserver && document.body){
-    const obs = new MutationObserver(()=>{ clearTimeout(window.__sidebarEmojiTimer); window.__sidebarEmojiTimer=setTimeout(apply, 25); });
-    obs.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:["data-icon","class"]});
-  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
+  window.addEventListener("pageshow", boot);
+  window.addEventListener("resize", () => setTimeout(() => applyCollapsed(readCollapsed(), false), 80), { passive:true });
+
+  try {
+    const observer = new MutationObserver(() => {
+      if (observer._timer) clearTimeout(observer._timer);
+      observer._timer = setTimeout(ensureSidebarReady, 40);
+    });
+    observer.observe(document.documentElement, { childList:true, subtree:true, attributes:true, attributeFilter:["class", "style"] });
+  } catch(e) {}
 })();
-/* ===== END APP BRAGA v1.58.0 ===== */
+/* ===== END APP BRAGA v1.56.1 - SIDEBAR OPERACIONAL FINAL ===== */
