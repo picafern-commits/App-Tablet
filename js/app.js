@@ -1,4 +1,4 @@
-﻿
+
 window.usersData = window.usersData || [];
 window.pistolasData = window.pistolasData || [];
 window.portasData = window.portasData || [];
@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.58.5";
+const APP_VERSION = "1.58.6";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "";
@@ -4697,7 +4697,6 @@ const appSecurityState = {
   lockTimeoutMinutes: 0,
   quickLockEnabled: false,
   quickLockLoaded: false,
-  quickLockUnsubscribe: null,
   unlocked: false,
   timer: null,
   overlay: null,
@@ -4850,6 +4849,7 @@ function initResolucaoApp() {
     if (typeof aplicarModoTextoBotoes === "function") aplicarModoTextoBotoes(data.buttonTextMode || getButtonTextMode());
     aplicarConfigNotificacoesApp(data);
     aplicarSegurancaApp(data.pinHash || "", data.lockTimeoutMinutes || 0, data.pinLength || 0, data.authMethod || "pin", data.biometricEnabled || false, data.biometricCredentialId || "");
+    aplicarBloqueioRapidoApp(Boolean(data.quickLockEnabled));
   };
   if (!window.__appBragaLayoutEventBound) {
     window.__appBragaLayoutEventBound = true;
@@ -4947,22 +4947,26 @@ function setQuickLockControlsApp(enabled = appSecurityState.quickLockEnabled) {
   const active = Boolean(enabled);
   const status = document.getElementById("quickLockStatus");
   const button = document.getElementById("quickLockToggleBtn");
-  if (status) status.textContent = active ? "Ativo - o atalho de bloqueio rápido aparece na app." : "Desativado - o atalho fica escondido.";
+  if (status) {
+    status.textContent = active
+      ? "Ativo - o atalho de bloqueio rapido aparece na app."
+      : "Desativado - o atalho fica escondido.";
+  }
   if (button) {
     button.textContent = active ? "Desativar" : "Ativar";
     button.classList.toggle("danger", active);
   }
 }
 
-function canRenderQuickLockButtonApp() {
+function shouldShowQuickLockButtonApp() {
   const page = appBragaPageName();
-  return appSecurityState.quickLockEnabled && page !== "login.html";
+  return Boolean(appSecurityState.quickLockEnabled && page !== "login.html");
 }
 
 function renderQuickLockButtonApp() {
   let button = document.getElementById("appQuickLockButton");
-  if (!canRenderQuickLockButtonApp()) {
-    button?.remove();
+  if (!shouldShowQuickLockButtonApp()) {
+    if (button) button.remove();
     return;
   }
   if (!button) {
@@ -4970,14 +4974,15 @@ function renderQuickLockButtonApp() {
     button.id = "appQuickLockButton";
     button.className = "app-quick-lock-button";
     button.type = "button";
-    button.title = "Bloqueio rápido da app";
-    button.setAttribute("aria-label", "Bloqueio rápido da app");
-    button.innerHTML = "🔒";
-    button.addEventListener("click", () => bloquearAppRapido());
+    button.title = "Bloqueio rapido da app";
+    button.setAttribute("aria-label", "Bloqueio rapido da app");
+    button.textContent = "🔒";
+    button.addEventListener("click", bloquearAppRapido);
     document.body.appendChild(button);
   }
-  button.disabled = !hasSecurityEnabledApp();
-  button.classList.toggle("is-disabled", !hasSecurityEnabledApp());
+  const ready = hasSecurityEnabledApp();
+  button.disabled = !ready;
+  button.classList.toggle("is-disabled", !ready);
 }
 
 function aplicarBloqueioRapidoApp(enabled = false) {
@@ -4987,26 +4992,17 @@ function aplicarBloqueioRapidoApp(enabled = false) {
   renderQuickLockButtonApp();
 }
 
-function initBloqueioRapidoApp() {
-  if (window.__appQuickLockInitBound) return;
-  window.__appQuickLockInitBound = true;
-  setQuickLockControlsApp(false);
-  if (!window.db || !window.db.collection) {
-    aplicarBloqueioRapidoApp(false);
-    return;
-  }
+async function initBloqueioRapidoApp() {
+  setQuickLockControlsApp(appSecurityState.quickLockEnabled);
+  renderQuickLockButtonApp();
+  if (appSecurityState.quickLockLoaded || !window.db || !window.db.collection) return;
   try {
-    const ref = window.db.collection("config").doc("appSecurity");
-    appSecurityState.quickLockUnsubscribe = ref.onSnapshot((doc) => {
-      const data = doc.exists ? (doc.data() || {}) : {};
-      aplicarBloqueioRapidoApp(Boolean(data.quickLockEnabled));
-    }, (error) => {
-      console.error("Erro ao carregar bloqueio rápido:", error);
-      aplicarBloqueioRapidoApp(false);
-    });
+    const doc = await window.db.collection("config").doc("layout").get();
+    const data = doc.exists ? (doc.data() || {}) : {};
+    aplicarBloqueioRapidoApp(Boolean(data.quickLockEnabled));
   } catch (error) {
-    console.error("Erro ao iniciar bloqueio rápido:", error);
-    aplicarBloqueioRapidoApp(false);
+    console.warn("Nao foi possivel carregar bloqueio rapido:", error);
+    setQuickLockControlsApp(false);
   }
 }
 
@@ -5014,21 +5010,21 @@ async function toggleBloqueioRapidoApp() {
   if (!window.db || !window.db.collection) return mostrarMensagem("Firebase indisponível.", "erro");
   const nextEnabled = !appSecurityState.quickLockEnabled;
   try {
-    await window.db.collection("config").doc("appSecurity").set({
+    await window.db.collection("config").doc("layout").set({
       quickLockEnabled: nextEnabled,
       updatedAt: Date.now()
     }, { merge: true });
     aplicarBloqueioRapidoApp(nextEnabled);
-    mostrarMensagem(nextEnabled ? "Bloqueio rápido ativado." : "Bloqueio rápido desativado.");
+    mostrarMensagem(nextEnabled ? "Bloqueio rapido ativado." : "Bloqueio rapido desativado.");
   } catch (error) {
     console.error(error);
-    mostrarMensagem("Erro ao guardar bloqueio rápido.", "erro");
+    mostrarMensagem("Erro ao guardar bloqueio rapido.", "erro");
   }
 }
 
 function bloquearAppRapido() {
   if (!appSecurityState.quickLockEnabled) return;
-  if (!hasSecurityEnabledApp()) return mostrarMensagem("Define um PIN primeiro para usar o bloqueio rápido.", "erro");
+  if (!hasSecurityEnabledApp()) return mostrarMensagem("Define um PIN primeiro para usar o bloqueio rapido.", "erro");
   mostrarBloqueioApp();
 }
 
@@ -5391,7 +5387,7 @@ function bloquearAppAgora() {
 
 document.addEventListener("DOMContentLoaded", () => {
   initAppSecurityActivity();
-  initBloqueioRapidoApp();
+  setTimeout(initBloqueioRapidoApp, 350);
 });
 
 function setHealthStatus(id, label, state = "ok") {

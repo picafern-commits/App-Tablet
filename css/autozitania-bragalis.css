@@ -2873,7 +2873,8 @@ aside.sidebar a[href$="diretorio.html"] {
   --sidebar-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.15' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 4h10a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z'/%3E%3Cpath d='M9 8h6'/%3E%3Cpath d='M9 12h6'/%3E%3Cpath d='M9 16h3'/%3E%3Cpath d='M19 7h2'/%3E%3Cpath d='M19 12h2'/%3E%3Cpath d='M19 17h2'/%3E%3C/svg%3E");
 }
 
-/* ===== App Braga v1.58.5 - Bloqueio rapido da app ===== */
+
+/* ===== App Braga v1.58.6 - Bloqueio rapido da app ===== */
 .quick-lock-config-card {
   display: flex;
   align-items: center;
@@ -2885,27 +2886,11 @@ aside.sidebar a[href$="diretorio.html"] {
   border-radius: 14px;
   background: rgba(255, 255, 255, .04);
 }
-
-.quick-lock-config-card > div {
-  display: grid;
-  gap: 5px;
-}
-
-.quick-lock-config-card strong {
-  color: #fff;
-  font-size: 1rem;
-}
-
-.quick-lock-config-card span {
-  color: var(--app-muted);
-  font-weight: 800;
-}
-
-.quick-lock-config-card small {
-  color: var(--app-muted);
-  line-height: 1.35;
-}
-
+.quick-lock-config-card > div { display: grid; gap: 5px; }
+.quick-lock-config-card strong { color: #fff; font-size: 1rem; }
+.quick-lock-config-card span, .quick-lock-config-card small { color: var(--app-muted); }
+.quick-lock-config-card span { font-weight: 800; }
+.quick-lock-config-card small { line-height: 1.35; }
 .app-quick-lock-button {
   position: fixed;
   right: 20px;
@@ -2925,32 +2910,11 @@ aside.sidebar a[href$="diretorio.html"] {
   cursor: pointer;
   backdrop-filter: blur(14px);
 }
-
-.app-quick-lock-button:hover {
-  transform: translateY(-1px);
-  border-color: var(--app-accent);
-}
-
-.app-quick-lock-button.is-disabled {
-  opacity: .52;
-  cursor: not-allowed;
-}
-
+.app-quick-lock-button:hover { transform: translateY(-1px); border-color: var(--app-accent); }
+.app-quick-lock-button.is-disabled { opacity: .52; cursor: not-allowed; }
 @media (max-width: 760px) {
-  .quick-lock-config-card {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .quick-lock-config-card button {
-    width: 100%;
-  }
-
-  .app-quick-lock-button {
-    right: 14px;
-    bottom: 14px;
-    width: 50px;
-    height: 50px;
-  }
+  .quick-lock-config-card { align-items: stretch; flex-direction: column; }
+  .quick-lock-config-card button { width: 100%; }
+  .app-quick-lock-button { right: 14px; bottom: 14px; width: 50px; height: 50px; }
 }
-/* ===== END App Braga v1.58.5 ===== */
+/* ===== END App Braga v1.58.6 ===== */
