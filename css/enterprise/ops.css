@@ -535,7 +535,7 @@ input[type="submit"] {
 }
 
 .enterprise-window-btn[data-enterprise-close]::before {
-  content: "✕";
+  content: "X";
 }
 
 .enterprise-window-btn:hover {
@@ -933,7 +933,7 @@ input[type="submit"] {
 }
 
 .sidebar .enterprise-window-btn[data-enterprise-hide]::before { content: "↙" !important; }
-.sidebar .enterprise-window-btn[data-enterprise-close]::before { content: "✕" !important; }
+.sidebar .enterprise-window-btn[data-enterprise-close]::before { content: "X" !important; }
 
 .sidebar .enterprise-window-btn:hover {
   transform: translateY(-1px) !important;
@@ -1174,7 +1174,7 @@ main > .enterprise-window-actions .enterprise-window-btn[data-enterprise-close]:
 }
 
 .enterprise-window-close::before {
-  content: "✕";
+  content: "X";
   margin-right: 7px;
 }
 

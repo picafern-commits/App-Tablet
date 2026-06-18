@@ -2765,7 +2765,7 @@ body.app-light {
 .sidebar a[href$="users.html"]::before { content: "US"; }
 .sidebar a[href$="pistolas.html"]::before { content: "CK"; }
 .sidebar a[href$="portas.html"]::before { content: "PR"; }
-.sidebar a[href$="config.html"]::before { content: "⚙"; }
+.sidebar a[href$="config.html"]::before { content: "CF"; }
 
 .main {
   display: grid !important;
@@ -3225,7 +3225,7 @@ body {
 .sidebar a[href$="portas.html"]::before { content: "PR" !important; }
 .sidebar a[href$="radios.html"]::before { content: "RD" !important; }
 .sidebar a[href$="informacoes.html"]::before { content: "IN" !important; }
-.sidebar a[href$="config.html"]::before { content: "⚙" !important; }
+.sidebar a[href$="config.html"]::before { content: "CF" !important; }
 
 .sidebar a:hover,
 .sidebar a.active,
@@ -7004,7 +7004,7 @@ input:focus,select:focus,textarea:focus{outline:0!important;border-color:rgba(56
   content: attr(data-icon) !important;
 }
 .sidebar a[href$="etiquetas-word.html"]::before{content:"⌑"!important;}
-.sidebar a[href$="manutencao-impressoras.html"]::before{content:"⚙"!important;}
+.sidebar a[href$="manutencao-impressoras.html"]::before{content:"MN"!important;}
 .sidebar a[href$="computadores.html"]::before{content:"PC"!important;}
 .sidebar a[href$="pistolas.html"]::before{content:"▥"!important;}
 .sidebar a[href$="radios.html"]::before{content:"≋"!important;}
@@ -7016,7 +7016,7 @@ input:focus,select:focus,textarea:focus{outline:0!important;border-color:rgba(56
 }
 .sidebar a[href$="equipamento.html"]::before{content:"EQ"!important;}
 .sidebar a[href$="zonas.html"]::before{content:"ZN"!important;}
-.sidebar a[href$="config.html"]::before{content:"⚙"!important;}
+.sidebar a[href$="config.html"]::before{content:"CF"!important;}
 
 /* ===== App Braga v1.42: sidebar uniforme e modo tablet mais leve ===== */
 .sidebar a[href$="equipamento.html"]{
@@ -8471,7 +8471,7 @@ main .sidebar-nav-pro,
 }
 /* ===== END APP BRAGA v1.55.0 - SIDEBAR SEM FUGAS ===== */
 
-/* ===== APP BRAGA v1.55.4 - SIDEBAR FINAL LIMPA ===== */
+/* ===== APP BRAGA v1.55.5 - SIDEBAR FINAL LIMPA ===== */
 html body .app-pro-commandbar,
 html body > .app-pro-commandbar,
 html body main .app-pro-commandbar,
@@ -8530,4 +8530,4 @@ html body .sidebar.sidebar-collapsible-pro .sidebar-group-icon{
     pointer-events:none!important;
   }
 }
-/* ===== END APP BRAGA v1.55.4 - SIDEBAR FINAL LIMPA ===== */
+/* ===== END APP BRAGA v1.55.5 - SIDEBAR FINAL LIMPA ===== */

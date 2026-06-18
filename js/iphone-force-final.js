@@ -132,7 +132,7 @@
       btn = document.createElement("button");
       btn.className = "app-menu-toggle";
       btn.type = "button";
-      btn.textContent = "☰";
+      btn.textContent = "Menu";
       document.body.appendChild(btn);
     }
 
@@ -156,7 +156,7 @@
       sidebar.classList.remove("app-open");
       document.body.classList.remove("sidebar-open");
       overlay.classList.remove("show");
-      btn.textContent = "☰";
+      btn.textContent = "Menu";
       sidebar.style.removeProperty("transform");
       sidebar.style.removeProperty("pointer-events");
       sidebar.style.removeProperty("visibility");
@@ -232,7 +232,7 @@
     sidebar.classList.remove("app-open");
     document.body.classList.remove("sidebar-open");
     overlay && overlay.classList.remove("show");
-    if (btn) btn.textContent = "☰";
+    if (btn) btn.textContent = "Menu";
     sidebar.style.removeProperty("transform");
     sidebar.style.removeProperty("pointer-events");
     sidebar.style.removeProperty("visibility");

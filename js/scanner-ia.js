@@ -245,7 +245,7 @@
     }
     els.history.innerHTML = list.map(item => {
       const d = new Date(item.at);
-      return `<div class="scanner-history-item"><strong>📄 ${escapeHtml(item.name)}</strong><small>${d.toLocaleString('pt-PT')}</small></div>`;
+      return `<div class="scanner-history-item"><strong>${escapeHtml(item.name)}</strong><small>${d.toLocaleString('pt-PT')}</small></div>`;
     }).join('');
   }
 

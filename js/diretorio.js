@@ -215,7 +215,7 @@
       }).join('');
       return `<article class="diretorio-warehouse ${armCollapsed ? 'collapsed' : ''}" data-arm="${esc(arm)}">
         <div class="diretorio-warehouse-head" onclick="toggleDiretorioArmazem('${esc(arm).replace(/'/g,'\\&#39;')}')">
-          <div class="diretorio-warehouse-title"><span class="warehouse-icon" aria-hidden="true">🏢</span><span>${esc(arm)}</span><span class="diretorio-count">${allContacts.length}</span></div>
+          <div class="diretorio-warehouse-title"><span class="warehouse-icon" aria-hidden="true">AR</span><span>${esc(arm)}</span><span class="diretorio-count">${allContacts.length}</span></div>
           <div class="diretorio-warehouse-meta"><span>${secMap.size} secções</span><span class="diretorio-chevron">⌄</span></div>
         </div>
         <div class="diretorio-warehouse-body">${sectionsHtml}</div>
@@ -230,7 +230,7 @@
     const email = norm(c.email);
     return `<tr>
       <td><div class="diretorio-row-actions">
-        <button class="dir-icon-btn" title="Editar" onclick="editarContactoDiretorio('${esc(c.firebaseId)}')">✎</button>
+        <button class="dir-icon-btn" title="Editar" onclick="editarContactoDiretorio('${esc(c.firebaseId)}')">Editar</button>
         <button class="dir-icon-btn copy" title="Copiar contacto" onclick="copiarContactoDiretorio('${esc(c.firebaseId)}')">⧉</button>
         <button class="dir-icon-btn delete" title="Apagar" onclick="apagarContactoDiretorio('${esc(c.firebaseId)}')">×</button>
       </div></td>

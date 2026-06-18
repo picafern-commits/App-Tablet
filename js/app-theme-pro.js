@@ -209,6 +209,20 @@
     "administra-o": "AD"
   };
 
+  const MOJIBAKE_FIXES = [
+    ["\u00c3\u00a1", "á"], ["\u00c3 ", "à"], ["\u00c3\u00a2", "â"], ["\u00c3\u00a3", "ã"], ["\u00c3\u00a4", "ä"],
+    ["\u00c3\u00a9", "é"], ["\u00c3\u00aa", "ê"], ["\u00c3\u00a8", "è"],
+    ["\u00c3\u00ad", "í"], ["\u00c3\u00b3", "ó"], ["\u00c3\u00b4", "ô"], ["\u00c3\u00b5", "õ"], ["\u00c3\u00ba", "ú"],
+    ["\u00c3\u00a7", "ç"], ["\u00c3\u0087", "Ç"],
+    ["\u00c3\u0081", "Á"], ["\u00c3\u0080", "À"], ["\u00c3\u0082", "\u00c2"], ["\u00c3\u0083", "\u00c3"], ["\u00c3\u0089", "É"],
+    ["\u00c3\u008a", "Ê"], ["\u00c3\u008d", "Í"], ["\u00c3\u0093", "Ó"], ["\u00c3\u0094", "Ô"], ["\u00c3\u0095", "Õ"], ["\u00c3\u009a", "Ú"],
+    ["\u00c2\u00ba", "º"], ["\u00c2\u00aa", "ª"], ["\u00c2\u00b0", "°"], ["\u00c2\u00b7", "·"], ["\u00c2", ""],
+    ["\u00e2\u20ac\u201c", "-"], ["\u00e2\u20ac\u201d", "-"], ["\u00e2\u20ac\u02dc", "'"], ["\u00e2\u20ac\u2122", "'"], ["\u00e2\u20ac\u0153", "\""], ["\u00e2\u20ac\ufffd", "\""],
+    ["\u00e2\u20ac\u00a6", "..."], ["\u00e2\u20ac", "\""], ["\u00ef\u00bf\u00bd", ""],
+    ["\u00f0\u0178\u201c\u017e", ""], ["\u00f0\u0178\u201c\u00a6", ""], ["\u00f0\u0178\u2013\u00a8\u00ef\u00b8\u008f", ""], ["\u00f0\u0178\u2013\u00a8", ""], ["\u00f0\u0178\u0161\u0161", ""],
+    ["\u00f0\u0178\u0161\u00a8", ""], ["\u00f0\u0178\u00a7\u00b0", ""], ["\u00f0\u0178\u2019\u00bb", ""], ["\u00f0\u0178\u201c\u00a1", ""], ["\u00f0\u0178\u201d\u00a7", ""]
+  ];
+
   function decodeMojibake(value) {
     let text = String(value || "");
     for (let i = 0; i < 3; i += 1) {
@@ -220,6 +234,9 @@
         break;
       }
     }
+    MOJIBAKE_FIXES.forEach(([bad, good]) => {
+      text = text.split(bad).join(good);
+    });
     return text;
   }
 
@@ -253,6 +270,13 @@
         if (fixed !== node.getAttribute(attr)) node.setAttribute(attr, fixed);
       });
       if (node.tagName === "OPTION") node.textContent = fixTextValue(node.textContent);
+    });
+    document.querySelectorAll("input, textarea, select").forEach((node) => {
+      if (node.type === "password") return;
+      if (typeof node.value === "string" && node.value) {
+        const fixed = fixTextValue(node.value);
+        if (fixed !== node.value) node.value = fixed;
+      }
     });
     document.querySelectorAll(".sidebar a[href]").forEach((link) => {
       const href = link.getAttribute("href") || "";
@@ -323,7 +347,7 @@
     };
     const observer = new MutationObserver(schedule);
     observer.observe(document.body, { childList: true, subtree: true });
-    window.setTimeout(() => observer.disconnect(), 30000);
+    window.setTimeout(() => observer.disconnect(), 300000);
   }
 
   function currentPageTitle() {

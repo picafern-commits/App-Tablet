@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.55.4";
+const APP_VERSION = "1.55.5";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "";
@@ -3694,7 +3694,7 @@ async function enviarAlertaGeralNotificacoesApp() {
     setCloudNotificationTextApp("cloudLastTestDetail", "A chamar Firebase Cloud Functions para os outros dispositivos");
 
     const result = await enviarCloudPushNotificacoesApp({
-      title: "🚨 Alerta geral - App Braga",
+      title: "Alerta geral - App Braga",
       body,
       tag: `alerta-geral-${startedAt}`,
       event: "manual-general-alert",

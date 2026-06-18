@@ -1,6 +1,6 @@
 {
   "name": "app-braga-functions",
-  "version": "1.38.0",
+  "version": "1.55.5",
   "private": true,
   "main": "index.js",
   "engines": {
