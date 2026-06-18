@@ -3994,20 +3994,29 @@ async function testarTonerImpressora(ip, outputId) {
   renderDashboardCards();
 }
 
-async function testarTodasAsImpressoras() {
-  for (const item of impressorasData) {
-    const alvoId = `toner-${item.ip.replace(/\./g, "-")}`;
+let appBragaPrinterScanRunning = false;
+async function testarTodasAsImpressoras(options = {}) {
+  if (appBragaPrinterScanRunning) return;
+  appBragaPrinterScanRunning = true;
+  const maxItems = Number.isFinite(options.maxItems) ? Math.max(1, options.maxItems) : impressorasData.length;
+  const items = impressorasData.slice(0, maxItems);
+  try {
+    for (const item of items) {
+      const alvoId = `toner-${item.ip.replace(/\./g, "-")}`;
 
-    if (el(alvoId)) {
-      await testarTonerImpressora(item.ip, alvoId);
-    } else {
-      const info = await obterTonerInfo(item.ip);
-      tonerInfoState[item.ip] = info || null;
-      if (info) maybeNotifyCriticalSupply(item.ip, info);
+      if (el(alvoId)) {
+        await testarTonerImpressora(item.ip, alvoId);
+      } else {
+        const info = await obterTonerInfo(item.ip);
+        tonerInfoState[item.ip] = info || null;
+        if (info) maybeNotifyCriticalSupply(item.ip, info);
+      }
     }
-  }
 
-  renderDashboardCards();
+    renderDashboardCards();
+  } finally {
+    appBragaPrinterScanRunning = false;
+  }
 }
 
 window.testarTonerImpressora = testarTonerImpressora;
@@ -6489,7 +6498,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const estaNaPaginaImpressoras = !!el("impressorasTableBody");
   const estaNoDashboard = !!el("listaDashboardStock") || !!el("searchDashboard");
 
-  if (estaNaPaginaImpressoras || estaNoDashboard) {
+  if (estaNaPaginaImpressoras) {
     setTimeout(() => {
       testarTodasAsImpressoras();
     }, 600);
@@ -6497,6 +6506,14 @@ window.addEventListener("DOMContentLoaded", () => {
     setInterval(() => {
       testarTodasAsImpressoras();
     }, 60000);
+  } else if (estaNoDashboard) {
+    setTimeout(() => {
+      try {
+        renderDashboardCards();
+      } catch (error) {
+        console.warn("Dashboard: nao foi possivel atualizar impressoras.", error);
+      }
+    }, 600);
   }
 
 });
@@ -6732,22 +6749,35 @@ obterTonerInfo = async function(ip) {
 };
 
 const __originalTestarTodasAsImpressoras = testarTodasAsImpressoras;
-testarTodasAsImpressoras = async function() {
+let appBragaPrinterScanOverrideRunning = false;
+testarTodasAsImpressoras = async function(options = {}) {
+  if (appBragaPrinterScanOverrideRunning) return;
   const webMode = !(window.electronAPI && window.electronAPI.getTonerSNMP);
-  if (webMode) {
-    impressorasData.forEach((item) => {
-      const info = printerFirebaseState[item.ip] ? mapFirebasePrinterInfo(printerFirebaseState[item.ip]) : null;
-      tonerInfoState[item.ip] = info;
-      const alvoId = `toner-${item.ip.replace(/\./g, "-")}`;
-      if (el(alvoId)) {
-        el(alvoId).innerHTML = gerarHTMLToners(info);
-      }
-      if (info) maybeNotifyCriticalSupply(item.ip, info);
-    });
-    renderDashboardCards();
-    return;
+  const isDashboard = !!el("listaDashboardStock") || !!el("searchDashboard");
+  if (webMode || (isDashboard && !options.forceProbe)) {
+    appBragaPrinterScanOverrideRunning = true;
+    try {
+      impressorasData.forEach((item) => {
+        const info = printerFirebaseState[item.ip] ? mapFirebasePrinterInfo(printerFirebaseState[item.ip]) : null;
+        tonerInfoState[item.ip] = info;
+        const alvoId = `toner-${item.ip.replace(/\./g, "-")}`;
+        if (el(alvoId)) {
+          el(alvoId).innerHTML = gerarHTMLToners(info);
+        }
+        if (info) maybeNotifyCriticalSupply(item.ip, info);
+      });
+      renderDashboardCards();
+      return;
+    } finally {
+      appBragaPrinterScanOverrideRunning = false;
+    }
   }
-  return await __originalTestarTodasAsImpressoras();
+  appBragaPrinterScanOverrideRunning = true;
+  try {
+    return await __originalTestarTodasAsImpressoras(options);
+  } finally {
+    appBragaPrinterScanOverrideRunning = false;
+  }
 };
 
 const __originalAbrirIP = abrirIP;
