@@ -23,5 +23,6 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "version": "1.58.0"
 }

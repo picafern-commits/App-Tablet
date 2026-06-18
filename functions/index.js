@@ -408,11 +408,7 @@ exports.sendNotificationBroadcast = onRequest(PUBLIC_HTTP_OPTIONS, handleNotific
 exports.sendPushAlert = onRequest(PUBLIC_HTTP_OPTIONS, handleNotificationBroadcast);
 
 function percentValue(value) {
-  let number = Number(value);
-  if (!Number.isFinite(number) && typeof value === "string") {
-    const match = value.replace(",", ".").match(/\d{1,3}(?:\.\d+)?/);
-    number = match ? Number(match[0]) : NaN;
-  }
+  const number = Number(value);
   if (!Number.isFinite(number)) return null;
   return Math.max(0, Math.min(100, Math.round(number)));
 }
@@ -512,47 +508,31 @@ function changedTonerEvents(beforeData = {}, afterData = {}, printerId = "") {
   return events;
 }
 
-async function handlePrinterTonerNotification(event, sourceCollection) {
-  const beforeData = event.data?.before?.exists ? event.data.before.data() || {} : {};
-  const afterData = event.data?.after?.exists ? event.data.after.data() || {} : null;
-  if (!afterData) return null;
-
-  const printerId = event.params.printerId || event.params.impressoraId || "";
-  const events = changedTonerEvents(beforeData, afterData, printerId);
-  logger.info("printer toner check", {
-    sourceCollection,
-    printerId,
-    events: events.map((item) => item.event),
-    before: printerTonerLevels(beforeData),
-    after: printerTonerLevels(afterData)
-  });
-
-  for (const item of events) {
-    try {
-      const result = await sendNotificationToDevices({
-        requestId: `${item.event}-${printerId}-${Date.now()}`,
-        title: item.title,
-        body: item.body,
-        event: item.event,
-        tag: item.tag,
-        url: item.url
-      }, { system: true });
-      logger.info("system printer notification", { sourceCollection, event: item.event, printerId, result });
-    } catch (error) {
-      logger.error("system printer notification failed", { sourceCollection, printerId, event: item.event, error: error.message });
-    }
-  }
-  return null;
-}
-
 exports.onPrinterTonerNotification = onDocumentWritten(
   { ...BACKGROUND_OPTIONS, document: "printers/{printerId}" },
-  (event) => handlePrinterTonerNotification(event, "printers")
-);
+  async (event) => {
+    const beforeData = event.data?.before?.exists ? event.data.before.data() || {} : {};
+    const afterData = event.data?.after?.exists ? event.data.after.data() || {} : null;
+    if (!afterData) return null;
 
-exports.onImpressoraTonerNotification = onDocumentWritten(
-  { ...BACKGROUND_OPTIONS, document: "impressoras/{impressoraId}" },
-  (event) => handlePrinterTonerNotification(event, "impressoras")
+    const events = changedTonerEvents(beforeData, afterData, event.params.printerId);
+    for (const item of events) {
+      try {
+        const result = await sendNotificationToDevices({
+          requestId: `${item.event}-${event.params.printerId}-${Date.now()}`,
+          title: item.title,
+          body: item.body,
+          event: item.event,
+          tag: item.tag,
+          url: item.url
+        }, { system: true });
+        logger.info("system printer notification", { event: item.event, printerId: event.params.printerId, result });
+      } catch (error) {
+        logger.error("system printer notification failed", { printerId: event.params.printerId, event: item.event, error: error.message });
+      }
+    }
+    return null;
+  }
 );
 
 function isHighPriorityTask(task = {}) {
