@@ -1,4 +1,4 @@
-* {
+﻿* {
   box-sizing: border-box;
 }
 
@@ -8549,73 +8549,3 @@ aside.sidebar a[href]::before,
   text-transform: none !important;
 }
 /* ===== END App Braga v1.58.4 ===== */
-
-
-/* Bloqueio rápido da app - v1.58.8 */
-.quick-lock-config-card{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:16px;
-  padding:16px;
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:18px;
-  background:rgba(255,255,255,.055);
-  margin:14px 0;
-}
-.quick-lock-config-card strong{display:block;font-weight:900;margin-bottom:4px;}
-.quick-lock-config-card span{display:block;opacity:.78;font-size:.92rem;line-height:1.35;}
-.quick-lock-config-actions{display:flex;align-items:center;gap:10px;white-space:nowrap;}
-.quick-lock-config-actions small{font-weight:800;opacity:.82;}
-.app-quick-lock-button{
-  position:fixed;
-  right:18px;
-  bottom:18px;
-  z-index:9990;
-  width:54px;
-  height:54px;
-  border-radius:18px;
-  border:1px solid rgba(255,255,255,.18);
-  background:rgba(15,23,42,.88);
-  color:#fff;
-  font-size:24px;
-  box-shadow:0 16px 42px rgba(0,0,0,.32);
-  cursor:pointer;
-}
-.app-quick-lock-overlay{
-  position:fixed;
-  inset:0;
-  z-index:10000;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:24px;
-  background:rgba(2,6,23,.82);
-  backdrop-filter:blur(14px);
-}
-.app-quick-lock-card{
-  width:min(420px,100%);
-  border-radius:26px;
-  padding:26px;
-  background:rgba(15,23,42,.96);
-  color:#fff;
-  border:1px solid rgba(255,255,255,.14);
-  box-shadow:0 24px 70px rgba(0,0,0,.42);
-  text-align:center;
-}
-.app-quick-lock-card h2{margin:10px 0 8px;font-size:1.55rem;}
-.app-quick-lock-card p{margin:0 0 18px;opacity:.78;}
-.app-quick-lock-card input{
-  width:100%;
-  box-sizing:border-box;
-  margin:0 0 12px;
-  padding:13px 14px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,.18);
-  background:rgba(255,255,255,.08);
-  color:#fff;
-  text-align:center;
-  font-size:1.1rem;
-}
-.app-quick-lock-card .quick-lock-error{min-height:20px;color:#fecaca;font-size:.9rem;margin-top:8px;}
-@media(max-width:700px){.app-quick-lock-button{right:14px;bottom:14px;width:50px;height:50px;border-radius:16px}.quick-lock-config-card{align-items:flex-start;flex-direction:column}.quick-lock-config-actions{width:100%;justify-content:space-between}}
