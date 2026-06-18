@@ -9,18 +9,22 @@
   let encodingRepairRunning = false;
 
   function fixTextoDiretorio(v){
-    let txt = String(v ?? "");
-    if (!txt) return txt;
+    let txt = String(v ?? '');
+    if(!txt) return txt;
 
-    txt = txt
-      .replace(/Autozit\uFFFDnia/gi, "Autozitânia")
-      .replace(/Autozit[aâã]?nia/gi, "Autozitânia")
-      .replace(/Autozit\?nia/gi, "Autozitânia");
-
-    return txt.normalize("NFC");
+    const fixes = [
+      ['Autozit\uFFFDnia', 'Autozitânia'],
+      ['Autozitânia', 'Autozitânia'],
+      ['Autozitânia', 'Autozitânia'],
+      ['\u00c3\u00a1', '?'], ['\u00c3\u00a0', '?'], ['\u00c3\u00a2', '?'], ['\u00c3\u00a3', '?'], ['\u00c3\u00a7', '?'],
+      ['\u00c3\u00a9', '?'], ['\u00c3\u00aa', '?'], ['\u00c3\u00ad', '?'], ['\u00c3\u00b3', '?'], ['\u00c3\u00b4', '?'], ['\u00c3\u00b5', '?'], ['\u00c3\u00ba', '?'],
+      ['\u00c3\u0081', '?'], ['\u00c3\u0080', '?'], ['\u00c3\u0082', '?'], ['\u00c3\u0192', '?'], ['\u00c3\u0087', '?'],
+      ['\u00c3\u0089', '?'], ['\u00c3\u008a', '?'], ['\u00c3\u008d', '?'], ['\u00c3\u0093', '?'], ['\u00c3\u0094', '?'], ['\u00c3\u0095', '?'], ['\u00c3\u009a', '?']
+    ];
+    fixes.forEach(([bad, good]) => { txt = txt.split(bad).join(good); });
+    return txt.trim();
   }
 
-  const $ = (id) => document.getElementById(id);
   const norm = (v) => fixTextoDiretorio(String(v || '').trim());
   const lower = (v) => norm(v).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   const esc = (v) => String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -215,7 +219,7 @@
       }).join('');
       return `<article class="diretorio-warehouse ${armCollapsed ? 'collapsed' : ''}" data-arm="${esc(arm)}">
         <div class="diretorio-warehouse-head" onclick="toggleDiretorioArmazem('${esc(arm).replace(/'/g,'\\&#39;')}')">
-          <div class="diretorio-warehouse-title"><span class="warehouse-icon" aria-hidden="true">AR</span><span>${esc(arm)}</span><span class="diretorio-count">${allContacts.length}</span></div>
+          <div class="diretorio-warehouse-title"><span class="warehouse-icon" aria-hidden="true">🏢</span><span>${esc(arm)}</span><span class="diretorio-count">${allContacts.length}</span></div>
           <div class="diretorio-warehouse-meta"><span>${secMap.size} secções</span><span class="diretorio-chevron">⌄</span></div>
         </div>
         <div class="diretorio-warehouse-body">${sectionsHtml}</div>
@@ -230,7 +234,7 @@
     const email = norm(c.email);
     return `<tr>
       <td><div class="diretorio-row-actions">
-        <button class="dir-icon-btn" title="Editar" onclick="editarContactoDiretorio('${esc(c.firebaseId)}')">Editar</button>
+        <button class="dir-icon-btn" title="Editar" onclick="editarContactoDiretorio('${esc(c.firebaseId)}')">✎</button>
         <button class="dir-icon-btn copy" title="Copiar contacto" onclick="copiarContactoDiretorio('${esc(c.firebaseId)}')">⧉</button>
         <button class="dir-icon-btn delete" title="Apagar" onclick="apagarContactoDiretorio('${esc(c.firebaseId)}')">×</button>
       </div></td>
