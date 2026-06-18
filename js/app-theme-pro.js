@@ -149,27 +149,6 @@
     ["botoes", "botoes"],
     ["‹", "<"],
     ["›", ">"],
-    ["⭐", "*"],
-    ["⚡", "OP"],
-    ["✅", "OK"],
-    ["➕", "+"],
-    ["⚙️", "CFG"],
-    ["🏠", "DB"],
-    ["📦", "ST"],
-    ["🖨️", "IMP"],
-    ["🧾", "HIS"],
-    ["📄", "IA"],
-    ["🏷️", "ETQ"],
-    ["🧰", "EQP"],
-    ["🛠️", "MAN"],
-    ["💻", "PC"],
-    ["📟", "CK"],
-    ["📡", "RAD"],
-    ["🌐", "INF"],
-    ["🔌", "NET"],
-    ["ℹ️", "INFO"],
-    ["👥", "USR"],
-    ["🩺", "DIA"]
   ];
 
   const SIDEBAR_CODES = [
@@ -179,9 +158,9 @@
     ["impressoras.html", "🖨️"],
     ["add-toner.html", "➕"],
     ["historico.html", "🧾"],
-    ["tarefas.html", "✓"],
+    ["tarefas.html", "✅"],
     ["equipas-semanais.html", "👥"],
-    ["scanner-ia.html", "▣"],
+    ["scanner-ia.html", "📄"],
     ["etiquetas-word.html", "🏷️"],
     ["manutencao-impressoras.html", "🛠️"],
     ["computadores.html", "💻"],
@@ -189,17 +168,17 @@
     ["radios.html", "📡"],
     ["portas.html", "🔌"],
     ["informacoes.html", "ℹ️"],
-    ["notificacoes.html", "◉"],
+    ["notificacoes.html", "🔔"],
     ["users.html", "👥"],
     ["diagnostico.html", "🩺"],
     ["config.html", "⚙️"]
   ];
 
   const SIDEBAR_GROUP_CODES = {
-    "opera-o": "⚡",
+    "operacao": "⚡",
     "equipamentos": "🧰",
     "infraestrutura": "🌐",
-    "administra-o": "⚙️"
+    "administracao": "⚙️"
   };
 
   function decodeMojibake(value) {

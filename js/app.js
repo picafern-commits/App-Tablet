@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.58.1";
+const APP_VERSION = "1.58.2";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "";
@@ -13145,6 +13145,50 @@ async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
   function readCollapsed(){ try { return localStorage.getItem(COLLAPSE_KEY) === "1"; } catch(e){ return false; } }
   function saveCollapsed(v){ try { localStorage.setItem(COLLAPSE_KEY, v ? "1" : "0"); } catch(e){} }
 
+
+  const APP_BRAGA_ICON_CODE_MAP = {
+    '*':'⭐','FV':'⭐','FAV':'⭐',
+    'OP':'⚡','EQ':'🧰','IN':'🌐','INF':'🌐','AD':'⚙️','ADM':'⚙️',
+    'CFG':'⚙️','DB':'🏠','ST':'📦','IMP':'🖨️','HIS':'🧾','OK':'✅','+':'➕',
+    'IA':'📄','ETQ':'🏷️','EQP':'🧰','MAN':'🛠️','PC':'💻','CK':'📟','RAD':'📡',
+    'NET':'🔌','INFO':'ℹ️','USR':'👥','DIA':'🩺','DR':'☎️','NOT':'🔔','NTF':'🔔','TON':'🧴'
+  };
+  const APP_BRAGA_PAGE_EMOJIS = {
+    "index.html":"🏠","stock.html":"📦","diretorio.html":"☎️","impressoras.html":"🖨️",
+    "add-toner.html":"➕","historico.html":"🧾","tarefas.html":"✅","equipas-semanais.html":"👥",
+    "scanner-ia.html":"📄","etiquetas-word.html":"🏷️","manutencao-impressoras.html":"🛠️",
+    "computadores.html":"💻","pistolas.html":"📟","radios.html":"📡","portas.html":"🔌",
+    "informacoes.html":"ℹ️","users.html":"👥","diagnostico.html":"🩺","notificacoes.html":"🔔",
+    "config.html":"⚙️","assistente.html":"🎙️"
+  };
+  const APP_BRAGA_GROUP_EMOJIS = {
+    "favoritos":"⭐","operacao":"⚡","equipamentos":"🧰","infraestrutura":"🌐","administracao":"⚙️"
+  };
+  function normalizeSidebarIconValue(value, fallback){
+    const raw = String(value || "").trim();
+    if (!raw) return fallback || "•";
+    const upper = raw.toUpperCase();
+    return APP_BRAGA_ICON_CODE_MAP[raw] || APP_BRAGA_ICON_CODE_MAP[upper] || raw;
+  }
+  function forceSidebarEmojis(){
+    const sidebar = getSidebar();
+    if (!sidebar) return;
+    sidebar.querySelectorAll("a[href]").forEach(link => {
+      const href = (link.getAttribute("href") || "").split("?")[0].split("#")[0].split("/").pop().toLowerCase();
+      const fallback = APP_BRAGA_PAGE_EMOJIS[href] || normalizeSidebarIconValue(link.dataset.icon, "•");
+      link.dataset.icon = normalizeSidebarIconValue(link.dataset.icon, fallback);
+    });
+    sidebar.querySelectorAll(".sidebar-group[data-sidebar-group]").forEach(group => {
+      const icon = group.querySelector(".sidebar-group-icon");
+      if (!icon) return;
+      const key = group.dataset.sidebarGroup || "";
+      icon.textContent = normalizeSidebarIconValue(icon.textContent, APP_BRAGA_GROUP_EMOJIS[key] || "📁");
+    });
+    sidebar.querySelectorAll(".sidebar-section-title > span").forEach(node => {
+      node.textContent = normalizeSidebarIconValue(node.textContent, "⭐");
+    });
+  }
+
   function cleanOverlays(){
     const overlays = Array.from(document.querySelectorAll(".app-sidebar-overlay"));
     overlays.forEach((ov, index) => {
@@ -13223,6 +13267,7 @@ async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
       const brand = sidebar.querySelector(".premium-brand, .brand, .sidebar-brand-card, .brand-block") || sidebar.firstElementChild;
       if (brand) brand.appendChild(btn); else sidebar.prepend(btn);
     }
+    forceSidebarEmojis();
     restoreGroups();
     applyCollapsed(readCollapsed(), false);
     cleanOverlays();

@@ -1,11 +1,11 @@
-﻿/* App Braga - Sidebar editavel v1.56.9 - Firebase persistente */
+/* App Braga - Sidebar editavel v1.56.9 - Firebase persistente */
 (function(){
   'use strict';
   const STORAGE_KEY = 'appBraga.sidebar.customLayout';
   const LEGACY_STORAGE_KEYS = ['appBraga.sidebar.customLayout.v1568','appBraga.sidebar.customLayout.v1567','appBraga.sidebar.customLayout.v1566'];
   const FIRESTORE_COLLECTION = 'config';
   const FIRESTORE_DOC = 'sidebarLayout';
-  const CURRENT_VERSION = '1.58.1';
+  const CURRENT_VERSION = '1.58.2';
 
   const DEFAULT_PAGES = [
     { id:'dashboard', label:'Dashboard', href:'index.html', icon:'🏠', group:'favoritos', locked:true },
@@ -37,6 +37,33 @@
     { id:'infraestrutura', label:'Infraestrutura', icon:'🌐' },
     { id:'administracao', label:'Administração', icon:'⚙️', locked:true }
   ];
+
+  const ICON_CODE_MAP = {
+    '*':'⭐','FV':'⭐','FAV':'⭐',
+    'OP':'⚡','EQ':'🧰','IN':'🌐','INF':'🌐','AD':'⚙️','ADM':'⚙️',
+    'CFG':'⚙️','DB':'🏠','ST':'📦','IMP':'🖨️','HIS':'🧾','OK':'✅','+':'➕',
+    'IA':'📄','ETQ':'🏷️','EQP':'🧰','MAN':'🛠️','PC':'💻','CK':'📟','RAD':'📡',
+    'NET':'🔌','INFO':'ℹ️','USR':'👥','DIA':'🩺','DR':'☎️','NOT':'🔔','NTF':'🔔','TON':'🧴'
+  };
+  const PAGE_ICON_BY_ID = Object.fromEntries(DEFAULT_PAGES.map(p => [p.id, p.icon]));
+  const GROUP_ICON_BY_ID = Object.fromEntries(DEFAULT_GROUPS.map(g => [g.id, g.icon]));
+  function normalizeSidebarIcon(value, fallback){
+    const raw = String(value || '').trim();
+    if (!raw) return fallback || '•';
+    const upper = raw.toUpperCase();
+    return ICON_CODE_MAP[raw] || ICON_CODE_MAP[upper] || raw;
+  }
+  function normalizeSidebarLayout(layout){
+    const base = layout || {};
+    (base.groups || []).forEach(g => {
+      g.icon = normalizeSidebarIcon(g.icon, GROUP_ICON_BY_ID[g.id] || '📁');
+    });
+    (base.pages || []).forEach(p => {
+      p.icon = normalizeSidebarIcon(p.icon, PAGE_ICON_BY_ID[p.id] || '•');
+    });
+    return base;
+  }
+
 
   function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
   function normaliseId(text){
@@ -107,6 +134,7 @@
     pages.forEach((p, idx) => { if (typeof p.order !== 'number') p.order = idx; if (p.visible === undefined) p.visible = true; });
     groups.sort((a,b) => (a.order||0) - (b.order||0));
     pages.sort((a,b) => (a.order||0) - (b.order||0));
+    normalizeSidebarLayout({ groups, pages });
     return { version:CURRENT_VERSION, updatedAt:layout.updatedAt || Date.now(), source:layout.source || 'local', groups, pages };
   }
   function getLayout(){ return mergeLayout(readLocal()); }
@@ -114,7 +142,7 @@
   function createLink(page){
     const a = document.createElement('a');
     a.href = page.href;
-    a.dataset.icon = page.icon || '•';
+    a.dataset.icon = normalizeSidebarIcon(page.icon, PAGE_ICON_BY_ID[page.id] || '•');
     a.innerHTML = '<span class="sidebar-link-text"></span>';
     a.querySelector('.sidebar-link-text').textContent = page.label || page.href;
     const href = (page.href || '').split('?')[0].split('#')[0].split('/').pop().toLowerCase();
@@ -139,7 +167,7 @@
         sec.className = 'sidebar-favorites';
         sec.dataset.sidebarSection = 'favorites';
         sec.innerHTML = '<div class="sidebar-section-title"><span></span><strong></strong></div>';
-        sec.querySelector('span').textContent = group.icon || '⭐';
+        sec.querySelector('span').textContent = normalizeSidebarIcon(group.icon, GROUP_ICON_BY_ID[group.id] || '⭐');
         sec.querySelector('strong').textContent = group.label || 'Favoritos';
         groupPages.forEach(p => sec.appendChild(createLink(p)));
         nav.appendChild(sec);
@@ -150,7 +178,7 @@
       section.className = 'sidebar-group';
       section.dataset.sidebarGroup = group.id;
       section.innerHTML = '<button class="sidebar-group-toggle" type="button" aria-expanded="false"><span class="sidebar-group-left"><span class="sidebar-group-icon"></span><span class="sidebar-group-title"></span></span><span class="sidebar-group-chevron">›</span></button><div class="sidebar-group-links"></div>';
-      section.querySelector('.sidebar-group-icon').textContent = group.icon || '📁';
+      section.querySelector('.sidebar-group-icon').textContent = normalizeSidebarIcon(group.icon, GROUP_ICON_BY_ID[group.id] || '📁');
       section.querySelector('.sidebar-group-title').textContent = group.label || group.id;
       const links = section.querySelector('.sidebar-group-links');
       groupPages.forEach(p => links.appendChild(createLink(p)));
