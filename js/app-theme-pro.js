@@ -321,9 +321,13 @@
       secondary: data.accentColor2,
       buttonTextMode: data.buttonTextMode
     };
-    apply({ ...getCachedTheme(), ...nextTheme });
-    applyVisualDesign(data.visualDesign || getCachedVisualDesign(), { persist: false });
-    applyWorkspace(data.workspaceMode || getCachedWorkspace(), { persist: false });
+
+    // Guarda também em cache local o layout vindo da Firebase.
+    // Assim, ao trocar de página, o Modo Clássico é aplicado logo no <head>
+    // e não aparece aquele flash rápido do Modo Pro enquanto espera pela Firebase.
+    apply({ ...getCachedTheme(), ...nextTheme }, { persist: true });
+    applyVisualDesign(data.visualDesign || getCachedVisualDesign(), { persist: true });
+    applyWorkspace(data.workspaceMode || getCachedWorkspace(), { persist: true });
     window.dispatchEvent(new CustomEvent("appbraga:layout", { detail: data }));
   }
 

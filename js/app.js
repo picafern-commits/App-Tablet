@@ -1,4 +1,4 @@
-﻿
+
 window.usersData = window.usersData || [];
 window.pistolasData = window.pistolasData || [];
 window.portasData = window.portasData || [];
@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.58.3";
+const APP_VERSION = "1.58.15";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "";
@@ -5526,11 +5526,11 @@ function getRadioWeekInfo(date = new Date()) {
 }
 
 function radioUserLabel(user) {
-  return userá.nome || userá.user_pc_eye || userá.email_bragalis || userá.user_mo365 || "User sem nome";
+  return user.nome || user.user_pc_eye || user.email_bragalis || user.user_mo365 || "User sem nome";
 }
 
 function radioUserId(user) {
-  return userá.id || userá.firebaseId || userá.idDoc || userá._ref || radioUserLabel(user);
+  return user.id || user.firebaseId || user.idDoc || user._ref || radioUserLabel(user);
 }
 
 function radioCssEscape(value) {
@@ -8766,7 +8766,7 @@ async function guardarEdicaoUser() {
 
 
 async function apagarUser(ref) {
-  if (!confirm("Queres apagar este userá")) return;
+  if (!confirm("Queres apagar este user")) return;
   try {
     if (typeof ref === "string" && window.db) {
       await db.collection("users").doc(ref).delete();
