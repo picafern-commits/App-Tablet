@@ -127,6 +127,57 @@ async function sendStandardWebPush(device, payload) {
   return { sent: true };
 }
 
+function safeStateId(value = "") {
+  return Buffer.from(String(value || "notification")).toString("base64url").slice(0, 180);
+}
+
+function stableNotificationTag(payload = {}) {
+  const rawEvent = cleanText(payload.event, "");
+  const rawTag = cleanText(payload.tag || payload.requestId, "");
+  let tag = rawTag
+    .replace(/-\d{10,}$/, "")
+    .replace(/-\d{4}-\d{2}-\d{2}t.*$/i, "");
+
+  // Só forçar anti-duplicado nos avisos automáticos/sistema.
+  // Testes manuais continuam livres.
+  const event = rawEvent || (tag.startsWith("toner-") || tag.startsWith("stock-") || tag.startsWith("printer-") ? "system-notification" : "");
+  if (!event.startsWith("system-")) return "";
+
+  if (!tag) {
+    tag = `${cleanText(payload.title, "App Braga")}::${cleanText(payload.body, "")}`;
+  }
+  return `${event}::${tag}`;
+}
+
+async function reserveAutomaticNotificationOnce(payload = {}) {
+  const stableKey = stableNotificationTag(payload);
+  if (!stableKey) return true;
+  const ref = db.collection("notificationEventLocks").doc(safeStateId(stableKey));
+  let reserved = false;
+  await db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    if (snap.exists) {
+      reserved = false;
+      return;
+    }
+    tx.set(ref, {
+      stableKey,
+      event: cleanText(payload.event, "system-notification"),
+      tag: cleanText(payload.tag || payload.requestId, "system-notification"),
+      requestId: cleanText(payload.requestId, "system-notification"),
+      title: cleanText(payload.title, "App Braga"),
+      body: cleanText(payload.body, "Novo aviso da App Braga."),
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    reserved = true;
+  });
+  return reserved;
+}
+
+async function reserveSystemNotificationOnce(payload = {}) {
+  return reserveAutomaticNotificationOnce(payload);
+}
+
 async function sendNotificationToDevices(payloadInput = {}, options = {}) {
   const startedAt = Date.now();
   const requestId = cleanText(payloadInput.requestId, `system-${startedAt}`);
@@ -157,6 +208,27 @@ async function sendNotificationToDevices(payloadInput = {}, options = {}) {
     sent: 0,
     errors: []
   };
+
+  if (options.system === true && options.skipDedup !== true) {
+    const reserved = await reserveSystemNotificationOnce(payload);
+    if (!reserved) {
+      result.ok = true;
+      result.skippedDuplicate = true;
+      await db.collection(HISTORY_COLLECTION).add({
+        ...result,
+        title: payload.title,
+        body: payload.body,
+        event: payload.event,
+        senderDeviceId,
+        targetDeviceId,
+        system: true,
+        duplicateOfTag: payload.tag,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        durationMs: Date.now() - startedAt
+      }).catch(() => null);
+      return result;
+    }
+  }
 
   const vapid = getVapid();
   const snap = await db.collection(DEVICE_COLLECTION).where("enabled", "==", true).get();
@@ -283,6 +355,7 @@ async function handleNotificationBroadcast(req, res) {
     requestId,
     title: cleanText(body.title, "App Braga"),
     body: cleanText(body.body, "Alerta App Braga"),
+    event: cleanText(body.event, ""),
     url: cleanText(body.url, "https://picafern-commits.github.io/App-Tablet/html/index.html"),
     tag: cleanText(body.tag, requestId)
   };
@@ -305,6 +378,24 @@ async function handleNotificationBroadcast(req, res) {
   };
 
   try {
+    const reserved = await reserveAutomaticNotificationOnce(payload);
+    if (!reserved) {
+      result.ok = true;
+      result.skippedDuplicate = true;
+      await db.collection(HISTORY_COLLECTION).add({
+        ...result,
+        title: payload.title,
+        body: payload.body,
+        event: payload.event,
+        senderDeviceId,
+        targetDeviceId,
+        duplicateOfTag: payload.tag,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        durationMs: Date.now() - startedAt
+      }).catch(() => null);
+      return res.json(result);
+    }
+
     const vapid = getVapid();
     const snap = await db.collection(DEVICE_COLLECTION).where("enabled", "==", true).get();
     result.totalDevices = snap.size;
@@ -385,6 +476,7 @@ async function handleNotificationBroadcast(req, res) {
       ...result,
       title: payload.title,
       body: payload.body,
+      event: payload.event,
       senderDeviceId,
       targetDeviceId,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -399,6 +491,7 @@ async function handleNotificationBroadcast(req, res) {
       ...result,
       title: payload.title,
       body: payload.body,
+      event: payload.event,
       senderDeviceId,
       targetDeviceId,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),

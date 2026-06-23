@@ -1,5 +1,5 @@
 {
-  "version": "1.58.15",
-  "build": "remove-galeria-checklist-tabs",
-  "updatedAt": "2026-06-22T10:20:00Z"
+  "version": "1.58.17",
+  "build": "fix-dashboard-notification-loop-github-electron",
+  "updatedAt": "2026-06-23T10:00:00Z"
 }

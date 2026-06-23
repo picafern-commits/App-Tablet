@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.58.15";
+const APP_VERSION = "1.58.17";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "";
@@ -1942,6 +1942,10 @@ function gerarHTMLToners(info) {
 }
 
 function maybeNotifyCriticalSupply(ip, info, previousInfo = null) {
+  // v1.58.17: nao enviar notificacoes cloud/local a partir das paginas.
+  // As notificacoes de toner passam a ser decididas uma unica vez nas Cloud Functions,
+  // para evitar loops quando o Dashboard ou outra pagina faz leituras repetidas.
+  return;
   if (!info) return;
 
   const printer = impressorasData.find(i => i.ip === ip);
@@ -2046,6 +2050,8 @@ function resolveVapidPublicKeyApp(value) {
 }
 
 async function maybeNotifyTonerReplacement(ip, previousInfo, nextInfo) {
+  // v1.58.17: reposicao de toner tambem fica centralizada nas Cloud Functions.
+  return;
   if (!appNotificationState.tonerChange) return;
   const events = getTonerReplacementEventsApp(previousInfo, nextInfo);
   if (!events.length) return;
@@ -2299,7 +2305,9 @@ function buildAlertasNotificacoesApp() {
 }
 
 async function verificarAlertasNotificacoesApp(force = false) {
-  if (!force && !appNotificationState.enabled) return;
+  // v1.58.17: alertas automáticos deixaram de correr no cliente.
+  // A origem única é Cloud Functions para enviar uma só vez a todos os dispositivos.
+  if (!force) return;
   const alerts = buildAlertasNotificacoesApp();
   if (force && !alerts.length) {
     mostrarMensagem("Sem alertas ativos para notificar.");
@@ -2341,6 +2349,9 @@ function canNotifyRealtimeCollectionApp(collectionKey) {
 }
 
 async function notificarAlteracaoRealtimeApp(collectionKey, snapshot) {
+  // v1.58.17: não criar notificações automáticas a partir de listeners de página.
+  // Listeners servem apenas para atualizar UI; notificações globais vêm das Functions.
+  return;
   if (!snapshot || typeof snapshot.docChanges !== "function") return;
 
   if (!appNotificationState.realtimeBoot[collectionKey]) {
@@ -2385,9 +2396,8 @@ async function notificarAlteracaoRealtimeApp(collectionKey, snapshot) {
 
 function iniciarMonitorNotificacoesApp() {
   clearInterval(appNotificationTimer);
-  if (!appNotificationState.enabled) return;
-  const intervalMs = Math.max(5, appNotificationState.intervalMinutes) * 60 * 1000;
-  appNotificationTimer = setInterval(() => verificarAlertasNotificacoesApp(false), intervalMs);
+  // v1.58.17: sem monitor automático no cliente para evitar loops no Dashboard.
+  // Os testes manuais continuam a funcionar; automáticas ficam nas Cloud Functions.
 }
 
 async function testarNotificacaoApp() {
@@ -6594,19 +6604,53 @@ function buildPrinterFirebasePayload(ip, info) {
   return payload;
 }
 
+function appBragaPrinterCompareKeyFromData(data = {}) {
+  const mapped = mapFirebasePrinterInfo(data) || {};
+  const toner = {};
+  if (Array.isArray(mapped.colors)) {
+    mapped.colors.forEach((item) => {
+      if (!item || typeof item.percent !== "number") return;
+      const key = String(item.key || item.label || "toner").toLowerCase();
+      toner[key] = Math.max(0, Math.min(100, Math.round(item.percent)));
+    });
+  }
+  return JSON.stringify({
+    toner: Object.keys(toner).sort().reduce((acc, key) => { acc[key] = toner[key]; return acc; }, {}),
+    waste: mapped.residue && typeof mapped.residue.percent === "number" ? Math.max(0, Math.min(100, Math.round(mapped.residue.percent))) : null,
+    percent: typeof mapped.percent === "number" ? Math.max(0, Math.min(100, Math.round(mapped.percent))) : null
+  });
+}
+
+function appBragaPrinterCompareKeyFromPayload(payload = {}) {
+  return appBragaPrinterCompareKeyFromData(payload);
+}
+
 async function syncPrinterInfoToFirebase(ip, info) {
   const cleanIp = normalizePrinterIp(ip);
   if (!cleanIp || !db || !db.collection || !hasUsablePrinterInfo(info)) return false;
 
   const payload = buildPrinterFirebasePayload(cleanIp, info);
-  const compareKey = JSON.stringify({
-    ip: payload.ip,
-    toner: payload.toner || null,
-    waste: typeof payload.waste === "number" ? payload.waste : null,
-    percent: typeof payload.percent === "number" ? payload.percent : null
-  });
+  const compareKey = appBragaPrinterCompareKeyFromPayload(payload);
 
+  // v1.58.17: o Dashboard/Electron estava a escrever novamente os mesmos valores
+  // em cada leitura. Mesmo sem mudança real, isso podia acordar as Functions e repetir
+  // notificações nos outros dispositivos. Agora só escreve na Firebase quando toner/
+  // resíduo/percentagem mudam mesmo.
   if (printerFirebaseSyncState[cleanIp] === compareKey) return true;
+
+  try {
+    const existingSnap = await db.collection("printers").doc(cleanIp).get();
+    if (existingSnap.exists) {
+      const existingData = { firebaseId: existingSnap.id, ...existingSnap.data(), ip: cleanIp };
+      const existingKey = appBragaPrinterCompareKeyFromData(existingData);
+      printerFirebaseState[cleanIp] = Object.assign({}, existingData);
+      tonerInfoState[cleanIp] = mapFirebasePrinterInfo(existingData);
+      printerFirebaseSyncState[cleanIp] = existingKey;
+      if (existingKey === compareKey) return true;
+    }
+  } catch (error) {
+    console.warn("Nao foi possivel comparar impressora antes de sincronizar:", cleanIp, error);
+  }
 
   await db.collection("printers").doc(cleanIp).set(payload, { merge: true });
   printerFirebaseSyncState[cleanIp] = compareKey;
