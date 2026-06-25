@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.58.17";
+const APP_VERSION = "1.58.18";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "";
@@ -871,6 +871,20 @@ async function disponivel() {
     });
 
     const ref = await database.collection("stock").add(payload);
+
+    // v1.58.18: a etiqueta da página Etiquetas deve ficar guardada
+    // sempre que o toner é adicionado ao stock. Não depende da geração/download
+    // do Word, porque o browser pode bloquear ou falhar essa parte.
+    const etiquetaPayload = {
+      ...payload,
+      stockDocId: ref.id,
+      origem: "adicionar-toner",
+      dataScan: payload.data || "",
+      dataEtiqueta: formatDatePTShared(payload.data || payload.dataFolha || "") || payload.data || "Sem Data"
+    };
+    await guardarEtiquetaPartilhada(etiquetaPayload).catch((etiquetaError) => {
+      console.warn("Toner guardado, mas a etiqueta partilhada falhou:", etiquetaError);
+    });
 
     logActivityApp("stock-add", "Toner adicionado", `${id} - ${eq} - ${corValue}`, {
       idInterno: id,
@@ -1942,7 +1956,7 @@ function gerarHTMLToners(info) {
 }
 
 function maybeNotifyCriticalSupply(ip, info, previousInfo = null) {
-  // v1.58.17: nao enviar notificacoes cloud/local a partir das paginas.
+  // v1.58.18: nao enviar notificacoes cloud/local a partir das paginas.
   // As notificacoes de toner passam a ser decididas uma unica vez nas Cloud Functions,
   // para evitar loops quando o Dashboard ou outra pagina faz leituras repetidas.
   return;
@@ -2050,7 +2064,7 @@ function resolveVapidPublicKeyApp(value) {
 }
 
 async function maybeNotifyTonerReplacement(ip, previousInfo, nextInfo) {
-  // v1.58.17: reposicao de toner tambem fica centralizada nas Cloud Functions.
+  // v1.58.18: reposicao de toner tambem fica centralizada nas Cloud Functions.
   return;
   if (!appNotificationState.tonerChange) return;
   const events = getTonerReplacementEventsApp(previousInfo, nextInfo);
@@ -2305,7 +2319,7 @@ function buildAlertasNotificacoesApp() {
 }
 
 async function verificarAlertasNotificacoesApp(force = false) {
-  // v1.58.17: alertas automáticos deixaram de correr no cliente.
+  // v1.58.18: alertas automáticos deixaram de correr no cliente.
   // A origem única é Cloud Functions para enviar uma só vez a todos os dispositivos.
   if (!force) return;
   const alerts = buildAlertasNotificacoesApp();
@@ -2349,7 +2363,7 @@ function canNotifyRealtimeCollectionApp(collectionKey) {
 }
 
 async function notificarAlteracaoRealtimeApp(collectionKey, snapshot) {
-  // v1.58.17: não criar notificações automáticas a partir de listeners de página.
+  // v1.58.18: não criar notificações automáticas a partir de listeners de página.
   // Listeners servem apenas para atualizar UI; notificações globais vêm das Functions.
   return;
   if (!snapshot || typeof snapshot.docChanges !== "function") return;
@@ -2396,7 +2410,7 @@ async function notificarAlteracaoRealtimeApp(collectionKey, snapshot) {
 
 function iniciarMonitorNotificacoesApp() {
   clearInterval(appNotificationTimer);
-  // v1.58.17: sem monitor automático no cliente para evitar loops no Dashboard.
+  // v1.58.18: sem monitor automático no cliente para evitar loops no Dashboard.
   // Os testes manuais continuam a funcionar; automáticas ficam nas Cloud Functions.
 }
 
@@ -6632,7 +6646,7 @@ async function syncPrinterInfoToFirebase(ip, info) {
   const payload = buildPrinterFirebasePayload(cleanIp, info);
   const compareKey = appBragaPrinterCompareKeyFromPayload(payload);
 
-  // v1.58.17: o Dashboard/Electron estava a escrever novamente os mesmos valores
+  // v1.58.18: o Dashboard/Electron estava a escrever novamente os mesmos valores
   // em cada leitura. Mesmo sem mudança real, isso podia acordar as Functions e repetir
   // notificações nos outros dispositivos. Agora só escreve na Firebase quando toner/
   // resíduo/percentagem mudam mesmo.
@@ -10038,8 +10052,30 @@ async function guardarEtiquetaPartilhada(extra = {}) {
   if (!database || !database.collection) return null;
   try {
     const payload = sanitizeFirestorePayloadAppBraga(montarPayloadEtiquetaPartilhada(extra));
-    const ref = await database.collection("etiquetasWord").add(payload);
-    return { idDoc: ref.id, ...payload };
+    const codigo = String(payload.codigoEtiqueta || extra.codigoEtiqueta || "").trim().toUpperCase();
+
+    // v1.58.18: evitar duplicados. Ao adicionar toner, a etiqueta é guardada
+    // logo na coleção etiquetasWord; se o Word também for gerado a seguir,
+    // atualiza a mesma etiqueta em vez de criar outra.
+    if (codigo) {
+      const existing = await database.collection("etiquetasWord").where("codigoEtiqueta", "==", codigo).limit(1).get();
+      if (!existing.empty) {
+        const doc = existing.docs[0];
+        await database.collection("etiquetasWord").doc(doc.id).set({
+          ...payload,
+          codigoEtiqueta: codigo,
+          updatedAt: Date.now()
+        }, { merge: true });
+        return { idDoc: doc.id, ...payload, codigoEtiqueta: codigo };
+      }
+    }
+
+    const ref = await database.collection("etiquetasWord").add({
+      ...payload,
+      codigoEtiqueta: codigo || payload.codigoEtiqueta || "",
+      created: payload.created || Date.now()
+    });
+    return { idDoc: ref.id, ...payload, codigoEtiqueta: codigo || payload.codigoEtiqueta || "" };
   } catch (e) {
     console.error("Erro ao guardar etiqueta partilhada:", e);
     return null;

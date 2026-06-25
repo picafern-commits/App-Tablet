@@ -1,5 +1,5 @@
 {
-  "version": "1.58.17",
-  "build": "fix-dashboard-notification-loop-github-electron",
-  "updatedAt": "2026-06-23T10:00:00Z"
+  "version": "1.58.18",
+  "build": "fix-etiqueta-ao-adicionar-toner",
+  "updatedAt": "2026-06-25T13:50:00+01:00"
 }
