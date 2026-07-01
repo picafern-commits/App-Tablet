@@ -1,28 +1,16 @@
 {
-  "functions": [
-    {
-      "source": "functions",
-      "codebase": "default",
-      "runtime": "nodejs22"
-    }
-  ],
-  "hosting": {
-    "public": ".",
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs20",
     "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**",
-      "functions/**"
-    ],
-    "rewrites": [
-      {
-        "source": "/",
-        "destination": "/html/index.html"
-      },
-      {
-        "source": "**",
-        "destination": "/html/index.html"
-      }
+      "node_modules",
+      ".git",
+      "firebase-debug.log",
+      "firebase-debug.*.log",
+      "*.local"
     ]
+  },
+  "firestore": {
+    "rules": "firestore.rules"
   }
 }
