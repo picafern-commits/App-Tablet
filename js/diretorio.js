@@ -1,5 +1,6 @@
-// ===== DIRETORIO TELEFONICO APP BRAGA V1.33.3 - ARMAZEM > SECCAO + ENCODING FIX =====
+// ===== DIRETORIO TELEFONICO APP BRAGA V1.35.9 - DIRETORIO FIX DISPLAY + IMPORT =====
 (function(){
+  const $ = (id) => document.getElementById(id);
   const COLLECTION = 'diretorioTelefonico';
   let contactos = [];
   let contactoEditId = null;
