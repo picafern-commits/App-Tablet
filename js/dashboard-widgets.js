@@ -1,6 +1,6 @@
 (function(){
   'use strict';
-  const VERSION='1.58.18';
+  const VERSION='1.58.19';
   const LS_KEY='appBragaDashboardLayout.v2';
   const widgetDefs={
     metrics:{title:'Contadores',emoji:'📊',subtitle:'Resumo rápido da app',w:12,h:2},
