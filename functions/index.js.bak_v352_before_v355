@@ -11,7 +11,6 @@ const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { onDocumentCreated, onDocumentWritten } = require("firebase-functions/v2/firestore");
 const logger = require("firebase-functions/logger");
 const FOOTBALL_DATA_KNOCKOUT_MANUAL_ONLY_V341 = true;
-const KNOCKOUT_MANUAL_VAULT_DOC_V355 = "settings/knockoutManual";
 setGlobalOptions({ region: "europe-west1", maxInstances: 10 });
 
 const db = getFirestore();
@@ -399,30 +398,6 @@ exports.notifyKnockoutUpdated = onDocumentWritten("settings/main", async event =
     }
   }));
   logger.info("Notificacoes da fase final enviadas", { sent });
-});
-
-exports.notifyKnockoutManualVaultUpdatedV355 = onDocumentWritten(KNOCKOUT_MANUAL_VAULT_DOC_V355, async event => {
-  const before = event.data?.before?.data() || {};
-  const after = event.data?.after?.data() || {};
-  if (!after.knockout || knockoutSignal(before) === knockoutSignal(after)) return;
-
-  const title = "Fase final atualizada";
-  const body = "A Fase Final manual foi guardada no cofre protegido.";
-  const tokens = await loadEnabledTokens({ pref: "knockout", excludeUid: after.updatedBy || "" });
-
-  const sent = await sendTokenNotifications(tokens, () => ({
-    notification: { title, body },
-    data: {
-      type: "knockout",
-      id: "settings-knockoutManual",
-      uid: cleanString(after.updatedBy),
-      title,
-      body,
-      tag: "mundial-knockout-manual-vault-updated",
-      url: notificationUrl("knockout", "knockout")
-    }
-  }));
-  logger.info("Notificacoes do cofre manual da fase final enviadas", { sent });
 });
 
 exports.notifyTestNotification = onDocumentCreated("notificationTests/{testId}", async event => {
