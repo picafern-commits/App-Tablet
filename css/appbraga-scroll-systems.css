@@ -1,0 +1,352 @@
+/* AppBraga v1.58.120 — Scroll + validação visual das páginas novas
+   Carregado por último para impedir que CSS antigo bloqueie o scroll.
+   Não altera sistemas, Firebase, botões ou lógica das páginas. */
+html{
+  height:auto!important;
+  min-height:100%!important;
+  max-height:none!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  scroll-behavior:auto;
+}
+body.radios-futurista-page,
+body.pistolas-ck65-page,
+body.computadores-futurista-page,
+body.tarefas-futurista-page,
+body.informacoes-futurista-page,
+body.portas-rede-page,
+body.users-futurista-page,
+body.scanner-ia-page{
+  height:auto!important;
+  min-height:100vh!important;
+  max-height:none!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  overscroll-behavior-y:auto!important;
+  touch-action:pan-y!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+body.radios-futurista-page .ck-page,
+body.pistolas-ck65-page .ck-page,
+body.computadores-futurista-page .ck-page,
+body.informacoes-futurista-page .ck-page,
+body.portas-rede-page .ck-page,
+body.users-futurista-page .ck-page,
+body.scanner-ia-page .ck-page,
+body.tarefas-futurista-page .imp-page,
+body.tarefas-futurista-page .tasks-page{
+  height:auto!important;
+  min-height:100vh!important;
+  max-height:none!important;
+  overflow:visible!important;
+  padding-bottom:92px!important;
+}
+body.radios-futurista-page .ck-main,
+body.pistolas-ck65-page .ck-main,
+body.computadores-futurista-page .ck-main,
+body.informacoes-futurista-page .ck-main,
+body.portas-rede-page .ck-main,
+body.users-futurista-page .ck-main,
+body.scanner-ia-page .ck-main,
+body.scanner-ia-page .scanner-main,
+body.tarefas-futurista-page .imp-main-grid,
+body.tarefas-futurista-page .tasks-main-grid{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  align-items:start!important;
+}
+body.radios-futurista-page .ck-panel,
+body.pistolas-ck65-page .ck-panel,
+body.computadores-futurista-page .ck-panel,
+body.informacoes-futurista-page .ck-panel,
+body.portas-rede-page .ck-panel,
+body.users-futurista-page .ck-panel,
+body.scanner-ia-page .ck-panel,
+body.tarefas-futurista-page .imp-panel{
+  min-height:0!important;
+}
+body.radios-futurista-page .ck-table-wrap,
+body.pistolas-ck65-page .ck-table-wrap,
+body.computadores-futurista-page .ck-table-wrap,
+body.informacoes-futurista-page .ck-table-wrap,
+body.portas-rede-page .ck-table-wrap,
+body.users-futurista-page .ck-table-wrap,
+body.scanner-ia-page .ck-table-wrap,
+body.scanner-ia-page .scanner-table-wrap,
+body.tarefas-futurista-page .imp-table-wrap,
+body.tarefas-futurista-page .tasks-table-wrap{
+  max-height:none!important;
+  overflow-x:auto!important;
+  overflow-y:visible!important;
+}
+body.tarefas-futurista-page .tasks-mobile-list{
+  max-height:none!important;
+  overflow:visible!important;
+}
+body.radios-futurista-page .ck-side,
+body.pistolas-ck65-page .ck-side,
+body.computadores-futurista-page .ck-side,
+body.informacoes-futurista-page .ck-side,
+body.portas-rede-page .ck-side,
+body.users-futurista-page .ck-side,
+body.scanner-ia-page .ck-side,
+body.scanner-ia-page .scanner-side,
+body.tarefas-futurista-page .imp-side,
+body.tarefas-futurista-page .tasks-side{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+}
+body.radios-futurista-page .ck-version,
+body.pistolas-ck65-page .ck-version,
+body.computadores-futurista-page .ck-version,
+body.informacoes-futurista-page .ck-version,
+body.portas-rede-page .ck-version,
+body.users-futurista-page .ck-version,
+body.scanner-ia-page .ck-version,
+body.tarefas-futurista-page .tasks-version{
+  z-index:80!important;
+}
+/* mantém o botão Portal visível sem prender a página */
+body.radios-futurista-page .ck-back,
+body.pistolas-ck65-page .ck-back,
+body.computadores-futurista-page .ck-back,
+body.informacoes-futurista-page .ck-back,
+body.portas-rede-page .ck-back,
+body.users-futurista-page .ck-back,
+body.scanner-ia-page .ck-back,
+body.tarefas-futurista-page .ck-back{
+  z-index:85!important;
+}
+/* modais continuam com scroll próprio quando passam a altura do ecrã */
+body.radios-futurista-page .ck-modal-card,
+body.pistolas-ck65-page .ck-modal-card,
+body.computadores-futurista-page .ck-modal-card,
+body.informacoes-futurista-page .ck-modal-card,
+body.portas-rede-page .ck-modal-card,
+body.users-futurista-page .ck-modal-card,
+body.scanner-ia-page .ck-modal-card,
+body.tarefas-futurista-page .tasks-modal-card{
+  max-height:calc(100dvh - 36px)!important;
+  overflow:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+@media(max-width:900px){
+  body.radios-futurista-page .ck-page,
+  body.pistolas-ck65-page .ck-page,
+  body.computadores-futurista-page .ck-page,
+  body.informacoes-futurista-page .ck-page,
+  body.scanner-ia-page .ck-page,
+  body.tarefas-futurista-page .imp-page,
+  body.tarefas-futurista-page .tasks-page{
+    padding-bottom:104px!important;
+  }
+}
+/* v1.58.120 — Users: scroll reforçado */
+body.users-futurista-page .ck-page{height:auto!important;min-height:100vh!important;max-height:none!important;overflow:visible!important;padding-bottom:104px!important;}
+body.users-futurista-page .ck-main{height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;align-items:start!important;}
+body.users-futurista-page .ck-table-wrap{max-height:none!important;overflow-x:auto!important;overflow-y:visible!important;}
+body.users-futurista-page .ck-side{height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;}
+
+
+/* v1.58.120 — Diretório incluído no scroll global das páginas novas */
+body.diretorio-futurista-page{
+  height:auto!important;min-height:100vh!important;max-height:none!important;
+  overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior-y:auto!important;
+  touch-action:pan-y!important;-webkit-overflow-scrolling:touch!important;
+}
+body.diretorio-futurista-page .ck-page{
+  height:auto!important;min-height:100vh!important;max-height:none!important;overflow:visible!important;padding-bottom:104px!important;
+}
+body.diretorio-futurista-page .ck-main{
+  height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;align-items:start!important;
+}
+body.diretorio-futurista-page .ck-table-wrap{
+  max-height:none!important;overflow-x:auto!important;overflow-y:visible!important;
+}
+body.diretorio-futurista-page .ck-side{
+  height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;
+}
+body.diretorio-futurista-page .ck-modal-card{
+  max-height:calc(100dvh - 36px)!important;overflow:auto!important;-webkit-overflow-scrolling:touch!important;
+}
+body.diretorio-futurista-page .ck-version,
+body.diretorio-futurista-page .ck-back{z-index:85!important;}
+
+
+/* AppBraga v1.58.120 — Equipas Semanais: scroll reforçado */
+body.equipas-futurista-page{height:auto!important;min-height:100vh!important;max-height:none!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior-y:auto!important;touch-action:pan-y!important;-webkit-overflow-scrolling:touch!important;}
+body.equipas-futurista-page .ck-page{height:auto!important;min-height:100vh!important;max-height:none!important;overflow:visible!important;padding-bottom:104px!important;}
+body.equipas-futurista-page .ck-main{height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;align-items:start!important;}
+body.equipas-futurista-page .ck-table-wrap{max-height:none!important;overflow-x:auto!important;overflow-y:visible!important;}
+body.equipas-futurista-page .ck-side{height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;}
+body.equipas-futurista-page .ck-modal-card{max-height:calc(100dvh - 36px)!important;overflow:auto!important;-webkit-overflow-scrolling:touch!important;}
+body.equipas-futurista-page .ck-version,body.equipas-futurista-page .ck-back{z-index:85!important;}
+
+
+/* AppBraga v1.58.127 — Scanner IA: scroll blindado */
+body.scanner-ia-page{
+  position:static!important;
+  height:auto!important;
+  min-height:100vh!important;
+  max-height:none!important;
+  overflow-y:auto!important;
+  overflow-x:auto!important;
+  overscroll-behavior-y:auto!important;
+  touch-action:pan-y!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+body.scanner-ia-page .ck-page{
+  position:relative!important;
+  height:auto!important;
+  min-height:100vh!important;
+  max-height:none!important;
+  overflow:visible!important;
+  padding-bottom:132px!important;
+}
+body.scanner-ia-page .scanner-main,
+body.scanner-ia-page .scanner-left,
+body.scanner-ia-page .scanner-side{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+}
+body.scanner-ia-page .scanner-upload-panel,
+body.scanner-ia-page .scanner-list-panel,
+body.scanner-ia-page .ck-panel{
+  height:auto!important;
+  max-height:none!important;
+}
+body.scanner-ia-page .scanner-table-wrap{
+  max-height:none!important;
+  overflow-x:auto!important;
+  overflow-y:visible!important;
+}
+body.scanner-ia-page .scanner-preview-frame,
+body.scanner-ia-page .scanner-result-box{
+  max-height:none!important;
+}
+
+/* v1.58.130 — Diagnóstico incluído no scroll global */
+body.diagnostico-futurista-page{height:auto!important;min-height:100vh!important;max-height:none!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior-y:auto!important;touch-action:pan-y!important;-webkit-overflow-scrolling:touch!important;}
+body.diagnostico-futurista-page .ck-page{height:auto!important;min-height:100vh!important;max-height:none!important;overflow:visible!important;padding-bottom:104px!important;}
+body.diagnostico-futurista-page .ck-main{height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;align-items:start!important;}
+body.diagnostico-futurista-page .ck-table-wrap{max-height:none!important;overflow-x:auto!important;overflow-y:visible!important;}
+body.diagnostico-futurista-page .ck-side{height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;}
+body.diagnostico-futurista-page .ck-modal-card{max-height:calc(100dvh - 36px)!important;overflow:auto!important;-webkit-overflow-scrolling:touch!important;}
+body.diagnostico-futurista-page .ck-version,body.diagnostico-futurista-page .ck-back{z-index:85!important;}
+
+/* v1.58.130 Notificações */
+body.notificacoes-futurista-page{overflow-x:auto!important;overflow-y:auto!important;min-height:100vh!important;}
+body.notificacoes-futurista-page .ck-page, body.notificacoes-futurista-page .ck-main, body.notificacoes-futurista-page .not-left, body.notificacoes-futurista-page .not-side{overflow:visible!important;}
+body.notificacoes-futurista-page .ck-table-wrap{overflow:auto!important;}
+
+
+/* AppBraga v1.58.130 — Notificações: scroll final blindado
+   Este bloco fica no fim e é carregado depois do CSS de escala fixa. */
+html:has(body.notificacoes-futurista-page),
+body.notificacoes-futurista-page{
+  position:static!important;
+  height:auto!important;
+  min-height:100vh!important;
+  max-height:none!important;
+  overflow-y:auto!important;
+  overflow-x:auto!important;
+  overscroll-behavior-y:auto!important;
+  touch-action:pan-y!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+body.notificacoes-futurista-page .ck-page{
+  position:relative!important;
+  display:block!important;
+  height:auto!important;
+  min-height:100vh!important;
+  max-height:none!important;
+  overflow:visible!important;
+  padding-bottom:140px!important;
+}
+body.notificacoes-futurista-page .ck-main,
+body.notificacoes-futurista-page .not-left,
+body.notificacoes-futurista-page .not-side,
+body.notificacoes-futurista-page .ck-panel,
+body.notificacoes-futurista-page .not-compose-panel,
+body.notificacoes-futurista-page .not-list-panel{
+  position:relative!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+}
+body.notificacoes-futurista-page .ck-table-wrap{
+  max-height:none!important;
+  overflow-x:auto!important;
+  overflow-y:visible!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+body.notificacoes-futurista-page .ck-modal-card{
+  max-height:calc(100dvh - 36px)!important;
+  overflow:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+body.notificacoes-futurista-page .ck-version,
+body.notificacoes-futurista-page .ck-back{
+  z-index:90!important;
+}
+
+/* v1.58.132 — Configurações incluídas no scroll global */
+body.configuracoes-futurista-page{position:static!important;height:auto!important;min-height:100vh!important;max-height:none!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior-y:auto!important;touch-action:pan-y!important;-webkit-overflow-scrolling:touch!important;}
+body.configuracoes-futurista-page .ck-page{position:relative!important;height:auto!important;min-height:100vh!important;max-height:none!important;overflow:visible!important;padding-bottom:132px!important;}
+body.configuracoes-futurista-page .ck-main,body.configuracoes-futurista-page .cfg-main,body.configuracoes-futurista-page .cfg-left,body.configuracoes-futurista-page .cfg-side{height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;align-items:start!important;}
+body.configuracoes-futurista-page .ck-panel{min-height:0!important;max-height:none!important;overflow:visible!important;}
+body.configuracoes-futurista-page .ck-modal-card{max-height:calc(100dvh - 36px)!important;overflow:auto!important;-webkit-overflow-scrolling:touch!important;}
+body.configuracoes-futurista-page .ck-version,body.configuracoes-futurista-page .ck-back{z-index:85!important;}
+
+/* AppBraga v1.58.133 — scroll global seguro em todas as páginas do visual novo */
+html, body{
+  height:auto !important;
+  min-height:100% !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+}
+body.add-toner-futurista,
+body.dashboard-futurista-body,
+body.configuracoes-futurista-page,
+body.diagnostico-futurista-page,
+body.notificacoes-futurista-page,
+body.portas-rede-page,
+body.scanner-ia-page,
+body.stock-futurista,
+body.historico-futurista,
+body.etiquetas-futurista,
+body.manutencao-futurista,
+body.users-futurista-page,
+body.diretorio-futurista-page,
+body.equipas-futurista-page,
+body.radios-futurista-page,
+body.computadores-futurista-page,
+body.tarefas-futurista-page,
+body.informacoes-futurista-page,
+body.pistolas-ck65-page,
+body.impressoras-futurista{
+  position:relative !important;
+  min-height:100vh !important;
+  height:auto !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+}
+.ck-page,.imp-page,.tasks-page,.users-page,.eq-page,.cfg-page,.scan-page,.diag-page,.not-page,.dir-page{
+  min-height:100vh !important;
+  height:auto !important;
+  overflow:visible !important;
+}
+.ck-main,.imp-main-grid,.tasks-main-grid,.cfg-main,.scan-main,.diag-main,.not-main{
+  overflow:visible !important;
+  min-height:0 !important;
+}
+.ck-panel,.imp-panel,.cfg-panel,.scan-panel,.diag-panel,.not-panel{
+  overflow:visible !important;
+}

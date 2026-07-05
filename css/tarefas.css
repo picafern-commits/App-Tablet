@@ -1,0 +1,619 @@
+
+/* AppBraga v1.58.108 - Tarefas futurista integrada no padrão Impressoras */
+html, body{
+  min-height:100%;
+  overflow:auto !important;
+}
+body.tarefas-futurista-page{
+  background:
+    radial-gradient(circle at 18% 7%, rgba(37,99,235,.20), transparent 24rem),
+    radial-gradient(circle at 86% 8%, rgba(20,184,166,.13), transparent 28rem),
+    linear-gradient(135deg,#020817 0%,#051022 48%,#020611 100%) !important;
+  color:#f8fbff;
+}
+body.tarefas-futurista-page::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  opacity:.35;
+  background-image:
+    linear-gradient(rgba(59,130,246,.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59,130,246,.16) 1px, transparent 1px);
+  background-size:64px 64px;
+  mask-image:linear-gradient(to bottom, rgba(0,0,0,.85), rgba(0,0,0,.25));
+  z-index:0;
+}
+.tasks-page{position:relative; z-index:1; padding-bottom:72px; min-height:100vh;}
+.tasks-version{
+  position:fixed; top:18px; right:22px; z-index:10;
+  border:1px solid rgba(59,130,246,.55); border-radius:999px;
+  background:rgba(5,18,40,.82); color:#dbeafe; padding:7px 14px;
+  font-size:12px; font-weight:900; box-shadow:0 0 18px rgba(37,99,235,.22);
+}
+.tasks-kpis .imp-kpi{cursor:pointer;}
+.tasks-kpis .imp-kpi:focus-visible,.tasks-kpis .imp-kpi:hover{transform:translateY(-1px); border-color:rgba(56,189,248,.72);}
+.tasks-main-grid{align-items:start;}
+.tasks-list-panel{min-width:0;}
+.tasks-search-row{grid-template-columns:minmax(220px,1fr) 180px 190px auto;}
+.tasks-table-wrap{overflow-x:auto;}
+.tasks-table{min-width:1050px;}
+.tasks-table th:nth-child(1){width:220px;}
+.tasks-table th:nth-child(2){width:260px;}
+.tasks-table th:nth-child(3){width:145px;}
+.tasks-table th:nth-child(4),.tasks-table th:nth-child(5){width:130px;}
+.tasks-table th:nth-child(6),.tasks-table th:nth-child(7){width:130px;}
+.tasks-table th:nth-child(8){width:105px;}
+.tasks-title-cell{display:flex;gap:12px;align-items:flex-start;}
+.tasks-check{
+  width:18px;height:18px;border-radius:5px;border:2px solid rgba(148,163,184,.75);
+  background:rgba(15,23,42,.8); margin-top:2px; flex:0 0 auto; cursor:pointer;
+}
+.tasks-check.is-done{border-color:#22c55e;background:#22c55e;box-shadow:0 0 16px rgba(34,197,94,.32);}
+.tasks-name{display:grid;gap:5px;}
+.tasks-name strong{color:#f8fbff;font-size:15px;}
+.tasks-name small{font-size:11px;color:#93c5fd;}
+.tasks-description{color:#dbeafe;line-height:1.35;max-width:285px;}
+.tasks-owner{display:inline-flex;align-items:center;gap:7px;color:#eff6ff;font-weight:800;}
+.tasks-owner::before{content:"👤";font-size:12px;filter:saturate(.9);}
+.tasks-tag{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  min-width:82px; padding:7px 10px; border-radius:9px;
+  font-size:12px; font-weight:950; border:1px solid rgba(148,163,184,.25);
+  background:rgba(15,23,42,.78); white-space:nowrap;
+}
+.tasks-prio-alta{color:#ff6b6b;border-color:rgba(239,68,68,.55);background:rgba(127,29,29,.22);}
+.tasks-prio-media{color:#facc15;border-color:rgba(234,179,8,.55);background:rgba(113,63,18,.24);}
+.tasks-prio-baixa{color:#4ade80;border-color:rgba(34,197,94,.45);background:rgba(20,83,45,.24);}
+.tasks-prio-sem{color:#cbd5e1;border-color:rgba(148,163,184,.28);}
+.tasks-state-pendente{color:#38bdf8;border-color:rgba(14,165,233,.5);background:rgba(12,74,110,.22);}
+.tasks-state-progresso{color:#fbbf24;border-color:rgba(245,158,11,.55);background:rgba(120,53,15,.22);}
+.tasks-state-concluida{color:#4ade80;border-color:rgba(34,197,94,.52);background:rgba(20,83,45,.22);}
+.tasks-state-vencida{color:#fb7185;border-color:rgba(244,63,94,.55);background:rgba(136,19,55,.22);}
+.tasks-date{display:grid;gap:3px;color:#f8fafc;}
+.tasks-date small{font-weight:850;color:#93c5fd;}
+.tasks-date small.danger{color:#fb7185;}
+.tasks-date small.ok{color:#4ade80;}
+.tasks-actions{display:flex;gap:7px;align-items:center;}
+.tasks-icon-btn{
+  width:34px;height:34px;border:1px solid rgba(59,130,246,.45);border-radius:9px;
+  background:linear-gradient(180deg,rgba(17,38,80,.92),rgba(4,12,28,.92));
+  color:#e0f2fe;font-weight:950;cursor:pointer;
+}
+.tasks-icon-btn:hover{background:rgba(14,165,233,.24);}
+.tasks-icon-btn.delete{border-color:rgba(248,113,113,.45);color:#fecaca;}
+.tasks-mobile-list{display:none;}
+.tasks-footer{border-top:1px solid rgba(59,130,246,.18);padding-top:14px;}
+.tasks-side .imp-panel{overflow:hidden;}
+.tasks-quick-grid{grid-template-columns:1fr 1fr;}
+.tasks-quick-grid .primary{grid-column:1/-1;}
+.tasks-quick-grid button:last-child{grid-column:1/-1;}
+.tasks-priority-summary{display:grid;grid-template-columns:132px 1fr;gap:18px;align-items:center;padding:8px 2px 2px;}
+.tasks-donut{
+  width:124px;height:124px;border-radius:50%;
+  background:conic-gradient(#ef4444 0 0deg,#fbbf24 0 0deg,#22c55e 0 0deg,#94a3b8 0 360deg);
+  position:relative;box-shadow:0 0 24px rgba(14,165,233,.13), inset 0 0 0 1px rgba(255,255,255,.1);
+}
+.tasks-donut::after{
+  content:"";position:absolute;inset:32px;border-radius:50%;
+  background:linear-gradient(135deg,#06122a,#020817);border:1px solid rgba(59,130,246,.28);
+}
+.tasks-priority-legend{display:grid;gap:10px;}
+.tasks-legend-row{display:grid;grid-template-columns:16px 1fr auto;gap:9px;align-items:center;font-size:14px;color:#e5efff;}
+.tasks-dot{width:12px;height:12px;border-radius:999px;box-shadow:0 0 12px currentColor;}
+.tasks-dot.alta{background:#ef4444;color:#ef4444;}.tasks-dot.media{background:#fbbf24;color:#fbbf24;}.tasks-dot.baixa{background:#22c55e;color:#22c55e;}.tasks-dot.sem{background:#94a3b8;color:#94a3b8;}
+.tasks-side-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start;padding:12px 0;border-bottom:1px solid rgba(59,130,246,.13);}
+.tasks-side-row:last-child{border-bottom:0;}
+.tasks-side-row strong{display:block;color:#f8fbff;font-size:14px;margin-bottom:4px;}
+.tasks-side-row small{display:block;color:#9db5d6;line-height:1.35;}
+.tasks-side-date{color:#fb7185;font-weight:950;text-align:right;white-space:nowrap;}
+.tasks-side-date.ok{color:#38bdf8;}
+.tasks-empty{color:#9db5d6;padding:12px 0;font-size:13px;}
+.tasks-modal{
+  position:fixed;inset:0;background:rgba(1,5,14,.74);backdrop-filter:blur(12px);
+  display:none;align-items:center;justify-content:center;z-index:9999;padding:24px;
+}
+.tasks-modal.is-open{display:flex;}
+.tasks-modal-card{
+  width:min(780px,96vw);max-height:90vh;overflow:auto;border-radius:22px;
+  border:1px solid rgba(59,130,246,.42);
+  background:linear-gradient(145deg,rgba(10,26,56,.98),rgba(3,10,24,.98));
+  box-shadow:0 28px 90px rgba(0,0,0,.58),0 0 40px rgba(37,99,235,.18);
+  padding:20px;
+}
+.tasks-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;border-bottom:1px solid rgba(59,130,246,.16);padding-bottom:14px;margin-bottom:16px;}
+.tasks-modal-head h3{margin:0;font-size:22px;}.tasks-modal-head p{margin:4px 0 0;color:#9db5d6;}
+.tasks-form{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.tasks-form label{display:grid;gap:7px;color:#c7d2fe;font-weight:850;font-size:12px;}
+.tasks-form input,.tasks-form select,.tasks-form textarea{
+  border:1px solid rgba(59,130,246,.28);border-radius:12px;background:rgba(2,8,23,.74);
+  color:#f8fafc;padding:12px 13px;outline:none;font:inherit;
+}
+.tasks-form input:focus,.tasks-form select:focus,.tasks-form textarea:focus{border-color:#38bdf8;box-shadow:0 0 0 3px rgba(14,165,233,.14);}
+.tasks-form-wide{grid-column:1/-1;}
+.tasks-form-actions{grid-column:1/-1;display:flex;justify-content:flex-end;gap:10px;margin-top:4px;}
+@media (max-width: 1100px){
+  .tasks-search-row{grid-template-columns:1fr 1fr;}
+  .tasks-main-grid{grid-template-columns:1fr;}
+  .tasks-side{grid-row:auto;}
+}
+@media (max-width: 760px){
+  .tasks-version{top:10px;right:10px;font-size:11px;padding:6px 10px;}
+  .tasks-search-row{grid-template-columns:1fr;}
+  .tasks-table-wrap{display:none;}
+  .tasks-mobile-list{display:grid;gap:10px;padding:12px;}
+  .tasks-mobile-card{border:1px solid rgba(59,130,246,.22);border-radius:14px;background:rgba(5,18,40,.72);padding:14px;display:grid;gap:10px;}
+  .tasks-mobile-card-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;}
+  .tasks-mobile-card h3{margin:0;font-size:16px;}.tasks-mobile-card p{margin:0;color:#cbd5e1;line-height:1.35;}
+  .tasks-mobile-meta{display:flex;flex-wrap:wrap;gap:8px;}
+  .tasks-actions{justify-content:flex-end;}
+  .tasks-priority-summary{grid-template-columns:1fr;justify-items:center;}
+  .tasks-form{grid-template-columns:1fr;}
+}
+
+
+/* AppBraga v1.58.108 — alinhamento final da página Tarefas
+   Mantém a lógica v1.58.108 e corrige apenas layout, ícones, botões e footer. */
+body.tarefas-futurista-page{
+  overflow-x:hidden !important;
+}
+body.tarefas-futurista-page .imp-page.tasks-page{
+  width:100vw !important;
+  max-width:none !important;
+  margin:0 !important;
+  padding:22px clamp(16px, 1.6vw, 34px) 96px !important;
+  overflow:visible !important;
+}
+body.tarefas-futurista-page .imp-kpis.tasks-kpis{
+  width:100% !important;
+  max-width:none !important;
+  display:grid !important;
+  grid-template-columns:repeat(6,minmax(150px,1fr)) !important;
+  gap:14px !important;
+  margin:0 0 14px !important;
+}
+body.tarefas-futurista-page .imp-kpi{
+  min-height:100px !important;
+  padding:18px 20px !important;
+  align-items:center !important;
+}
+body.tarefas-futurista-page .imp-main-grid.tasks-main-grid{
+  width:100% !important;
+  max-width:none !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,2.05fr) minmax(390px,.95fr) !important;
+  gap:14px !important;
+  align-items:start !important;
+}
+body.tarefas-futurista-page .tasks-list-panel,
+body.tarefas-futurista-page .tasks-side,
+body.tarefas-futurista-page .imp-panel{
+  min-width:0 !important;
+}
+body.tarefas-futurista-page .imp-panel-head{
+  display:flex !important;
+  justify-content:space-between !important;
+  align-items:flex-start !important;
+  gap:14px !important;
+  padding:16px 20px 12px !important;
+}
+body.tarefas-futurista-page .imp-panel-title{
+  display:flex !important;
+  align-items:flex-start !important;
+  gap:12px !important;
+  min-width:0 !important;
+}
+body.tarefas-futurista-page .imp-panel-title > span{
+  width:38px !important;
+  height:38px !important;
+  min-width:38px !important;
+  border-radius:12px !important;
+  display:grid !important;
+  place-items:center !important;
+  padding:0 !important;
+  font-size:1.25rem !important;
+  line-height:1 !important;
+  background:linear-gradient(145deg,rgba(31,111,255,.52),rgba(5,18,37,.72)) !important;
+  border:1px solid rgba(77,151,255,.28) !important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.04),0 0 18px rgba(37,99,235,.18) !important;
+}
+body.tarefas-futurista-page .imp-panel-title h2,
+body.tarefas-futurista-page .imp-panel-title h3{
+  margin:0 !important;
+  line-height:1.1 !important;
+}
+body.tarefas-futurista-page .imp-panel-title p{
+  margin:4px 0 0 !important;
+  color:#9ab3d8 !important;
+  line-height:1.25 !important;
+}
+body.tarefas-futurista-page .tasks-search-row{
+  display:grid !important;
+  grid-template-columns:minmax(220px,1fr) 180px 190px auto !important;
+  gap:10px !important;
+  align-items:center !important;
+  min-width:620px !important;
+  margin-left:auto !important;
+}
+body.tarefas-futurista-page .tasks-search-row input,
+body.tarefas-futurista-page .tasks-search-row select,
+body.tarefas-futurista-page .tasks-search-row .imp-btn{
+  height:42px !important;
+  min-height:42px !important;
+  max-height:42px !important;
+  border-radius:10px !important;
+  font-size:.92rem !important;
+}
+body.tarefas-futurista-page .imp-table-wrap.tasks-table-wrap{
+  width:100% !important;
+  padding:0 16px 14px !important;
+  overflow-x:auto !important;
+  overflow-y:visible !important;
+  max-height:none !important;
+}
+body.tarefas-futurista-page table.tasks-table{
+  width:100% !important;
+  min-width:1120px !important;
+  border-collapse:separate !important;
+  border-spacing:0 !important;
+}
+body.tarefas-futurista-page .tasks-table thead th{
+  padding:12px 10px !important;
+  vertical-align:middle !important;
+  white-space:nowrap !important;
+}
+body.tarefas-futurista-page .tasks-table tbody td{
+  padding:13px 10px !important;
+  vertical-align:middle !important;
+  line-height:1.25 !important;
+}
+body.tarefas-futurista-page .tasks-title-cell{
+  display:flex !important;
+  gap:12px !important;
+  align-items:center !important;
+  min-width:0 !important;
+}
+body.tarefas-futurista-page button.tasks-check{
+  appearance:none !important;
+  -webkit-appearance:none !important;
+  width:22px !important;
+  height:22px !important;
+  min-width:22px !important;
+  max-width:22px !important;
+  min-height:22px !important;
+  max-height:22px !important;
+  padding:0 !important;
+  margin:0 !important;
+  border-radius:6px !important;
+  border:2px solid rgba(148,163,184,.72) !important;
+  background:rgba(15,23,42,.78) !important;
+  box-shadow:none !important;
+  display:grid !important;
+  place-items:center !important;
+  cursor:pointer !important;
+  flex:0 0 22px !important;
+}
+body.tarefas-futurista-page button.tasks-check.is-done{
+  border-color:#22c55e !important;
+  background:#22c55e !important;
+  box-shadow:0 0 14px rgba(34,197,94,.25) !important;
+}
+body.tarefas-futurista-page button.tasks-check.is-done::after{
+  content:"✓" !important;
+  color:#052e16 !important;
+  font-size:14px !important;
+  font-weight:1000 !important;
+  line-height:1 !important;
+}
+body.tarefas-futurista-page .tasks-name strong{
+  display:block !important;
+  font-size:.96rem !important;
+  line-height:1.2 !important;
+}
+body.tarefas-futurista-page .tasks-name small{
+  display:inline-block !important;
+  margin-top:4px !important;
+  padding:3px 7px !important;
+  border-radius:7px !important;
+  background:rgba(124,58,237,.25) !important;
+  color:#c4b5fd !important;
+  font-weight:850 !important;
+  line-height:1 !important;
+}
+body.tarefas-futurista-page .tasks-owner{
+  max-width:145px !important;
+  white-space:normal !important;
+  line-height:1.25 !important;
+}
+body.tarefas-futurista-page .tasks-tag{
+  min-width:86px !important;
+  height:30px !important;
+  padding:0 10px !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+body.tarefas-futurista-page .tasks-date strong,
+body.tarefas-futurista-page .tasks-date small{
+  line-height:1.15 !important;
+}
+body.tarefas-futurista-page .tasks-actions{
+  display:flex !important;
+  justify-content:flex-end !important;
+  align-items:center !important;
+  gap:8px !important;
+  white-space:nowrap !important;
+}
+body.tarefas-futurista-page .tasks-icon-btn{
+  width:34px !important;
+  height:34px !important;
+  min-width:34px !important;
+  max-width:34px !important;
+  padding:0 !important;
+  display:grid !important;
+  place-items:center !important;
+  border-radius:9px !important;
+  font-size:14px !important;
+}
+body.tarefas-futurista-page .imp-side.tasks-side{
+  display:grid !important;
+  gap:14px !important;
+  align-content:start !important;
+}
+body.tarefas-futurista-page .tasks-quick-grid{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:10px !important;
+  padding:0 16px 16px !important;
+}
+body.tarefas-futurista-page .tasks-quick-grid .imp-btn{
+  width:100% !important;
+  min-height:42px !important;
+  height:42px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:8px !important;
+  white-space:nowrap !important;
+  text-align:center !important;
+  font-weight:950 !important;
+}
+body.tarefas-futurista-page .tasks-quick-grid .primary,
+body.tarefas-futurista-page .tasks-quick-grid button:last-child{
+  grid-column:1/-1 !important;
+}
+body.tarefas-futurista-page .tasks-priority-summary{
+  grid-template-columns:126px minmax(0,1fr) !important;
+  gap:16px !important;
+  padding:8px 16px 16px !important;
+}
+body.tarefas-futurista-page .tasks-donut{
+  width:118px !important;
+  height:118px !important;
+}
+body.tarefas-futurista-page .tasks-priority-legend{
+  gap:9px !important;
+  min-width:0 !important;
+}
+body.tarefas-futurista-page .tasks-legend-row{
+  grid-template-columns:14px minmax(0,1fr) auto !important;
+  gap:8px !important;
+  font-size:.92rem !important;
+}
+body.tarefas-futurista-page .imp-list{
+  padding:0 16px 16px !important;
+}
+body.tarefas-futurista-page .tasks-side-row{
+  padding:12px 0 !important;
+}
+body.tarefas-futurista-page .ck-table-footer.tasks-footer{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:16px !important;
+  padding:14px 16px 16px !important;
+  border-top:1px solid rgba(59,130,246,.18) !important;
+}
+body.tarefas-futurista-page .ck-footer-left,
+body.tarefas-futurista-page .ck-footer-right{
+  display:flex !important;
+  align-items:center !important;
+  gap:12px !important;
+  flex:0 0 auto !important;
+}
+body.tarefas-futurista-page .ck-page-size{
+  display:flex !important;
+  align-items:center !important;
+  gap:8px !important;
+  white-space:nowrap !important;
+  color:#eaf2ff !important;
+}
+body.tarefas-futurista-page .ck-page-size select#taskPageSize{
+  width:70px !important;
+  min-width:70px !important;
+  max-width:70px !important;
+  height:42px !important;
+  flex:0 0 70px !important;
+  border-radius:10px !important;
+  padding:0 10px !important;
+}
+body.tarefas-futurista-page .ck-pagination{
+  display:flex !important;
+  align-items:center !important;
+  gap:8px !important;
+}
+body.tarefas-futurista-page .ck-pagination button{
+  width:38px !important;
+  height:38px !important;
+  min-width:38px !important;
+  padding:0 !important;
+  border-radius:10px !important;
+  display:grid !important;
+  place-items:center !important;
+}
+body.tarefas-futurista-page .imp-back{
+  position:fixed !important;
+  left:18px !important;
+  bottom:18px !important;
+  z-index:9999 !important;
+}
+@media (max-width:1500px){
+  body.tarefas-futurista-page .imp-kpis.tasks-kpis{grid-template-columns:repeat(3,minmax(0,1fr)) !important;}
+  body.tarefas-futurista-page .imp-main-grid.tasks-main-grid{grid-template-columns:1fr !important;}
+  body.tarefas-futurista-page .imp-side.tasks-side{grid-template-columns:1fr 1fr !important;}
+}
+@media (max-width:1100px){
+  body.tarefas-futurista-page .tasks-search-row{grid-template-columns:1fr 1fr !important;min-width:0 !important;}
+  body.tarefas-futurista-page .imp-side.tasks-side{grid-template-columns:1fr !important;}
+}
+@media (max-width:760px){
+  body.tarefas-futurista-page .imp-page.tasks-page{padding:14px 14px 88px !important;}
+  body.tarefas-futurista-page .imp-kpis.tasks-kpis{grid-template-columns:1fr !important;}
+  body.tarefas-futurista-page .tasks-search-row{grid-template-columns:1fr !important;}
+  body.tarefas-futurista-page .ck-table-footer.tasks-footer{align-items:flex-start !important;flex-direction:column !important;}
+  body.tarefas-futurista-page .ck-footer-right{width:100% !important;justify-content:space-between !important;}
+  body.tarefas-futurista-page .tasks-quick-grid{grid-template-columns:1fr !important;}
+  body.tarefas-futurista-page .tasks-priority-summary{grid-template-columns:1fr !important;justify-items:center !important;}
+}
+
+
+/* AppBraga v1.58.108 — o hero fica herdado do padrão Impressoras.
+   Não aplicar overrides de .imp-hero nesta página. */
+
+
+/* v1.58.108 — HERO PADRÃO IGUAL À PÁGINA RÁDIOS */
+body.tarefas-futurista-page .ck-hero{
+  display:flex!important;
+  justify-content:center!important;
+  width:100%!important;
+  margin:4px auto 14px!important;
+  padding:0!important;
+}
+body.tarefas-futurista-page .ck-hero-inner{
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:18px!important;
+  width:min(900px,58vw)!important;
+  min-width:670px!important;
+  min-height:102px!important;
+  padding:18px 34px 18px 170px!important;
+  border-radius:20px!important;
+  box-sizing:border-box!important;
+  background:linear-gradient(90deg, rgba(8,31,66,.98), rgba(8,24,49,.92))!important;
+  border:1px solid rgba(72,143,255,.46)!important;
+  box-shadow:0 0 0 1px rgba(14,61,139,.35) inset, 0 0 24px rgba(36,120,255,.28)!important;
+  overflow:hidden!important;
+}
+body.tarefas-futurista-page .ck-hero-inner::before{
+  content:''!important;
+  position:absolute!important;
+  inset:0!important;
+  background:linear-gradient(90deg, transparent 0, rgba(42,146,255,.08) 30%, rgba(42,146,255,.03) 60%, transparent 100%),radial-gradient(circle at 82% 28%, rgba(26,151,255,.12), transparent 22%)!important;
+  pointer-events:none!important;
+}
+body.tarefas-futurista-page .ck-hero-inner::after{
+  content:''!important;
+  position:absolute!important;
+  left:50%!important;
+  bottom:0!important;
+  transform:translateX(-50%)!important;
+  width:240px!important;
+  height:3px!important;
+  background:radial-gradient(circle, rgba(69,181,255,.95), rgba(69,181,255,.15) 70%, transparent 100%)!important;
+}
+body.tarefas-futurista-page .ck-hero-home{
+  position:absolute!important;
+  width:124px!important;
+  height:124px!important;
+  min-width:124px!important;
+  min-height:124px!important;
+  left:86px!important;
+  top:50%!important;
+  transform:translate(-50%,-50%)!important;
+  border-radius:50%!important;
+  display:grid!important;
+  place-items:center!important;
+  z-index:2!important;
+  border:1px solid rgba(64,130,255,.25)!important;
+  background:transparent!important;
+  box-shadow:0 0 0 13px rgba(17,47,97,.18),0 0 0 27px rgba(17,47,97,.08)!important;
+  overflow:hidden!important;
+  text-decoration:none!important;
+}
+body.tarefas-futurista-page .ck-hero-home img{
+  width:92%!important;
+  height:92%!important;
+  object-fit:contain!important;
+  filter:drop-shadow(0 0 14px rgba(57,165,255,.35))!important;
+}
+body.tarefas-futurista-page .ck-hero-icon{
+  position:relative!important;
+  z-index:1!important;
+  width:66px!important;
+  min-width:66px!important;
+  height:66px!important;
+  min-height:66px!important;
+  border-radius:50%!important;
+  display:grid!important;
+  place-items:center!important;
+  background:radial-gradient(circle at 30% 30%, #8d4dff, #2438ff 70%)!important;
+  box-shadow:0 0 30px rgba(98,84,255,.33)!important;
+  font-size:1.9rem!important;
+  line-height:1!important;
+  flex:0 0 66px!important;
+  color:#fff!important;
+}
+body.tarefas-futurista-page .ck-hero-icon span{display:block!important;line-height:1!important;transform:none!important;}
+body.tarefas-futurista-page .ck-hero-icon::after{display:none!important;}
+body.tarefas-futurista-page .ck-hero-copy{
+  position:relative!important;
+  z-index:3!important;
+  min-width:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  text-align:left!important;
+}
+body.tarefas-futurista-page .ck-hero-copy h1{
+  margin:0 0 6px!important;
+  font-size:2.3rem!important;
+  line-height:1!important;
+  letter-spacing:-.03em!important;
+  color:#fff!important;
+}
+body.tarefas-futurista-page .ck-hero-copy p{
+  margin:0!important;
+  font-size:.96rem!important;
+  line-height:1.2!important;
+  color:#d2def2!important;
+}
+body.tarefas-futurista-page .ck-hero-inner,
+body.tarefas-futurista-page .ck-hero-home,
+body.tarefas-futurista-page .ck-hero-icon,
+body.tarefas-futurista-page .ck-hero-copy h1,
+body.tarefas-futurista-page .ck-hero-copy p{
+  transition:none!important;
+}
+@media(max-width:1500px){
+  body.tarefas-futurista-page .ck-hero-inner{
+    width:min(920px,76vw)!important;
+    min-width:0!important;
+  }
+}
+@media(max-width:900px){
+  body.tarefas-futurista-page .ck-hero-inner{
+    width:100%!important;
+    min-width:0!important;
+    display:grid!important;
+    justify-items:center!important;
+    text-align:center!important;
+    gap:12px!important;
+    padding:18px!important;
+  }
+  body.tarefas-futurista-page .ck-hero-home{display:none!important;}
+  body.tarefas-futurista-page .ck-hero-copy{align-items:center!important;text-align:center!important;}
+  body.tarefas-futurista-page .ck-hero-copy h1{font-size:2rem!important;}
+  body.tarefas-futurista-page .ck-hero-copy p{font-size:.9rem!important;}
+}

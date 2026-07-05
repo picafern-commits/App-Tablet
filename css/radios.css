@@ -1,0 +1,1182 @@
+:root{
+  --ck-bg:#030918;
+  --ck-bg2:#07142c;
+  --ck-panel:#071a35cc;
+  --ck-panel2:#0a1f41ee;
+  --ck-line:rgba(77,151,255,.28);
+  --ck-glow:rgba(49,130,255,.35);
+  --ck-text:#f2f7ff;
+  --ck-muted:#9ab3d8;
+  --ck-blue:#2a8cff;
+  --ck-cyan:#33d4ff;
+  --ck-green:#55df72;
+  --ck-red:#ff5567;
+  --ck-orange:#ff9f2f;
+  --ck-yellow:#ffd24f;
+  --ck-purple:#9056ff;
+  --ck-purple2:#6f41ff;
+}
+html,body{min-height:100%;background:radial-gradient(circle at 50% 0%, #09204a 0%, #040d1f 42%, #020711 100%) fixed;color:var(--ck-text);}
+body.radios-futurista-page{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;overflow-x:hidden;}
+body.radios-futurista-page::before, body.radios-futurista-page::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;}
+body.radios-futurista-page::before{background:
+ linear-gradient(rgba(36,87,163,.18) 1px, transparent 1px),
+ linear-gradient(90deg, rgba(36,87,163,.18) 1px, transparent 1px),
+ radial-gradient(circle at 20% 18%, rgba(26,160,255,.08), transparent 22%),
+ radial-gradient(circle at 80% 72%, rgba(26,160,255,.08), transparent 24%);
+ background-size:48px 48px,48px 48px,100% 100%,100% 100%;opacity:.38;}
+body.radios-futurista-page::after{background:
+ radial-gradient(circle at 2% 76%, rgba(37,130,255,.18) 0 2px, transparent 3px) 0 0/8px 8px no-repeat,
+ radial-gradient(circle at 96% 18%, rgba(146,84,255,.18) 0 2px, transparent 3px) 100% 0/8px 8px no-repeat,
+ radial-gradient(ellipse at 0% 45%, rgba(43,149,255,.15), transparent 35%),
+ radial-gradient(ellipse at 100% 35%, rgba(119,78,255,.13), transparent 35%);
+ opacity:.9;}
+
+.ck-page{position:relative;z-index:1;width:100vw;min-height:100vh;max-width:none;margin:0;padding:18px clamp(16px,1.6vw,34px) 76px;box-sizing:border-box;}
+.ck-version{position:fixed;right:18px;top:10px;z-index:20;display:inline-flex;align-items:center;justify-content:center;padding:8px 14px;border-radius:999px;background:rgba(4,15,32,.88);border:1px solid rgba(86,143,217,.25);color:#fff;font-size:.88rem;font-weight:900;box-shadow:0 8px 18px rgba(0,0,0,.25);}
+.ck-hero{display:flex;justify-content:center;margin:16px 0 16px;}
+.ck-hero-inner{position:relative;display:flex;align-items:center;justify-content:center;gap:22px;width:min(100%,1120px);min-height:124px;padding:22px 42px;border-radius:20px;background:linear-gradient(90deg, rgba(8,31,66,.98), rgba(8,24,49,.92));border:1px solid rgba(72,143,255,.46);box-shadow:0 0 0 1px rgba(14,61,139,.35) inset, 0 0 24px rgba(36,120,255,.28);overflow:hidden;box-sizing:border-box;}
+.ck-hero-inner::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg, transparent 0, rgba(42,146,255,.08) 30%, rgba(42,146,255,.03) 60%, transparent 100%),radial-gradient(circle at 82% 28%, rgba(26,151,255,.12), transparent 22%);pointer-events:none;}
+.ck-hero-inner::after{content:'';position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:240px;height:3px;background:radial-gradient(circle, rgba(69,181,255,.95), rgba(69,181,255,.15) 70%, transparent 100%);}
+.ck-hero-home{position:absolute;left:140px;top:50%;transform:translate(-50%,-50%);width:170px;height:170px;border-radius:50%;border:1px solid rgba(64,130,255,.25);box-shadow:0 0 0 20px rgba(17,47,97,.18),0 0 0 40px rgba(17,47,97,.08);display:grid;place-items:center;text-decoration:none;z-index:1;}
+.ck-hero-home img{width:92px;height:92px;object-fit:contain;filter:drop-shadow(0 0 14px rgba(57,165,255,.35));}
+.ck-hero-icon{position:relative;z-index:1;width:94px;height:94px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 30% 30%, #8d4dff, #2438ff 70%);box-shadow:0 0 30px rgba(98,84,255,.33);font-size:2.8rem;font-weight:1000;color:#c58bff;letter-spacing:-.06em;}
+.ck-hero-copy{position:relative;z-index:1;display:flex;flex-direction:column;align-items:flex-start;min-width:0;}
+.ck-hero-copy h1{margin:0 0 6px;font-size:3rem;line-height:1;letter-spacing:-.03em;}
+.ck-hero-copy p{margin:0;color:#d2def2;font-size:1.3rem;}
+
+.ck-kpis{display:grid;grid-template-columns:repeat(6,minmax(150px,1fr));gap:14px;margin-bottom:14px;}
+.ck-kpi{position:relative;display:flex;align-items:center;gap:16px;padding:18px 20px;border-radius:18px;border:1px solid rgba(78,146,255,.34);background:linear-gradient(180deg, rgba(7,25,54,.98), rgba(5,18,37,.96));box-shadow:inset 0 0 0 1px rgba(255,255,255,.03),0 12px 26px rgba(0,0,0,.25);overflow:hidden;}
+.ck-kpi::after{content:'';position:absolute;right:18px;bottom:16px;width:80px;height:24px;opacity:.95;background-repeat:no-repeat;background-size:100% 100%;}
+.ck-kpi:nth-child(1)::after{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 30'><polyline points='3,23 18,20 30,22 42,17 55,14 70,8 84,13 97,4' fill='none' stroke='%2334a6ff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/></svg>");}
+.ck-kpi:nth-child(2)::after{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 30'><polyline points='3,22 18,23 30,14 42,18 55,10 70,12 84,6 97,8' fill='none' stroke='%2357df72' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/></svg>");}
+.ck-kpi:nth-child(3)::after{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 30'><polyline points='3,24 18,20 30,18 42,16 55,12 70,10 84,7 97,5' fill='none' stroke='%23ff9f2f' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/></svg>");}
+.ck-kpi:nth-child(4)::after{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 30'><polyline points='3,22 18,16 30,11 42,18 55,14 70,8 84,13 97,6' fill='none' stroke='%23ff5567' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/></svg>");}
+.ck-kpi:nth-child(5)::after{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 30'><polyline points='3,24 18,18 30,13 42,18 55,10 70,6 84,8 97,3' fill='none' stroke='%23ffd24f' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/></svg>");}
+.ck-kpi:nth-child(6)::after{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 30'><polyline points='3,23 18,20 30,22 42,17 55,19 70,12 84,14 97,8' fill='none' stroke='%239056ff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/></svg>");}
+.ck-kpi-icon{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;font-size:1.7rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.02);}
+.ck-kpi.blue .ck-kpi-icon{color:var(--ck-blue);box-shadow:0 0 0 1px rgba(52,166,255,.25) inset,0 0 20px rgba(52,166,255,.18);}
+.ck-kpi.green .ck-kpi-icon{color:var(--ck-green);box-shadow:0 0 0 1px rgba(87,223,114,.25) inset,0 0 20px rgba(87,223,114,.18);}
+.ck-kpi.orange .ck-kpi-icon{color:var(--ck-orange);box-shadow:0 0 0 1px rgba(255,159,47,.25) inset,0 0 20px rgba(255,159,47,.18);}
+.ck-kpi.red .ck-kpi-icon{color:var(--ck-red);box-shadow:0 0 0 1px rgba(255,85,103,.25) inset,0 0 20px rgba(255,85,103,.18);}
+.ck-kpi.yellow .ck-kpi-icon{color:var(--ck-yellow);box-shadow:0 0 0 1px rgba(255,210,79,.25) inset,0 0 20px rgba(255,210,79,.18);}
+.ck-kpi.purple .ck-kpi-icon{color:#b27fff;box-shadow:0 0 0 1px rgba(144,86,255,.25) inset,0 0 20px rgba(144,86,255,.18);}
+.ck-kpi-label{display:flex;flex-direction:column;gap:2px;font-weight:700;font-size:1.12rem;min-width:0;}
+.ck-kpi strong{font-size:3.2rem;line-height:1;margin-top:2px;letter-spacing:-.03em;}
+.ck-kpi small{color:var(--ck-muted);font-size:.9rem;}
+
+.ck-main{display:grid;grid-template-columns:minmax(0,2.15fr) minmax(360px,.95fr);gap:14px;align-items:start;}
+.ck-panel{background:linear-gradient(180deg, rgba(7,25,54,.97), rgba(5,18,37,.96));border:1px solid rgba(77,151,255,.28);border-radius:18px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.025),0 12px 26px rgba(0,0,0,.24);overflow:hidden;min-width:0;}
+.ck-panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:16px 20px 12px;border-bottom:1px solid rgba(255,255,255,.05);}
+.ck-panel-title{display:flex;gap:12px;align-items:flex-start;min-width:0;}
+.ck-panel-title > span{font-size:1.35rem;line-height:1;padding-top:2px;}
+.ck-panel-title h2,.ck-panel-title h3{margin:0;font-size:1.08rem;}
+.ck-panel-title p{margin:2px 0 0;color:var(--ck-muted);font-size:.8rem;}
+.ck-search-row{display:grid;grid-template-columns:minmax(240px,1.5fr) 210px 210px auto;gap:10px;align-items:center;min-width:0;}
+.ck-search-row input,.ck-search-row select,.ck-search-row textarea,.ck-form-grid input,.ck-form-grid select,.ck-form-grid textarea{width:100%;border-radius:10px;border:1px solid rgba(85,143,216,.28);background:rgba(2,12,28,.66);color:#eff6ff;outline:none;box-sizing:border-box;}
+.ck-search-row input,.ck-search-row select{height:42px;padding:0 14px;}
+.ck-search-row input::placeholder,.ck-form-grid input::placeholder,.ck-form-grid textarea::placeholder{color:#8fa6c8;}
+.ck-table-wrap{padding:0 16px 10px;overflow-x:auto;}
+.ck-table{width:100%;border-collapse:separate;border-spacing:0;min-width:980px;}
+.ck-table thead th{background:rgba(7,24,52,.95);padding:12px 10px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left;font-size:.9rem;color:#dfe9f8;}
+.ck-table tbody td{padding:11px 10px;border-bottom:1px solid rgba(255,255,255,.05);color:#eaf2ff;font-size:.93rem;vertical-align:middle;}
+.ck-table tbody tr:hover{background:rgba(255,255,255,.02);}
+.ck-code-cell{display:flex;flex-direction:column;gap:4px;min-width:180px;}
+.ck-code-link{color:#56a5ff;text-decoration:none;font-weight:900;cursor:pointer;}
+.ck-code-sub{font-size:.76rem;color:#8fa8ca;}
+.ck-state{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:130px;padding:6px 12px;border-radius:10px;font-size:.82rem;font-weight:900;white-space:nowrap;}
+.ck-state.available{background:rgba(34,180,96,.16);border:1px solid rgba(34,180,96,.42);color:#6df28f;}
+.ck-state.maintenance{background:rgba(255,166,57,.14);border:1px solid rgba(255,166,57,.42);color:#ffbc52;}
+.ck-state.broken{background:rgba(255,92,105,.14);border:1px solid rgba(255,92,105,.45);color:#ff7883;}
+.ck-state.reserved{background:rgba(255,210,79,.12);border:1px solid rgba(255,210,79,.35);color:#ffd56b;}
+.ck-actions{display:flex;justify-content:flex-end;gap:8px;position:relative;}
+.ck-icon-btn{width:34px;height:34px;border-radius:10px;border:1px solid rgba(85,143,216,.28);background:rgba(4,15,32,.66);color:#d7e8ff;cursor:pointer;display:grid;place-items:center;font-size:1rem;}
+.ck-icon-btn:hover{background:rgba(31,93,182,.3);}
+.ck-menu{position:absolute;right:0;top:40px;display:none;min-width:150px;padding:8px;border-radius:12px;border:1px solid rgba(85,143,216,.28);background:rgba(4,15,32,.96);box-shadow:0 16px 28px rgba(0,0,0,.34);z-index:30;}
+.ck-menu.open{display:grid;gap:6px;}
+.ck-menu button{height:36px;border-radius:8px;border:1px solid rgba(85,143,216,.2);background:rgba(255,255,255,.02);color:#eff6ff;font-weight:700;cursor:pointer;}
+.ck-menu button.delete{border-color:rgba(255,92,105,.28);color:#ff9aa4;}
+.ck-table-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 16px 16px;color:#dce8fa;flex-wrap:wrap;}
+.ck-footer-left,.ck-footer-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.ck-page-size{display:flex;align-items:center;gap:10px;}
+.ck-page-size select{height:38px;padding:0 10px;border-radius:10px;border:1px solid rgba(85,143,216,.28);background:rgba(2,12,28,.66);color:#eff6ff;}
+.ck-pagination{display:flex;align-items:center;gap:8px;}
+.ck-page-btn{min-width:34px;height:34px;border-radius:10px;border:1px solid rgba(85,143,216,.28);background:rgba(4,15,32,.66);color:#eff6ff;cursor:pointer;font-weight:800;}
+.ck-page-btn.active{background:linear-gradient(180deg,#2f67ff,#1844ff);border-color:rgba(110,190,255,.45);}
+.ck-page-btn[disabled]{opacity:.45;cursor:not-allowed;}
+
+.ck-side{display:grid;gap:14px;}
+.ck-quick-grid{display:grid;grid-template-columns:1fr;gap:10px;padding:0 16px 16px;}
+.ck-quick-row{display:grid;grid-template-columns:1fr;gap:10px;}
+.ck-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 14px;border-radius:10px;border:1px solid rgba(85,143,216,.28);background:rgba(4,15,32,.66);color:#f7fbff;text-decoration:none;font-weight:800;cursor:pointer;white-space:nowrap;}
+.ck-btn:hover{background:rgba(31,93,182,.3)}
+.ck-btn.primary{background:linear-gradient(180deg,var(--ck-purple),var(--ck-purple2));border-color:rgba(177,150,255,.45);box-shadow:0 10px 22px rgba(111,65,255,.26);}
+.ck-btn.small{height:36px;padding:0 12px;font-size:.84rem;}
+.ck-list{display:grid;gap:10px;padding:0 16px 16px;}
+.ck-alert{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;padding:8px 0;border-top:1px solid rgba(255,255,255,.05);}
+.ck-alert:first-child{border-top:none;padding-top:0;}
+.ck-alert-dot{width:8px;height:8px;border-radius:50%;background:var(--ck-orange);box-shadow:0 0 10px rgba(255,166,57,.45);margin-top:7px;}
+.ck-alert.crit .ck-alert-dot{background:var(--ck-red);box-shadow:0 0 10px rgba(255,92,105,.45);}
+.ck-alert-title{font-weight:800;}
+.ck-alert-sub{display:block;color:#a9bddb;font-size:.8rem;margin-top:2px;}
+.ck-alert small{padding:4px 8px;border-radius:8px;background:rgba(255,166,57,.12);border:1px solid rgba(255,166,57,.32);color:#ffbc52;font-weight:800;white-space:nowrap;}
+.ck-alert.crit small{background:rgba(255,92,105,.12);border-color:rgba(255,92,105,.35);color:#ff7883;}
+.ck-bars{display:grid;gap:12px;padding:0 16px 16px;}
+.ck-bar{display:grid;grid-template-columns:120px 1fr 48px 52px;gap:10px;align-items:center;}
+.ck-bar span:first-child{color:#d9e7fa;}
+.ck-bar strong,.ck-bar small{text-align:right;}
+.ck-bar-line{height:8px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;}
+.ck-bar-fill{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#3d6cff,#82b6ff);}
+.ck-bar-fill.available{background:#57df72;}
+.ck-bar-fill.maintenance{background:#ffb347;}
+.ck-bar-fill.broken{background:#ff5c69;}
+.ck-bar-fill.reserved{background:#ffd24f;}
+.ck-mini-table{padding:0 16px 14px;}
+.ck-mini-row{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;padding:8px 0;border-top:1px solid rgba(255,255,255,.05);}
+.ck-mini-row:first-child{border-top:none;padding-top:0;}
+.ck-mini-dot{width:9px;height:9px;border-radius:50%;background:#57df72;box-shadow:0 0 10px rgba(87,223,114,.4);margin-top:3px;}
+.ck-mini-dot.warn{background:#ffbc52;box-shadow:0 0 10px rgba(255,188,82,.4);}
+.ck-mini-dot.bad{background:#ff7883;box-shadow:0 0 10px rgba(255,120,131,.4);}
+.ck-mini-title{font-weight:700;}
+.ck-mini-sub{color:#a9bddb;font-size:.82rem;}
+.ck-empty{padding:18px 16px;color:#9ab2d6;}
+.ck-back{position:fixed;left:18px;bottom:18px;display:inline-flex;align-items:center;justify-content:center;height:38px;padding:0 14px;border-radius:12px;background:rgba(4,15,32,.88);border:1px solid rgba(86,143,217,.25);color:#fff;text-decoration:none;font-weight:800;z-index:10;}
+
+.ck-modal .modal-card,.ck-modal-card{max-width:860px;background:#071a35;border:1px solid rgba(77,151,255,.28);border-radius:18px;color:#fff;box-shadow:0 20px 34px rgba(0,0,0,.36);}
+.ck-modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px 20px 12px;border-bottom:1px solid rgba(255,255,255,.06);}
+.ck-modal-head h3{margin:0;font-size:1.12rem;}
+.ck-modal-head p{margin:4px 0 0;color:var(--ck-muted);font-size:.84rem;}
+.ck-modal-body{padding:16px 20px 18px;}
+.ck-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+.ck-form-grid.three{grid-template-columns:repeat(3,minmax(0,1fr));}
+.ck-form-grid label{display:grid;gap:6px;color:#dfe7f5;font-size:.92rem;}
+.ck-form-grid input,.ck-form-grid select{height:42px;padding:0 12px;}
+.ck-form-grid textarea{min-height:92px;padding:10px 12px;resize:vertical;}
+.ck-form-grid .full{grid-column:1/-1;}
+.ck-modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;}
+.ck-chip{display:inline-flex;align-items:center;gap:8px;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);font-size:.82rem;color:#dce8fa;font-weight:700;}
+.ck-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+.ck-detail-item{padding:12px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);}
+.ck-detail-item span{display:block;color:#9ab3d8;font-size:.78rem;margin-bottom:5px;}
+.ck-detail-item strong{font-size:.96rem;word-break:break-word;}
+.ck-modal-list{display:grid;gap:8px;margin-top:14px;max-height:220px;overflow:auto;padding-right:4px;}
+.ck-modal-list-item{padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);}
+.ck-modal-list-item .title{font-weight:700;}
+.ck-modal-list-item .sub{margin-top:4px;color:#9ab3d8;font-size:.82rem;}
+
+@media (max-width:1500px){
+  .ck-kpis{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .ck-main{grid-template-columns:1fr;}
+  .ck-side{grid-template-columns:1fr 1fr;}
+}
+@media (max-width:1100px){
+  .ck-search-row{grid-template-columns:1fr 1fr;}
+  .ck-side{grid-template-columns:1fr;}
+  .ck-hero-inner{padding:22px 20px;}
+  .ck-hero-copy h1{font-size:2.3rem;}
+  .ck-hero-copy p{font-size:1.05rem;}
+  .ck-hero-home{display:none;}
+}
+@media (max-width:760px){
+  .ck-page{padding:14px 14px 76px;}
+  .ck-kpis{grid-template-columns:1fr;}
+  .ck-kpi strong{font-size:2.4rem;}
+  .ck-search-row{grid-template-columns:1fr;}
+  .ck-hero-inner{display:grid;gap:16px;justify-items:center;text-align:center;}
+  .ck-hero-copy{align-items:center;}
+  .ck-table-wrap{overflow:auto;}
+  .ck-form-grid,.ck-form-grid.three,.ck-detail-grid{grid-template-columns:1fr;}
+  .ck-bar{grid-template-columns:90px 1fr 38px 44px;}
+  .ck-table-footer{flex-direction:column;align-items:flex-start;}
+}
+
+
+/* v1.58.108 — CK65 mais fiel ao estilo real da app */
+body.radios-futurista-page .version-badge,
+body.radios-futurista-page .app-version-badge,
+body.radios-futurista-page #appVersionBadge,
+body.radios-futurista-page [data-version-badge],
+body.radios-futurista-page .app-version{
+  display:none!important;
+}
+
+body.radios-futurista-page .ck-version{
+  display:inline-flex!important;
+  right:18px!important;
+  top:12px!important;
+  height:32px!important;
+  padding:0 14px!important;
+  border-radius:999px!important;
+  background:rgba(5,18,37,.88)!important;
+  border:1px solid rgba(77,151,255,.34)!important;
+  color:#eaf4ff!important;
+  font-size:.78rem!important;
+  letter-spacing:.01em!important;
+}
+
+body.radios-futurista-page .ck-page{
+  padding-top:22px!important;
+}
+
+body.radios-futurista-page .ck-hero{
+  margin:8px 0 16px!important;
+}
+
+body.radios-futurista-page .ck-hero-inner{
+  width:min(940px,52vw)!important;
+  min-height:108px!important;
+  padding:18px 36px 18px 166px!important;
+}
+
+body.radios-futurista-page .ck-hero-home{
+  width:132px!important;
+  height:132px!important;
+  left:92px!important;
+  box-shadow:0 0 0 15px rgba(17,47,97,.18),0 0 0 31px rgba(17,47,97,.08)!important;
+}
+
+body.radios-futurista-page .ck-hero-home img{
+  width:78px!important;
+  height:78px!important;
+}
+
+body.radios-futurista-page .ck-hero-icon{
+  width:70px!important;
+  height:70px!important;
+  min-width:70px!important;
+  color:#9c62ff!important;
+  border:1px solid rgba(155,94,255,.42)!important;
+  background:radial-gradient(circle at 34% 30%,rgba(122,83,255,.95),rgba(32,27,105,.92) 72%)!important;
+  box-shadow:0 0 0 1px rgba(120,78,255,.25) inset,0 0 28px rgba(111,65,255,.22)!important;
+}
+
+body.radios-futurista-page .ck-hero-copy h1{
+  font-size:2.45rem!important;
+}
+
+body.radios-futurista-page .ck-hero-copy p{
+  font-size:1rem!important;
+}
+
+body.radios-futurista-page .ck-kpis{
+  gap:12px!important;
+  margin-bottom:14px!important;
+}
+
+body.radios-futurista-page .ck-kpi{
+  min-height:96px!important;
+  padding:15px 18px!important;
+}
+
+body.radios-futurista-page .ck-kpi-icon{
+  width:58px!important;
+  height:58px!important;
+  min-width:58px!important;
+  border-radius:50%!important;
+  font-family:Inter,Segoe UI,Arial,sans-serif!important;
+  font-weight:1000!important;
+  line-height:1!important;
+  font-size:1.85rem!important;
+}
+
+body.radios-futurista-page .ck-kpi-label{
+  font-size:.9rem!important;
+  line-height:1.1!important;
+}
+
+body.radios-futurista-page .ck-kpi strong{
+  font-size:2.4rem!important;
+}
+
+body.radios-futurista-page .ck-kpi small{
+  font-size:.78rem!important;
+}
+
+body.radios-futurista-page .ck-main{
+  grid-template-columns:minmax(0,2.25fr) minmax(390px,.95fr)!important;
+}
+
+body.radios-futurista-page .ck-panel-head{
+  padding:15px 18px 12px!important;
+}
+
+body.radios-futurista-page .ck-panel-title h2,
+body.radios-futurista-page .ck-panel-title h3{
+  font-size:1.1rem!important;
+}
+
+body.radios-futurista-page .ck-search-row{
+  grid-template-columns:minmax(280px,1.45fr) 220px 220px 112px!important;
+}
+
+body.radios-futurista-page .ck-table-wrap{
+  padding:0 16px 8px!important;
+}
+
+body.radios-futurista-page .ck-table thead th{
+  padding:12px 14px!important;
+  font-size:.78rem!important;
+}
+
+body.radios-futurista-page .ck-table tbody td{
+  padding:10px 14px!important;
+  font-size:.88rem!important;
+}
+
+body.radios-futurista-page .ck-code-link{
+  color:#1688ff!important;
+  font-size:.98rem!important;
+}
+
+body.radios-futurista-page .ck-code-sub{
+  font-size:.78rem!important;
+}
+
+body.radios-futurista-page .ck-state{
+  min-width:118px!important;
+  padding:6px 11px!important;
+}
+
+body.radios-futurista-page .ck-table-footer{
+  padding:10px 16px 16px!important;
+}
+
+body.radios-futurista-page .ck-side{
+  gap:12px!important;
+}
+
+body.radios-futurista-page .ck-quick-grid{
+  gap:8px!important;
+}
+
+body.radios-futurista-page .ck-btn{
+  height:38px!important;
+  border-radius:9px!important;
+}
+
+body.radios-futurista-page .ck-btn.primary{
+  background:linear-gradient(180deg,#14c3e6,#1199e8)!important;
+  border-color:rgba(110,219,255,.42)!important;
+  box-shadow:0 10px 20px rgba(19,190,230,.18)!important;
+}
+
+body.radios-futurista-page .ck-list,
+body.radios-futurista-page .ck-bars,
+body.radios-futurista-page .ck-mini-table{
+  padding-left:16px!important;
+  padding-right:16px!important;
+}
+
+/* Ícone de pistola desenhado em CSS para não depender de emoji */
+.ck-svg-gun,
+.ck-icon-gun-small{
+  position:relative!important;
+  display:inline-block!important;
+  width:38px!important;
+  height:25px!important;
+  color:currentColor!important;
+}
+
+.ck-svg-gun::before,
+.ck-icon-gun-small::before{
+  content:""!important;
+  position:absolute!important;
+  left:2px!important;
+  top:4px!important;
+  width:31px!important;
+  height:9px!important;
+  border:4px solid currentColor!important;
+  border-right-width:5px!important;
+  border-radius:5px 8px 4px 5px!important;
+  box-sizing:border-box!important;
+  filter:drop-shadow(0 0 8px rgba(125,79,255,.28))!important;
+}
+
+.ck-svg-gun::after,
+.ck-icon-gun-small::after{
+  content:""!important;
+  position:absolute!important;
+  left:13px!important;
+  top:12px!important;
+  width:10px!important;
+  height:14px!important;
+  border-left:5px solid currentColor!important;
+  border-bottom:5px solid currentColor!important;
+  transform:skewX(-14deg)!important;
+  border-radius:0 0 2px 4px!important;
+  box-sizing:border-box!important;
+}
+
+.ck-svg-gun > span::before,
+.ck-icon-gun-small > span::before{
+  content:""!important;
+  position:absolute!important;
+  left:25px!important;
+  top:6px!important;
+  width:12px!important;
+  height:4px!important;
+  background:currentColor!important;
+  border-radius:0 4px 4px 0!important;
+}
+
+.ck-svg-gun > span::after,
+.ck-icon-gun-small > span::after{
+  content:""!important;
+  position:absolute!important;
+  left:8px!important;
+  top:14px!important;
+  width:8px!important;
+  height:4px!important;
+  border:3px solid currentColor!important;
+  border-top:0!important;
+  border-radius:0 0 6px 6px!important;
+}
+
+.ck-icon-gun-small{
+  width:32px!important;
+  height:23px!important;
+  color:#23a4ff!important;
+}
+
+.ck-icon-check{
+  color:#5bef8a!important;
+  font-size:2.3rem!important;
+}
+
+.ck-icon-tool{
+  color:#ffae2f!important;
+  font-size:2.1rem!important;
+  transform:rotate(-38deg)!important;
+}
+
+.ck-icon-alert{
+  color:#ff6374!important;
+  font-size:2.25rem!important;
+}
+
+.ck-icon-clock{
+  color:#ffc849!important;
+  font-size:2.25rem!important;
+}
+
+.ck-icon-calendar{
+  color:#b37bff!important;
+  font-size:2.05rem!important;
+}
+
+.ck-eye-dot{
+  width:15px!important;
+  height:10px!important;
+  border-radius:50% / 65%!important;
+  border:2px solid #78b7ff!important;
+  display:inline-block!important;
+  position:relative!important;
+}
+
+.ck-eye-dot::after{
+  content:""!important;
+  position:absolute!important;
+  left:50%!important;
+  top:50%!important;
+  transform:translate(-50%,-50%)!important;
+  width:4px!important;
+  height:4px!important;
+  border-radius:50%!important;
+  background:#78b7ff!important;
+}
+
+@media(max-width:1500px){
+  body.radios-futurista-page .ck-hero-inner{
+    width:min(920px,74vw)!important;
+    min-width:0!important;
+  }
+}
+
+@media(max-width:1100px){
+  body.radios-futurista-page .ck-search-row{
+    grid-template-columns:1fr 1fr!important;
+  }
+}
+
+@media(max-width:760px){
+  body.radios-futurista-page .ck-hero-inner{
+    width:100%!important;
+    padding:18px!important;
+  }
+}
+
+
+/* v1.58.108 — CK65 scroll corrigido + lista mais bonita */
+html,
+html:has(body.radios-futurista-page),
+body.radios-futurista-page{
+  height:auto!important;
+  min-height:100%!important;
+  max-height:none!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  overscroll-behavior:auto!important;
+  touch-action:auto!important;
+}
+
+body.radios-futurista-page{
+  position:relative!important;
+  width:100%!important;
+  max-width:none!important;
+}
+
+body.radios-futurista-page.ck-scroll-ready{
+  overflow-y:auto!important;
+}
+
+body.radios-futurista-page .ck-page{
+  min-height:100vh!important;
+  height:auto!important;
+  max-height:none!important;
+  overflow:visible!important;
+  padding-bottom:96px!important;
+}
+
+body.radios-futurista-page .ck-main,
+body.radios-futurista-page .ck-panel,
+body.radios-futurista-page .ck-side{
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+}
+
+body.radios-futurista-page .ck-table-wrap{
+  max-height:none!important;
+  overflow-x:auto!important;
+  overflow-y:visible!important;
+  padding:0 14px 8px!important;
+}
+
+/* Lista CK65 mais premium */
+body.radios-futurista-page .ck-panel:first-child{
+  border-color:rgba(83,154,255,.34)!important;
+  background:
+    linear-gradient(180deg,rgba(7,25,54,.985),rgba(4,16,34,.97)),
+    radial-gradient(circle at 12% 0%,rgba(24,125,255,.08),transparent 32%)!important;
+}
+
+body.radios-futurista-page .ck-panel:first-child .ck-panel-head{
+  background:linear-gradient(180deg,rgba(10,33,69,.62),rgba(6,20,43,.24))!important;
+}
+
+body.radios-futurista-page .ck-panel-title > span{
+  width:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:14px!important;
+  background:linear-gradient(180deg,rgba(22,84,187,.46),rgba(7,31,80,.42))!important;
+  border:1px solid rgba(69,142,255,.28)!important;
+  color:#5fb3ff!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.035),0 0 18px rgba(31,108,255,.18)!important;
+  padding:0!important;
+}
+
+body.radios-futurista-page .ck-search-row input,
+body.radios-futurista-page .ck-search-row select{
+  height:40px!important;
+  border-radius:10px!important;
+  background:linear-gradient(180deg,rgba(4,14,31,.88),rgba(2,10,24,.78))!important;
+  border-color:rgba(91,149,220,.30)!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.018)!important;
+}
+
+body.radios-futurista-page .ck-table{
+  border-collapse:separate!important;
+  border-spacing:0 6px!important;
+  min-width:960px!important;
+}
+
+body.radios-futurista-page .ck-table thead th{
+  background:linear-gradient(180deg,rgba(12,35,70,.98),rgba(7,24,52,.96))!important;
+  border-top:1px solid rgba(93,154,230,.13)!important;
+  border-bottom:1px solid rgba(93,154,230,.15)!important;
+  color:#dcecff!important;
+  text-transform:none!important;
+  letter-spacing:.01em!important;
+}
+
+body.radios-futurista-page .ck-table thead th:first-child{
+  border-radius:12px 0 0 12px!important;
+}
+
+body.radios-futurista-page .ck-table thead th:last-child{
+  border-radius:0 12px 12px 0!important;
+}
+
+body.radios-futurista-page .ck-table tbody tr{
+  position:relative!important;
+  background:linear-gradient(90deg,rgba(7,22,47,.74),rgba(5,17,37,.68))!important;
+  transition:transform .15s ease, background .15s ease, box-shadow .15s ease!important;
+}
+
+body.radios-futurista-page .ck-table tbody tr:hover{
+  transform:translateY(-1px)!important;
+  background:linear-gradient(90deg,rgba(12,42,86,.88),rgba(6,23,50,.76))!important;
+  box-shadow:0 10px 24px rgba(0,0,0,.18)!important;
+}
+
+body.radios-futurista-page .ck-table tbody td{
+  padding:11px 14px!important;
+  border-top:1px solid rgba(255,255,255,.035)!important;
+  border-bottom:1px solid rgba(255,255,255,.04)!important;
+}
+
+body.radios-futurista-page .ck-table tbody td:first-child{
+  border-left:1px solid rgba(255,255,255,.04)!important;
+  border-radius:12px 0 0 12px!important;
+  position:relative!important;
+}
+
+body.radios-futurista-page .ck-table tbody td:first-child::before{
+  content:""!important;
+  position:absolute!important;
+  left:0!important;
+  top:10px!important;
+  bottom:10px!important;
+  width:3px!important;
+  border-radius:0 4px 4px 0!important;
+  background:linear-gradient(180deg,#1ca5ff,#6b59ff)!important;
+  opacity:.85!important;
+}
+
+body.radios-futurista-page .ck-table tbody td:last-child{
+  border-right:1px solid rgba(255,255,255,.04)!important;
+  border-radius:0 12px 12px 0!important;
+}
+
+body.radios-futurista-page .ck-code-cell{
+  gap:2px!important;
+  padding-left:7px!important;
+}
+
+body.radios-futurista-page .ck-code-link{
+  display:inline-flex!important;
+  align-items:center!important;
+  width:max-content!important;
+  color:#2e9dff!important;
+  font-weight:1000!important;
+  font-size:1rem!important;
+  letter-spacing:.01em!important;
+  text-shadow:0 0 12px rgba(38,148,255,.18)!important;
+}
+
+body.radios-futurista-page .ck-code-link:hover{
+  color:#79c3ff!important;
+}
+
+body.radios-futurista-page .ck-code-sub{
+  color:#9ab4d6!important;
+  font-size:.78rem!important;
+  font-weight:600!important;
+}
+
+body.radios-futurista-page .ck-table tbody td:nth-child(2),
+body.radios-futurista-page .ck-table tbody td:nth-child(3){
+  font-weight:800!important;
+  color:#ecf5ff!important;
+}
+
+body.radios-futurista-page .ck-state{
+  min-width:124px!important;
+  height:30px!important;
+  border-radius:9px!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.035),0 0 16px rgba(0,0,0,.12)!important;
+}
+
+body.radios-futurista-page .ck-icon-btn{
+  width:34px!important;
+  height:34px!important;
+  border-radius:10px!important;
+  background:linear-gradient(180deg,rgba(7,29,65,.86),rgba(3,14,34,.86))!important;
+  border-color:rgba(82,145,220,.32)!important;
+  color:#ddecff!important;
+}
+
+body.radios-futurista-page .ck-icon-btn:hover{
+  background:linear-gradient(180deg,rgba(20,72,151,.88),rgba(8,28,69,.9))!important;
+  border-color:rgba(84,165,255,.45)!important;
+}
+
+body.radios-futurista-page .ck-actions{
+  gap:7px!important;
+}
+
+body.radios-futurista-page .ck-table-footer{
+  margin-top:0!important;
+  padding:9px 16px 14px!important;
+  border-top:1px solid rgba(255,255,255,.045)!important;
+}
+
+body.radios-futurista-page .ck-page-size select,
+body.radios-futurista-page .ck-page-btn{
+  background:rgba(3,14,34,.78)!important;
+  border-color:rgba(85,143,216,.30)!important;
+}
+
+body.radios-futurista-page .ck-page-btn.active{
+  background:linear-gradient(180deg,#1f83ff,#1749ff)!important;
+}
+
+/* Ajustar coluna direita para não cortar no ecrã */
+body.radios-futurista-page .ck-side .ck-panel{
+  min-height:0!important;
+}
+
+body.radios-futurista-page .ck-bars{
+  padding-bottom:14px!important;
+}
+
+body.radios-futurista-page .ck-mini-table{
+  padding-bottom:14px!important;
+}
+
+/* Evita duplicação visual do badge antigo da versão no canto */
+body.radios-futurista-page .ck-version + .ck-version,
+body.radios-futurista-page .ck-version ~ .version-badge{
+  display:none!important;
+}
+
+@media(max-width:1500px){
+  body.radios-futurista-page .ck-main{
+    grid-template-columns:1fr!important;
+  }
+
+  body.radios-futurista-page .ck-side{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+  }
+}
+
+@media(max-width:900px){
+  body.radios-futurista-page .ck-side{
+    grid-template-columns:1fr!important;
+  }
+
+  body.radios-futurista-page .ck-table{
+    min-width:880px!important;
+  }
+}
+
+
+/* v1.58.108 — CK65 hero igual às outras páginas */
+body.radios-futurista-page .ck-hero{
+  display:flex!important;
+  justify-content:center!important;
+  width:100%!important;
+  margin:4px auto 14px!important;
+  padding:0!important;
+}
+
+body.radios-futurista-page .ck-hero-inner{
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:18px!important;
+  width:min(900px,58vw)!important;
+  min-width:670px!important;
+  min-height:102px!important;
+  padding:18px 34px 18px 170px!important;
+  border-radius:20px!important;
+  box-sizing:border-box!important;
+}
+
+/* Círculo/botão do logo igual ao padrão das outras páginas */
+body.radios-futurista-page .ck-hero-home{
+  position:absolute!important;
+  width:124px!important;
+  height:124px!important;
+  min-width:124px!important;
+  min-height:124px!important;
+  left:86px!important;
+  top:50%!important;
+  transform:translate(-50%,-50%)!important;
+  border-radius:50%!important;
+  display:grid!important;
+  place-items:center!important;
+  z-index:2!important;
+  border:1px solid rgba(64,130,255,.25)!important;
+  background:transparent!important;
+  box-shadow:0 0 0 13px rgba(17,47,97,.18),0 0 0 27px rgba(17,47,97,.08)!important;
+  overflow:hidden!important;
+}
+
+body.radios-futurista-page .ck-hero-home img{
+  width:92%!important;
+  height:92%!important;
+  object-fit:contain!important;
+  filter:drop-shadow(0 0 14px rgba(57,165,255,.35))!important;
+}
+
+/* Ícone da página com o mesmo tamanho das restantes páginas */
+body.radios-futurista-page .ck-hero-icon{
+  width:66px!important;
+  min-width:66px!important;
+  height:66px!important;
+  min-height:66px!important;
+  border-radius:50%!important;
+  font-size:1.9rem!important;
+  flex:0 0 66px!important;
+}
+
+/* Texto do hero igual ao padrão */
+body.radios-futurista-page .ck-hero-copy{
+  position:relative!important;
+  z-index:3!important;
+  min-width:0!important;
+}
+
+body.radios-futurista-page .ck-hero-copy h1{
+  margin:0 0 6px!important;
+  font-size:2.3rem!important;
+  line-height:1!important;
+  letter-spacing:-.03em!important;
+}
+
+body.radios-futurista-page .ck-hero-copy p{
+  margin:0!important;
+  font-size:.96rem!important;
+  line-height:1.2!important;
+  color:#d2def2!important;
+}
+
+/* Evita que regras antigas da CK65 voltem a encolher o hero */
+body.radios-futurista-page .ck-hero-inner,
+body.radios-futurista-page .ck-hero-home,
+body.radios-futurista-page .ck-hero-icon,
+body.radios-futurista-page .ck-hero-copy h1,
+body.radios-futurista-page .ck-hero-copy p{
+  transition:none!important;
+}
+
+@media(max-width:1500px){
+  body.radios-futurista-page .ck-hero-inner{
+    width:min(920px,76vw)!important;
+    min-width:0!important;
+  }
+}
+
+@media(max-width:900px){
+  body.radios-futurista-page .ck-hero-inner{
+    width:100%!important;
+    min-width:0!important;
+    display:grid!important;
+    justify-items:center!important;
+    text-align:center!important;
+    gap:12px!important;
+    padding:18px!important;
+  }
+
+  body.radios-futurista-page .ck-hero-home{
+    display:none!important;
+  }
+
+  body.radios-futurista-page .ck-hero-copy{
+    align-items:center!important;
+    text-align:center!important;
+  }
+
+  body.radios-futurista-page .ck-hero-copy h1{
+    font-size:2rem!important;
+  }
+
+  body.radios-futurista-page .ck-hero-copy p{
+    font-size:.9rem!important;
+  }
+}
+
+
+/* ===== Rádios v1.58.108 ajustes próprios ===== */
+.rd-icon-radio{font-size:2.35rem;color:#fff;text-shadow:0 0 18px rgba(255,255,255,.75);}
+.ck-kpi::after{content:"";position:absolute;right:18px;bottom:28px;width:92px;height:24px;border-radius:999px;opacity:.9;background:linear-gradient(135deg,transparent 0 12%,currentColor 13% 16%,transparent 17% 30%,currentColor 31% 34%,transparent 35% 48%,currentColor 49% 52%,transparent 53% 68%,currentColor 69% 72%,transparent 73%);filter:drop-shadow(0 0 6px currentColor);}
+.ck-kpi.blue{color:var(--ck-blue)}.ck-kpi.green{color:var(--ck-green)}.ck-kpi.orange{color:var(--ck-orange)}.ck-kpi.red{color:var(--ck-red)}.ck-kpi.yellow{color:var(--ck-yellow)}.ck-kpi.purple{color:var(--ck-purple)}
+.ck-kpi .ck-kpi-label,.ck-kpi .ck-kpi-icon{color:var(--ck-text)}
+.ck-kpi.green .ck-kpi-icon{color:var(--ck-green)}.ck-kpi.orange .ck-kpi-icon{color:var(--ck-orange)}.ck-kpi.red .ck-kpi-icon{color:var(--ck-red)}.ck-kpi.yellow .ck-kpi-icon{color:var(--ck-yellow)}.ck-kpi.purple .ck-kpi-icon{color:var(--ck-purple)}.ck-kpi.blue .ck-kpi-icon{color:var(--ck-blue)}
+.rd-state{display:inline-flex;align-items:center;gap:7px;min-width:112px;justify-content:center;padding:7px 12px;border-radius:9px;font-weight:900;font-size:.82rem;border:1px solid rgba(255,255,255,.14);}
+.rd-state.disponivel{background:rgba(36,202,92,.18);border-color:rgba(61,221,117,.48);color:#62ff91;}
+.rd-state.uso{background:rgba(36,142,255,.18);border-color:rgba(50,161,255,.48);color:#6fc1ff;}
+.rd-state.carga{background:rgba(255,197,37,.16);border-color:rgba(255,206,55,.46);color:#ffd94d;}
+.rd-state.avariada{background:rgba(255,76,102,.18);border-color:rgba(255,84,111,.52);color:#ff6678;}
+.rd-state.manutencao{background:rgba(255,159,47,.18);border-color:rgba(255,159,47,.48);color:#ffb35f;}
+.rd-id strong{display:block;color:#24a6ff;font-weight:950;font-size:1.02rem;}.rd-id small{color:#9ab3d8;font-size:.78rem;}
+.rd-action-btn{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;margin-left:6px;border-radius:10px;background:rgba(10,31,65,.8);border:1px solid rgba(75,150,255,.34);color:#dcecff;font-weight:900;cursor:pointer;transition:.18s ease;}
+.rd-action-btn:hover{transform:translateY(-1px);border-color:rgba(75,190,255,.75);box-shadow:0 0 16px rgba(45,145,255,.22);}
+.rd-menu{position:relative;display:inline-flex}.rd-menu-pop{position:absolute;right:0;top:42px;min-width:190px;z-index:40;padding:8px;border-radius:12px;background:rgba(4,15,34,.98);border:1px solid rgba(78,151,255,.35);box-shadow:0 18px 40px rgba(0,0,0,.45);display:none}.rd-menu.open .rd-menu-pop{display:grid;gap:6px}.rd-menu-pop button{border:0;background:rgba(12,35,72,.82);color:#eef7ff;text-align:left;border-radius:9px;padding:10px 12px;font-weight:850;cursor:pointer}.rd-menu-pop button:hover{background:rgba(30,105,200,.55)}
+.ck-bars .rd-bar-row{display:grid;grid-template-columns:140px 1fr 44px 54px;align-items:center;gap:14px;margin:10px 0;color:#eaf3ff}.rd-bar-track{height:8px;background:rgba(132,165,213,.16);border-radius:999px;overflow:hidden}.rd-bar-fill{height:100%;border-radius:999px;box-shadow:0 0 10px currentColor}.rd-bar-fill.green{background:var(--ck-green);color:var(--ck-green)}.rd-bar-fill.blue{background:var(--ck-blue);color:var(--ck-blue)}.rd-bar-fill.yellow{background:var(--ck-yellow);color:var(--ck-yellow)}.rd-bar-fill.red{background:var(--ck-red);color:var(--ck-red)}.rd-bar-fill.orange{background:var(--ck-orange);color:var(--ck-orange)}
+.rd-toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);z-index:9999;opacity:0;background:rgba(4,17,38,.96);border:1px solid rgba(78,151,255,.42);color:#f4f9ff;padding:13px 18px;border-radius:14px;box-shadow:0 18px 48px rgba(0,0,0,.48);font-weight:850;transition:.22s ease}.rd-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.rd-toast.error{border-color:rgba(255,80,100,.55);color:#ffd7dd}.rd-toast.ok{border-color:rgba(80,225,120,.55);}
+.ck-table td:nth-child(6),.ck-table th:nth-child(6){text-align:center;white-space:nowrap}.ck-table td{height:58px}.ck-table tbody tr{cursor:default}.ck-btn.primary{background:linear-gradient(180deg,#23c9f4,#0b8dff);border-color:rgba(95,219,255,.58);box-shadow:0 0 20px rgba(14,164,255,.24);}.ck-search-row input[type="search"]{min-width:250px}.ck-panel-title > span{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(28,116,255,.32),rgba(16,48,104,.45));border:1px solid rgba(73,146,255,.3)}
+@media (max-width:980px){.ck-bars .rd-bar-row{grid-template-columns:110px 1fr 34px 42px}.ck-search-row input[type="search"]{min-width:0}.rd-action-btn{width:34px;height:34px}}
+.ck-dot{width:10px;height:10px;border-radius:50%;display:inline-block;box-shadow:0 0 12px currentColor;background:currentColor;color:var(--ck-blue)}
+.ck-dot.disponivel{color:var(--ck-green)}.ck-dot.uso{color:var(--ck-blue)}.ck-dot.carga{color:var(--ck-yellow)}.ck-dot.avariada{color:var(--ck-red)}.ck-dot.manutencao{color:var(--ck-orange)}
+.ck-mini-row small{grid-column:2;color:var(--ck-muted);font-size:.78rem;margin-top:-6px}.ck-detail-item small{display:block;color:var(--ck-muted);font-size:.78rem;margin-bottom:5px}.ck-modal-list-item span{display:block;color:var(--ck-muted);margin:4px 0}.ck-page-dots{display:inline-flex;align-items:center;padding:0 2px;color:var(--ck-muted);font-weight:900}
+
+/* ===== Rádios v1.58.108 — Registos semanais fora da lista ===== */
+body.radios-futurista-page .rd-left-stack{
+  display:grid!important;
+  gap:14px!important;
+  min-width:0!important;
+}
+
+body.radios-futurista-page .rd-weekly-panel{
+  margin-top:0!important;
+}
+
+body.radios-futurista-page .rd-weekly-head{
+  align-items:center!important;
+}
+
+body.radios-futurista-page .rd-weekly-actions{
+  display:flex!important;
+  gap:10px!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  flex-wrap:wrap!important;
+}
+
+body.radios-futurista-page .rd-weekly-summary{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:12px!important;
+  padding:14px 16px 8px!important;
+}
+
+body.radios-futurista-page .rd-weekly-summary > div{
+  min-height:68px!important;
+  padding:13px 14px!important;
+  border-radius:14px!important;
+  background:linear-gradient(180deg,rgba(9,31,65,.88),rgba(5,18,38,.88))!important;
+  border:1px solid rgba(77,151,255,.22)!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.025)!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  gap:5px!important;
+}
+
+body.radios-futurista-page .rd-weekly-summary small,
+body.radios-futurista-page .rd-weekly-sub{
+  display:block!important;
+  color:#95acd0!important;
+  font-size:.76rem!important;
+  margin-top:3px!important;
+}
+
+body.radios-futurista-page .rd-weekly-summary strong{
+  color:#f2f7ff!important;
+  font-size:1rem!important;
+  font-weight:950!important;
+}
+
+body.radios-futurista-page .rd-weekly-table{
+  min-width:860px!important;
+}
+
+body.radios-futurista-page .rd-weekly-table td,
+body.radios-futurista-page .rd-weekly-table th{
+  vertical-align:middle!important;
+}
+
+body.radios-futurista-page .rd-weekly-pill{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-width:44px!important;
+  height:28px!important;
+  padding:0 10px!important;
+  border-radius:999px!important;
+  font-weight:950!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  background:rgba(255,255,255,.04)!important;
+}
+
+body.radios-futurista-page .rd-weekly-pill.ok,
+body.radios-futurista-page .rd-weekly-pill.rd-weekly-ok{
+  color:#64ff91!important;
+  background:rgba(38,205,91,.14)!important;
+  border-color:rgba(70,225,122,.38)!important;
+}
+
+body.radios-futurista-page .rd-weekly-pill.rd-weekly-alert,
+body.radios-futurista-page .rd-weekly-bad{
+  color:#ff6678!important;
+}
+
+body.radios-futurista-page .rd-weekly-pill.rd-weekly-alert{
+  background:rgba(255,79,105,.15)!important;
+  border-color:rgba(255,89,115,.42)!important;
+}
+
+body.radios-futurista-page .rd-weekly-actions-cell{
+  white-space:nowrap!important;
+  text-align:center!important;
+}
+
+body.radios-futurista-page .rd-weekly-modal-card{
+  width:min(1180px,calc(100vw - 42px))!important;
+  max-width:1180px!important;
+  max-height:calc(100vh - 54px)!important;
+  display:flex!important;
+  flex-direction:column!important;
+  background:linear-gradient(180deg,rgba(8,25,52,.98),rgba(5,15,31,.98))!important;
+}
+
+body.radios-futurista-page .rd-weekly-modal-card .ck-modal-body{
+  overflow:auto!important;
+}
+
+body.radios-futurista-page .rd-weekly-meta{
+  margin-bottom:12px!important;
+}
+
+body.radios-futurista-page .rd-weekly-modal-tools{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:12px!important;
+  margin:12px 0!important;
+  padding:12px!important;
+  border-radius:15px!important;
+  background:rgba(8,29,61,.7)!important;
+  border:1px solid rgba(77,151,255,.24)!important;
+}
+
+body.radios-futurista-page .rd-weekly-modal-stats{
+  display:flex!important;
+  gap:10px!important;
+  flex-wrap:wrap!important;
+}
+
+body.radios-futurista-page .rd-weekly-modal-stats span{
+  min-width:92px!important;
+  padding:9px 12px!important;
+  border-radius:12px!important;
+  background:rgba(2,12,28,.62)!important;
+  border:1px solid rgba(85,143,216,.22)!important;
+}
+
+body.radios-futurista-page .rd-weekly-modal-stats small{
+  display:block!important;
+  color:#91a9ce!important;
+  font-size:.72rem!important;
+}
+
+body.radios-futurista-page .rd-weekly-modal-stats strong{
+  display:block!important;
+  margin-top:3px!important;
+  font-size:1.25rem!important;
+  color:#f3f8ff!important;
+}
+
+body.radios-futurista-page .rd-weekly-modal-buttons{
+  display:flex!important;
+  gap:8px!important;
+  flex-wrap:wrap!important;
+  justify-content:flex-end!important;
+}
+
+body.radios-futurista-page .rd-weekly-editor-wrap{
+  overflow:auto!important;
+  border:1px solid rgba(77,151,255,.22)!important;
+  border-radius:15px!important;
+  background:rgba(3,13,29,.48)!important;
+}
+
+body.radios-futurista-page .rd-weekly-editor{
+  width:100%!important;
+  min-width:1040px!important;
+  border-collapse:separate!important;
+  border-spacing:0!important;
+}
+
+body.radios-futurista-page .rd-weekly-editor th{
+  position:sticky!important;
+  top:0!important;
+  z-index:2!important;
+  text-align:left!important;
+  padding:11px 10px!important;
+  background:rgba(7,24,52,.98)!important;
+  color:#dce9fa!important;
+  border-bottom:1px solid rgba(255,255,255,.07)!important;
+  font-size:.78rem!important;
+}
+
+body.radios-futurista-page .rd-weekly-editor td{
+  padding:10px!important;
+  border-bottom:1px solid rgba(255,255,255,.055)!important;
+  vertical-align:middle!important;
+}
+
+body.radios-futurista-page .rd-weekly-editor td:first-child strong{
+  display:block!important;
+  color:#2aa7ff!important;
+  font-size:.96rem!important;
+}
+
+body.radios-futurista-page .rd-weekly-editor td:first-child small{
+  display:block!important;
+  color:#91a9ce!important;
+  font-size:.74rem!important;
+  margin-top:2px!important;
+}
+
+body.radios-futurista-page .rd-weekly-editor input[type="text"],
+body.radios-futurista-page .rd-weekly-editor select{
+  width:100%!important;
+  height:38px!important;
+  border-radius:9px!important;
+  border:1px solid rgba(85,143,216,.28)!important;
+  background:rgba(2,12,28,.72)!important;
+  color:#eff6ff!important;
+  padding:0 10px!important;
+  box-sizing:border-box!important;
+  outline:none!important;
+}
+
+body.radios-futurista-page .rd-check{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:7px!important;
+  min-width:78px!important;
+  height:34px!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.035)!important;
+  border:1px solid rgba(85,143,216,.22)!important;
+  color:#eaf3ff!important;
+  font-weight:850!important;
+  cursor:pointer!important;
+}
+
+body.radios-futurista-page .rd-check input{
+  accent-color:#28c8ff!important;
+}
+
+@media(max-width:1500px){
+  body.radios-futurista-page .rd-weekly-actions,
+  body.radios-futurista-page .rd-weekly-modal-tools{
+    align-items:stretch!important;
+  }
+}
+
+@media(max-width:900px){
+  body.radios-futurista-page .rd-weekly-summary{
+    grid-template-columns:1fr!important;
+  }
+  body.radios-futurista-page .rd-weekly-modal-tools{
+    flex-direction:column!important;
+    align-items:stretch!important;
+  }
+  body.radios-futurista-page .rd-weekly-modal-buttons{
+    justify-content:stretch!important;
+  }
+  body.radios-futurista-page .rd-weekly-modal-buttons .ck-btn{
+    flex:1 1 160px!important;
+  }
+}

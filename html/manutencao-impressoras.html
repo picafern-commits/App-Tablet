@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <title>Manutenção Impressoras</title>
+  <meta name="theme-color" content="#020817">
+  <link rel="manifest" href="../manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
+  <link rel="apple-touch-icon" href="../icon-192.png">
+  <link rel="stylesheet" href="../css/manutencao-futurista.css?v=1.58.133">
+  <link rel="stylesheet" href="../css/appbraga-clean-layout.css?v=1.58.133">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="../css/appbraga-impressoras-padrao.css?v=1.58.133">
+  <link rel="stylesheet" href="../css/appbraga-fixed-scale.css?v=1.58.133">
+  <link rel="stylesheet" href="../css/appbraga-scroll-systems.css?v=1.58.133">
+</head>
+<body class="manutencao-futurista" data-forced-version="1.58.78">
+  <div class="mnt-page">
+    <section class="mnt-hero" aria-labelledby="mntTitle">
+      <div class="mnt-hero-card">
+        <a class="mnt-hero-orbit appbraga-home-orbit-btn" href="index.html" aria-label="Voltar ao Portal AppBraga" title="Voltar ao Portal">
+          <img src="../assets/bragalis-home-logo-original.png?v=1.58.133" alt="AppBraga">
+        </a>
+        <div class="mnt-hero-icon" aria-hidden="true">🛠️</div>
+        <div>
+          <h1 id="mntTitle">Manutenção Impressoras</h1>
+          <p>Planeamento, intervenções e estado técnico dos equipamentos.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="mnt-kpis" aria-label="Resumo de manutenção">
+      <article class="mnt-kpi"><span class="kpi-icon purple" aria-hidden="true">🛠️</span><div><span>Intervenções abertas</span><strong id="countManutPendentes">0</strong><small>Total em curso</small></div><b class="spark blue">⌁⌁⌁</b></article>
+      <article class="mnt-kpi"><span class="kpi-icon green" aria-hidden="true">🗓️</span><div><span>Hoje</span><strong id="mntKpiHoje">0</strong><small>Agendadas</small></div><b class="spark green">⌁⌁⌁</b></article>
+      <article class="mnt-kpi"><span class="kpi-icon cyan" aria-hidden="true">✅</span><div><span>Concluídas</span><strong id="mntKpiConcluidas">0</strong><small>Últimos 7 dias</small></div><b class="spark green">⌁⌁⌁</b></article>
+      <article class="mnt-kpi"><span class="kpi-icon amber" aria-hidden="true">⚠️</span><div><span>Atrasadas</span><strong id="mntKpiAtrasadas">0</strong><small>Requer atenção</small></div><b class="spark red">⌁⌁⌁</b></article>
+      <article class="mnt-kpi"><span class="kpi-icon blue" aria-hidden="true">👥</span><div><span>Técnicos</span><strong id="mntKpiTecnicos">0</strong><small>Ativos</small></div><b class="spark blue">⌁⌁⌁</b></article>
+      <article class="mnt-kpi"><span class="kpi-icon red" aria-hidden="true">❗</span><div><span>Impressoras críticas</span><strong id="mntKpiCriticas">0</strong><small>Necessitam atenção</small></div><b class="spark orange">⌁⌁⌁</b></article>
+    </section>
+
+    <section class="mnt-main-grid">
+      <main class="mnt-left">
+        <article class="mnt-panel mnt-table-panel">
+          <div class="mnt-panel-head">
+            <div class="panel-title"><span>🖨️</span><div><h2>Intervenções de manutenção</h2><p>Acompanhe e gerencie as intervenções técnicas.</p></div></div>
+            <div class="mnt-filters">
+              <input id="searchManutencoes" type="text" placeholder="Pesquisar intervenção...">
+              <select id="filterLocalManutencao"><option value="">Todos os locais</option></select>
+              <select id="filterPrioridadeManutencao"><option value="">Todas prioridades</option><option>Alta</option><option>Média</option><option>Baixa</option></select>
+              <select id="filterEstadoManutencao"><option value="">Todos estados</option><option>Aberta</option><option>Em curso</option><option>Agendada</option><option>Concluída</option></select>
+              <button type="button" class="mnt-btn" onclick="limparFiltrosManutencaoFuturista()">☰ Limpar</button>
+            </div>
+          </div>
+          <div class="mnt-table-wrap">
+            <table class="mnt-table">
+              <thead><tr><th>Equipamento</th><th>Local</th><th>Tipo de intervenção</th><th>Prioridade</th><th>Técnico</th><th>Data</th><th>Estado</th><th>Ações</th></tr></thead>
+              <tbody id="mntTableBody"><tr><td colspan="8" class="mnt-empty-row">A carregar intervenções...</td></tr></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="mnt-panel">
+          <div class="mnt-panel-head">
+            <div class="panel-title"><span>🗓️</span><div><h2>Próximas intervenções</h2><p>Timeline das próximas intervenções agendadas.</p></div></div>
+          </div>
+          <div class="mnt-timeline" id="mntTimeline"></div>
+          <div class="mnt-timeline-footer"><button type="button" class="mnt-btn" onclick="filtrarAgendaManutencaoFuturista()">Ver agenda completa →</button></div>
+        </article>
+
+        <article class="mnt-panel mnt-form-panel" id="mntFormPanel" style="display:none;">
+          <div class="mnt-panel-head">
+            <div class="panel-title"><span>➕</span><div><h2>Nova intervenção</h2><p>Adicionar intervenção técnica.</p></div></div>
+            <button type="button" onclick="fecharFormManutencaoFuturista()">×</button>
+          </div>
+          <div class="mnt-form">
+            <label>Equipamento<input id="manutencaoModelo" placeholder="Ex.: Kyocera P3155dn"></label>
+            <label>Série<input id="manutencaoSerie" placeholder="N.º série"></label>
+            <label>Localização<input id="manutencaoLocalizacao" placeholder="Ilha 01"></label>
+            <label>IP<input id="manutencaoIP" placeholder="192.168..."></label>
+            <label>Prioridade<select id="manutencaoPrioridade"><option>Alta</option><option>Média</option><option>Baixa</option></select></label>
+            <label>Técnico<input id="manutencaoTecnico" placeholder="Nome do técnico"></label>
+            <label>Estado<select id="manutencaoEstado"><option>Aberta</option><option>Em curso</option><option>Agendada</option><option>Concluída</option></select></label>
+            <label>Data<input id="manutencaoData" type="datetime-local"></label>
+            <label class="wide">Tipo / Pedido<textarea id="manutencaoPedido" placeholder="Descrição da intervenção"></textarea></label>
+            <label class="wide">Resolução<textarea id="manutencaoResolucao" placeholder="Resolução aplicada"></textarea></label>
+            <label class="wide">Motivo<textarea id="manutencaoMotivo" placeholder="Motivo / observações"></textarea></label>
+            <button class="wide primary" type="button" onclick="guardarManutencaoFuturista()">💾 Guardar intervenção</button>
+          </div>
+        </article>
+
+        <section class="mnt-hidden-legacy" aria-hidden="true">
+          <div id="countManutTotal">0</div>
+          <div id="countManutReparacao">0</div>
+          <select id="manutencaoArmazem"><option></option></select>
+          <div id="listaManutencoes"></div>
+        </section>
+      </main>
+
+      <aside class="mnt-right">
+        <article class="mnt-panel">
+          <div class="mnt-panel-head">
+            <div class="panel-title"><span>⚡</span><div><h2>Ações rápidas</h2><p>Atalhos para manutenção.</p></div></div>
+          </div>
+          <div class="mnt-quick-actions">
+            <button type="button" class="primary" onclick="abrirFormManutencaoFuturista()">＋ Nova intervenção</button>
+            <button type="button" onclick="location.href='impressoras.html'">⟳ Impressoras</button>
+            <button type="button" onclick="location.href='historico.html'">↩ Histórico</button>
+            <button type="button" onclick="location.href='diagnostico.html'">🧪 Diagnóstico</button>
+            <button type="button" onclick="location.href='etiquetas-word.html'">📄 Etiquetas Word</button>
+          </div>
+        </article>
+
+        <article class="mnt-panel">
+          <div class="mnt-panel-head">
+            <div class="panel-title"><span>⚠️</span><div><h2>Alertas técnicos</h2><p>Situações que requerem ação imediata.</p></div></div>
+            <button type="button" onclick="filtrarAlertasManutencaoFuturista()">Ver todos →</button>
+          </div>
+          <div class="mnt-list" id="mntAlertas"></div>
+        </article>
+
+        <article class="mnt-panel">
+          <div class="mnt-panel-head">
+            <div class="panel-title"><span>🗓️</span><div><h2>Agenda de manutenção</h2><p>Próximos eventos agendados.</p></div></div>
+            <button type="button" onclick="filtrarAgendaManutencaoFuturista()">Ver todos →</button>
+          </div>
+          <div class="mnt-list" id="mntAgenda"></div>
+        </article>
+
+        <article class="mnt-panel">
+          <div class="mnt-panel-head">
+            <div class="panel-title"><span>🧰</span><div><h2>Peças / consumíveis relacionados</h2><p>Itens associados às intervenções abertas.</p></div></div>
+            <button type="button" onclick="location.href='stock.html'">Ver stock →</button>
+          </div>
+          <div class="mnt-bars" id="mntPecas"></div>
+        </article>
+      </aside>
+    </section>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="../js/app.js?v=1.58.133"></script>
+  <script src="../js/appbraga-systems.js?v=1.58.133"></script>
+  <script src="../js/sidebar-editor.js?v=1.58.133"></script>
+  <script src="../js/core/helpers.js"></script>
+  <script src="../js/manutencao-futurista.js?v=1.58.133"></script>
+  <script src="../js/appbraga-scroll-systems.js?v=1.58.133"></script>
+</body>
+</html>

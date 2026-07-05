@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <title>Users</title>
+  <meta name="theme-color" content="#020817">
+  <link rel="manifest" href="../manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
+  <link rel="apple-touch-icon" href="../icon-192.png">
+  <link rel="stylesheet" href="../css/style.css?v=1.58.133">
+  <link rel="stylesheet" href="../css/appbraga-clean-layout.css?v=1.58.133">
+  <link rel="stylesheet" href="../css/users-futurista.css?v=1.58.133">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="App Braga">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="stylesheet" href="../css/appbraga-hero-padrao.css?v=1.58.133">
+  <link rel="stylesheet" href="../css/appbraga-scroll-systems.css?v=1.58.133">
+  <link rel="stylesheet" href="../css/appbraga-impressoras-padrao.css?v=1.58.133">
+  <link rel="stylesheet" href="../css/appbraga-fixed-scale.css?v=1.58.133">
+</head>
+<body class="users-futurista-page">
+  <div class="ck-page users-page">
+    <div class="ck-version">Versão&nbsp; v1.58.122</div>
+
+    <section class="ck-hero" aria-labelledby="usersTitle">
+      <div class="ck-hero-inner">
+        <a class="ck-hero-home" href="index.html" aria-label="Voltar ao Portal AppBraga" title="Voltar ao Portal">
+          <img src="../assets/bragalis-home-logo-original.png?v=1.58.133" alt="AppBraga">
+        </a>
+        <div class="ck-hero-icon" aria-hidden="true"><span>👥</span></div>
+        <div class="ck-hero-copy">
+          <h1 id="usersTitle">Users</h1>
+          <p>Gestão de utilizadores e permissões da aplicação.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="ck-kpis" aria-label="Resumo de utilizadores">
+      <div class="ck-kpi blue"><span class="ck-kpi-icon" aria-hidden="true">👥</span><div class="ck-kpi-label">Total de Users<strong id="usKpiTotal">0</strong><small>Registados</small></div></div>
+      <div class="ck-kpi green"><span class="ck-kpi-icon ck-icon-check" aria-hidden="true">✓</span><div class="ck-kpi-label">Ativos<strong id="usKpiAtivos">0</strong><small>Utilizadores ativos</small></div></div>
+      <div class="ck-kpi purple"><span class="ck-kpi-icon" aria-hidden="true">🛡</span><div class="ck-kpi-label">Administradores<strong id="usKpiAdmins">0</strong><small>Com acessos elevados</small></div></div>
+      <div class="ck-kpi red"><span class="ck-kpi-icon ck-icon-alert" aria-hidden="true">🔒</span><div class="ck-kpi-label">Bloqueados<strong id="usKpiBloqueados">0</strong><small>Acesso bloqueado</small></div></div>
+      <div class="ck-kpi yellow"><span class="ck-kpi-icon" aria-hidden="true">●</span><div class="ck-kpi-label">Online agora<strong id="usKpiOnline">0</strong><small>Últimos 15 min</small></div></div>
+      <div class="ck-kpi cyan"><span class="ck-kpi-icon" aria-hidden="true">➕</span><div class="ck-kpi-label">Novos este mês<strong id="usKpiNovos">0</strong><small id="usKpiMesLabel">Este mês</small></div></div>
+    </section>
+
+    <section class="ck-main users-main">
+      <article class="ck-panel users-list-panel">
+        <div class="ck-panel-head">
+          <div class="ck-panel-title">
+            <span>👥</span>
+            <div>
+              <h2>Lista de utilizadores <em id="usListCount">0</em></h2>
+              <p>Consulte, filtre e gerencie todos os utilizadores da aplicação.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="users-filter-row">
+          <input id="usSearch" type="search" placeholder="Pesquisar utilizador, username ou email...">
+          <select id="usFilterRole"><option value="">Todos os papéis</option></select>
+          <select id="usFilterEstado">
+            <option value="">Todos os estados</option>
+            <option value="ativo">Ativo</option>
+            <option value="inativo">Inativo</option>
+            <option value="bloqueado">Bloqueado</option>
+          </select>
+          <button class="ck-btn small" type="button" id="usBtnLimpar">☰ Limpar filtros</button>
+        </div>
+
+        <div class="ck-table-wrap">
+          <table class="ck-table users-table">
+            <thead>
+              <tr>
+                <th>Utilizador</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Papel</th>
+                <th>Estado</th>
+                <th>Último acesso</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="usTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="ck-table-footer">
+          <div class="ck-footer-left">
+            <div class="ck-page-size">Mostrar
+              <select id="usPageSize">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </select>
+              registos
+            </div>
+          </div>
+          <div class="ck-footer-right">
+            <span id="usTableSummary">0-0 de 0 registos</span>
+            <div class="ck-pagination" id="usPagination"></div>
+          </div>
+        </div>
+      </article>
+
+      <aside class="ck-side users-side">
+        <article class="ck-panel">
+          <div class="ck-panel-head">
+            <div class="ck-panel-title">
+              <span>⚡</span>
+              <div><h3>Ações rápidas</h3><p>Ações para gerir utilizadores.</p></div>
+            </div>
+          </div>
+          <div class="ck-quick-grid users-quick-grid">
+            <button class="ck-btn primary" type="button" id="usBtnNovo">+ Novo utilizador</button>
+            <button class="ck-btn" type="button" id="usBtnImportar">⇧ Importar users</button>
+            <button class="ck-btn" type="button" id="usBtnExportar">⇩ Exportar lista</button>
+            <button class="ck-btn" type="button" id="usBtnPapeis">🛡 Papéis e permissões</button>
+            <button class="ck-btn" type="button" id="usBtnLogs">☷ Logs de atividade</button>
+            <button class="ck-btn" type="button" id="usBtnConfig">⚙ Configurações</button>
+          </div>
+          <input id="usImportInput" type="file" accept=".csv,text/csv" hidden>
+        </article>
+
+        <article class="ck-panel">
+          <div class="ck-panel-head">
+            <div class="ck-panel-title">
+              <span>📊</span>
+              <div><h3>Distribuição por papel</h3><p>Distribuição atual dos utilizadores por papel.</p></div>
+            </div>
+          </div>
+          <div class="users-donut-wrap">
+            <div class="users-donut" id="usRoleDonut"></div>
+            <div class="users-legend" id="usRoleLegend"></div>
+          </div>
+        </article>
+
+        <article class="ck-panel">
+          <div class="ck-panel-head">
+            <div class="ck-panel-title">
+              <span>🕘</span>
+              <div><h3>Atividade recente</h3><p>Últimas ações dos utilizadores.</p></div>
+            </div>
+            <button class="ck-btn ghost tiny" type="button" id="usBtnVerLogs">Ver todas →</button>
+          </div>
+          <div class="ck-mini-table" id="usRecentActivity"></div>
+        </article>
+
+        <article class="ck-panel">
+          <div class="ck-panel-head">
+            <div class="ck-panel-title">
+              <span>⚠</span>
+              <div><h3>Alertas e avisos</h3><p>Situações que requerem atenção.</p></div>
+            </div>
+            <button class="ck-btn ghost tiny" type="button" id="usBtnVerAlertas">Ver todos →</button>
+          </div>
+          <div class="ck-mini-table" id="usAlerts"></div>
+        </article>
+      </aside>
+    </section>
+
+    <a class="ck-back" href="index.html">← Portal</a>
+  </div>
+
+  <div class="ck-modal" id="usModal" hidden>
+    <div class="ck-modal-card users-modal-card">
+      <div class="ck-modal-head">
+        <div><h3 id="usModalTitle">Novo utilizador</h3><p>Preencha os dados principais e credenciais do utilizador.</p></div>
+        <button class="ck-icon-btn" type="button" id="usModalClose">×</button>
+      </div>
+      <form class="ck-modal-body" id="usForm">
+        <div class="ck-form-grid three">
+          <label><span>Nome</span><input id="usNome" type="text" required placeholder="Ex: Ricardo Fernandes"></label>
+          <label><span>Username</span><input id="usUsername" type="text" placeholder="Ex: ricardo"></label>
+          <label><span>Email</span><input id="usEmail" type="email" placeholder="nome@appbraga.pt"></label>
+          <label><span>Papel</span><select id="usRole"><option>Admin Master</option><option>Administrador</option><option>User</option><option>Operador</option></select></label>
+          <label><span>Estado</span><select id="usEstado"><option value="ativo">Ativo</option><option value="inativo">Inativo</option><option value="bloqueado">Bloqueado</option></select></label>
+          <label><span>Zona</span><input id="usZona" type="text" placeholder="Ex: Informática"></label>
+          <label><span>User PC/EYE</span><input id="usUserPcEye" type="text"></label>
+          <label><span>Pass Remote</span><input id="usPassRemote" type="text"></label>
+          <label><span>Pass Eye Peak</span><input id="usPassEyePeak" type="text"></label>
+          <label><span>Operador Pistola</span><input id="usOpPistola" type="text"></label>
+          <label><span>Pass Pistola</span><input id="usPassPistola" type="text"></label>
+          <label><span>Nome PC</span><input id="usNomePc" type="text"></label>
+          <label><span>TeamViewer</span><input id="usTeamviewer" type="text"></label>
+          <label><span>User MO365</span><input id="usUserMo365" type="text"></label>
+          <label><span>PW MO365</span><input id="usPwMo365" type="text"></label>
+          <label><span>Email Bragalis</span><input id="usEmailBragalis" type="text"></label>
+          <label><span>Pass Bragalis</span><input id="usPassBragalis" type="text"></label>
+          <label class="full"><span>Notas</span><textarea id="usNotas" placeholder="Notas internas"></textarea></label>
+        </div>
+        <div class="ck-modal-actions">
+          <button class="ck-btn" type="button" id="usBtnCancelar">Cancelar</button>
+          <button class="ck-btn primary" type="submit">Guardar utilizador</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="ck-modal" id="usDetailModal" hidden>
+    <div class="ck-modal-card users-modal-card">
+      <div class="ck-modal-head">
+        <div><h3 id="usDetailTitle">Detalhe do utilizador</h3><p>Dados e acessos guardados.</p></div>
+        <button class="ck-icon-btn" type="button" id="usDetailClose">×</button>
+      </div>
+      <div class="ck-modal-body" id="usDetailBody"></div>
+    </div>
+  </div>
+
+  <div class="ck-modal" id="usLogsModal" hidden>
+    <div class="ck-modal-card users-modal-card">
+      <div class="ck-modal-head">
+        <div><h3 id="usLogsTitle">Logs de atividade</h3><p>Histórico recente de ações dos utilizadores.</p></div>
+        <button class="ck-icon-btn" type="button" id="usLogsClose">×</button>
+      </div>
+      <div class="ck-modal-body"><div class="ck-modal-list" id="usLogsList"></div></div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="../js/app.js?v=1.58.133"></script>
+  <script src="../js/users-futurista.js?v=1.58.133"></script>
+  <script src="../js/users-print-label-100x150-fix.js?v=1.58.133"></script>
+  <script src="../js/appbraga-scroll-systems.js?v=1.58.133"></script>
+</body>
+</html>

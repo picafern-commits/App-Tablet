@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <title>Rádios</title>
+  <meta name="theme-color" content="#020817">
+  <link rel="manifest" href="../manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
+  <link rel="apple-touch-icon" href="../icon-192.png">
+  <link rel="stylesheet" href="../css/style.css?v=1.58.133">
+  <link rel="stylesheet" href="../css/appbraga-clean-layout.css?v=1.58.133">
+  <link rel="stylesheet" href="../css/radios.css?v=1.58.133">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="App Braga">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="stylesheet" href="../css/appbraga-hero-padrao.css?v=1.58.133">
+  <link rel="stylesheet" href="../css/appbraga-scroll-systems.css?v=1.58.133">
+  <link rel="stylesheet" href="../css/appbraga-impressoras-padrao.css?v=1.58.133">
+  <link rel="stylesheet" href="../css/appbraga-fixed-scale.css?v=1.58.133">
+</head>
+<body class="radios-futurista-page">
+  <div class="ck-page">
+    <div class="ck-version">Versão&nbsp; v1.58.122</div>
+
+    <section class="ck-hero" aria-labelledby="rdTitle">
+      <div class="ck-hero-inner">
+        <a class="ck-hero-home" href="index.html" aria-label="Voltar ao Portal AppBraga" title="Voltar ao Portal">
+          <img src="../assets/bragalis-home-logo-original.png?v=1.58.133" alt="AppBraga">
+        </a>
+        <div class="ck-hero-icon" aria-hidden="true"><span class="rd-icon-radio">📻</span></div>
+        <div class="ck-hero-copy">
+          <h1 id="rdTitle">Rádios</h1>
+          <p>Gestão, estado e controlo das rádios da equipa.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="ck-kpis" aria-label="Resumo dos rádios">
+      <div class="ck-kpi blue"><span class="ck-kpi-icon" aria-hidden="true">📻</span><div class="ck-kpi-label">Total rádios<strong id="rdKpiTotal">0</strong><small>Registadas</small></div></div>
+      <div class="ck-kpi green"><span class="ck-kpi-icon ck-icon-check" aria-hidden="true">✓</span><div class="ck-kpi-label">Disponíveis<strong id="rdKpiDisponiveis">0</strong><small>Prontas a usar</small></div></div>
+      <div class="ck-kpi orange"><span class="ck-kpi-icon" aria-hidden="true">👤</span><div class="ck-kpi-label">Em utilização<strong id="rdKpiUso">0</strong><small>A ser usadas</small></div></div>
+      <div class="ck-kpi red"><span class="ck-kpi-icon ck-icon-alert" aria-hidden="true">!</span><div class="ck-kpi-label">Avariadas<strong id="rdKpiAvariadas">0</strong><small>A reparar</small></div></div>
+      <div class="ck-kpi yellow"><span class="ck-kpi-icon" aria-hidden="true">⚡</span><div class="ck-kpi-label">Em carga<strong id="rdKpiCarga">0</strong><small>A carregar</small></div></div>
+      <div class="ck-kpi purple"><span class="ck-kpi-icon ck-icon-calendar" aria-hidden="true">▦</span><div class="ck-kpi-label">Intervenções<strong id="rdKpiIntervencoes">0</strong><small>Últimos 30 dias</small></div></div>
+    </section>
+
+    <section class="ck-main">
+      <div class="rd-left-stack">
+      <article class="ck-panel">
+        <div class="ck-panel-head">
+          <div class="ck-panel-title">
+            <span>📻</span>
+            <div>
+              <h2>Lista de Rádios</h2>
+              <p>Consulte o estado e localização de cada rádio.</p>
+            </div>
+          </div>
+          <div class="ck-search-row">
+            <input id="rdSearch" type="search" placeholder="Pesquisar rádio...">
+            <select id="rdFilterLocal"><option value="">Todos os locais</option></select>
+            <select id="rdFilterEstado">
+              <option value="">Todos os estados</option>
+              <option value="disponivel">Disponível</option>
+              <option value="uso">Em utilização</option>
+              <option value="carga">Em carga</option>
+              <option value="avariada">Avariada</option>
+              <option value="manutencao">Em manutenção</option>
+            </select>
+            <button class="ck-btn small" type="button" id="rdBtnLimpar">☰ Limpar</button>
+          </div>
+        </div>
+        <div class="ck-table-wrap">
+          <table class="ck-table">
+            <thead>
+              <tr>
+                <th>ID / N.º Série</th>
+                <th>Modelo</th>
+                <th>Local</th>
+                <th>Estado</th>
+                <th>Último registo</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="rdTableBody"></tbody>
+          </table>
+        </div>
+        <div class="ck-table-footer">
+          <div class="ck-footer-left">
+            <div class="ck-page-size">Mostrar
+              <select id="rdPageSize">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </select>
+              registos
+            </div>
+          </div>
+          <div class="ck-footer-right">
+            <span id="rdTableSummary">0-0 de 0</span>
+            <div class="ck-pagination" id="rdPagination"></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="ck-panel rd-weekly-panel">
+        <div class="ck-panel-head rd-weekly-head">
+          <div class="ck-panel-title">
+            <span>📅</span>
+            <div>
+              <h2>Registos semanais dos rádios</h2>
+              <p>Controlo semanal separado da lista principal, com histórico e alertas.</p>
+            </div>
+          </div>
+          <div class="rd-weekly-actions">
+            <button class="ck-btn small" type="button" id="rdBtnNovoSemanal">+ Novo registo semanal</button>
+            <button class="ck-btn small" type="button" id="rdBtnExportSemanal">▣ Exportar CSV</button>
+          </div>
+        </div>
+        <div class="rd-weekly-summary" id="rdWeeklySummaryCards">
+          <div><small>Semana atual</small><strong>—</strong></div>
+          <div><small>Último registo</small><strong>—</strong></div>
+          <div><small>Alertas</small><strong>0</strong></div>
+        </div>
+        <div class="ck-table-wrap rd-weekly-table-wrap">
+          <table class="ck-table rd-weekly-table">
+            <thead>
+              <tr>
+                <th>Semana</th>
+                <th>Responsável</th>
+                <th>Total</th>
+                <th>OK</th>
+                <th>Alertas</th>
+                <th>Guardado em</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="rdWeeklyBody"></tbody>
+          </table>
+        </div>
+      </article>
+      </div>
+
+      <aside class="ck-side">
+        <article class="ck-panel">
+          <div class="ck-panel-head">
+            <div class="ck-panel-title">
+              <span>⚡</span>
+              <div><h3>Ações rápidas</h3><p>Atalhos para gerir rádios.</p></div>
+            </div>
+          </div>
+          <div class="ck-quick-grid">
+            <button class="ck-btn primary" type="button" id="rdBtnNova">+ Nova rádio</button>
+            <button class="ck-btn" type="button" id="rdBtnUtilizacao">➜ Registar utilização</button>
+            <button class="ck-btn" type="button" id="rdBtnDevolucao">↺ Registar devolução</button>
+            <button class="ck-btn" type="button" id="rdBtnIntervencao">🛠 Registar intervenção</button>
+            <button class="ck-btn" type="button" id="rdBtnRelatorio">▣ Relatório Rádios</button>
+            <button class="ck-btn" type="button" id="rdBtnSemanalRapido">📅 Registo semanal</button>
+          </div>
+        </article>
+
+        <article class="ck-panel">
+          <div class="ck-panel-head">
+            <div class="ck-panel-title">
+              <span>⚠️</span>
+              <div><h3>Alertas e avisos</h3><p>Situações que requerem atenção.</p></div>
+            </div>
+            <button class="ck-btn small" type="button" id="rdBtnVerAlertas">Ver todos →</button>
+          </div>
+          <div class="ck-list" id="rdAlertsList"></div>
+        </article>
+
+        <article class="ck-panel">
+          <div class="ck-panel-head">
+            <div class="ck-panel-title">
+              <span>📊</span>
+              <div><h3>Resumo do estado</h3><p>Distribuição atual dos rádios.</p></div>
+            </div>
+          </div>
+          <div class="ck-bars" id="rdSummaryBars"></div>
+        </article>
+
+        <article class="ck-panel">
+          <div class="ck-panel-head">
+            <div class="ck-panel-title">
+              <span>🕘</span>
+              <div><h3>Últimos registos</h3><p>Atividades mais recentes relacionadas com rádios.</p></div>
+            </div>
+            <button class="ck-btn small" type="button" id="rdBtnVerRegistos">Ver todos →</button>
+          </div>
+          <div class="ck-mini-table" id="rdRecentRecords"></div>
+        </article>
+      </aside>
+    </section>
+
+    <a class="ck-back" href="index.html">← Portal</a>
+  </div>
+
+  <div id="rdModalRadio" class="modal-overlay ck-modal" style="display:none;">
+    <div class="modal-card ck-modal-card">
+      <div class="ck-modal-head">
+        <div><h3 id="rdModalRadioTitle">Nova rádio</h3><p>Preencha os dados do rádio.</p></div>
+        <button class="ck-btn small" type="button" data-rd-close="radio">Fechar</button>
+      </div>
+      <div class="ck-modal-body">
+        <div class="ck-form-grid three">
+          <label><span>Código</span><input id="rdFormCodigo" type="text" placeholder="Ex.: RAD-001"></label>
+          <label><span>N.º Série</span><input id="rdFormSerie" type="text" placeholder="Ex.: 4532107893"></label>
+          <label><span>Modelo</span><input id="rdFormModelo" type="text" placeholder="Ex.: Motorola XT420"></label>
+          <label><span>Local</span><input id="rdFormLocal" type="text" placeholder="Ex.: Braga"></label>
+          <label><span>Estado</span>
+            <select id="rdFormEstado">
+              <option value="Disponível">Disponível</option>
+              <option value="Em uso">Em utilização</option>
+              <option value="Em carga">Em carga</option>
+              <option value="Avariada">Avariada</option>
+              <option value="Em manutenção">Em manutenção</option>
+            </select>
+          </label>
+          <label><span>Utilizador</span><input id="rdFormUser" type="text" placeholder="Ex.: Ricardo"></label>
+          <label><span>MAC / Identificador</span><input id="rdFormMac" type="text" placeholder="Opcional"></label>
+          <label><span>RF / Canal</span><input id="rdFormCanal" type="text" placeholder="Opcional"></label>
+          <label class="full"><span>Notas</span><textarea id="rdFormNotas" placeholder="Observações adicionais"></textarea></label>
+        </div>
+        <div class="ck-modal-actions">
+          <button class="ck-btn" type="button" data-rd-close="radio">Cancelar</button>
+          <button class="ck-btn primary" type="button" id="rdSaveRadioBtn">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="rdModalDetalhe" class="modal-overlay ck-modal" style="display:none;">
+    <div class="modal-card ck-modal-card">
+      <div class="ck-modal-head">
+        <div><h3 id="rdDetailTitle">Detalhes do rádio</h3><p>Consulta rápida da informação e histórico recente.</p></div>
+        <button class="ck-btn small" type="button" data-rd-close="detail">Fechar</button>
+      </div>
+      <div class="ck-modal-body">
+        <div class="ck-detail-grid" id="rdDetailGrid"></div>
+        <div class="ck-modal-list" id="rdDetailRecords"></div>
+        <div class="ck-modal-actions">
+          <button class="ck-btn" type="button" id="rdDetailEditBtn">Editar</button>
+          <button class="ck-btn primary" type="button" id="rdDetailInterventionBtn">Registar intervenção</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="rdModalRegisto" class="modal-overlay ck-modal" style="display:none;">
+    <div class="modal-card ck-modal-card">
+      <div class="ck-modal-head">
+        <div><h3 id="rdModalRegistoTitle">Registar intervenção</h3><p id="rdModalRegistoSubtitle">Guarde o registo e atualize o estado do rádio.</p></div>
+        <button class="ck-btn small" type="button" data-rd-close="record">Fechar</button>
+      </div>
+      <div class="ck-modal-body">
+        <div class="ck-form-grid three">
+          <label><span>Rádio</span><select id="rdRecordRadio"></select></label>
+          <label><span>Tipo</span>
+            <select id="rdRecordTipo">
+              <option value="Intervenção">Intervenção</option>
+              <option value="Utilização">Utilização</option>
+              <option value="Devolução">Devolução</option>
+              <option value="Carga">Carga</option>
+              <option value="Avaria">Avaria</option>
+              <option value="Manutenção">Manutenção</option>
+            </select>
+          </label>
+          <label><span>Estado após registo</span>
+            <select id="rdRecordEstado">
+              <option value="Disponível">Disponível</option>
+              <option value="Em uso">Em utilização</option>
+              <option value="Em carga">Em carga</option>
+              <option value="Avariada">Avariada</option>
+              <option value="Em manutenção">Em manutenção</option>
+            </select>
+          </label>
+          <label><span>Utilizador / Técnico</span><input id="rdRecordUser" type="text" placeholder="Ex.: Ricardo"></label>
+          <label><span>Data / hora</span><input id="rdRecordData" type="datetime-local"></label>
+          <label><span>Local</span><input id="rdRecordLocal" type="text" placeholder="Local do registo"></label>
+          <label class="full"><span>Notas</span><textarea id="rdRecordNotas" placeholder="Descreva o que foi feito"></textarea></label>
+        </div>
+        <div class="ck-modal-actions">
+          <button class="ck-btn" type="button" data-rd-close="record">Cancelar</button>
+          <button class="ck-btn primary" type="button" id="rdSaveRecordBtn">Guardar registo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="rdModalSemanal" class="modal-overlay ck-modal" style="display:none;">
+    <div class="modal-card ck-modal-card rd-weekly-modal-card">
+      <div class="ck-modal-head">
+        <div>
+          <h3 id="rdWeeklyModalTitle">Registo semanal dos rádios</h3>
+          <p>Confirme presença, local, estado, bateria e notas de cada rádio.</p>
+        </div>
+        <button class="ck-btn small" type="button" data-rd-close="weekly">Fechar</button>
+      </div>
+      <div class="ck-modal-body">
+        <div class="ck-form-grid three rd-weekly-meta">
+          <label><span>Semana de</span><input id="rdWeeklySemana" type="date"></label>
+          <label><span>Responsável</span><input id="rdWeeklyResponsavel" type="text" placeholder="Ex.: Ricardo"></label>
+          <label><span>Observações gerais</span><input id="rdWeeklyObs" type="text" placeholder="Opcional"></label>
+        </div>
+
+        <div class="rd-weekly-modal-tools">
+          <div class="rd-weekly-modal-stats" id="rdWeeklyModalStats">
+            <span><small>Total</small><strong>0</strong></span>
+            <span><small>OK</small><strong>0</strong></span>
+            <span><small>Alertas</small><strong>0</strong></span>
+          </div>
+          <div class="rd-weekly-modal-buttons">
+            <button class="ck-btn small" type="button" id="rdWeeklyAllPresent">Todos presentes</button>
+            <button class="ck-btn small" type="button" id="rdWeeklyAllOk">Marcar tudo OK</button>
+            <button class="ck-btn small" type="button" id="rdWeeklyReload">Recarregar rádios</button>
+          </div>
+        </div>
+
+        <div class="rd-weekly-editor-wrap">
+          <table class="rd-weekly-editor">
+            <thead>
+              <tr>
+                <th>Rádio</th>
+                <th>Presente</th>
+                <th>Local</th>
+                <th>Estado</th>
+                <th>Bateria</th>
+                <th>OK</th>
+                <th>Notas</th>
+              </tr>
+            </thead>
+            <tbody id="rdWeeklyRows"></tbody>
+          </table>
+        </div>
+
+        <div class="ck-modal-actions">
+          <button class="ck-btn" type="button" data-rd-close="weekly">Cancelar</button>
+          <button class="ck-btn primary" type="button" id="rdWeeklySaveBtn">Guardar registo semanal</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="../js/app.js?v=1.58.133"></script>
+  <script src="../js/appbraga-systems.js?v=1.58.133"></script>
+  <script src="../js/helpers.js?v=1.58.133"></script>
+  <script src="../js/radios-codex-fix.js?v=1.58.133"></script>
+  <script src="../js/appbraga-scroll-systems.js?v=1.58.133"></script>
+</body>
+</html>
