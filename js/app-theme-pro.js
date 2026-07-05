@@ -337,18 +337,10 @@
   }
 
   function ensureClassicStylesheet(active) {
+    // v1.58.133: visual antigo removido. Nunca carregar app-design-classic.css.
     const id = "appDesignClassicStylesheet";
     const existing = document.getElementById(id);
-    if (!active) {
-      existing?.remove();
-      return;
-    }
-    if (existing) return;
-    const link = document.createElement("link");
-    link.id = id;
-    link.rel = "stylesheet";
-    link.href = designAssetPath("app-design-classic.css");
-    (document.head || document.documentElement).appendChild(link);
+    existing?.remove();
   }
 
   function currentPageTitle() {
@@ -516,7 +508,8 @@
   }
 
   function applyVisualDesign(modeInput = getCachedVisualDesign(), options = {}) {
-    const mode = modeInput === "classic" ? "classic" : "pro";
+    // v1.58.133: visual antigo removido; manter sempre o visual novo/pro.
+    const mode = "pro";
     const applyTo = (node) => {
       if (!node?.classList) return;
       node.classList.toggle("app-design-classic", mode === "classic");

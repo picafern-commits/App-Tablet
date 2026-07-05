@@ -1,180 +1,189 @@
-const CACHE_NAME = "mundial-pontos-2026-v367-modal-diretorio-input-fix";
-const APP_VERSION_SW_V298_USER_NOTIFICATIONS = "298.0";
-let userNotificationsEnabledSwV298 = true;
-const APP_VERSION_SW_V311_CLEAN_AUDIT = "311.0";
-
+const APP_BRAGA_SW = "appbraga-v1.58.133";
 const APP_SHELL = [
   "./",
-  "./index.html?v=367",
-  "./style.css?v=367",
-  "./app.js?v=367",
-  "./config.js?v=367",
-  "./manifest.webmanifest",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png",
-  "./icons/apple-touch-icon.png",
-  "./icons/apple-touch-icon-167.png",
-  "./icons/apple-touch-icon-152.png"
+  "./index.html",
+  "./html/index.html",
+  "./html/dashboard.html",
+  "./html/notificacoes.html",
+  "./html/config.html",
+  "./css/configuracoes-futurista.css",
+  "./js/configuracoes-futurista.js",
+  "./html/computadores.html",
+  "./html/impressoras.html",
+  "./html/radios.html",
+  "./js/radios-codex-fix.js",
+  "./js/computadores-codex-fix.js",
+  "./css/radios.css",
+  "./css/appbraga-hero-padrao.css",
+  "./css/computadores.css",
+  "./html/tarefas.html",
+  "./js/tarefas-futurista.js",
+  "./css/tarefas.css",
+  "./css/informacoes.css",
+  "./js/informacoes-futurista.js",
+  "./html/informacoes.html",
+  "./html/equipas-semanais.html",
+  "./html/stock.html",
+  "./html/diretorio.html",
+  "./css/diretorio.css",
+  "./js/diretorio.js",
+  "./html/users.html",
+  "./css/users-futurista.css",
+  "./js/users-futurista.js",
+  "./html/portas.html",
+  "./css/portas-rede.css",
+  "./js/portas-rede-futurista.js",
+  "./manifest.json",
+  "./css/appbraga-clean-layout.css",
+  "./js/appbraga-systems.js",
+  "./css/manutencao-futurista.css",
+  "./js/manutencao-futurista.js",
+  "./css/etiquetas-futurista.css",
+  "./js/etiquetas-futurista.js",
+  "./assets/bragalis-home-logo-original.png",
+  "./assets/bragalis-home-logo-clean.png",
+  "./assets/bragalis-home-logo.png",
+  "./css/style.css",
+  "./css/portal-home.css",
+  "./css/dashboard-futurista.css",
+  "./css/autozitania-bragalis.css",
+  "./css/app-theme-pro.css",
+  "./css/enterprise/ops.css",
+  "./css/systems/global-search.css",
+  "./css/systems/personal-tools.css",
+  "./css/iphone-force-final.css",
+  "./css/iphone-sidebar-final.css",
+  "./css/dashboard-widgets.css",
+  "./css/app-clean-pages.css",
+  "./css/historico-futurista.css",
+  "./css/stock-futurista.css",
+  "./css/operational-improvements.css",
+  "./css/premium-polish.css",
+  "./js/app.js",
+  "./js/portal-home.js",
+  "./js/dashboard-futurista.js",
+  "./js/sidebar-editor.js",
+  "./js/dashboard-widgets.js",
+  "./js/operational-improvements.js",
+  "./js/historico-futurista.js",
+  "./js/stock-futurista.js",
+  "./css/equipas-semanais.css",
+  "./js/equipas-semanais.js",
+  "./js/app-theme-pro.js",
+  "./js/enterprise/ops.js",
+  "./js/systems/global-search/global-search.js",
+  "./js/systems/backup/local-backup.js",
+  "./js/systems/personal-tools.js",
+  "./js/core/helpers.js",
+  "./js/iphone-force-final.js",
+  "./js/iphone-sidebar-final.js",
+  "./js/scanner-ia.js",
+  "./html/scanner-ia.html",
+  "./css/scanner-ia-futurista.css",
+  "./icon-192.png",
+  "./icon-512.png"
 ];
 
-self.addEventListener("install", event => {
-  self.skipWaiting();
+self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL).catch(() => null))
+    caches.open(APP_BRAGA_SW)
+      .then((cache) => cache.addAll(APP_SHELL))
+      .catch(() => null)
   );
+  self.skipWaiting();
 });
 
-self.addEventListener("activate", event => {
+self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))))
+      .then((keys) => Promise.all(
+        keys.filter((key) => key !== APP_BRAGA_SW).map((key) => caches.delete(key))
+      ))
       .then(() => self.clients.claim())
-      .then(() => self.clients.matchAll({ type: "window", includeUncontrolled: true }))
-      .then(clients => clients.forEach(client => client.postMessage({ type: "APP_VERSION_READY", cacheName: CACHE_NAME })))
   );
 });
 
-self.addEventListener("message", event => {
-  if (event.data && event.data.type === "SKIP_WAITING") {
-    self.skipWaiting();
-  }
-  if (event.data && event.data.type === "USER_NOTIFICATIONS_STATE_V298") {
-    userNotificationsEnabledSwV298 = event.data.enabled !== false;
-  }
-});
-
-const NOTIFICATION_SEEN_CACHE_V297 = "mundial-push-seen-v297";
-const NOTIFICATION_SEEN_TTL_V297 = 7 * 24 * 60 * 60 * 1000;
-
-function notificationHashV297(text = "") {
-  let hash = 0;
-  const value = String(text || "");
-  for (let i = 0; i < value.length; i += 1) {
-    hash = ((hash << 5) - hash) + value.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash).toString(36);
-}
-
-function notificationStableIdV297(payload = {}, title = "", body = "") {
-  const data = payload.data || {};
-  const notification = payload.notification || {};
-  const raw = data.notificationId || data.eventId || data.pushId || data.tag || data.collapseKey || payload.messageId || payload.fcmMessageId || notification.tag;
-  if (raw) return `mundial-${String(raw).trim()}`;
-  const type = data.type || "push";
-  const gameId = data.gameId || data.matchId || data.chatMessageId || "";
-  const stamp = data.createdAt || data.updatedAt || data.sentAt || "";
-  return `mundial-${type}-${notificationHashV297(`${type}|${gameId}|${title}|${body}|${stamp}`)}`;
-}
-
-async function notificationSeenInSwV297(id) {
-  if (!id) return false;
-  try {
-    const cache = await caches.open(NOTIFICATION_SEEN_CACHE_V297);
-    const req = new Request(`https://local-notification-seen/${encodeURIComponent(id)}`);
-    const hit = await cache.match(req);
-    if (!hit) return false;
-    const data = await hit.json().catch(() => ({}));
-    const at = Number(data.at || 0);
-    return at && Date.now() - at < NOTIFICATION_SEEN_TTL_V297;
-  } catch {
-    return false;
-  }
-}
-
-async function markNotificationSeenInSwV297(id) {
-  if (!id) return;
-  try {
-    const cache = await caches.open(NOTIFICATION_SEEN_CACHE_V297);
-    const req = new Request(`https://local-notification-seen/${encodeURIComponent(id)}`);
-    await cache.put(req, new Response(JSON.stringify({ id, at: Date.now() }), {
-      headers: { "Content-Type": "application/json" }
-    }));
-    const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true }).catch(() => []);
-    clients.forEach(client => client.postMessage({ type: "PUSH_SEEN_V297", id }));
-  } catch {}
-}
-
-self.addEventListener("push", event => {
-  event.waitUntil((async () => {
-    let payload = {};
-    try {
-      payload = event.data ? event.data.json() : {};
-    } catch {
-      payload = { notification: { title: "Mundial Pontos 2026", body: event.data?.text() || "" } };
-    }
-
-    if (userNotificationsEnabledSwV298 === false) return;
-
-    const data = payload.data || {};
-    const notification = payload.notification || {};
-    const title = data.title || notification.title || "Mundial Pontos 2026";
-    const body = data.body || notification.body || "";
-    const stableId = notificationStableIdV297(payload, title, body);
-
-    if (await notificationSeenInSwV297(stableId)) return;
-    await markNotificationSeenInSwV297(stableId);
-
-    const options = {
-      body,
-      tag: stableId,
-      renotify: false,
-      icon: "./icons/icon-192.png",
-      badge: "./icons/icon-192.png",
-      data: {
-        url: data.url || "./index.html?open=notifications",
-        type: data.type || "push",
-        stableId
-      }
-    };
-
-    await self.registration.showNotification(title, options);
-  })());
-});
-
-self.addEventListener("notificationclick", event => {
-  event.notification.close();
-  const url = event.notification?.data?.url || "./index.html?open=notifications";
-  event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(clients => {
-      const existing = clients.find(client => "focus" in client);
-      if (existing) {
-        existing.navigate(url);
-        return existing.focus();
-      }
-      return self.clients.openWindow(url);
-    })
-  );
-});
-
-self.addEventListener("fetch", event => {
+self.addEventListener("fetch", (event) => {
   const request = event.request;
   if (request.method !== "GET") return;
 
   const url = new URL(request.url);
-
-  if (url.origin !== location.origin) {
-    return;
-  }
-
-  if (request.mode === "navigate" || url.pathname.endsWith(".html") || url.pathname.endsWith(".js") || url.pathname.endsWith(".css")) {
-    event.respondWith(
-      fetch(request)
-        .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
-          return response;
-        })
-        .catch(() => caches.match(request).then(cached => cached || caches.match("./index.html?v=367")))
-    );
-    return;
-  }
+  if (url.origin !== self.location.origin) return;
 
   event.respondWith(
-    caches.match(request).then(cached => cached || fetch(request).then(response => {
-      const copy = response.clone();
-      caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
-      return response;
-    }))
+    fetch(request)
+      .then((response) => {
+        const clone = response.clone();
+        caches.open(APP_BRAGA_SW)
+          .then((cache) => cache.put(request, clone))
+          .catch(() => {});
+        return response;
+      })
+      .catch(() => caches.match(request).then((cached) => cached || caches.match("./index.html")))
+  );
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
+
+self.addEventListener("push", (event) => {
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch (error) {
+    payload = { title: "App Braga", body: event.data ? event.data.text() : "Nova notificacao" };
+  }
+  const title = payload.title || payload.notification?.title || "App Braga";
+  const body = payload.body || payload.notification?.body || "Nova notificacao App Braga";
+  const data = payload.data || payload;
+  event.waitUntil(self.registration.showNotification(title, {
+    body,
+    tag: payload.tag || data.tag || "app-braga",
+    icon: "./icon-192.png",
+    badge: "./icon-192.png",
+    data: {
+      url: data.url || payload.url || "./html/index.html",
+      requestId: data.requestId || payload.requestId || ""
+    }
+  }));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = event.notification.data?.url || "./html/index.html";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientsList) => {
+      for (const client of clientsList) {
+        if ("focus" in client) {
+          client.navigate(target).catch(() => null);
+          return client.focus();
+        }
+      }
+      return self.clients.openWindow(target);
+    })
+  );
+});
+
+// APP BRAGA V1.58.133 scanner-ia-futurista
+
+
+// v15866-html-network-first
+self.addEventListener("fetch", function(event) {
+  try {
+    var req = event.request;
+    var url = new URL(req.url);
+    if (req.mode === "navigate" || url.pathname.endsWith(".html")) {
+      event.respondWith(fetch(req, { cache: "no-store" }).catch(function() { return caches.match(req); }));
+    }
+  } catch(e) {}
+});
+self.addEventListener("activate", function(event) {
+  event.waitUntil(
+    caches.keys().then(function(keys) {
+      return Promise.all(keys.map(function(k) { return caches.delete(k); }));
+    }).then(function() { return self.clients.claim(); })
   );
 });

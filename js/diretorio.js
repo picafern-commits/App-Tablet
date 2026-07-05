@@ -1,524 +1,480 @@
-// ===== DIRETORIO TELEFONICO APP BRAGA V1.35.9 - DIRETORIO FIX DISPLAY + IMPORT =====
 (function(){
-  const $ = (id) => document.getElementById(id);
-  const COLLECTION = 'diretorioTelefonico';
-  let contactos = [];
-  let contactoEditId = null;
-  let unsubscribe = null;
-  let collapsedArmazens = new Set();
-  let collapsedSecoes = new Set();
-  let encodingRepairRunning = false;
+  'use strict';
+  const VERSION='1.58.121';
+  const COLLECTION='diretorioTelefonico';
+  const LOCAL_KEY='appbraga_diretorio_v2';
+  let contactos=[];
+  let unsubscribe=null;
+  let currentPage=1;
+  let pageSize=10;
+  let editId=null;
+  let detailId=null;
+  const collapsedSections = new Set();
+  const collapsedArmazens = new Set();
+  let naturalCollapseInitialized = false;
 
-  function fixTextoDiretorio(v){
-    let txt = String(v ?? '');
-    if(!txt) return txt;
+  const $=(id)=>document.getElementById(id);
+  const esc=(v)=>String(v??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));
+  const norm=(v)=>String(v??'').trim();
+  const lower=(v)=>norm(v).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const uid=()=>`dir_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
+  const nowIso=()=>new Date().toISOString();
+  const formatDate=(v)=>{
+    if(!v) return '—';
+    const d = v?.toDate ? v.toDate() : new Date(v);
+    if(Number.isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString('pt-PT')+', '+d.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
+  };
+  const initials=(name)=>{
+    const parts=norm(name).split(/\s+/).filter(Boolean);
+    if(!parts.length) return '??';
+    return ((parts[0][0]||'')+(parts.length>1?(parts[parts.length-1][0]||''):(parts[0][1]||''))).toUpperCase();
+  };
+  const telHref=(v)=>norm(v).replace(/[^\d+]/g,'');
+  const stateClass=(estado)=> lower(estado||'ativo').includes('ausente') ? 'ausente' : lower(estado||'ativo').includes('inat') ? 'inativo' : 'ativo';
 
-    const fixes = [
-      ['Autozit\uFFFDnia', 'Autozitânia'],
-      ['Autozitânia', 'Autozitânia'],
-      ['Autozitânia', 'Autozitânia'],
-      ['\u00c3\u00a1', '?'], ['\u00c3\u00a0', '?'], ['\u00c3\u00a2', '?'], ['\u00c3\u00a3', '?'], ['\u00c3\u00a7', '?'],
-      ['\u00c3\u00a9', '?'], ['\u00c3\u00aa', '?'], ['\u00c3\u00ad', '?'], ['\u00c3\u00b3', '?'], ['\u00c3\u00b4', '?'], ['\u00c3\u00b5', '?'], ['\u00c3\u00ba', '?'],
-      ['\u00c3\u0081', '?'], ['\u00c3\u0080', '?'], ['\u00c3\u0082', '?'], ['\u00c3\u0192', '?'], ['\u00c3\u0087', '?'],
-      ['\u00c3\u0089', '?'], ['\u00c3\u008a', '?'], ['\u00c3\u008d', '?'], ['\u00c3\u0093', '?'], ['\u00c3\u0094', '?'], ['\u00c3\u0095', '?'], ['\u00c3\u009a', '?']
-    ];
-    fixes.forEach(([bad, good]) => { txt = txt.split(bad).join(good); });
-    return txt.trim();
-  }
+  const extractEmail=(v)=>{
+    const raw=norm(v);
+    if(!raw) return '';
+    const match=raw.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+    return match ? match[0].trim() : '';
+  };
+  const slugName=(name)=>lower(name).replace(/[^a-z0-9]+/g,'.').replace(/^\.+|\.+$/g,'');
+  const looksGeneratedEmail=(email,nome)=>{
+    const e=lower(email);
+    if(!e) return false;
+    const [local='',domain='']=e.split('@');
+    const fakeDomains=new Set(['appbraga.pt','bragapbga.pt','bragalis.pt','bragalis.local']);
+    if(!fakeDomains.has(domain)) return false;
+    const slug=slugName(nome);
+    const compact=slug.replace(/\./g,'');
+    const localCompact=local.replace(/[^a-z0-9]/g,'');
+    return !slug || local===slug || localCompact===compact || /^(teste|user|utilizador|contacto|semnome|demo|exemplo|filipe|luis|marta|ana|pedro|joao|ricardo|nuno|teresa|mariana|tiago|bruno)/.test(local);
+  };
+  const cleanEmail=(value,nome)=>{
+    const email=extractEmail(value);
+    if(!email) return '';
+    return looksGeneratedEmail(email,nome) ? '' : email;
+  };
 
-  const norm = (v) => fixTextoDiretorio(String(v || '').trim());
-  const lower = (v) => norm(v).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-  const esc = (v) => String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-  const telHref = (v) => norm(v).replace(/[^0-9+]/g,'');
-  const cleanKey = (v) => String(v || '').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
-
-  function armazemDe(c){ return norm(c.armazem || c.armazém || c.warehouse || c.local) || 'Sem Armazém'; }
-  function seccaoDe(c){ return norm(c.seccao || c.secção || c.departamento) || 'Sem Secção'; }
-
-  function contactoNormalizado(c){
-    const out = {...(c || {})};
-    ['nome','armazem','armazém','warehouse','seccao','secção','departamento','local','observacoes','email'].forEach(k => {
-      if(out[k] !== undefined && out[k] !== null) out[k] = fixTextoDiretorio(out[k]);
-    });
-    return out;
-  }
-
-  function getEncodingPatch(c){
-    const patch = {};
-    ['nome','armazem','seccao','local','observacoes'].forEach(k => {
-      if(c && typeof c[k] === 'string'){
-        const fixed = fixTextoDiretorio(c[k]);
-        if(fixed !== c[k]) patch[k] = fixed;
-      }
-    });
-    return patch;
-  }
-
-  async function repararEncodingDiretorio(){
-    if(encodingRepairRunning || !window.db?.collection) return;
-    const comErro = contactos.map(c => ({c, patch:getEncodingPatch(c)})).filter(x => Object.keys(x.patch).length && x.c.firebaseId);
-    if(!comErro.length) return;
-    encodingRepairRunning = true;
-    try{
-      let batch = window.db.batch();
-      let ops = 0;
-      for(const item of comErro.slice(0, 450)){
-        batch.update(window.db.collection(COLLECTION).doc(String(item.c.firebaseId)), item.patch);
-        ops++;
-      }
-      if(ops) await batch.commit();
-      setEstado(`Corrigido encoding: ${ops}`);
-    }catch(err){
-      console.warn('Não foi possível corrigir encoding do diretório:', err);
-    }finally{
-      encodingRepairRunning = false;
-    }
-  }
-
-  function setEstado(text, ok=true){
-    const el = $('diretorioEstado');
-    if(!el) return;
-    el.textContent = text;
-    el.style.background = ok ? '' : 'rgba(220,38,38,.25)';
-  }
-
-  function getValores(){
+  function normalizeContact(raw={}){
+    const armazem = norm(raw.armazem || raw.warehouse || raw.localEmpresa || raw.empresa || raw.local || raw.store || raw.loja || 'Sem armazém');
+    const seccao = norm(raw.seccao || raw.secao || raw.section || raw.departamento || raw.area || 'Sem secção');
+    const nome = norm(raw.nome || raw.name || raw.utilizador || raw.contacto || raw.pessoa || raw.displayName || 'Sem nome');
+    const estado = norm(raw.estado || raw.status || raw.state || 'Ativo');
+    const email = cleanEmail(raw.email || raw.mail || raw.eMail, nome);
+    const telefone = norm(raw.telefone || raw.phone || raw.fixo || raw.tel);
+    const telemovel = norm(raw.telemovel || raw.mobile || raw.movimento || raw.movel || raw.telemóvel);
+    const extensao = norm(raw.extensao || raw.extensão || raw.extension || raw.ext);
     return {
-      nome: norm($('dirNome')?.value),
-      armazem: norm($('dirArmazem')?.value) || norm($('dirLocal')?.value) || 'Sem Armazém',
-      seccao: norm($('dirSeccao')?.value) || 'Sem Secção',
-      extensao: norm($('dirExtensao')?.value),
-      telefone: norm($('dirTelefone')?.value),
-      telemovel: norm($('dirTelemovel')?.value),
-      email: norm($('dirEmail')?.value),
-      local: norm($('dirLocal')?.value),
-      observacoes: norm($('dirObs')?.value),
-      updatedAtMs: Date.now()
-    };
-  }
-
-  function preencherModal(c={}){
-    if($('dirNome')) $('dirNome').value = c.nome || '';
-    if($('dirArmazem')) $('dirArmazem').value = armazemDe(c) === 'Sem Armazém' ? '' : armazemDe(c);
-    if($('dirSeccao')) $('dirSeccao').value = c.seccao || '';
-    if($('dirExtensao')) $('dirExtensao').value = c.extensao || '';
-    if($('dirTelefone')) $('dirTelefone').value = c.telefone || '';
-    if($('dirTelemovel')) $('dirTelemovel').value = c.telemovel || '';
-    if($('dirEmail')) $('dirEmail').value = c.email || '';
-    if($('dirLocal')) $('dirLocal').value = c.local || '';
-    if($('dirObs')) $('dirObs').value = c.observacoes || '';
-  }
-
-  function preencherDatalistsDiretorio(){
-    const armazensLista = $('dirArmazensLista');
-    const seccoesLista = $('dirSeccoesLista');
-    if(armazensLista){
-      const vals = [...new Set(contactos.map(armazemDe).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt',{numeric:true}));
-      armazensLista.innerHTML = vals.map(v=>`<option value="${esc(v)}"></option>`).join('');
-    }
-    if(seccoesLista){
-      const vals = [...new Set(contactos.map(seccaoDe).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt',{numeric:true}));
-      seccoesLista.innerHTML = vals.map(v=>`<option value="${esc(v)}"></option>`).join('');
-    }
-  }
-
-  function atualizarFiltros(){
-    const selArm = $('diretorioFiltroArmazem');
-    const selSec = $('diretorioFiltroSeccao');
-    const selLoc = $('diretorioFiltroLocal');
-    if(!selSec || !selLoc) return;
-    const currentArm = selArm?.value || '';
-    const currentSec = selSec.value;
-    const currentLoc = selLoc.value;
-    const armazens = [...new Set(contactos.map(armazemDe))].sort((a,b)=>a.localeCompare(b,'pt',{numeric:true}));
-    const seccoes = [...new Set(contactos.map(seccaoDe))].sort((a,b)=>a.localeCompare(b,'pt',{numeric:true}));
-    const locais = [...new Set(contactos.map(c => norm(c.local) || armazemDe(c) || 'Sem Local'))].sort((a,b)=>a.localeCompare(b,'pt',{numeric:true}));
-    if(selArm){
-      selArm.innerHTML = '<option value="">Todos</option>' + armazens.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
-      selArm.value = currentArm;
-    }
-    selSec.innerHTML = '<option value="">Todas</option>' + seccoes.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
-    selLoc.innerHTML = '<option value="">Todos</option>' + locais.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
-    selSec.value = currentSec;
-    selLoc.value = currentLoc;
-  }
-
-  function filtrados(){
-    const q = lower($('diretorioPesquisa')?.value || '');
-    const arm = lower($('diretorioFiltroArmazem')?.value || '');
-    const sec = lower($('diretorioFiltroSeccao')?.value || '');
-    const loc = lower($('diretorioFiltroLocal')?.value || '');
-    return contactos.filter(c => {
-      const armVal = armazemDe(c);
-      const secVal = seccaoDe(c);
-      const locVal = norm(c.local) || armVal;
-      const blob = lower([c.nome,c.extensao,c.telefone,c.telemovel,c.email,secVal,armVal,locVal,c.observacoes].join(' '));
-      if(q && !blob.includes(q)) return false;
-      if(arm && lower(armVal) !== arm) return false;
-      if(sec && lower(secVal) !== sec) return false;
-      if(loc && lower(locVal) !== loc) return false;
-      return true;
-    });
-  }
-
-  function agruparArmazemSecao(lista){
-    const armazens = new Map();
-    lista.forEach(c => {
-      const arm = armazemDe(c);
-      const sec = seccaoDe(c);
-      if(!armazens.has(arm)) armazens.set(arm, new Map());
-      const secMap = armazens.get(arm);
-      if(!secMap.has(sec)) secMap.set(sec, []);
-      secMap.get(sec).push(c);
-    });
-    for(const secMap of armazens.values()){
-      for(const arr of secMap.values()) arr.sort((a,b)=> String(a.nome||'').localeCompare(String(b.nome||''),'pt',{numeric:true}));
-    }
-    return [...armazens.entries()].sort((a,b)=>a[0].localeCompare(b[0],'pt',{numeric:true}));
-  }
-
-  function secaoKey(arm, sec){ return `${arm}||${sec}`; }
-
-  window.renderDiretorio = function(){
-    atualizarFiltros();
-    const list = filtrados();
-    preencherDatalistsDiretorio();
-    const total = $('diretorioTotal');
-    const armazens = $('diretorioArmazens');
-    const seccoes = $('diretorioSeccoes');
-    const telemoveis = $('diretorioTelemoveis');
-    if(total) total.textContent = list.length;
-    if(armazens) armazens.textContent = new Set(list.map(armazemDe)).size;
-    if(seccoes) seccoes.textContent = new Set(list.map(c => `${armazemDe(c)}|${seccaoDe(c)}`)).size;
-    if(telemoveis) telemoveis.textContent = list.filter(c => norm(c.telemovel)).length;
-
-    const container = $('diretorioLista');
-    if(!container) return;
-    if(!list.length){
-      container.innerHTML = '<div class="dir-empty">Ainda não existem contactos para mostrar.</div>';
-      return;
-    }
-
-    container.innerHTML = agruparArmazemSecao(list).map(([arm, secMap]) => {
-      const allContacts = [...secMap.values()].flat();
-      const armCollapsed = collapsedArmazens.has(arm);
-      const sectionsHtml = [...secMap.entries()].sort((a,b)=>a[0].localeCompare(b[0],'pt',{numeric:true})).map(([sec, arr]) => {
-        const key = secaoKey(arm, sec);
-        const secCollapsed = collapsedSecoes.has(key);
-        return `<article class="diretorio-section ${secCollapsed ? 'collapsed' : ''}" data-arm="${esc(arm)}" data-sec="${esc(sec)}">
-          <div class="diretorio-section-head diretorio-subsection-head" onclick="toggleDiretorioSecao('${esc(arm).replace(/'/g,'\\&#39;')}','${esc(sec).replace(/'/g,'\\&#39;')}')">
-            <div class="diretorio-section-title"><span class="dir-section-dot">▸</span><span>${esc(sec)}</span><span class="diretorio-count">${arr.length}</span></div>
-            <div class="diretorio-chevron">⌄</div>
-          </div>
-          <div class="diretorio-table-wrap">
-            <table class="diretorio-table">
-              <thead><tr><th>Ações</th><th>Nome</th><th>Extensão</th><th>Telefone</th><th>Telemóvel</th><th>Email</th><th>Local</th><th>Obs.</th></tr></thead>
-              <tbody>${arr.map(c => rowHtml(c)).join('')}</tbody>
-            </table>
-          </div>
-        </article>`;
-      }).join('');
-      return `<article class="diretorio-warehouse ${armCollapsed ? 'collapsed' : ''}" data-arm="${esc(arm)}">
-        <div class="diretorio-warehouse-head" onclick="toggleDiretorioArmazem('${esc(arm).replace(/'/g,'\\&#39;')}')">
-          <div class="diretorio-warehouse-title"><span class="warehouse-icon" aria-hidden="true">🏢</span><span>${esc(arm)}</span><span class="diretorio-count">${allContacts.length}</span></div>
-          <div class="diretorio-warehouse-meta"><span>${secMap.size} secções</span><span class="diretorio-chevron">⌄</span></div>
-        </div>
-        <div class="diretorio-warehouse-body">${sectionsHtml}</div>
-      </article>`;
-    }).join('');
-  };
-
-  function rowHtml(c){
-    c = contactoNormalizado(c);
-    const phone = telHref(c.telefone);
-    const mobile = telHref(c.telemovel);
-    const email = norm(c.email);
-    return `<tr>
-      <td><div class="diretorio-row-actions">
-        <button class="dir-icon-btn" title="Editar" onclick="editarContactoDiretorio('${esc(c.firebaseId)}')">✎</button>
-        <button class="dir-icon-btn copy" title="Copiar contacto" onclick="copiarContactoDiretorio('${esc(c.firebaseId)}')">⧉</button>
-        <button class="dir-icon-btn delete" title="Apagar" onclick="apagarContactoDiretorio('${esc(c.firebaseId)}')">×</button>
-      </div></td>
-      <td>${esc(c.nome || '-')}</td>
-      <td>${esc(c.extensao || '-')}</td>
-      <td>${phone ? `<a href="tel:${esc(phone)}">${esc(c.telefone)}</a>` : '<span class="dir-muted">-</span>'}</td>
-      <td>${mobile ? `<a href="tel:${esc(mobile)}">${esc(c.telemovel)}</a>` : '<span class="dir-muted">-</span>'}</td>
-      <td>${email ? `<a href="mailto:${esc(email)}">${esc(email)}</a>` : '<span class="dir-muted">-</span>'}</td>
-      <td>${esc(c.local || armazemDe(c) || '-')}</td>
-      <td>${esc(c.observacoes || '-')}</td>
-    </tr>`;
-  }
-
-  window.toggleDiretorioArmazem = function(arm){
-    const val = cleanKey(arm);
-    if(collapsedArmazens.has(val)) collapsedArmazens.delete(val); else collapsedArmazens.add(val);
-    window.renderDiretorio();
-  };
-
-  window.toggleDiretorioSecao = function(arm, sec){
-    const key = secaoKey(cleanKey(arm), cleanKey(sec));
-    if(collapsedSecoes.has(key)) collapsedSecoes.delete(key); else collapsedSecoes.add(key);
-    window.renderDiretorio();
-  };
-
-  window.expandirDiretorio = function(){ collapsedArmazens.clear(); collapsedSecoes.clear(); window.renderDiretorio(); };
-  window.colapsarDiretorio = function(){
-    contactos.forEach(c=>{
-      const arm = armazemDe(c), sec = seccaoDe(c);
-      collapsedArmazens.add(arm);
-      collapsedSecoes.add(secaoKey(arm, sec));
-    });
-    window.renderDiretorio();
-  };
-  window.limparFiltrosDiretorio = function(){
-    if($('diretorioPesquisa')) $('diretorioPesquisa').value='';
-    if($('diretorioFiltroArmazem')) $('diretorioFiltroArmazem').value='';
-    if($('diretorioFiltroSeccao')) $('diretorioFiltroSeccao').value='';
-    if($('diretorioFiltroLocal')) $('diretorioFiltroLocal').value='';
-    window.renderDiretorio();
-  };
-
-  window.abrirModalDiretorio = function(id){
-    contactoEditId = id || null;
-    const c = contactos.find(x => String(x.firebaseId) === String(id));
-    preencherModal(c || {});
-    preencherDatalistsDiretorio();
-    if($('modalDiretorioTitulo')) $('modalDiretorioTitulo').textContent = c ? 'Editar Contacto' : 'Novo Contacto';
-    const deleteBtn = $('dirDeleteModalBtn');
-    if(deleteBtn) deleteBtn.style.display = c ? 'inline-flex' : 'none';
-    const modal = $('modalDiretorio');
-    if(modal) modal.style.display = 'flex';
-    setTimeout(()=> $('dirNome')?.focus(), 80);
-  };
-  window.fecharModalDiretorio = function(){ const modal = $('modalDiretorio'); if(modal) modal.style.display='none'; const deleteBtn=$('dirDeleteModalBtn'); if(deleteBtn) deleteBtn.style.display='none'; contactoEditId=null; };
-  window.editarContactoDiretorio = function(id){ window.abrirModalDiretorio(id); };
-  window.apagarContactoAtualDiretorio = async function(){
-    if(!contactoEditId) return;
-    const id = contactoEditId;
-    await window.apagarContactoDiretorio(id);
-    window.fecharModalDiretorio();
-  };
-
-  window.guardarContactoDiretorio = async function(){
-    try{
-      const dados = getValores();
-      if(!dados.nome){ alert('Preenche pelo menos o nome do contacto.'); return; }
-      if(!window.db?.collection) throw new Error('Firebase indisponível.');
-      if(contactoEditId){
-        await window.db.collection(COLLECTION).doc(String(contactoEditId)).update(dados);
-      } else {
-        dados.createdAtMs = Date.now();
-        await window.db.collection(COLLECTION).add(dados);
-      }
-      window.fecharModalDiretorio();
-      setEstado('Guardado');
-    }catch(err){
-      console.error('Erro ao guardar contacto:', err);
-      alert('Erro ao guardar contacto: ' + (err?.message || err));
-      setEstado('Erro ao guardar', false);
-    }
-  };
-
-  window.apagarContactoDiretorio = async function(id){
-    try{
-      const c = contactos.find(x => String(x.firebaseId) === String(id));
-      if(!confirm(`Apagar contacto ${c?.nome || ''}?`)) return;
-      await window.db.collection(COLLECTION).doc(String(id)).delete();
-      setEstado('Contacto apagado');
-    }catch(err){
-      console.error('Erro ao apagar contacto:', err);
-      alert('Erro ao apagar contacto: ' + (err?.message || err));
-    }
-  };
-
-  window.copiarContactoDiretorio = async function(id){
-    const c = contactos.find(x => String(x.firebaseId) === String(id));
-    if(!c) return;
-    const txt = `${c.nome || ''}\nArmazém: ${armazemDe(c)}\nSecção: ${seccaoDe(c)}\nExt: ${c.extensao || '-'}\nTelefone: ${c.telefone || '-'}\nTelemóvel: ${c.telemovel || '-'}\nEmail: ${c.email || '-'}\nLocal: ${c.local || '-'}`;
-    try{
-      await navigator.clipboard.writeText(txt);
-      setEstado('Contacto copiado');
-    }catch(e){
-      prompt('Copia o contacto:', txt);
-    }
-  };
-
-  function normalizarCabecalho(v){ return lower(v).replace(/[^a-z0-9]/g,''); }
-  function valorPorCabecalho(row, aliases){
-    for(const [k, v] of Object.entries(row || {})){
-      const nk = normalizarCabecalho(k);
-      if(aliases.includes(nk)) return norm(v);
-    }
-    return '';
-  }
-
-  function contactoDeLinha(row){
-    const armazem = valorPorCabecalho(row, ['armazem','armazém','warehouse','localarmazem','localarmazém','site','filial']) || valorPorCabecalho(row, ['local','empresa','loja','localizacao','localização','morada']) || 'Sem Armazém';
-    const local = valorPorCabecalho(row, ['local','empresa','loja','localizacao','localização','morada','zona','piso']) || '';
-    const c = {
-      nome: valorPorCabecalho(row, ['nome','contacto','colaborador','pessoa','funcionario','funcionaria','utilizador','user']),
+      ...raw,
+      id: String(raw.id || raw.firebaseId || raw._id || uid()),
+      firebaseId: raw.firebaseId || raw.id || null,
+      nome,
+      funcao: norm(raw.funcao || raw.função || raw.role || raw.cargo || raw.descricao || raw.descrição),
       armazem,
-      seccao: valorPorCabecalho(row, ['seccao','secao','secção','departamento','area','equipa','grupo','categoria']) || 'Sem Secção',
-      extensao: valorPorCabecalho(row, ['extensao','extensão','ext','ramal','interno','numeroextensao','nramal']),
-      telefone: valorPorCabecalho(row, ['telefone','telf','tel','telefonefixo','fixo','numero','contactotelefonico']),
-      telemovel: valorPorCabecalho(row, ['telemovel','telemóvel','movel','móvel','tlm','mobile','gsm','contactomovel','contactomóvel']),
-      email: valorPorCabecalho(row, ['email','mail','correio','correioeletronico','e-mail']),
-      local,
-      observacoes: valorPorCabecalho(row, ['observacoes','observações','obs','notas','nota','descricao','descrição']),
-      updatedAtMs: Date.now(),
-      origemImportacao: 'excel'
+      seccao,
+      telefone,
+      telemovel,
+      email,
+      extensao,
+      estado,
+      observacoes: norm(raw.observacoes || raw.observações || raw.notas || raw.notes),
+      createdAt: raw.createdAt || raw.createdAtMs || raw.dataCriacao || raw.data || nowIso(),
+      updatedAt: raw.updatedAt || raw.updatedAtMs || raw.dataAtualizacao || raw.data || nowIso()
     };
-    return c.nome ? c : null;
   }
 
-  function parseCSV(text){
-    const lines = String(text || '').replace(/^\ufeff/, '').split(/\r?\n/).filter(l => l.trim());
-    if(!lines.length) return [];
-    const delimiter = (lines[0].match(/;/g)||[]).length >= (lines[0].match(/,/g)||[]).length ? ';' : ',';
-    const parseLine = (line) => {
-      const out = []; let cur = ''; let quoted = false;
-      for(let i=0;i<line.length;i++){
-        const ch = line[i];
-        if(ch === '"'){
-          if(quoted && line[i+1] === '"'){ cur += '"'; i++; }
-          else quoted = !quoted;
-        } else if(ch === delimiter && !quoted){ out.push(cur); cur = ''; }
-        else cur += ch;
-      }
-      out.push(cur);
-      return out.map(v => v.trim());
-    };
-    const headers = parseLine(lines[0]);
-    return lines.slice(1).map(line => {
-      const vals = parseLine(line); const obj = {};
-      headers.forEach((h,i)=> obj[h] = vals[i] || '');
-      return obj;
-    });
+  const dbReady=()=>window.db && typeof window.db.collection==='function';
+  function saveLocal(){ localStorage.setItem(LOCAL_KEY, JSON.stringify(contactos)); }
+  function loadLocal(){
+    try{ return JSON.parse(localStorage.getItem(LOCAL_KEY)||'[]').map(normalizeContact); }catch{ return []; }
+  }
+  function seedIfEmpty(){
+    // Não criar contactos de demonstração em produção.
+    // A versão antiga gerava nomes/emails fictícios quando o Diretório estava vazio; agora fica vazio até importar/criar contactos reais.
+    return;
   }
 
-  async function importarLinhasDiretorio(rows){
-    const novos = rows.map(contactoDeLinha).filter(Boolean);
-    if(!novos.length){ alert('Não encontrei contactos válidos no ficheiro. Confirma se existe uma coluna Nome.'); return; }
-    if(!window.db?.collection) throw new Error('Firebase indisponível.');
-    const msg = `Foram encontrados ${novos.length} contactos.\n\nA importação vai adicionar contactos novos e atualizar contactos existentes com o mesmo Nome + Armazém + Secção.\n\nQueres continuar?`;
-    if(!confirm(msg)) return;
-    setEstado('A importar...');
-
-    const existentes = new Map(contactos.map(c => [lower(`${c.nome}|${armazemDe(c)}|${seccaoDe(c)}`), c.firebaseId]));
-    let batch = window.db.batch();
-    let ops = 0, adicionados = 0, atualizados = 0;
-    async function commitIfNeeded(force=false){
-      if(ops >= 400 || (force && ops > 0)){
-        await batch.commit();
-        batch = window.db.batch();
-        ops = 0;
-      }
-    }
-
-    for(const c of novos){
-      const key = lower(`${c.nome}|${armazemDe(c)}|${seccaoDe(c)}`);
-      const existingId = existentes.get(key);
-      if(existingId){
-        batch.update(window.db.collection(COLLECTION).doc(String(existingId)), c);
-        atualizados++;
-      } else {
-        c.createdAtMs = Date.now();
-        const ref = window.db.collection(COLLECTION).doc();
-        batch.set(ref, c);
-        existentes.set(key, ref.id);
-        adicionados++;
-      }
-      ops++;
-      await commitIfNeeded(false);
-    }
-    await commitIfNeeded(true);
-    setEstado(`Importado: ${adicionados} novos / ${atualizados} atualizados`);
-    alert(`Importação concluída.\n\nNovos: ${adicionados}\nAtualizados: ${atualizados}`);
+  function getFiltered(){
+    const q=lower($('dirSearch')?.value||'');
+    const arm=lower($('dirFilterArmazem')?.value||'');
+    const sec=lower($('dirFilterSeccao')?.value||'');
+    return contactos.filter(c=>{
+      const blob=lower([c.nome,c.funcao,c.armazem,c.seccao,c.telefone,c.telemovel,c.email,c.extensao,c.estado,c.observacoes].join(' '));
+      if(q && !blob.includes(q)) return false;
+      if(arm && lower(c.armazem)!==arm) return false;
+      if(sec && lower(c.seccao)!==sec) return false;
+      return true;
+    }).sort((a,b)=>String(a.armazem||'').localeCompare(String(b.armazem||''),'pt',{numeric:true}) || String(a.seccao||'').localeCompare(String(b.seccao||''),'pt',{numeric:true}) || String(a.nome||'').localeCompare(String(b.nome||''),'pt',{numeric:true}));
   }
 
-  window.abrirImportDiretorio = function(){
-    const input = $('diretorioExcelInput');
-    if(input){ input.value = ''; input.click(); }
-  };
 
-  window.importarDiretorioExcel = async function(event){
-    const file = event?.target?.files?.[0];
-    if(!file) return;
-    try{
-      setEstado('A ler ficheiro...');
-      const name = lower(file.name);
-      let rows = [];
-      if(name.endsWith('.csv')){
-        const buffer = await file.arrayBuffer();
-        let text = new TextDecoder('utf-8').decode(buffer);
-        // Se vier com caracteres inválidos, tenta Windows-1252, muito comum em CSV exportado pelo Excel.
-        if(text.includes('\uFFFD')){
-          try{ text = new TextDecoder('windows-1252').decode(buffer); }catch(e){}
+  function armazemKey(armazem){ return lower(armazem||'Sem armazém'); }
+  function groupKey(armazem,seccao){ return `${armazemKey(armazem)}::${lower(seccao||'Sem secção')}`; }
+  function countBy(list, fn){ const map=new Map(); list.forEach(item=>{ const key=fn(item); map.set(key,(map.get(key)||0)+1); }); return map; }
+
+
+  function applyNaturalCollapse(){
+    // Diretório deve abrir naturalmente colapsado por Armazém.
+    // Depois do primeiro carregamento, respeita as aberturas/fechos feitos pelo utilizador.
+    if(naturalCollapseInitialized) return;
+    collapsedSections.clear();
+    collapsedArmazens.clear();
+    contactos.forEach(c=>collapsedArmazens.add(armazemKey(c.armazem)));
+    naturalCollapseInitialized = true;
+  }
+
+  function updateFilters(){
+    const armSel=$('dirFilterArmazem'), secSel=$('dirFilterSeccao');
+    const armVal=armSel?.value||'', secVal=secSel?.value||'';
+    const arms=[...new Set(contactos.map(c=>c.armazem||'Sem armazém'))].sort((a,b)=>a.localeCompare(b,'pt',{numeric:true}));
+    const secs=[...new Set(contactos.map(c=>c.seccao||'Sem secção'))].sort((a,b)=>a.localeCompare(b,'pt',{numeric:true}));
+    if(armSel){ armSel.innerHTML='<option value="">Todos os armazéns</option>'+arms.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join(''); armSel.value=armVal; }
+    if(secSel){ secSel.innerHTML='<option value="">Todas as secções</option>'+secs.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join(''); secSel.value=secVal; }
+    const dlA=$('dirArmazensLista'), dlS=$('dirSeccoesLista');
+    if(dlA) dlA.innerHTML=arms.map(v=>`<option value="${esc(v)}"></option>`).join('');
+    if(dlS) dlS.innerHTML=secs.map(v=>`<option value="${esc(v)}"></option>`).join('');
+  }
+
+  function updateKpis(list){
+    const total=contactos.length;
+    const arms=new Set(contactos.map(c=>c.armazem)).size;
+    const secs=new Set(contactos.map(c=>`${c.armazem}|${c.seccao}`)).size;
+    const ativos=contactos.filter(c=>stateClass(c.estado)==='ativo').length;
+    const phone=contactos.filter(c=>c.telefone||c.telemovel||c.email).length;
+    const since=Date.now()-7*24*60*60*1000;
+    const updates=contactos.filter(c=>new Date(c.updatedAt||c.createdAt||0).getTime()>=since).length;
+    const set=(id,val)=>{const el=$(id); if(el) el.textContent=val;};
+    set('dirKpiTotal',total); set('dirKpiArmazens',arms); set('dirKpiSeccoes',secs); set('dirKpiAtivos',ativos); set('dirKpiTelefone',phone); set('dirKpiAtualizacoes',updates); set('dirListCount',list.length);
+  }
+
+  function renderTable(list){
+    const tbody=$('dirTableBody'); if(!tbody) return;
+    const total=list.length;
+    const page=list; // Sem paginação: mostrar todos os contactos filtrados.
+    if(!page.length){
+      tbody.innerHTML='<tr><td colspan="8" class="dir-empty">Sem contactos para mostrar.</td></tr>';
+    }else{
+      const sectionTotals=countBy(list,c=>groupKey(c.armazem,c.seccao));
+      const armazemTotals=countBy(list,c=>c.armazem||'Sem armazém');
+      let lastArm='';
+      let lastSec='';
+      const rows=[];
+      page.forEach(c=>{
+        const arm=c.armazem||'Sem armazém';
+        const sec=c.seccao||'Sem secção';
+        const secKey=groupKey(arm,sec);
+        const armKey=armazemKey(arm);
+        const armClosed=collapsedArmazens.has(armKey);
+        if(arm!==lastArm){
+          const armTotal=armazemTotals.get(arm)||0;
+          rows.push(`<tr class="dir-group-row dir-group-armazem ${armClosed?'is-collapsed':''}" data-dir-armazem="${esc(armKey)}"><td colspan="8"><button type="button" class="dir-armazem-toggle" data-dir-armazem="${esc(armKey)}"><span>${armClosed?'▸':'▾'}</span><i>🏬</i><strong>${esc(arm)}</strong><em>${armTotal} contacto${armTotal===1?'':'s'}</em></button></td></tr>`);
+          lastArm=arm; lastSec='';
         }
-        rows = parseCSV(text);
-      } else {
-        if(!window.XLSX) throw new Error('Biblioteca de Excel não carregou. Confirma a ligação à internet e tenta novamente.');
-        const buffer = await file.arrayBuffer();
-        const workbook = XLSX.read(buffer, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        if(!sheetName) throw new Error('O ficheiro Excel não tem folhas.');
-        rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: '' });
-      }
-      await importarLinhasDiretorio(rows);
-    }catch(err){
-      console.error('Erro ao importar diretório:', err);
-      alert('Erro ao importar Excel: ' + (err?.message || err));
-      setEstado('Erro ao importar', false);
-    } finally {
-      if(event?.target) event.target.value = '';
+        if(armClosed) return;
+        if(sec!==lastSec){
+          const secTotal=sectionTotals.get(secKey)||0;
+          const closed=collapsedSections.has(secKey);
+          rows.push(`<tr class="dir-group-row dir-group-seccao ${closed?'is-collapsed':''}" data-dir-section="${esc(secKey)}"><td colspan="8"><button type="button" class="dir-section-toggle" data-dir-section="${esc(secKey)}"><span>${closed?'▸':'▾'}</span><strong>${esc(sec)}</strong><em>${secTotal} contacto${secTotal===1?'':'s'}</em></button></td></tr>`);
+          lastSec=sec;
+        }
+        if(collapsedSections.has(secKey)) return;
+        const st=stateClass(c.estado);
+        const phone=telHref(c.telefone||c.telemovel);
+        const firstPhone = c.telefone || c.telemovel || '';
+        rows.push(`<tr class="dir-contact-row" data-dir-section-row="${esc(secKey)}">
+          <td><div class="dir-person"><span class="dir-avatar">${esc(initials(c.nome))}</span><div class="dir-name"><strong>${esc(c.nome)}</strong><small>ID: ${esc(c.firebaseId||c.id)}</small></div></div></td>
+          <td>${esc(c.funcao||'—')}</td>
+          <td>${esc(c.armazem||'—')}</td>
+          <td>${esc(c.seccao||'—')}</td>
+          <td><div class="dir-contact">${firstPhone?`<a href="tel:${esc(phone)}">☎ ${esc(firstPhone)}</a>`:'<span class="dir-muted">☎ —</span>'}${c.email?`<a href="mailto:${esc(c.email)}">✉ ${esc(c.email)}</a>`:'<span class="dir-muted">✉ —</span>'}</div></td>
+          <td>${esc(c.extensao||'—')}</td>
+          <td><span class="dir-pill ${st}">${st==='ativo'?'Ativo':st==='ausente'?'Ausente':'Inativo'} <span>●</span></span></td>
+          <td><div class="dir-actions">
+            <button class="dir-icon-btn" type="button" title="Ver" data-dir-action="view" data-id="${esc(c.id)}">☎</button>
+            ${c.email?`<a class="dir-icon-btn mail" title="Email" href="mailto:${esc(c.email)}">✉</a>`:`<button class="dir-icon-btn mail" type="button" title="Sem email" disabled>✉</button>`}
+            <button class="dir-icon-btn" type="button" title="Editar" data-dir-action="edit" data-id="${esc(c.id)}">✎</button>
+          </div></td>
+        </tr>`);
+      });
+      tbody.innerHTML=rows.join('');
     }
-  };
+    const summary=$('dirTableSummary');
+    if(summary) summary.textContent= total ? `${total} contacto${total===1?'':'s'} encontrados` : '0 contactos encontrados';
+    renderPagination(total,1);
+  }
 
-  window.descarregarModeloDiretorio = function(){
-    const rows = [
-      ['Nome','Armazém','Secção','Extensão','Telefone','Telemóvel','Email','Local','Observações'],
-      ['Exemplo Contacto','Braga','Logística','51000','253000000','912345678','exemplo@empresa.pt','Piso 1','Nota interna']
-    ];
-    const csv = rows.map(r => r.map(v => `"${String(v ?? '').replace(/"/g,'""')}"`).join(';')).join('\n');
-    const blob = new Blob(['\ufeff' + csv], {type:'text/csv;charset=utf-8'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'modelo-diretorio-por-armazem.csv'; a.click();
-    URL.revokeObjectURL(url);
-  };
+  function renderPagination(){
+    const wrap=$('dirPagination');
+    if(wrap) wrap.innerHTML='';
+  }
 
-  window.exportarDiretorioCSV = function(){
-    const rows = [['Nome','Armazém','Secção','Extensão','Telefone','Telemóvel','Email','Local','Observações'], ...filtrados().map(c => [c.nome,armazemDe(c),seccaoDe(c),c.extensao,c.telefone,c.telemovel,c.email,c.local,c.observacoes])];
-    const csv = rows.map(r => r.map(v => `"${String(v ?? '').replace(/"/g,'""')}"`).join(';')).join('\n');
-    const blob = new Blob(['\ufeff' + csv], {type:'text/csv;charset=utf-8'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'diretorio-telefonico-por-armazem.csv'; a.click();
-    URL.revokeObjectURL(url);
-  };
+  function renderDonut(){
+    const counts=new Map();
+    contactos.forEach(c=>counts.set(c.armazem||'Sem armazém',(counts.get(c.armazem||'Sem armazém')||0)+1));
+    const sorted=[...counts.entries()].sort((a,b)=>b[1]-a[1]);
+    const total=Math.max(1,contactos.length);
+    const colors=['#38bdf8','#8b5cf6','#22c55e','#f59e0b','#94a3b8','#ef4444'];
+    let acc=0;
+    const parts=sorted.slice(0,6).map(([_,n],i)=>{ const start=acc; acc+=n/total*100; return `${colors[i]} ${start}% ${acc}%`; });
+    const donut=$('dirDonut'); if(donut) donut.style.background=`conic-gradient(${parts.join(',')||'#1e293b 0 100%'})`;
+    const legend=$('dirDonutLegend');
+    if(legend) legend.innerHTML=sorted.slice(0,5).map(([label,n],i)=>`<div class="dir-legend-row"><span class="dir-legend-dot" style="--c:${colors[i]}"></span><span>${esc(label)}</span><strong>${n}</strong><small>${((n/total)*100).toFixed(1)}%</small></div>`).join('') + (sorted.length>5?`<div class="dir-legend-row"><span class="dir-legend-dot" style="--c:#94a3b8"></span><span>Outros</span><strong>${sorted.slice(5).reduce((s,x)=>s+x[1],0)}</strong><small></small></div>`:'') + `<div class="dir-legend-row"><span></span><span>Total</span><strong>${contactos.length}</strong><small></small></div>`;
+  }
 
-  window.atualizarDiretorio = function(){ iniciarDiretorio(true); };
+  function renderAlerts(){
+    const noExt=contactos.filter(c=>!c.extensao).length;
+    const noPhone=contactos.filter(c=>!c.telefone&&!c.telemovel&&!c.email).length;
+    const ausentes=contactos.filter(c=>stateClass(c.estado)==='ausente').length;
+    const alerts=[];
+    if(noExt) alerts.push({c:'#f59e0b',t:`${noExt} contactos sem extensão atribuída`,p:'Atribua extensões para facilitar o contacto interno.',time:'Atual'});
+    if(ausentes) alerts.push({c:'#f97316',t:`${ausentes} contactos ausentes`,p:'Verifique a disponibilidade da equipa.',time:'Hoje'});
+    if(noPhone) alerts.push({c:'#ef4444',t:`${noPhone} contactos sem contacto direto`,p:'Atualize telefone, telemóvel ou email.',time:'Atual'});
+    if(!alerts.length) alerts.push({c:'#22c55e',t:'Sem alertas críticos neste momento.',p:'Diretório operacional.',time:'—'});
+    const el=$('dirAlertsList'); if(el) el.innerHTML=alerts.map(a=>`<div class="ck-list-row"><span class="ck-list-dot" style="--c:${a.c}"></span><div><strong>${esc(a.t)}</strong><p>${esc(a.p)}</p></div><time>${esc(a.time)}</time></div>`).join('');
+  }
 
-  function iniciarDiretorio(force=false){
-    if(unsubscribe && force){ try{ unsubscribe(); }catch(e){} unsubscribe=null; }
-    if(unsubscribe) return;
-    if(!window.db?.collection){ setEstado('Firebase indisponível', false); return; }
-    setEstado('A carregar...');
-    unsubscribe = window.db.collection(COLLECTION).onSnapshot((snap)=>{
-      contactos = [];
-      snap.forEach(doc => contactos.push(contactoNormalizado({firebaseId: doc.id, ...doc.data()})));
-      contactos.sort((a,b)=> armazemDe(a).localeCompare(armazemDe(b),'pt',{numeric:true}) || seccaoDe(a).localeCompare(seccaoDe(b),'pt',{numeric:true}) || String(a.nome||'').localeCompare(String(b.nome||''),'pt',{numeric:true}));
-      localStorage.setItem('appBraga_diretorio_cache', JSON.stringify(contactos));
-      setEstado(`${contactos.length} contactos`);
-      window.renderDiretorio();
-      setTimeout(repararEncodingDiretorio, 350);
-    }, (err)=>{
-      console.error('Erro realtime diretorio:', err);
-      try{ contactos = JSON.parse(localStorage.getItem('appBraga_diretorio_cache') || '[]'); }catch(e){ contactos=[]; }
-      setEstado('Offline / cache', false);
-      window.renderDiretorio();
+  function renderRecent(){
+    const recent=[...contactos].sort((a,b)=>new Date(b.updatedAt||b.createdAt||0)-new Date(a.updatedAt||a.createdAt||0)).slice(0,4);
+    const el=$('dirRecentRecords');
+    if(el) el.innerHTML=recent.length? recent.map(c=>`<div class="ck-mini-row"><span class="ck-list-dot" style="--c:#22c55e"></span><div><strong>Contacto ${esc(c.nome)} atualizado</strong><p>${esc(c.armazem)} · ${esc(c.seccao)}</p></div><time>${formatDate(c.updatedAt||c.createdAt)}</time></div>`).join('') : '<div class="ck-mini-row"><span class="ck-list-dot"></span><div><strong>Sem atualizações registadas.</strong></div><time>—</time></div>';
+  }
+
+  function render(){
+    updateFilters();
+    const list=getFiltered();
+    updateKpis(list); renderTable(list); renderDonut(); renderAlerts(); renderRecent();
+  }
+
+  function getForm(){
+    return normalizeContact({
+      id: editId || uid(), firebaseId: editId || null,
+      nome:$('dirFormNome')?.value,
+      funcao:$('dirFormFuncao')?.value,
+      armazem:$('dirFormArmazem')?.value,
+      seccao:$('dirFormSeccao')?.value,
+      telefone:$('dirFormTelefone')?.value,
+      telemovel:$('dirFormTelemovel')?.value,
+      email:$('dirFormEmail')?.value,
+      extensao:$('dirFormExtensao')?.value,
+      estado:$('dirFormEstado')?.value,
+      observacoes:$('dirFormObs')?.value,
+      updatedAt:nowIso(),
+      createdAt: contactos.find(c=>c.id===editId)?.createdAt || nowIso()
+    });
+  }
+  function fillForm(c={}){
+    const set=(id,v)=>{const el=$(id); if(el) el.value=v||'';};
+    set('dirFormNome',c.nome); set('dirFormFuncao',c.funcao); set('dirFormArmazem',c.armazem); set('dirFormSeccao',c.seccao); set('dirFormTelefone',c.telefone); set('dirFormTelemovel',c.telemovel); set('dirFormEmail',c.email); set('dirFormExtensao',c.extensao); set('dirFormEstado',c.estado||'Ativo'); set('dirFormObs',c.observacoes);
+  }
+  function openModal(id){
+    editId=id||null;
+    const c=contactos.find(x=>x.id===id || x.firebaseId===id);
+    $('dirModalTitle').textContent=c?'Editar contacto':'Novo contacto';
+    fillForm(c||{});
+    const del=$('dirBtnApagarModal'); if(del) del.style.display=c?'inline-flex':'none';
+    const modal=$('dirModalContacto'); if(modal) modal.style.display='block';
+  }
+  function closeModal(){ const m=$('dirModalContacto'); if(m) m.style.display='none'; editId=null; }
+  async function saveContact(){
+    const data=getForm();
+    if(!data.nome || data.nome==='Sem nome'){ alert('Preenche o nome do contacto.'); return; }
+    try{
+      if(dbReady()){
+        const payload={...data}; delete payload.id;
+        if(editId && contactos.find(c=>c.id===editId)?.firebaseId){ await window.db.collection(COLLECTION).doc(String(contactos.find(c=>c.id===editId).firebaseId)).set(payload,{merge:true}); }
+        else { await window.db.collection(COLLECTION).add(payload); }
+      } else {
+        if(editId){ const idx=contactos.findIndex(c=>c.id===editId); if(idx>=0) contactos[idx]=data; }
+        else contactos.unshift(data);
+        saveLocal(); render();
+      }
+      closeModal();
+    }catch(err){ console.error(err); alert('Erro ao guardar contacto: '+(err.message||err)); }
+  }
+  async function deleteContact(id){
+    const c=contactos.find(x=>x.id===id || x.firebaseId===id); if(!c) return;
+    if(!confirm(`Apagar contacto ${c.nome}?`)) return;
+    try{
+      if(dbReady() && c.firebaseId) await window.db.collection(COLLECTION).doc(String(c.firebaseId)).delete();
+      else { contactos=contactos.filter(x=>x.id!==c.id); saveLocal(); render(); }
+      closeModal();
+    }catch(err){ console.error(err); alert('Erro ao apagar contacto: '+(err.message||err)); }
+  }
+  function openDetail(id){
+    const c=contactos.find(x=>x.id===id || x.firebaseId===id); if(!c) return;
+    detailId=c.id;
+    $('dirDetailTitle').textContent=c.nome;
+    const grid=$('dirDetailGrid');
+    if(grid) grid.innerHTML=[
+      ['Nome',c.nome],['Função',c.funcao||'—'],['Armazém',c.armazem],['Secção',c.seccao],['Telefone',c.telefone||'—'],['Telemóvel',c.telemovel||'—'],['Email',c.email||'—'],['Extensão',c.extensao||'—'],['Estado',c.estado],['Observações',c.observacoes||'—']
+    ].map(([k,v])=>`<div class="ck-detail-item"><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join('');
+    const modal=$('dirModalDetalhe'); if(modal) modal.style.display='block';
+  }
+  function closeDetail(){ const m=$('dirModalDetalhe'); if(m) m.style.display='none'; detailId=null; }
+
+  function exportCsv(){
+    const rows=[['Nome','Função','Armazém','Secção','Telefone','Telemóvel','Email','Extensão','Estado','Observações'],...getFiltered().map(c=>[c.nome,c.funcao,c.armazem,c.seccao,c.telefone,c.telemovel,c.email,c.extensao,c.estado,c.observacoes])];
+    const csv=rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';')).join('\n');
+    const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`diretorio-${new Date().toISOString().slice(0,10)}.csv`; a.click(); URL.revokeObjectURL(a.href);
+  }
+
+  function buildCsvFrom(list){
+    const rows=[['Nome','Função','Armazém','Secção','Telefone','Telemóvel','Email','Extensão','Estado','Observações'],...list.map(c=>[c.nome,c.funcao,c.armazem,c.seccao,c.telefone,c.telemovel,c.email,c.extensao,c.estado,c.observacoes])];
+    return rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';')).join('\n');
+  }
+  function downloadCsv(csv, filename){
+    const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+  function exportAllCsv(){
+    downloadCsv(buildCsvFrom(contactos), `diretorio-backup-todos-${new Date().toISOString().slice(0,10)}.csv`);
+  }
+  function openDeleteAllModal(){
+    const total=$('dirDeleteAllTotal'); if(total) total.textContent=`${contactos.length} contacto${contactos.length===1?'':'s'}`;
+    const fb=$('dirDeleteAllFirebase'); if(fb) fb.textContent=dbReady()?'Ligado':'Sem ligação / fallback local';
+    const phrase=$('dirDeleteAllPhrase'); if(phrase) phrase.value='';
+    const check=$('dirDeleteAllBackup'); if(check) check.checked=false;
+    updateDeleteAllState();
+    const modal=$('dirModalApagarTodos'); if(modal) modal.style.display='block';
+  }
+  function closeDeleteAllModal(){
+    const modal=$('dirModalApagarTodos'); if(modal) modal.style.display='none';
+  }
+  function updateDeleteAllState(){
+    const phrase=($('dirDeleteAllPhrase')?.value||'').trim();
+    const checked=!!$('dirDeleteAllBackup')?.checked;
+    const btn=$('dirBtnConfirmarApagarTodos');
+    if(btn) btn.disabled = !(phrase==='APAGAR TODOS' && checked && contactos.length>0);
+  }
+  async function deleteAllContacts(){
+    const phrase=($('dirDeleteAllPhrase')?.value||'').trim();
+    const checked=!!$('dirDeleteAllBackup')?.checked;
+    if(phrase!=='APAGAR TODOS' || !checked){ alert('Para apagar tudo tens de escrever APAGAR TODOS e confirmar a cópia de segurança.'); return; }
+    if(!contactos.length){ alert('Não existem contactos para apagar.'); closeDeleteAllModal(); return; }
+    const totalBefore=contactos.length;
+    const finalOk=confirm(`Última confirmação: apagar definitivamente ${totalBefore} contacto${totalBefore===1?'':'s'} do Diretório?`);
+    if(!finalOk) return;
+    const btn=$('dirBtnConfirmarApagarTodos');
+    if(btn){ btn.disabled=true; btn.textContent='A apagar...'; }
+    try{
+      if(dbReady()){
+        const snap=await window.db.collection(COLLECTION).get();
+        let batch=window.db.batch();
+        let ops=0;
+        let done=0;
+        const commitBatch=async()=>{ if(ops>0){ await batch.commit(); batch=window.db.batch(); ops=0; } };
+        for(const doc of snap.docs){
+          batch.delete(doc.ref);
+          ops++; done++;
+          if(ops>=450) await commitBatch();
+        }
+        await commitBatch();
+      }
+      contactos=[];
+      localStorage.removeItem(LOCAL_KEY);
+      collapsedSections.clear();
+      collapsedArmazens.clear();
+      naturalCollapseInitialized=false;
+      render();
+      closeDeleteAllModal();
+      alert(`Diretório limpo: ${totalBefore} contacto${totalBefore===1?'':'s'} apagado${totalBefore===1?'':'s'}.`);
+    }catch(err){
+      console.error(err);
+      alert('Erro ao apagar todos os contactos: '+(err.message||err));
+    }finally{
+      if(btn){ btn.textContent='Apagar definitivamente'; updateDeleteAllState(); }
+    }
+  }
+  async function importRows(rows){
+    const mapped=rows.map(r=>normalizeContact({
+      nome:r.Nome||r.nome||r.Name||r.name,
+      funcao:r.Função||r.Funcao||r.Cargo||r.funcao||r.role,
+      armazem:r.Armazém||r.Armazem||r.Local||r.local||r.armazem,
+      seccao:r.Secção||r.Seccao||r.Secao||r.Departamento||r.seccao,
+      telefone:r.Telefone||r.phone||r.Tel,
+      telemovel:r.Telemóvel||r.Telemovel||r.Mobile||r.telemovel,
+      email:r.Email||r.email,
+      extensao:r.Extensão||r.Extensao||r.Extension||r.extensao,
+      estado:r.Estado||r.estado||'Ativo',
+      observacoes:r.Observações||r.Observacoes||r.Notas||r.notas
+    })).filter(c=>c.nome && c.nome!=='Sem nome');
+    if(!mapped.length){ alert('Não encontrei contactos válidos no ficheiro.'); return; }
+    if(!confirm(`Importar ${mapped.length} contactos para o diretório?`)) return;
+    try{
+      if(dbReady()){
+        let batch=window.db.batch(); let ops=0;
+        mapped.forEach(c=>{ const data={...c}; delete data.id; delete data.firebaseId; batch.set(window.db.collection(COLLECTION).doc(),data); ops++; if(ops>=450){ batch.commit(); batch=window.db.batch(); ops=0; } });
+        if(ops) await batch.commit();
+      }else{ contactos=[...mapped,...contactos]; saveLocal(); render(); }
+      alert('Importação concluída.');
+    }catch(err){ console.error(err); alert('Erro ao importar: '+(err.message||err)); }
+  }
+  function handleImport(file){
+    if(!file) return;
+    const reader=new FileReader();
+    reader.onload=async e=>{
+      try{
+        let rows=[];
+        if(file.name.toLowerCase().endsWith('.csv')){
+          const text=e.target.result; const lines=String(text).split(/\r?\n/).filter(Boolean); const headers=lines.shift().split(/[;,]/).map(h=>h.trim().replace(/^"|"$/g,''));
+          rows=lines.map(line=>{ const cols=line.split(/[;,]/).map(c=>c.trim().replace(/^"|"$/g,'')); const obj={}; headers.forEach((h,i)=>obj[h]=cols[i]||''); return obj; });
+        }else{
+          if(!window.XLSX) throw new Error('Biblioteca Excel indisponível.');
+          const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'}); rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
+        }
+        await importRows(rows);
+      }catch(err){ console.error(err); alert('Erro ao ler ficheiro: '+(err.message||err)); }
+    };
+    if(file.name.toLowerCase().endsWith('.csv')) reader.readAsText(file,'UTF-8'); else reader.readAsArrayBuffer(file);
+  }
+
+  function bind(){
+    $('dirSearch')?.addEventListener('input',()=>{currentPage=1; render();});
+    $('dirFilterArmazem')?.addEventListener('change',()=>{currentPage=1; render();});
+    $('dirFilterSeccao')?.addEventListener('change',()=>{currentPage=1; render();});
+    $('dirBtnLimpar')?.addEventListener('click',()=>{ $('dirSearch').value=''; $('dirFilterArmazem').value=''; $('dirFilterSeccao').value=''; currentPage=1; render(); });
+    $('dirBtnNovo')?.addEventListener('click',()=>openModal());
+    $('dirBtnGuardar')?.addEventListener('click',saveContact);
+    $('dirBtnApagarModal')?.addEventListener('click',()=>{ if(editId) deleteContact(editId); });
+    $('dirBtnEditarDetalhe')?.addEventListener('click',()=>{ const id=detailId; closeDetail(); openModal(id); });
+    $('dirBtnExportar')?.addEventListener('click',exportCsv);
+    $('dirBtnImportar')?.addEventListener('click',()=>$('dirImportInput')?.click());
+    $('dirImportInput')?.addEventListener('change',(e)=>handleImport(e.target.files?.[0]));
+    $('dirBtnAbrir')?.addEventListener('click',()=>{collapsedSections.clear(); collapsedArmazens.clear(); render();});
+    $('dirBtnFechar')?.addEventListener('click',()=>{collapsedSections.clear(); getFiltered().forEach(c=>collapsedArmazens.add(armazemKey(c.armazem))); render();});
+    $('dirBtnApagarTodos')?.addEventListener('click',openDeleteAllModal);
+    $('dirBtnBackupAntesApagar')?.addEventListener('click',exportAllCsv);
+    $('dirBtnConfirmarApagarTodos')?.addEventListener('click',deleteAllContacts);
+    $('dirDeleteAllPhrase')?.addEventListener('input',updateDeleteAllState);
+    $('dirDeleteAllBackup')?.addEventListener('change',updateDeleteAllState);
+    document.addEventListener('click',e=>{
+      const close=e.target.closest('[data-dir-close]'); if(close){ const target=close.getAttribute('data-dir-close'); if(target==='detalhe') closeDetail(); else if(target==='apagar-todos') closeDeleteAllModal(); else closeModal(); }
+      const armToggle=e.target.closest('.dir-armazem-toggle'); if(armToggle){ const key=armToggle.dataset.dirArmazem; if(key){ collapsedArmazens.has(key)?collapsedArmazens.delete(key):collapsedArmazens.add(key); render(); } return; }
+      const secToggle=e.target.closest('.dir-section-toggle'); if(secToggle){ const key=secToggle.dataset.dirSection; if(key){ collapsedSections.has(key)?collapsedSections.delete(key):collapsedSections.add(key); render(); } return; }
+      const action=e.target.closest('[data-dir-action]'); if(action){ const id=action.dataset.id; const type=action.dataset.dirAction; if(type==='view') openDetail(id); if(type==='edit') openModal(id); }
     });
   }
 
-  document.addEventListener('DOMContentLoaded', ()=> iniciarDiretorio());
+  async function start(){
+    bind();
+    contactos=loadLocal(); seedIfEmpty(); applyNaturalCollapse(); render();
+    if(dbReady()){
+      try{
+        if(unsubscribe) unsubscribe();
+        unsubscribe=window.db.collection(COLLECTION).onSnapshot(snap=>{
+          contactos=[]; snap.forEach(doc=>contactos.push(normalizeContact({firebaseId:doc.id,id:doc.id,...doc.data()})));
+          if(!contactos.length){ contactos=loadLocal(); seedIfEmpty(); }
+          saveLocal(); applyNaturalCollapse(); render();
+        },err=>{ console.warn('Diretório Firebase indisponível:',err); contactos=loadLocal(); seedIfEmpty(); applyNaturalCollapse(); render(); });
+      }catch(err){ console.warn('Erro a iniciar Firebase diretório:',err); }
+    }
+  }
+  document.addEventListener('DOMContentLoaded',start);
+  window.AppBragaDiretorio={render,exportCsv,exportAllCsv,openModal,openDeleteAllModal};
 })();
