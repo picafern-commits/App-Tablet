@@ -1,4 +1,4 @@
-AppBraga / Bragalis T.I — v1.58.165
+AppBraga / Bragalis T.I — v1.58.166
 Limpeza para Electron: pacote NOVO apenas.
 
 REMOVIDO:

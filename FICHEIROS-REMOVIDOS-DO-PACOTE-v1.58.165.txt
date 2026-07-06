@@ -1,4 +1,4 @@
-Removidos do pacote limpo v1.58.165:
+Removidos do pacote limpo v1.58.166:
 
 HTMLs antigos/duplicados na raiz:
 - add-toner.html

@@ -1,6 +1,6 @@
 {
-  "version": "1.58.165",
-  "build": "electron-new-only-clean",
+  "version": "1.58.166",
+  "build": "github-electron-clean",
   "updated": "2026-07-06",
-  "notes": "Pacote limpo para Electron: removidos HTMLs duplicados/antigos, redirects antigos e ficheiros de visual antigo. Mantidos apenas visual novo e sistemas necessários."
+  "notes": "Pacote limpo para GitHub Pages/Electron: publicar espelhando esta pasta no repositório, apagando ficheiros antigos do visual antigo."
 }

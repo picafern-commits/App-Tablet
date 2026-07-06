@@ -1,5 +1,5 @@
-const APP_BRAGA_SW = "appbraga-v1.58.165-electron-new-only-clean";
-const APP_BRAGA_VERSION = "1.58.165";
+const APP_BRAGA_SW = "appbraga-v1.58.166-github-electron-clean";
+const APP_BRAGA_VERSION = "1.58.166";
 
 const LEGACY_ROUTE_MAP = new Map([
   ["/dashboard", "/html/dashboard.html"], ["/dashboard.html", "/html/dashboard.html"],
