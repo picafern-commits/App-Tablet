@@ -337,7 +337,7 @@
   }
 
   function ensureClassicStylesheet(active) {
-    // v1.58.133: visual antigo removido. Nunca carregar app-design-classic.css.
+    // v1.58.153: visual antigo removido. Nunca carregar app-design-classic.css.
     const id = "appDesignClassicStylesheet";
     const existing = document.getElementById(id);
     existing?.remove();
@@ -508,7 +508,7 @@
   }
 
   function applyVisualDesign(modeInput = getCachedVisualDesign(), options = {}) {
-    // v1.58.133: visual antigo removido; manter sempre o visual novo/pro.
+    // v1.58.153: visual antigo removido; manter sempre o visual novo/pro.
     const mode = "pro";
     const applyTo = (node) => {
       if (!node?.classList) return;

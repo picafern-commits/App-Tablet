@@ -37,6 +37,18 @@
     return (Array.isArray(arr) ? arr : []).slice().sort((a,b) => dateMs(b) - dateMs(a));
   }
 
+  function stockRecentMs(item){
+    return dateMs(item?.createdAt || item?.created || item?.createdAtMs || item?.dataRegisto || item?.dataEntrada || item?.dataFolha || item?.dataScan || dateOf(item));
+  }
+
+  function sortStockByRecent(items){
+    return (Array.isArray(items) ? items : []).slice().sort((a,b) => {
+      const diff = stockRecentMs(b) - stockRecentMs(a);
+      if (diff) return diff;
+      return String(refOf(b)).localeCompare(String(refOf(a)), "pt", { numeric:true });
+    });
+  }
+
   function getStock(){
     const direct = window.__stockFuturistaStock;
     if (Array.isArray(direct)) return direct;
@@ -166,12 +178,13 @@
     const q = norm(byId("search")?.value || "");
     const armazem = byId("stockFilterArmazem")?.value || "";
     const cor = byId("stockFilterCor")?.value || "";
-    return getStock().filter(item => {
+    const items = getStock().filter(item => {
       const itemColor = colorName(item);
       return (!q || stockSearchBlob(item).includes(q)) &&
         (!armazem || localOf(item) === armazem || item?.armazem === armazem) &&
         (!cor || norm(itemColor).includes(norm(cor)) || norm(cor).includes(norm(itemColor)));
     });
+    return sortStockByRecent(items);
   }
 
   function renderArmazens(items){
@@ -233,8 +246,7 @@
         <td><span class="stock-status ${cls}">${esc(label)}</span></td>
         <td>${esc(fmtDate(dateOf(item)))}</td>
         <td>
-          <div class="stock-actions">
-            <button class="stock-action-icon" type="button" data-stock-action="view" data-id="${esc(id)}" title="Ver ficha">👁</button>
+          <div class="stock-actions stock-actions-no-view">
             <button class="stock-action-icon" type="button" data-stock-action="use" data-id="${esc(id)}" title="Marcar usado">↩</button>
             <button class="stock-action-icon" type="button" data-stock-action="edit" data-id="${esc(id)}" title="Editar">✎</button>
             <button class="stock-action-icon" type="button" data-stock-action="delete" data-id="${esc(id)}" title="Apagar">🗑</button>
@@ -250,7 +262,7 @@
   function renderAlerts(items){
     const host = byId("stockAlertsList");
     if (!host) return;
-    // v1.58.75: alertas de stock só aparecem quando a quantidade é 0.
+    // v1.58.153: alertas de stock só aparecem quando a quantidade é 0.
     // Stock baixo continua visível no KPI/estado da tabela, mas não entra neste card.
     const alerts = getStock().filter(i => qty(i) <= 0).sort((a,b)=>qty(a)-qty(b)).slice(0, 5);
     if (!alerts.length) {
@@ -281,15 +293,17 @@
   }
 
   function movementRows(){
-    const entradas = sortRecent(getStock()).slice(0, 8).map(i => ({
+    const entradas = sortRecent(getStock()).map(i => ({
+      dataRaw: dateOf(i),
       data: fmtDate(dateOf(i)), tipo: "Entrada", cor: colorName(i), ref: refOf(i),
       quantidade: qty(i), local: localOf(i), user: i?.user || i?.utilizador || "Sistema"
     }));
-    const saidas = sortRecent(getHistorico()).slice(0, 8).map(i => ({
+    const saidas = sortRecent(getHistorico()).map(i => ({
+      dataRaw: i?.usadoAt || i?.created || i?.createdAt || dateOf(i),
       data: fmtDate(i?.usadoAt || i?.created || i?.createdAt || dateOf(i)), tipo: "Saída", cor: colorName(i), ref: refOf(i),
       quantidade: qty(i), local: localOf(i), user: i?.user || i?.utilizador || "Sistema"
     }));
-    return [...entradas, ...saidas].sort((a,b)=>dateMs(b.data)-dateMs(a.data)).slice(0, 10);
+    return [...entradas, ...saidas].sort((a,b)=>dateMs(b.dataRaw || b.data)-dateMs(a.dataRaw || a.data));
   }
 
   function renderMovements(){
@@ -300,7 +314,7 @@
       host.innerHTML = '<tr><td colspan="7" class="stock-empty-row">Sem movimentos recentes.</td></tr>';
       return;
     }
-    host.innerHTML = rows.map(m => `<tr>
+    host.innerHTML = rows.slice(0, 5).map(m => `<tr>
       <td>${esc(m.data || "—")}</td>
       <td><span class="stock-status ${m.tipo === "Entrada" ? "ok" : "low"}">${esc(m.tipo)}</span></td>
       <td><span class="stock-color-dot ${colorCls(m.cor)}"></span>${esc(m.cor)}</td>
@@ -310,6 +324,65 @@
       <td>${esc(m.user)}</td>
     </tr>`).join("");
   }
+
+  const MOVEMENTS_PER_PAGE = 25;
+  let stockMovementsPage = 1;
+
+  function renderMovementsModal(){
+    const body = byId("stockMovementsModalBody");
+    const info = byId("stockMovementsModalInfo");
+    const pager = byId("stockMovementsModalPagination");
+    if (!body || !info || !pager) return;
+    const rows = movementRows();
+    const total = rows.length;
+    const pages = Math.max(1, Math.ceil(total / MOVEMENTS_PER_PAGE));
+    stockMovementsPage = Math.max(1, Math.min(stockMovementsPage, pages));
+    const start = (stockMovementsPage - 1) * MOVEMENTS_PER_PAGE;
+    const slice = rows.slice(start, start + MOVEMENTS_PER_PAGE);
+
+    body.innerHTML = slice.length ? slice.map(m => `<tr>
+      <td>${esc(m.data || "—")}</td>
+      <td><span class="stock-status ${m.tipo === "Entrada" ? "ok" : "low"}">${esc(m.tipo)}</span></td>
+      <td><span class="stock-color-dot ${colorCls(m.cor)}"></span>${esc(m.cor)}</td>
+      <td>${esc(m.ref)}</td>
+      <td>${esc(m.quantidade)} un.</td>
+      <td>${esc(m.local)}</td>
+      <td>${esc(m.user)}</td>
+    </tr>`).join("") : '<tr><td colspan="7" class="stock-empty-row">Sem movimentos registados.</td></tr>';
+
+    info.textContent = total ? `${start + 1}-${Math.min(start + MOVEMENTS_PER_PAGE, total)} de ${total} registos` : "0 registos";
+
+    const buttons = [];
+    buttons.push(`<button type="button" ${stockMovementsPage <= 1 ? "disabled" : ""} data-stock-mov-page="${stockMovementsPage - 1}">‹</button>`);
+    const candidates = [1, stockMovementsPage - 1, stockMovementsPage, stockMovementsPage + 1, pages].filter(n => n >= 1 && n <= pages);
+    const unique = [...new Set(candidates)].sort((a,b)=>a-b);
+    let last = 0;
+    unique.forEach(n => {
+      if (last && n - last > 1) buttons.push(`<button type="button" disabled>…</button>`);
+      buttons.push(`<button type="button" class="${n === stockMovementsPage ? "active" : ""}" data-stock-mov-page="${n}">${n}</button>`);
+      last = n;
+    });
+    buttons.push(`<button type="button" ${stockMovementsPage >= pages ? "disabled" : ""} data-stock-mov-page="${stockMovementsPage + 1}">›</button>`);
+    pager.innerHTML = buttons.join("");
+  }
+
+  function openMovementsModal(){
+    const modal = byId("stockMovementsModal");
+    if (!modal) return;
+    stockMovementsPage = 1;
+    renderMovementsModal();
+    modal.hidden = false;
+    document.body.classList.add("stock-modal-open");
+  }
+
+  function closeMovementsModal(){
+    const modal = byId("stockMovementsModal");
+    if (modal) modal.hidden = true;
+    document.body.classList.remove("stock-modal-open");
+  }
+
+  window.stockFuturistaAbrirMovimentos = openMovementsModal;
+  window.stockFuturistaFecharMovimentos = closeMovementsModal;
 
   function buildLabelFromStock(item){
     return {
@@ -382,8 +455,7 @@
     renderAlerts(items);
     renderColorBars(items);
     renderMovements();
-    renderLabels();
-    alinharEtiquetasComMovimentos();
+    if (!byId("stockMovementsModal")?.hidden) renderMovementsModal();
   }
 
   function showMsg(msg, type){
@@ -527,6 +599,35 @@
   window.stockFuturistaImprimirEtiqueta = printLabel;
   window.stockFuturistaAbrirEtiquetas = openLabelsPage;
 
+
+
+  // v1.58.153 — botão QR no Stock: abre painel e usa o scanner antigo que passa o toner para Histórico.
+  async function abrirScannerQrStock(){
+    const panel = byId("stockQrScannerPanel");
+    if (!panel) {
+      showMsg("Modal de scanner QR não encontrado.", "erro");
+      return;
+    }
+    panel.hidden = false;
+    panel.removeAttribute("hidden");
+    const status = byId("stockQrStatus");
+    if (status) {
+      status.textContent = "Scanner pronto. Carrega em “Ligar câmara” e aponta para o QR da etiqueta.";
+      status.className = "stock-qr-status";
+    }
+    try { document.body.classList.add("stock-qr-modal-open"); } catch(e) {}
+  }
+
+  async function fecharScannerQrStock(){
+    try { if (typeof window.stopStockQrScanner === "function") await window.stopStockQrScanner(); } catch(e) {}
+    const panel = byId("stockQrScannerPanel");
+    if (panel) panel.hidden = true;
+    try { document.body.classList.remove("stock-qr-modal-open"); } catch(e) {}
+  }
+
+  window.stockFuturistaAbrirScannerQr = abrirScannerQrStock;
+  window.stockFuturistaFecharScannerQr = fecharScannerQrStock;
+
   function bindActions(){
     document.addEventListener("click", async (ev) => {
       const actionBtn = ev.target.closest("[data-stock-action]");
@@ -555,6 +656,32 @@
         }
       }
 
+      const movPageBtn = ev.target.closest("[data-stock-mov-page]");
+      if (movPageBtn) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        const next = Number(movPageBtn.dataset.stockMovPage || 1);
+        if (Number.isFinite(next) && next > 0) {
+          stockMovementsPage = next;
+          renderMovementsModal();
+        }
+        return;
+      }
+
+      const modalBg = ev.target.closest("#stockMovementsModal");
+      if (modalBg && ev.target.id === "stockMovementsModal") {
+        ev.preventDefault();
+        closeMovementsModal();
+        return;
+      }
+
+      const qrModalBg = ev.target.closest("#stockQrScannerPanel");
+      if (qrModalBg && ev.target.id === "stockQrScannerPanel") {
+        ev.preventDefault();
+        fecharScannerQrStock();
+        return;
+      }
+
       const labelBtn = ev.target.closest("[data-label-action]");
       if (labelBtn) {
         ev.preventDefault();
@@ -564,6 +691,12 @@
         return openLabelsPage();
       }
     }, true);
+
+    document.addEventListener("keydown", (ev) => {
+      if (ev.key === "Escape" && byId("stockQrScannerPanel") && !byId("stockQrScannerPanel").hidden) {
+        fecharScannerQrStock();
+      }
+    });
   }
 
   function bindFilters(){
@@ -665,7 +798,7 @@
 })();
 
 
-// v1.58.75 — ouvir resumo global de stock/alertas
+// v1.58.153 — ouvir resumo global de stock/alertas
 window.addEventListener("appbraga:systems:update", function(ev){
   try {
     if (!ev.detail) return;

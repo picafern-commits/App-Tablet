@@ -1,8 +1,15 @@
-const APP_BRAGA_SW = "appbraga-v1.58.133";
+const APP_BRAGA_SW = "appbraga-v1.58.154";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./html/index.html",
+  "./html/portal-impressoras.html",
+  "./html/portal-equipamentos.html",
+  "./html/portal-infraestrutura.html",
+  "./html/portal-administracao.html",
+  "./html/portal-sistema.html",
+  "./css/portal-area.css",
+  "./js/portal-area.js",
   "./html/dashboard.html",
   "./html/notificacoes.html",
   "./html/config.html",
@@ -167,7 +174,7 @@ self.addEventListener("notificationclick", (event) => {
   );
 });
 
-// APP BRAGA V1.58.133 scanner-ia-futurista
+// APP BRAGA V1.58.154 informacoes-ajustes-finais
 
 
 // v15866-html-network-first
@@ -187,3 +194,5 @@ self.addEventListener("activate", function(event) {
     }).then(function() { return self.clients.claim(); })
   );
 });
+
+// APP BRAGA V1.58.154 informacoes-ajustes-finais

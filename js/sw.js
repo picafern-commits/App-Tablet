@@ -1,3 +1,3 @@
 importScripts("../sw.js");
 
-// APP BRAGA V1.33.4 safe-area-diretorio-edit
+// APP BRAGA V1.58.153 informacoes-ajustes-finais

@@ -1,7 +1,7 @@
 
 (() => {
   'use strict';
-  const VERSION = '1.58.108';
+  const VERSION = '1.58.153';
   const COLLECTION = 'informacoes';
   const CATEGORIES_COLLECTION = 'informacoesCategorias';
   const LOCAL_KEY = 'appbraga_informacoes_fallback_v158106';

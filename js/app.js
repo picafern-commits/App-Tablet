@@ -32,7 +32,7 @@ if (typeof firebase !== "undefined") {
   }
 }
 
-const APP_VERSION = "1.58.133";
+const APP_VERSION = "1.58.153";
 const APP_NOTIFICATIONS_REBUILD_MODE = true;
 const APP_BRAGA_DEFAULT_VAPID_PUBLIC_KEY = "";
 const APP_BRAGA_NOTIFICATION_CLOUD_DOC = "";
@@ -872,7 +872,7 @@ async function disponivel() {
 
     const ref = await database.collection("stock").add(payload);
 
-    // v1.58.124: a etiqueta da página Etiquetas deve ficar guardada
+    // v1.58.153: a etiqueta da página Etiquetas deve ficar guardada
     // sempre que o toner é adicionado ao stock. Não depende da geração/download
     // do Word, porque o browser pode bloquear ou falhar essa parte.
     const etiquetaPayload = {
@@ -925,7 +925,7 @@ async function disponivel() {
   }
 }
 
-appBragaBindFirestoreListener("stock-core", appBragaIsPage("index.html", "stock.html", "add-toner.html", "historico.html"), () => getDbAppBraga()?.collection("stock").onSnapshot(snap => {
+appBragaBindFirestoreListener("stock-core", appBragaIsPage("index.html", "dashboard.html", "stock.html", "add-toner.html", "historico.html"), () => getDbAppBraga()?.collection("stock").onSnapshot(snap => {
   notificarAlteracaoRealtimeApp("stock", snap);
   stockGlobal = [];
   setText("countStock", snap.size);
@@ -1002,7 +1002,7 @@ if (window.db && window.db.collection) {
   }
 }
 
-appBragaBindFirestoreListener("pcs-core", appBragaIsPage("index.html", "computadores.html"), () => db.collection("pcs").onSnapshot(snap => {
+appBragaBindFirestoreListener("pcs-core", appBragaIsPage("index.html", "dashboard.html", "computadores.html"), () => db.collection("pcs").onSnapshot(snap => {
   pcsGlobal = [];
   setText("countPCs", snap.size);
 
@@ -1026,7 +1026,7 @@ appBragaBindFirestoreListener("pcs-core", appBragaIsPage("index.html", "computad
   renderModoGestorExtremo();
 }));
 
-appBragaBindFirestoreListener("manutencoes-core", appBragaIsPage("index.html", "manutencao-impressoras.html", "impressoras.html"), () => db.collection("manutencoes").onSnapshot(snap => {
+appBragaBindFirestoreListener("manutencoes-core", appBragaIsPage("index.html", "dashboard.html", "manutencao-impressoras.html", "impressoras.html"), () => db.collection("manutencoes").onSnapshot(snap => {
   notificarAlteracaoRealtimeApp("manutencoes", snap);
   manutencoesGlobal = [];
 
@@ -1154,60 +1154,82 @@ function renderDashboardCards(items) {
 
   const searchTxt = normalizarTexto(el("searchDashboard")?.value || "");
 
-  const criticas = impressorasData.map(item => {
+  const alerts = [];
+  impressorasData.forEach((item) => {
     const info = tonerInfoState[item.ip] || null;
     const colors = Array.isArray(info?.colors) ? info.colors : [];
-    const residue = info?.residue || null;
-
     const criticalColors = colors.filter(c => isDashboardTonerLow(c.percent));
     const monoPercent = typeof info?.percent === "number" ? info.percent : null;
     const monoCritical = colors.length === 0 && isDashboardTonerLow(monoPercent);
 
-    const isCritical = criticalColors.length > 0 || monoCritical;
-    return { item, info, criticalColors, monoCritical, residue, isCritical };
-  }).filter(entry => entry.isCritical).filter(entry => {
-    if (!searchTxt) return true;
-    const haystack = [
-      entry.item.modelo,
-      entry.item.serie,
-      entry.item.ip,
-      entry.item.localizacao,
-      entry.item.armazem,
-      ...(entry.criticalColors || []).map(c => c.label),
-      entry.monoCritical ? "Preto" : ""
-    ].join(" ");
-    return normalizarTexto(haystack).includes(searchTxt);
+    const pushAlert = (toner) => {
+      const percent = normalizeTonerPercentApp(toner.percent);
+      if (percent === null) return;
+      const haystack = [
+        item.modelo,
+        item.serie,
+        item.ip,
+        item.localizacao,
+        item.armazem,
+        toner.label || "Toner",
+        String(percent)
+      ].join(" ");
+      if (searchTxt && !normalizarTexto(haystack).includes(searchTxt)) return;
+      alerts.push({
+        item,
+        label: toner.label || "Toner",
+        key: toner.key || toner.label || "black",
+        percent,
+        color: corBarraToner(percent, toner.key || "black"),
+        state: estadoBarraToner(percent, toner.key || "black"),
+        className: tonerBarClass(percent, toner.key || "black")
+      });
+    };
+
+    criticalColors.forEach(pushAlert);
+    if (monoCritical) pushAlert({ percent: monoPercent, label: "Preto", key: "black" });
   });
 
-  if (!criticas.length) {
+  alerts.sort((a, b) => a.percent - b.percent);
+
+  if (!alerts.length) {
     lista.innerHTML = `<div class="panel empty-state"><h3>Sem toners abaixo de 25%</h3><p>As impressoras com toner a 25% ou menos vão aparecer aqui.</p></div>`;
     return;
   }
 
-  lista.innerHTML = criticas.map(({ item, info, criticalColors, monoCritical, residue }, index) => {
-    const supplyHtml = criticalColors.length
-      ? criticalColors.map(c => gerarHTMLBarraToner(c.percent, c.label, c.key)).join("")
-      : (monoCritical ? gerarHTMLBarraToner(info.percent, "Preto", "black") : "");
+  const maxVisible = 4;
+  const visible = alerts.slice(0, maxVisible);
+  const extra = alerts.length - visible.length;
 
-    const residueHtml = residue ? gerarHTMLBarraToner(residue.percent, residue.label || "Resíduo", "waste") : "";
-
-    const printerImage = getDashboardPrinterImage(item);
+  lista.innerHTML = visible.map((entry) => {
+    const item = entry.item || {};
+    const safeModelo = safeRefHtml(item.modelo || "Impressora");
+    const safeLabel = safeRefHtml(entry.label || "Toner");
+    const safeSerie = safeRefHtml(item.serie || "—");
+    const safeIp = safeRefHtml(item.ip || "—");
+    const safeLocal = safeRefHtml(item.localizacao || item.armazem || "Sem local");
+    const level = entry.percent <= 10 ? "critical" : "warning";
+    const width = Math.max(0, Math.min(100, entry.percent));
     return `
-      <div class="dashboard-card dashboard-critical-card">
-        <div class="equipment-art equipment-photo">
-          <img class="equipment-real-image" src="${printerImage}" alt="${safeRefHtml(item.modelo)}" loading="lazy" onerror="this.src='../img/printer.png'">
+      <div class="dash-toner-alert-item ${level} ${entry.className}" title="${safeModelo} — ${safeLabel} ${width}%">
+        <div class="dash-toner-alert-head">
+          <div>
+            <strong>${safeModelo}</strong>
+            <span>${safeLabel} · ${safeLocal}</span>
+          </div>
+          <b>${width}%</b>
         </div>
-        <div class="stock-id">${item.modelo}</div>
-        <div class="meta-line">Série: <span class="meta-value">${item.serie}</span></div>
-        <div class="meta-line">Local: <span class="meta-value">${item.localizacao} (${item.armazem})</span></div>
-        <div class="meta-line">IP: <span class="meta-value">${item.ip}</span></div>
-        <div class="printer-toners-grid" style="margin-top:10px;">${supplyHtml}${residueHtml}</div>
-        <div class="card-actions">
-          ${equipmentFichaLinkAppBraga("impressora", item, index, "local-impressora", "Ver ficha", "small-btn btn-edit")}
+        <div class="dash-toner-alert-bar" aria-label="${safeLabel} ${width}%">
+          <i style="width:${width}%; background:${entry.color}; box-shadow:0 0 14px ${entry.color};"></i>
+        </div>
+        <div class="dash-toner-alert-foot">
+          <span>Série: ${safeSerie}</span>
+          <span>IP: ${safeIp}</span>
+          <span>${entry.state}</span>
         </div>
       </div>
     `;
-  }).join("");
+  }).join("") + (extra > 0 ? `<div class="dash-toner-more">+ ${extra} alerta${extra === 1 ? "" : "s"} em Impressoras</div>` : "");
 }
 
 function renderStockCards(items) {
@@ -1956,7 +1978,7 @@ function gerarHTMLToners(info) {
 }
 
 function maybeNotifyCriticalSupply(ip, info, previousInfo = null) {
-  // v1.58.124: nao enviar notificacoes cloud/local a partir das paginas.
+  // v1.58.153: nao enviar notificacoes cloud/local a partir das paginas.
   // As notificacoes de toner passam a ser decididas uma unica vez nas Cloud Functions,
   // para evitar loops quando o Dashboard ou outra pagina faz leituras repetidas.
   return;
@@ -2064,7 +2086,7 @@ function resolveVapidPublicKeyApp(value) {
 }
 
 async function maybeNotifyTonerReplacement(ip, previousInfo, nextInfo) {
-  // v1.58.124: reposicao de toner tambem fica centralizada nas Cloud Functions.
+  // v1.58.153: reposicao de toner tambem fica centralizada nas Cloud Functions.
   return;
   if (!appNotificationState.tonerChange) return;
   const events = getTonerReplacementEventsApp(previousInfo, nextInfo);
@@ -2319,7 +2341,7 @@ function buildAlertasNotificacoesApp() {
 }
 
 async function verificarAlertasNotificacoesApp(force = false) {
-  // v1.58.124: alertas automáticos deixaram de correr no cliente.
+  // v1.58.153: alertas automáticos deixaram de correr no cliente.
   // A origem única é Cloud Functions para enviar uma só vez a todos os dispositivos.
   if (!force) return;
   const alerts = buildAlertasNotificacoesApp();
@@ -2363,7 +2385,7 @@ function canNotifyRealtimeCollectionApp(collectionKey) {
 }
 
 async function notificarAlteracaoRealtimeApp(collectionKey, snapshot) {
-  // v1.58.124: não criar notificações automáticas a partir de listeners de página.
+  // v1.58.153: não criar notificações automáticas a partir de listeners de página.
   // Listeners servem apenas para atualizar UI; notificações globais vêm das Functions.
   return;
   if (!snapshot || typeof snapshot.docChanges !== "function") return;
@@ -2410,7 +2432,7 @@ async function notificarAlteracaoRealtimeApp(collectionKey, snapshot) {
 
 function iniciarMonitorNotificacoesApp() {
   clearInterval(appNotificationTimer);
-  // v1.58.124: sem monitor automático no cliente para evitar loops no Dashboard.
+  // v1.58.153: sem monitor automático no cliente para evitar loops no Dashboard.
   // Os testes manuais continuam a funcionar; automáticas ficam nas Cloud Functions.
 }
 
@@ -6558,7 +6580,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const estaNoDashboard = !!el("listaDashboardStock") || !!el("searchDashboard");
   const podeLerTonerElectron = !!(window.electronAPI && window.electronAPI.getTonerSNMP);
 
-  // v1.58.124: no Electron/GitHub a leitura SNMP tem de correr como serviço global,
+  // v1.58.153: no Electron/GitHub a leitura SNMP tem de correr como serviço global,
   // independentemente da página aberta. A escrita na Firebase continua protegida por
   // syncPrinterInfoToFirebase(), que só grava quando o valor mudou mesmo.
   if (estaNaPaginaImpressoras || estaNoDashboard || podeLerTonerElectron) {
@@ -6650,7 +6672,7 @@ async function syncPrinterInfoToFirebase(ip, info) {
   const payload = buildPrinterFirebasePayload(cleanIp, info);
   const compareKey = appBragaPrinterCompareKeyFromPayload(payload);
 
-  // v1.58.124: o Dashboard/Electron estava a escrever novamente os mesmos valores
+  // v1.58.153: o Dashboard/Electron estava a escrever novamente os mesmos valores
   // em cada leitura. Mesmo sem mudança real, isso podia acordar as Functions e repetir
   // notificações nos outros dispositivos. Agora só escreve na Firebase quando toner/
   // resíduo/percentagem mudam mesmo.
@@ -6778,7 +6800,7 @@ function mapFirebasePrinterInfo(printerDoc) {
 
 function bindPrintersFirebaseRealtime() {
   if (!db || !db.collection) return;
-  // v1.58.124: a leitura Firebase das impressoras tem de estar ativa em todas as páginas.
+  // v1.58.153: a leitura Firebase das impressoras tem de estar ativa em todas as páginas.
   // Antes só corria no Dashboard/Impressoras; por isso iPhone/tablet só viam toners atualizados
   // quando alguém abria a página Impressoras. Este listener apenas lê e atualiza UI/estado local.
   appBragaBindFirestoreListener("printers-realtime", true, () => db.collection("printers").onSnapshot((snap) => {
@@ -8076,7 +8098,7 @@ async function atualizarAppObrigatorio(novaVersao = "") {
 
 window.addEventListener("load", () => {
   atualizarVersaoUI(APP_VERSION);
-  // v1.58.124: não verificar/forçar atualização automaticamente.
+  // v1.58.153: não verificar/forçar atualização automaticamente.
   // Evita refresh/navegação quando o utilizador está a editar ou guardar dados.
 });
 
@@ -10060,7 +10082,7 @@ async function guardarEtiquetaPartilhada(extra = {}) {
     const payload = sanitizeFirestorePayloadAppBraga(montarPayloadEtiquetaPartilhada(extra));
     const codigo = String(payload.codigoEtiqueta || extra.codigoEtiqueta || "").trim().toUpperCase();
 
-    // v1.58.124: evitar duplicados. Ao adicionar toner, a etiqueta é guardada
+    // v1.58.153: evitar duplicados. Ao adicionar toner, a etiqueta é guardada
     // logo na coleção etiquetasWord; se o Word também for gerado a seguir,
     // atualiza a mesma etiqueta em vez de criar outra.
     if (codigo) {
@@ -13401,7 +13423,7 @@ async function carregarHistoricoNotificacoesCloudApp(showMessage = false) {
 /* ===== END APP BRAGA v1.56.1 - SIDEBAR OPERACIONAL FINAL ===== */
 
 
-/* v1.58.124 — proteção contra refresh automático durante edição/guardar */
+/* v1.58.153 — proteção contra refresh automático durante edição/guardar */
 window.__APP_BRAGA_DISABLE_AUTO_UPDATE_REFRESH__ = true;
 
 (function protegerContraRefreshAutomaticoAppBraga() {
@@ -13438,7 +13460,7 @@ window.__APP_BRAGA_DISABLE_AUTO_UPDATE_REFRESH__ = true;
 })();
 
 
-/* v1.58.124 — clique do logotipo do hero para voltar ao Portal */
+/* v1.58.153 — clique do logotipo do hero para voltar ao Portal */
 (function ativarBotaoLogoHeroPortal(){
   if (window.__appBragaHeroLogoButtonBound) return;
   window.__appBragaHeroLogoButtonBound = true;

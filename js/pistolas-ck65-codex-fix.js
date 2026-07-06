@@ -1,5 +1,5 @@
 (function(){
-  const VERSION = '1.58.108';
+  const VERSION = '1.58.153';
   const LOCAL_KEYS = {
     pistols: 'appbraga-ck65-pistols-v1',
     interventions: 'appbraga-ck65-interventions-v1'

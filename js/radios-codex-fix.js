@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '1.58.108';
+  const VERSION = '1.58.153';
   const COLLECTION = 'radios';
   const RECORDS_COLLECTION = 'radiosIntervencoes';
   const LEGACY_RECORDS_COLLECTION = 'radioHistory';

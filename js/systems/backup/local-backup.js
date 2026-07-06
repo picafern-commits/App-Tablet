@@ -1,10 +1,10 @@
-/* AppBraga v1.58.133 — compatibilidade segura do backup local.
+/* AppBraga v1.58.153 — compatibilidade segura do backup local.
    Mantém as páginas antigas sem erro quando referenciam o módulo de backup.
    A lógica principal de backup continua nos sistemas existentes da app. */
 (function(){
   'use strict';
   window.AppBragaLocalBackup = window.AppBragaLocalBackup || {
-    version: '1.58.133',
+    version: '1.58.153',
     ready: true,
     exportJSON: function(data, filename){
       try {

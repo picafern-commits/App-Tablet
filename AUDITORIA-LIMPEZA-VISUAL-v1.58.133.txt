@@ -1,10 +1,10 @@
-AppBraga v1.58.133 — Auditoria + limpeza visual segura
+AppBraga v1.58.153 — Auditoria + limpeza visual segura
 
-Base usada: v1.58.132.
+Base usada: v1.58.153.
 Objetivo: manter sistemas antigos e remover/desativar visual antigo das páginas novas.
 
 Alterações seguras realizadas:
-- Atualizada versão/cache para v1.58.133.
+- Atualizada versão/cache para v1.58.153.
 - O index raiz passou a ser apenas redirecionamento limpo para html/index.html, sem carregar visual antigo.
 - Removidas referências a CSS/JS antigo de mockup/sidebar/iphone das páginas legacy visuais onde eram apenas camada visual.
 - Removidos ficheiros visuais antigos não necessários ao novo padrão: css/app-design-classic.css, css/appbraga-light-redesign.css, css/appbraga-mockup-pages.css, css/iphone-force-final.css, css/iphone-sidebar-final.css, css/sidebar-enterprise.css, css/premium-polish.css, js/appbraga-mockup-pages.js, js/iphone-force-final.js, js/iphone-sidebar-final.js, js/sidebar-emoji-fix.js.

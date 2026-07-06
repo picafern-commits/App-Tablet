@@ -1,6 +1,6 @@
 (function(){
   'use strict';
-  const VERSION='1.58.121';
+  const VERSION='1.58.153';
   const COLLECTION='diretorioTelefonico';
   const LOCAL_KEY='appbraga_diretorio_v2';
   let contactos=[];
@@ -220,7 +220,17 @@
     const parts=sorted.slice(0,6).map(([_,n],i)=>{ const start=acc; acc+=n/total*100; return `${colors[i]} ${start}% ${acc}%`; });
     const donut=$('dirDonut'); if(donut) donut.style.background=`conic-gradient(${parts.join(',')||'#1e293b 0 100%'})`;
     const legend=$('dirDonutLegend');
-    if(legend) legend.innerHTML=sorted.slice(0,5).map(([label,n],i)=>`<div class="dir-legend-row"><span class="dir-legend-dot" style="--c:${colors[i]}"></span><span>${esc(label)}</span><strong>${n}</strong><small>${((n/total)*100).toFixed(1)}%</small></div>`).join('') + (sorted.length>5?`<div class="dir-legend-row"><span class="dir-legend-dot" style="--c:#94a3b8"></span><span>Outros</span><strong>${sorted.slice(5).reduce((s,x)=>s+x[1],0)}</strong><small></small></div>`:'') + `<div class="dir-legend-row"><span></span><span>Total</span><strong>${contactos.length}</strong><small></small></div>`;
+    if(legend){
+      if(!contactos.length){
+        legend.innerHTML = '<div class="dir-legend-row dir-total-row"><span class="dir-legend-dot" style="--c:#334155"></span><span>Sem contactos registados</span><strong>0</strong></div>';
+      } else {
+        const top = sorted.slice(0,6);
+        const outros = sorted.slice(6).reduce((s,x)=>s+x[1],0);
+        legend.innerHTML = top.map(([label,n],i)=>`<div class="dir-legend-row"><span class="dir-legend-dot" style="--c:${colors[i%colors.length]}"></span><span>${esc(label)}</span><strong>${n}</strong><small>${((n/total)*100).toFixed(1)}%</small></div>`).join('')
+          + (outros ? `<div class="dir-legend-row"><span class="dir-legend-dot" style="--c:#94a3b8"></span><span>Outros armazéns</span><strong>${outros}</strong><small></small></div>` : '')
+          + `<div class="dir-legend-row dir-total-row"><span></span><span>Total</span><strong>${contactos.length}</strong><small></small></div>`;
+      }
+    }
   }
 
   function renderAlerts(){

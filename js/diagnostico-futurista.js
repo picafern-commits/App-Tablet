@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const VERSION = '1.58.128';
+  const VERSION = '1.58.153';
   const COLLECTION = 'diagnosticos';
   const HISTORY_COLLECTION = 'diagnosticosHistorico';
   const LOCAL_KEY = 'appbraga_diagnosticos_fallback_v158128';
