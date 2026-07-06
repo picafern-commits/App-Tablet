@@ -1,4 +1,4 @@
-/* v1.58.165 — Impressoras: render estável, stock/etiquetas/histórico/manutenção reais */
+/* v1.58.166 — Impressoras: render estável, stock/etiquetas/histórico/manutenção reais */
 (function(){
   'use strict';
 

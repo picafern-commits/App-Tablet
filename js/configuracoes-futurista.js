@@ -1,6 +1,6 @@
-/* AppBraga v1.58.165 — Configurações futurista funcional */
+/* AppBraga v1.58.166 — Configurações futurista funcional */
 (() => {
-  const VERSION = "v1.58.165";
+  const VERSION = "v1.58.166";
   const SETTINGS_KEY = "appbraga_configuracoes_futurista";
   const LOGS_KEY = "appbraga_configuracoes_logs";
   const DEFAULT_SETTINGS = {

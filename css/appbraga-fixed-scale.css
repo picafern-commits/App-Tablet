@@ -1,4 +1,4 @@
-/* AppBraga v1.58.165 — escala fixa global
+/* AppBraga v1.58.166 — escala fixa global
    Mantém textos, ícones e botões com tamanho estável independentemente da largura da janela. */
 :root{
   --ab-fixed-page-min: 1280px;
@@ -340,7 +340,7 @@ button[class*="btn"],a[class*="btn"]{
 }
 
 
-/* AppBraga v1.58.165 — Scanner IA ligado ao padrão global e scroll corrigido */
+/* AppBraga v1.58.166 — Scanner IA ligado ao padrão global e scroll corrigido */
 body.scanner-ia-page,
 body.diagnostico-futurista-page,
 body.notificacoes-futurista-page{
@@ -516,7 +516,7 @@ body.scanner-ia-page .ck-hero-copy p{
   zoom:1!important;
 }
 
-/* AppBraga v1.58.165 — escala fixa consolidada */
+/* AppBraga v1.58.166 — escala fixa consolidada */
 .ck-hero-title,.imp-hero-title,.ck-hero h1,.imp-hero h1{font-size:34px !important;line-height:1.05 !important;}
 .ck-hero-subtitle,.imp-hero-subtitle,.ck-hero p,.imp-hero p{font-size:15px !important;line-height:1.25 !important;}
 .ck-kpi strong,.imp-kpi strong{font-size:34px !important;line-height:1 !important;}

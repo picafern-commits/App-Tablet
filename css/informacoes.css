@@ -1,5 +1,5 @@
 
-/* AppBraga v1.58.165 — Informações futurista no padrão da página Rádios */
+/* AppBraga v1.58.166 — Informações futurista no padrão da página Rádios */
 body.informacoes-futurista-page{
   min-height:100vh!important;
   overflow:auto!important;
@@ -88,7 +88,7 @@ body.informacoes-futurista-page .info-hero-icon span{font-size:34px;filter:drop-
 @media(max-width:900px){.info-table{min-width:980px}.info-search-row{grid-template-columns:1fr}.info-category-form{grid-template-columns:1fr}.info-actions{justify-content:flex-start}}
 
 
-/* v1.58.165 — Informações: limpeza lateral, modal arrumado e sem botão Portal */
+/* v1.58.166 — Informações: limpeza lateral, modal arrumado e sem botão Portal */
 body.informacoes-futurista-page .ck-back{
   display:none!important;
 }

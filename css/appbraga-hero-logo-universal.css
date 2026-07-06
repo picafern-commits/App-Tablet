@@ -1,4 +1,4 @@
-/* AppBraga v1.58.165 — logo hero universal
+/* AppBraga v1.58.166 — logo hero universal
    Mantém o símbolo AppBraga/Bragalis exatamente no padrão do Dashboard. */
 :root{
   --ab-hero-logo-left:92px;
@@ -71,7 +71,7 @@
   }
 }
 
-/* AppBraga v1.58.165 — normalizar logo/botão do hero em todas as páginas
+/* AppBraga v1.58.166 — normalizar logo/botão do hero em todas as páginas
    O botão/logo do Portal Inicial fica sempre no mesmo corte/posição do padrão Rádios/Dashboard. */
 :root{
   --ab-hero-logo-left:92px;

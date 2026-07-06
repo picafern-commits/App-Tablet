@@ -50,7 +50,7 @@ body.historico-futurista::after{background:radial-gradient(ellipse at 0% 45%,rgb
 @media (max-width:900px){.hist-page{padding:14px}.hist-hero-card{width:100%;display:grid;justify-items:center;text-align:center;gap:16px;padding:22px}.hist-hero-orbit{display:none}.hist-hero h1{font-size:2.2rem}.hist-hero p{font-size:1.05rem}.hist-kpis,.hist-filters,.hist-quick-actions,.hist-export-grid,.hist-footer-stats,.form-grid{grid-template-columns:1fr}.hist-panel-head{display:grid}.hist-activity-row,.hist-label-row{grid-template-columns:1fr}}
 
 
-/* v1.58.165 — ajustes finais histórico */
+/* v1.58.166 — ajustes finais histórico */
 .hist-main-grid{align-items:start!important}
 .hist-left{min-width:0!important}
 .hist-list-panel{min-height:0!important}
@@ -67,7 +67,7 @@ body.historico-futurista::after{background:radial-gradient(ellipse at 0% 45%,rgb
 @media(max-width:900px){.hist-movement,.hist-label-row{grid-template-columns:1fr!important}.hist-movement small{text-align:left}.hist-label-btn{width:100%}}
 
 
-/* v1.58.165 — ações da lista de histórico funcionais */
+/* v1.58.166 — ações da lista de histórico funcionais */
 .hist-action-icon{cursor:pointer!important;transition:border-color .18s ease,background .18s ease,transform .18s ease}
 .hist-action-icon:hover{border-color:rgba(49,174,255,.62)!important;background:rgba(20,140,255,.18)!important;transform:translateY(-1px)}
 .hist-detail-modal{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.62);backdrop-filter:blur(8px)}

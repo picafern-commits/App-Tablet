@@ -191,7 +191,7 @@ body.pistolas-ck65-page::after{background:
 }
 
 
-/* v1.58.165 — CK65 mais fiel ao estilo real da app */
+/* v1.58.166 — CK65 mais fiel ao estilo real da app */
 body.pistolas-ck65-page .version-badge,
 body.pistolas-ck65-page .app-version-badge,
 body.pistolas-ck65-page #appVersionBadge,
@@ -506,7 +506,7 @@ body.pistolas-ck65-page .ck-mini-table{
 }
 
 
-/* v1.58.165 — CK65 scroll corrigido + lista mais bonita */
+/* v1.58.166 — CK65 scroll corrigido + lista mais bonita */
 html,
 html:has(body.pistolas-ck65-page),
 body.pistolas-ck65-page{
@@ -765,7 +765,7 @@ body.pistolas-ck65-page .ck-version ~ .version-badge{
 }
 
 
-/* v1.58.165 — CK65 hero igual às outras páginas */
+/* v1.58.166 — CK65 hero igual às outras páginas */
 body.pistolas-ck65-page .ck-hero{
   display:flex!important;
   justify-content:center!important;
@@ -893,7 +893,7 @@ body.pistolas-ck65-page .ck-hero-copy p{
 }
 
 
-/* v1.58.165 — Ajustes finais CK65: ícone KPI centrado, botões Ver todos compactos e sem botão Portal */
+/* v1.58.166 — Ajustes finais CK65: ícone KPI centrado, botões Ver todos compactos e sem botão Portal */
 body.pistolas-ck65-page .ck-kpi-icon.ck-icon-gun-small{
   width:44px!important;
   min-width:44px!important;

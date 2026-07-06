@@ -1,8 +1,8 @@
-/* AppBraga v1.58.165 — limpeza forte de cache/visual antigo para Electron/PWA.
+/* AppBraga v1.58.166 — limpeza forte de cache/visual antigo para Electron/PWA.
    Não apaga dados Firebase nem sistemas: apenas mata cache, service workers antigos e rotas legacy. */
 (function(){
   'use strict';
-  var VERSION = '1.58.165';
+  var VERSION = '1.58.166';
   var CLEAN_KEY = 'appbraga-hard-clean-' + VERSION;
   var LEGACY_ROUTES = {
     '/dashboard': '/html/dashboard.html',

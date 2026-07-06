@@ -1,4 +1,4 @@
-/* AppBraga v1.58.165 — abre/fecha menus estáticos de navegação por área */
+/* AppBraga v1.58.166 — abre/fecha menus estáticos de navegação por área */
 (function(){
   'use strict';
   function closeAll(except){

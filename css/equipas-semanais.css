@@ -15,7 +15,7 @@ body.equipas-futurista-page{margin:0;font-family:Inter,system-ui,-apple-system,S
 @media (max-width:850px){.eq-page{padding:18px 12px 72px}.ck-kpis{grid-template-columns:1fr 1fr}.ck-side{grid-template-columns:1fr}.ck-panel-head{align-items:flex-start;flex-direction:column}.ck-search-row{grid-template-columns:1fr;width:100%}.eq-quick-grid{grid-template-columns:1fr}.ck-form-grid.two,.eq-detail-grid{grid-template-columns:1fr}.ck-table{min-width:980px}.eq-donut-row{grid-template-columns:1fr}.eq-donut{margin:auto}.ck-table-footer{flex-direction:column;align-items:stretch}.ck-footer-right{justify-content:space-between}.ck-modal{padding:12px}}
 
 
-/* v1.58.165 — ajuste visual Equipas sem mexer no hero */
+/* v1.58.166 — ajuste visual Equipas sem mexer no hero */
 body.equipas-futurista-page .eq-page{width:100%!important;max-width:none!important;margin:0!important;padding:24px 28px 104px!important;}
 body.equipas-futurista-page .ck-kpis{margin-top:14px!important;}
 body.equipas-futurista-page .eq-main{display:grid!important;grid-template-columns:minmax(0,1fr) 540px!important;gap:12px!important;align-items:start!important;width:100%!important;}
@@ -28,7 +28,7 @@ body.equipas-futurista-page .ck-table-footer{display:flex!important;align-items:
 @media(max-width:900px){body.equipas-futurista-page .eq-page{padding:18px 12px 104px!important;}body.equipas-futurista-page .ck-side{grid-template-columns:1fr!important;}}
 
 
-/* v1.58.165 — Equipas: remover Portal e compactar botão Ver todos */
+/* v1.58.166 — Equipas: remover Portal e compactar botão Ver todos */
 body.equipas-futurista-page .ck-back{display:none!important;}
 body.equipas-futurista-page .ck-panel-head #eqBtnVerAtualizacoes{
   width:auto!important;min-width:104px!important;max-width:128px!important;height:32px!important;
