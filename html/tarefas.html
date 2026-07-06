@@ -1,175 +1,182 @@
 <!DOCTYPE html>
+
 <html lang="pt">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-  <title>Tarefas</title>
-  <meta name="theme-color" content="#020817">
-  <link rel="manifest" href="../manifest.json">
-  <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
-  <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/style.css?v=1.58.153">
-  <link rel="stylesheet" href="../css/impressoras-futurista.css?v=1.58.153">
-  <link rel="stylesheet" href="../css/appbraga-clean-layout.css?v=1.58.153">
-  <link rel="stylesheet" href="../css/tarefas.css?v=1.58.153">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="App Braga">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="format-detection" content="telephone=no">
-  <link rel="stylesheet" href="../css/appbraga-hero-padrao.css?v=1.58.153">
-  <link rel="stylesheet" href="../css/appbraga-scroll-systems.css?v=1.58.153">
-  <link rel="stylesheet" href="../css/appbraga-impressoras-padrao.css?v=1.58.153">
-  <link rel="stylesheet" href="../css/appbraga-fixed-scale.css?v=1.58.153">
+<script>
+(function(){
+  var v='1.58.163';
+  var key='appbraga-visual-clean-'+v;
+  try{
+    if(!sessionStorage.getItem(key)){
+      sessionStorage.setItem(key,'1');
+      if(window.caches) caches.keys().then(function(keys){ return Promise.all(keys.map(function(k){return caches.delete(k);})); }).catch(function(){});
+      if('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function(regs){ regs.forEach(function(r){ if(r.active) r.active.postMessage({type:'SKIP_WAITING'}); }); }).catch(function(){});
+    }
+  }catch(e){}
+})();
+</script>
+
+<meta charset="utf-8"/>
+<meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control"/>
+<meta content="no-cache" http-equiv="Pragma"/>
+<meta content="0" http-equiv="Expires"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Tarefas</title>
+<meta content="#020817" name="theme-color"/>
+<link href="../manifest.json" rel="manifest"/>
+<link href="../icon-192.png" rel="icon" sizes="192x192" type="image/png"/>
+<link href="../icon-192.png" rel="apple-touch-icon"/>
+<link href="../css/impressoras-futurista.css?v=1.58.163" rel="stylesheet"/>
+<link href="../css/appbraga-clean-layout.css?v=1.58.163" rel="stylesheet"/>
+<link href="../css/tarefas.css?v=1.58.163" rel="stylesheet"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="yes" name="mobile-web-app-capable"/>
+<meta content="App Braga" name="apple-mobile-web-app-title"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="telephone=no" name="format-detection"/>
+<link href="../css/appbraga-hero-padrao.css?v=1.58.163" rel="stylesheet"/>
+<link href="../css/appbraga-scroll-systems.css?v=1.58.163" rel="stylesheet"/>
+<link href="../css/appbraga-impressoras-padrao.css?v=1.58.163" rel="stylesheet"/>
+<link href="../css/appbraga-fixed-scale.css?v=1.58.163" rel="stylesheet"/>
+<link href="../css/appbraga-area-nav.css?v=1.58.163" rel="stylesheet"/>
+<link href="../css/appbraga-hero-logo-universal.css?v=1.58.163" rel="stylesheet"/>
 </head>
 <body class="impressoras-futurista tarefas-futurista-page">
-  <div class="imp-page tasks-page">
-    <div class="tasks-version">Versão&nbsp; v1.58.153</div>
-
-    <section class="ck-hero" aria-labelledby="tasksTitle">
-      <div class="ck-hero-inner">
-        <a class="ck-hero-home" href="index.html" aria-label="Voltar ao Portal AppBraga" title="Voltar ao Portal">
-          <img src="../assets/bragalis-home-logo-original.png?v=1.58.153" alt="AppBraga">
-        </a>
-        <div class="ck-hero-icon" aria-hidden="true"><span>📋</span></div>
-        <div class="ck-hero-copy">
-          <h1 id="tasksTitle">Tarefas</h1>
-          <p>Gestão, organização e acompanhamento de tarefas da equipa.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="imp-kpis tasks-kpis" aria-label="Resumo das tarefas">
-      <button class="imp-kpi" type="button" data-task-filter-kpi="all"><span class="imp-kpi-icon">📋</span><span>Total tarefas<strong id="taskKpiTotal">0</strong><small>Todas as tarefas</small></span></button>
-      <button class="imp-kpi green" type="button" data-task-filter-kpi="concluida"><span class="imp-kpi-icon">✅</span><span>Concluídas<strong id="taskKpiDone">0</strong><small id="taskDonePct">0% do total</small></span></button>
-      <button class="imp-kpi imp-kpi-cyan" type="button" data-task-filter-kpi="progresso"><span class="imp-kpi-icon">🕘</span><span>Em progresso<strong id="taskKpiProgress">0</strong><small id="taskProgressPct">0% do total</small></span></button>
-      <button class="imp-kpi orange" type="button" data-task-filter-kpi="pendente"><span class="imp-kpi-icon">⏱️</span><span>Pendentes<strong id="taskKpiPending">0</strong><small id="taskPendingPct">0% do total</small></span></button>
-      <button class="imp-kpi red" type="button" data-task-filter-kpi="vencida"><span class="imp-kpi-icon">⚠️</span><span>Vencidas<strong id="taskKpiOverdue">0</strong><small>Requer atenção</small></span></button>
-      <button class="imp-kpi imp-kpi-cyan" type="button" data-task-filter-kpi="hoje"><span class="imp-kpi-icon">🗓️</span><span>Hoje<strong id="taskKpiToday">0</strong><small>Para hoje</small></span></button>
-    </section>
-
-    <section class="imp-main-grid tasks-main-grid">
-      <article class="imp-panel tasks-list-panel">
-        <div class="imp-panel-head">
-          <div class="imp-panel-title"><span>📋</span><div><h2>Lista de Tarefas <span id="taskListCount" class="mini-count">0</span></h2><p>Acompanhe e gere todas as tarefas da equipa.</p></div></div>
-          <div class="imp-search-row tasks-search-row">
-            <input id="taskSearch" type="search" placeholder="Pesquisar tarefa...">
-            <select id="taskFilterStatus">
-              <option value="">Todos os estados</option>
-              <option value="pendente">Pendente</option>
-              <option value="progresso">Em progresso</option>
-              <option value="concluida">Concluída</option>
-              <option value="vencida">Vencidas</option>
-            </select>
-            <select id="taskFilterPriority">
-              <option value="">Todas as prioridades</option>
-              <option value="alta">Alta</option>
-              <option value="media">Média</option>
-              <option value="baixa">Baixa</option>
-              <option value="sem">Sem prioridade</option>
-            </select>
-            <button class="imp-btn small" type="button" id="taskBtnLimpar">☰ Limpar filtros</button>
-          </div>
-        </div>
-        <div class="imp-table-wrap tasks-table-wrap">
-          <table class="imp-table tasks-table">
-            <thead>
-              <tr>
-                <th>Tarefa</th>
-                <th>Descrição</th>
-                <th>Responsável</th>
-                <th>Prioridade</th>
-                <th>Estado</th>
-                <th>Prazo</th>
-                <th>Criada em</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="tasksTableBody"></tbody>
-          </table>
-        </div>
-        <div class="tasks-mobile-list" id="tasksMobileList"></div>
-        <div class="ck-table-footer tasks-footer">
-          <div class="ck-footer-left">
-            <div class="ck-page-size">Mostrar
+<div class="imp-page tasks-page">
+<div class="tasks-version">Versão  v1.58.163</div>
+<section aria-labelledby="tasksTitle" class="ck-hero">
+<div class="ck-hero-inner">
+<a aria-label="Voltar ao Portal AppBraga" class="ck-hero-home" href="index.html" title="Voltar ao Portal">
+<img alt="AppBraga" src="../assets/bragalis-home-logo-original.png?v=1.58.163"/>
+</a>
+<div aria-hidden="true" class="ck-hero-icon"><span>📋</span></div>
+<div class="ck-hero-copy">
+<h1 id="tasksTitle">Tarefas</h1>
+<p>Gestão, organização e acompanhamento de tarefas da equipa.</p>
+</div>
+<div class="ab-hero-area-actions ab-hero-area-back-only" data-area="Infraestrutura" data-area-nav-static="1"><a aria-label="Voltar ao portal Infraestrutura" class="ab-hero-area-btn" href="portal-infraestrutura.html" title="Voltar ao portal Infraestrutura">↩️</a></div></div>
+</section>
+<section aria-label="Resumo das tarefas" class="imp-kpis tasks-kpis">
+<button class="imp-kpi" data-task-filter-kpi="all" type="button"><span class="imp-kpi-icon">📋</span><span>Total tarefas<strong id="taskKpiTotal">0</strong><small>Todas as tarefas</small></span></button>
+<button class="imp-kpi green" data-task-filter-kpi="concluida" type="button"><span class="imp-kpi-icon">✅</span><span>Concluídas<strong id="taskKpiDone">0</strong><small id="taskDonePct">0% do total</small></span></button>
+<button class="imp-kpi imp-kpi-cyan" data-task-filter-kpi="progresso" type="button"><span class="imp-kpi-icon">🕘</span><span>Em progresso<strong id="taskKpiProgress">0</strong><small id="taskProgressPct">0% do total</small></span></button>
+<button class="imp-kpi orange" data-task-filter-kpi="pendente" type="button"><span class="imp-kpi-icon">⏱️</span><span>Pendentes<strong id="taskKpiPending">0</strong><small id="taskPendingPct">0% do total</small></span></button>
+<button class="imp-kpi red" data-task-filter-kpi="vencida" type="button"><span class="imp-kpi-icon">⚠️</span><span>Vencidas<strong id="taskKpiOverdue">0</strong><small>Requer atenção</small></span></button>
+<button class="imp-kpi imp-kpi-cyan" data-task-filter-kpi="hoje" type="button"><span class="imp-kpi-icon">🗓️</span><span>Hoje<strong id="taskKpiToday">0</strong><small>Para hoje</small></span></button>
+</section>
+<section class="imp-main-grid tasks-main-grid">
+<article class="imp-panel tasks-list-panel">
+<div class="imp-panel-head">
+<div class="imp-panel-title"><span>📋</span><div><h2>Lista de Tarefas <span class="mini-count" id="taskListCount">0</span></h2><p>Acompanhe e gere todas as tarefas da equipa.</p></div></div>
+<div class="imp-search-row tasks-search-row">
+<input id="taskSearch" placeholder="Pesquisar tarefa..." type="search"/>
+<select id="taskFilterStatus">
+<option value="">Todos os estados</option>
+<option value="pendente">Pendente</option>
+<option value="progresso">Em progresso</option>
+<option value="concluida">Concluída</option>
+<option value="vencida">Vencidas</option>
+</select>
+<select id="taskFilterPriority">
+<option value="">Todas as prioridades</option>
+<option value="alta">Alta</option>
+<option value="media">Média</option>
+<option value="baixa">Baixa</option>
+<option value="sem">Sem prioridade</option>
+</select>
+<button class="imp-btn small" id="taskBtnLimpar" type="button">☰ Limpar filtros</button>
+</div>
+</div>
+<div class="imp-table-wrap tasks-table-wrap">
+<table class="imp-table tasks-table">
+<thead>
+<tr>
+<th>Tarefa</th>
+<th>Descrição</th>
+<th>Responsável</th>
+<th>Prioridade</th>
+<th>Estado</th>
+<th>Prazo</th>
+<th>Criada em</th>
+<th>Ações</th>
+</tr>
+</thead>
+<tbody id="tasksTableBody"></tbody>
+</table>
+</div>
+<div class="tasks-mobile-list" id="tasksMobileList"></div>
+<div class="ck-table-footer tasks-footer">
+<div class="ck-footer-left">
+<div class="ck-page-size">Mostrar
               <select id="taskPageSize"><option value="10">10</option><option value="20">20</option><option value="50">50</option></select>
               registos
             </div>
-          </div>
-          <div class="ck-footer-right">
-            <span id="taskTableSummary">0-0 de 0</span>
-            <div class="ck-pagination" id="taskPagination"></div>
-          </div>
-        </div>
-      </article>
-
-      <aside class="imp-side tasks-side">
-        <article class="imp-panel">
-          <div class="imp-panel-head"><div class="imp-panel-title"><span>⚡</span><div><h3>Ações rápidas</h3><p>Atalhos para gestão de tarefas.</p></div></div></div>
-          <div class="imp-quick-grid tasks-quick-grid">
-            <button class="imp-btn primary" type="button" id="taskBtnNovo">➕ Nova tarefa</button>
-            <button class="imp-btn" type="button" id="taskBtnMinhas">👤 Minhas tarefas</button>
-            <button class="imp-btn" type="button" id="taskBtnRelatorio">📊 Relatório de tarefas</button>
-            <button class="imp-btn" type="button" id="taskBtnCalendario">🗓️ Calendário</button>
-            <button class="imp-btn" type="button" id="taskBtnConfig">⚙️ Configurações</button>
-          </div>
-        </article>
-
-        <article class="imp-panel">
-          <div class="imp-panel-head"><div class="imp-panel-title"><span>📈</span><div><h3>Resumo por prioridade</h3><p>Distribuição de tarefas por nível de prioridade.</p></div></div></div>
-          <div class="tasks-priority-summary">
-            <div class="tasks-donut" id="taskDonut" aria-hidden="true"></div>
-            <div class="tasks-priority-legend" id="taskPriorityLegend"></div>
-          </div>
-        </article>
-
-        <article class="imp-panel">
-          <div class="imp-panel-head"><div class="imp-panel-title"><span>🚨</span><div><h3>Tarefas vencidas</h3><p>Tarefas que estão em atraso.</p></div></div><button class="imp-btn small" type="button" id="taskBtnVerVencidas">Ver todas →</button></div>
-          <div class="imp-list tasks-overdue-list" id="taskOverdueList"></div>
-        </article>
-
-        <article class="imp-panel tasks-today-panel">
-          <div class="imp-panel-head"><div class="imp-panel-title"><span>🗓️</span><div><h3>Hoje</h3><p>Tarefas com prazo para hoje.</p></div></div></div>
-          <div class="imp-list" id="taskTodayList"></div>
-        </article>
-      </aside>
-    </section>
-	
-  </div>
-
-  <div id="taskModal" class="tasks-modal" aria-hidden="true">
-    <div class="tasks-modal-card" role="dialog" aria-modal="true" aria-labelledby="taskModalTitle">
-      <div class="tasks-modal-head">
-        <div><h3 id="taskModalTitle">Nova tarefa</h3><p>Regista a tarefa com responsável, prioridade, estado e prazo.</p></div>
-        <button type="button" class="imp-btn small" id="taskModalClose">Fechar</button>
-      </div>
-      <form id="taskForm" class="tasks-form">
-        <input type="hidden" id="taskId">
-        <label><span>Tarefa</span><input id="taskTitulo" type="text" placeholder="Ex: Manutenção P3155dn" required></label>
-        <label><span>Responsável</span><input id="taskResponsavel" type="text" placeholder="Ex: Cesar-PT"></label>
-        <label class="tasks-form-wide"><span>Descrição</span><textarea id="taskDescricao" rows="3" placeholder="Descrição da tarefa..."></textarea></label>
-        <label><span>Categoria</span><input id="taskCategoria" type="text" placeholder="Ex: Manutenção"></label>
-        <label><span>Prioridade</span><select id="taskPrioridade"><option value="sem">Sem prioridade</option><option value="baixa">Baixa</option><option value="media">Média</option><option value="alta">Alta</option></select></label>
-        <label><span>Estado</span><select id="taskEstado"><option value="pendente">Pendente</option><option value="progresso">Em progresso</option><option value="concluida">Concluída</option></select></label>
-        <label><span>Prazo</span><input id="taskPrazo" type="date"></label>
-        <div class="tasks-form-actions">
-          <button class="imp-btn" type="button" id="taskFormCancel">Cancelar</button>
-          <button class="imp-btn primary" type="submit">Guardar tarefa</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="../js/app.js?v=1.58.153"></script>
-  <script src="../js/appbraga-systems.js?v=1.58.153"></script>
-  <script src="../js/helpers.js?v=1.58.153"></script>
-  <script src="../js/tarefas-futurista.js?v=1.58.153"></script>
-  <script src="../js/appbraga-scroll-systems.js?v=1.58.153"></script>
+</div>
+<div class="ck-footer-right">
+<span id="taskTableSummary">0-0 de 0</span>
+<div class="ck-pagination" id="taskPagination"></div>
+</div>
+</div>
+</article>
+<aside class="imp-side tasks-side">
+<article class="imp-panel">
+<div class="imp-panel-head"><div class="imp-panel-title"><span>⚡</span><div><h3>Ações rápidas</h3><p>Atalhos para gestão de tarefas.</p></div></div></div>
+<div class="imp-quick-grid tasks-quick-grid">
+<button class="imp-btn primary" id="taskBtnNovo" type="button">➕ Nova tarefa</button>
+<button class="imp-btn" id="taskBtnMinhas" type="button">👤 Minhas tarefas</button>
+<button class="imp-btn" id="taskBtnRelatorio" type="button">📊 Relatório de tarefas</button>
+<button class="imp-btn" id="taskBtnCalendario" type="button">🗓️ Calendário</button>
+<button class="imp-btn" id="taskBtnConfig" type="button">⚙️ Configurações</button>
+</div>
+</article>
+<article class="imp-panel">
+<div class="imp-panel-head"><div class="imp-panel-title"><span>📈</span><div><h3>Resumo por prioridade</h3><p>Distribuição de tarefas por nível de prioridade.</p></div></div></div>
+<div class="tasks-priority-summary">
+<div aria-hidden="true" class="tasks-donut" id="taskDonut"></div>
+<div class="tasks-priority-legend" id="taskPriorityLegend"></div>
+</div>
+</article>
+<article class="imp-panel">
+<div class="imp-panel-head"><div class="imp-panel-title"><span>🚨</span><div><h3>Tarefas vencidas</h3><p>Tarefas que estão em atraso.</p></div></div><button class="imp-btn small" id="taskBtnVerVencidas" type="button">Ver todas →</button></div>
+<div class="imp-list tasks-overdue-list" id="taskOverdueList"></div>
+</article>
+<article class="imp-panel tasks-today-panel">
+<div class="imp-panel-head"><div class="imp-panel-title"><span>🗓️</span><div><h3>Hoje</h3><p>Tarefas com prazo para hoje.</p></div></div></div>
+<div class="imp-list" id="taskTodayList"></div>
+</article>
+</aside>
+</section>
+</div>
+<div aria-hidden="true" class="tasks-modal" id="taskModal">
+<div aria-labelledby="taskModalTitle" aria-modal="true" class="tasks-modal-card" role="dialog">
+<div class="tasks-modal-head">
+<div><h3 id="taskModalTitle">Nova tarefa</h3><p>Regista a tarefa com responsável, prioridade, estado e prazo.</p></div>
+<button class="imp-btn small" id="taskModalClose" type="button">Fechar</button>
+</div>
+<form class="tasks-form" id="taskForm">
+<input id="taskId" type="hidden"/>
+<label><span>Tarefa</span><input id="taskTitulo" placeholder="Ex: Manutenção P3155dn" required="" type="text"/></label>
+<label><span>Responsável</span><input id="taskResponsavel" placeholder="Ex: Cesar-PT" type="text"/></label>
+<label class="tasks-form-wide"><span>Descrição</span><textarea id="taskDescricao" placeholder="Descrição da tarefa..." rows="3"></textarea></label>
+<label><span>Categoria</span><input id="taskCategoria" placeholder="Ex: Manutenção" type="text"/></label>
+<label><span>Prioridade</span><select id="taskPrioridade"><option value="sem">Sem prioridade</option><option value="baixa">Baixa</option><option value="media">Média</option><option value="alta">Alta</option></select></label>
+<label><span>Estado</span><select id="taskEstado"><option value="pendente">Pendente</option><option value="progresso">Em progresso</option><option value="concluida">Concluída</option></select></label>
+<label><span>Prazo</span><input id="taskPrazo" type="date"/></label>
+<div class="tasks-form-actions">
+<button class="imp-btn" id="taskFormCancel" type="button">Cancelar</button>
+<button class="imp-btn primary" type="submit">Guardar tarefa</button>
+</div>
+</form>
+</div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="../js/app.js?v=1.58.163"></script>
+<script src="../js/appbraga-systems.js?v=1.58.163"></script>
+<script src="../js/helpers.js?v=1.58.163"></script>
+<script src="../js/tarefas-futurista.js?v=1.58.163"></script>
+<script src="../js/appbraga-scroll-systems.js?v=1.58.163"></script>
+<script src="../js/appbraga-area-nav.js?v=1.58.163"></script>
 </body>
 </html>

@@ -1,287 +1,289 @@
 <!DOCTYPE html>
+
 <html lang="pt">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-  <title>Stock</title>
-  <meta name="theme-color" content="#020817">
-  <link rel="manifest" href="../manifest.json">
-  <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
-  <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/stock-futurista.css?v=1.58.153">
-  <link rel="stylesheet" href="../css/appbraga-clean-layout.css?v=1.58.153">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="App Braga">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="format-detection" content="telephone=no">
-  <link rel="stylesheet" href="../css/appbraga-impressoras-padrao.css?v=1.58.153">
-  <link rel="stylesheet" href="../css/appbraga-fixed-scale.css?v=1.58.153">
-  <link rel="stylesheet" href="../css/appbraga-scroll-systems.css?v=1.58.153">
+<script>
+(function(){
+  var v='1.58.163';
+  var key='appbraga-visual-clean-'+v;
+  try{
+    if(!sessionStorage.getItem(key)){
+      sessionStorage.setItem(key,'1');
+      if(window.caches) caches.keys().then(function(keys){ return Promise.all(keys.map(function(k){return caches.delete(k);})); }).catch(function(){});
+      if('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function(regs){ regs.forEach(function(r){ if(r.active) r.active.postMessage({type:'SKIP_WAITING'}); }); }).catch(function(){});
+    }
+  }catch(e){}
+})();
+</script>
+
+<meta charset="utf-8"/>
+<meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control"/>
+<meta content="no-cache" http-equiv="Pragma"/>
+<meta content="0" http-equiv="Expires"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Stock</title>
+<meta content="#020817" name="theme-color"/>
+<link href="../manifest.json" rel="manifest"/>
+<link href="../icon-192.png" rel="icon" sizes="192x192" type="image/png"/>
+<link href="../icon-192.png" rel="apple-touch-icon"/>
+<link href="../css/stock-futurista.css?v=1.58.163" rel="stylesheet"/>
+<link href="../css/appbraga-clean-layout.css?v=1.58.163" rel="stylesheet"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="yes" name="mobile-web-app-capable"/>
+<meta content="App Braga" name="apple-mobile-web-app-title"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="telephone=no" name="format-detection"/>
+<link href="../css/appbraga-impressoras-padrao.css?v=1.58.163" rel="stylesheet"/>
+<link href="../css/appbraga-fixed-scale.css?v=1.58.163" rel="stylesheet"/>
+<link href="../css/appbraga-scroll-systems.css?v=1.58.163" rel="stylesheet"/>
+<link href="../css/appbraga-area-nav.css?v=1.58.163" rel="stylesheet"/>
+<link href="../css/appbraga-hero-logo-universal.css?v=1.58.163" rel="stylesheet"/>
 </head>
-
 <body class="stock-futurista">
-  <div class="stock-page">
-    <section class="stock-hero">
-      <div class="stock-hero-card">
-        <a class="stock-hero-orbit appbraga-home-orbit-btn" href="index.html" aria-label="Voltar ao Portal AppBraga" title="Voltar ao Portal"><img src="../assets/bragalis-home-logo-original.png?v=1.58.153" alt="AppBraga"></a>
-        <div class="stock-hero-icon" aria-hidden="true">🛢️</div>
-        <div>
-          <h1>Stock</h1>
-          <p>Controlo de stock de toners e consumíveis.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="stock-kpis" aria-label="Resumo de stock">
-      <article class="stock-kpi">
-        <span class="kpi-icon blue">🛢️</span>
-        <div><span>Toners em stock</span><strong id="stockKpiTotal">0</strong><small>Total de unidades</small></div>
-      </article>
-      <article class="stock-kpi">
-        <span class="kpi-icon orange">⚠️</span>
-        <div><span>Stock baixo</span><strong id="stockKpiBaixo">0</strong><small>Requer atenção</small></div>
-      </article>
-      <article class="stock-kpi">
-        <span class="kpi-icon red">✕</span>
-        <div><span>Sem stock</span><strong id="stockKpiSemStock">0</strong><small>Reposição urgente</small></div>
-      </article>
-      <article class="stock-kpi">
-        <span class="kpi-icon green">↓</span>
-        <div><span>Entradas hoje</span><strong id="stockKpiEntradasHoje">0</strong><small>Unidades recebidas</small></div>
-      </article>
-      <article class="stock-kpi">
-        <span class="kpi-icon purple">↑</span>
-        <div><span>Saídas hoje</span><strong id="stockKpiSaidasHoje">0</strong><small>Unidades entregues</small></div>
-      </article>
-      <article class="stock-kpi">
-        <span class="kpi-icon cyan">🏷️</span>
-        <div><span>Etiquetas geradas</span><strong id="stockKpiEtiquetas">0</strong><small>Documentos</small></div>
-      </article>
-    </section>
-
-    <section class="stock-main-grid">
-      <main class="stock-left">
-        <article class="stock-panel stock-list-panel">
-          <div class="stock-panel-head">
-            <div class="panel-title">
-              <span>🧰</span>
-              <div>
-                <h2>Lista de stock</h2>
-                <p>Inventário de toners e consumíveis disponíveis.</p>
-              </div>
-            </div>
-
-            <div class="stock-filters">
-              <input id="search" type="text" placeholder="Pesquisar referência ou equipamento..." oninput="filtrar()">
-              <select id="stockFilterArmazem">
-                <option value="">Todos os armazéns</option>
-              </select>
-              <select id="stockFilterCor">
-                <option value="">Todas as cores</option>
-                <option value="Preto">Preto</option>
-                <option value="Ciano">Ciano</option>
-                <option value="Azul">Ciano / Azul</option>
-                <option value="Magenta">Magenta</option>
-                <option value="Vermelho">Magenta / Vermelho</option>
-                <option value="Amarelo">Amarelo</option>
-              </select>
-              <button type="button" class="stock-btn" onclick="limparFiltrosStockFuturista()">☰ Limpar</button>
-            </div>
-          </div>
-
-          <div class="stock-table-wrap">
-            <table class="stock-table">
-              <thead>
-                <tr>
-                  <th>Cor</th>
-                  <th>Equipamento / Compatibilidade</th>
-                  <th>Referência</th>
-                  <th>Local / Armazém</th>
-                  <th>Quantidade</th>
-                  <th>Estado</th>
-                  <th>Última entrada</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody id="stockTableBody">
-                <tr><td colspan="8" class="stock-empty-row">A carregar stock...</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="stock-table-footer">
-            <span id="stockTableInfo">Mostrando 0 referências</span>
-            <div class="stock-pagination">
-              <button type="button">‹</button>
-              <button type="button" class="active">1</button>
-              <button type="button">2</button>
-              <button type="button">3</button>
-              <button type="button">…</button>
-              <button type="button">›</button>
-            </div>
-            <select id="stockPerPage">
-              <option>10 / página</option>
-              <option>25 / página</option>
-              <option>50 / página</option>
-            </select>
-          </div>
-        </article>
-
-        <div id="stockQrScannerPanel" class="stock-modal-overlay stock-qr-modal" hidden>
-          <div class="stock-modal-card stock-qr-modal-card">
-          <div class="stock-panel-head">
-            <div class="panel-title">
-              <span>📷</span>
-              <div>
-                <h2>Scan QR do toner</h2>
-                <p>Leia a etiqueta QR para marcar o toner como usado e mover para o histórico.</p>
-              </div>
-            </div>
-            <button type="button" onclick="window.stockFuturistaFecharScannerQr && window.stockFuturistaFecharScannerQr()">Fechar</button>
-          </div>
-          <div class="stock-qr-actions">
-            <button type="button" class="stock-qr-start" onclick="window.startStockQrScanner && window.startStockQrScanner()">📷 Ligar câmara</button>
-            <button type="button" onclick="window.stopStockQrScanner && window.stopStockQrScanner()">⏹ Parar scanner</button>
-          </div>
-          <div id="stockQrPreviewFrame" class="stock-qr-preview-frame">
-            <div id="stockQrReader" class="stock-qr-reader"></div>
-            <div class="stock-qr-aim" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-          </div>
-          <div id="stockQrStatus" class="stock-qr-status">Scanner desligado. Carrega em “Ligar câmara” e aponta para o QR da etiqueta.</div>
-          </div>
-        </div>
-
-        <article class="stock-panel stock-movements-wide">
-          <div class="stock-panel-head">
-            <div class="panel-title">
-              <span>↻</span>
-              <div>
-                <h2>Movimentos recentes</h2>
-                <p>Últimos movimentos de stock realizados.</p>
-              </div>
-            </div>
-            <button type="button" onclick="window.stockFuturistaAbrirMovimentos && window.stockFuturistaAbrirMovimentos()">Ver todos →</button>
-          </div>
-          <div class="stock-mini-table-wrap">
-            <table class="stock-mini-table">
-              <thead>
-                <tr>
-                  <th>Data/Hora</th>
-                  <th>Tipo</th>
-                  <th>Cor</th>
-                  <th>Referência</th>
-                  <th>Quantidade</th>
-                  <th>Origem / Destino</th>
-                  <th>Utilizador</th>
-                </tr>
-              </thead>
-              <tbody id="stockMovementsBody"></tbody>
-            </table>
-          </div>
-        </article>
-      </main>
-
-      <aside class="stock-right">
-        <article class="stock-panel stock-quick-panel">
-          <div class="stock-panel-head">
-            <div class="panel-title"><span>⚡</span><div><h2>Ações rápidas</h2><p>Atalhos de gestão de stock.</p></div></div>
-          </div>
-          <div class="stock-quick-actions">
-            <button type="button" onclick="location.href='add-toner.html'">➕ Adicionar Toner</button>
-            <button type="button" class="stock-qr-main-btn" onclick="window.stockFuturistaAbrirScannerQr && window.stockFuturistaAbrirScannerQr()">📷 Scan QR — passar para histórico</button>
-            <button type="button" onclick="location.href='historico.html'">↩ Histórico</button>
-            <button type="button" onclick="location.href='etiquetas-word.html'">🏷️ Etiquetas Word</button>
-            <button type="button" onclick="location.href='impressoras.html'">🖨️ Impressoras</button>
-            <button type="button" onclick="location.href='manutencao-impressoras.html'">🔧 Manutenção Impressoras</button>
-          </div>
-        </article>
-
-        <article class="stock-panel stock-alerts-panel">
-          <div class="stock-panel-head">
-            <div class="panel-title"><span>⚠️</span><div><h2>Alertas de stock</h2><p>Prioridades que requerem atenção.</p></div></div>
-            <a href="notificacoes.html">Ver todos →</a>
-          </div>
-          <div class="stock-alert-list" id="stockAlertsList"></div>
-        </article>
-
-        <article class="stock-panel stock-color-panel">
-          <div class="stock-panel-head">
-            <div class="panel-title"><span>🎨</span><div><h2>Resumo por cor</h2><p>Total de unidades por cor.</p></div></div>
-            <button type="button" onclick="exportarExcelStock()">Ver detalhes →</button>
-          </div>
-          <div class="stock-bars" id="stockColorBars"></div>
-        </article>
-
-      </aside>
-    </section>
-
-    <div id="stockMovementsModal" class="stock-modal-overlay" hidden>
-      <div class="stock-modal-card stock-modal-wide">
-        <div class="stock-modal-head">
-          <div>
-            <h3>Todos os movimentos de stock</h3>
-            <p>Entradas e saídas com paginação de 25 registos por página.</p>
-          </div>
-          <button type="button" class="stock-modal-close" onclick="window.stockFuturistaFecharMovimentos && window.stockFuturistaFecharMovimentos()">Fechar</button>
-        </div>
-        <div class="stock-mini-table-wrap">
-          <table class="stock-mini-table">
-            <thead>
-              <tr>
-                <th>Data/Hora</th>
-                <th>Tipo</th>
-                <th>Cor</th>
-                <th>Referência</th>
-                <th>Quantidade</th>
-                <th>Origem / Destino</th>
-                <th>Utilizador</th>
-              </tr>
-            </thead>
-            <tbody id="stockMovementsModalBody"></tbody>
-          </table>
-        </div>
-        <div class="stock-modal-footer">
-          <span id="stockMovementsModalInfo">0 registos</span>
-          <div class="stock-pagination" id="stockMovementsModalPagination"></div>
-        </div>
-      </div>
-    </div>
-    <div id="listaStock" class="stock-hidden-legacy"></div>
-    <div id="countStock" class="stock-hidden-legacy">0</div>
-
-    <div id="modalEditarStock" class="modal-overlay" style="display:none;">
-      <div class="modal-card">
-        <div class="section-header"><div><h3>Editar Stock</h3><p class="section-subtitle">Editar toner em stock</p></div></div>
-        <div class="form-grid">
-          <label><span>Equipamento</span><input id="editStockEquipamento" type="text"></label>
-          <label><span>Cor</span><input id="editStockCor" type="text"></label>
-          <label><span>Localização</span><input id="editStockLocalizacao" type="text"></label>
-          <label><span>Lote</span><input id="editStockLote" type="text"></label>
-          <label><span>SDS Ref</span><input id="editStockSdsRef" type="text"></label>
-          <label><span>Código etiqueta</span><input id="editStockCodigoEtiqueta" type="text"></label>
-          <label><span>Data Scan</span><input id="editStockData" type="text"></label>
-          <label><span>Data Folha</span><input id="editStockDataFolha" type="text"></label>
-        </div>
-        <div class="card-actions" style="margin-top:14px;">
-          <button class="primary-btn" onclick="guardarEdicaoStockModal()">Guardar</button>
-          <button class="secondary-btn" onclick="fecharEdicaoStockModal()">Cancelar</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="../js/app.js?v=1.58.153"></script>
-  <script src="../js/appbraga-systems.js?v=1.58.153"></script>
-  <script src="../js/sidebar-editor.js?v=1.58.153"></script>
-  <script src="../js/core/helpers.js"></script>
-  <script src="../js/stock-futurista.js?v=1.58.153"></script>
-  <script src="../js/appbraga-scroll-systems.js?v=1.58.153"></script>
+<div class="stock-page">
+<section class="stock-hero">
+<div class="stock-hero-card">
+<a aria-label="Voltar ao Portal AppBraga" class="stock-hero-orbit appbraga-home-orbit-btn" href="index.html" title="Voltar ao Portal"><img alt="AppBraga" src="../assets/bragalis-home-logo-original.png?v=1.58.163"/></a>
+<div aria-hidden="true" class="stock-hero-icon">🛢️</div>
+<div>
+<h1>Stock</h1>
+<p>Controlo de stock de toners e consumíveis.</p>
+</div>
+<div class="ab-hero-area-actions ab-hero-area-back-only" data-area="Impressoras" data-area-nav-static="1"><a aria-label="Voltar ao portal Impressoras" class="ab-hero-area-btn" href="portal-impressoras.html" title="Voltar ao portal Impressoras">↩️</a></div></div>
+</section>
+<section aria-label="Resumo de stock" class="stock-kpis">
+<article class="stock-kpi">
+<span class="kpi-icon blue">🛢️</span>
+<div><span>Toners em stock</span><strong id="stockKpiTotal">0</strong><small>Total de unidades</small></div>
+</article>
+<article class="stock-kpi">
+<span class="kpi-icon orange">⚠️</span>
+<div><span>Stock baixo</span><strong id="stockKpiBaixo">0</strong><small>Requer atenção</small></div>
+</article>
+<article class="stock-kpi">
+<span class="kpi-icon red">✕</span>
+<div><span>Sem stock</span><strong id="stockKpiSemStock">0</strong><small>Reposição urgente</small></div>
+</article>
+<article class="stock-kpi">
+<span class="kpi-icon green">↓</span>
+<div><span>Entradas hoje</span><strong id="stockKpiEntradasHoje">0</strong><small>Unidades recebidas</small></div>
+</article>
+<article class="stock-kpi">
+<span class="kpi-icon purple">↑</span>
+<div><span>Saídas hoje</span><strong id="stockKpiSaidasHoje">0</strong><small>Unidades entregues</small></div>
+</article>
+<article class="stock-kpi">
+<span class="kpi-icon cyan">🏷️</span>
+<div><span>Etiquetas geradas</span><strong id="stockKpiEtiquetas">0</strong><small>Documentos</small></div>
+</article>
+</section>
+<section class="stock-main-grid">
+<main class="stock-left">
+<article class="stock-panel stock-list-panel">
+<div class="stock-panel-head">
+<div class="panel-title">
+<span>🧰</span>
+<div>
+<h2>Lista de stock</h2>
+<p>Inventário de toners e consumíveis disponíveis.</p>
+</div>
+</div>
+<div class="stock-filters">
+<input id="search" oninput="filtrar()" placeholder="Pesquisar referência ou equipamento..." type="text"/>
+<select id="stockFilterArmazem">
+<option value="">Todos os armazéns</option>
+</select>
+<select id="stockFilterCor">
+<option value="">Todas as cores</option>
+<option value="Preto">Preto</option>
+<option value="Ciano">Ciano</option>
+<option value="Azul">Ciano / Azul</option>
+<option value="Magenta">Magenta</option>
+<option value="Vermelho">Magenta / Vermelho</option>
+<option value="Amarelo">Amarelo</option>
+</select>
+<button class="stock-btn" onclick="limparFiltrosStockFuturista()" type="button">☰ Limpar</button>
+</div>
+</div>
+<div class="stock-table-wrap">
+<table class="stock-table">
+<thead>
+<tr>
+<th>Cor</th>
+<th>Equipamento / Compatibilidade</th>
+<th>Referência</th>
+<th>Local / Armazém</th>
+<th>Quantidade</th>
+<th>Estado</th>
+<th>Última entrada</th>
+<th>Ações</th>
+</tr>
+</thead>
+<tbody id="stockTableBody">
+<tr><td class="stock-empty-row" colspan="8">A carregar stock...</td></tr>
+</tbody>
+</table>
+</div>
+<div class="stock-table-footer">
+<span id="stockTableInfo">Mostrando 0 referências</span>
+<div class="stock-pagination">
+<button type="button">‹</button>
+<button class="active" type="button">1</button>
+<button type="button">2</button>
+<button type="button">3</button>
+<button type="button">…</button>
+<button type="button">›</button>
+</div>
+<select id="stockPerPage">
+<option>10 / página</option>
+<option>25 / página</option>
+<option>50 / página</option>
+</select>
+</div>
+</article>
+<div class="stock-modal-overlay stock-qr-modal" hidden="" id="stockQrScannerPanel">
+<div class="stock-modal-card stock-qr-modal-card">
+<div class="stock-panel-head">
+<div class="panel-title">
+<span>📷</span>
+<div>
+<h2>Scan QR do toner</h2>
+<p>Leia a etiqueta QR para marcar o toner como usado e mover para o histórico.</p>
+</div>
+</div>
+<button onclick="window.stockFuturistaFecharScannerQr &amp;&amp; window.stockFuturistaFecharScannerQr()" type="button">Fechar</button>
+</div>
+<div class="stock-qr-actions">
+<button class="stock-qr-start" onclick="window.startStockQrScanner &amp;&amp; window.startStockQrScanner()" type="button">📷 Ligar câmara</button>
+<button onclick="window.stopStockQrScanner &amp;&amp; window.stopStockQrScanner()" type="button">⏹ Parar scanner</button>
+</div>
+<div class="stock-qr-preview-frame" id="stockQrPreviewFrame">
+<div class="stock-qr-reader" id="stockQrReader"></div>
+<div aria-hidden="true" class="stock-qr-aim"><span></span><span></span><span></span><span></span></div>
+</div>
+<div class="stock-qr-status" id="stockQrStatus">Scanner desligado. Carrega em “Ligar câmara” e aponta para o QR da etiqueta.</div>
+</div>
+</div>
+<article class="stock-panel stock-movements-wide">
+<div class="stock-panel-head">
+<div class="panel-title">
+<span>↻</span>
+<div>
+<h2>Movimentos recentes</h2>
+<p>Últimos movimentos de stock realizados.</p>
+</div>
+</div>
+<button onclick="window.stockFuturistaAbrirMovimentos &amp;&amp; window.stockFuturistaAbrirMovimentos()" type="button">Ver todos →</button>
+</div>
+<div class="stock-mini-table-wrap">
+<table class="stock-mini-table">
+<thead>
+<tr>
+<th>Data/Hora</th>
+<th>Tipo</th>
+<th>Cor</th>
+<th>Referência</th>
+<th>Quantidade</th>
+<th>Origem / Destino</th>
+<th>Utilizador</th>
+</tr>
+</thead>
+<tbody id="stockMovementsBody"></tbody>
+</table>
+</div>
+</article>
+</main>
+<aside class="stock-right">
+<article class="stock-panel stock-quick-panel">
+<div class="stock-panel-head">
+<div class="panel-title"><span>⚡</span><div><h2>Ações rápidas</h2><p>Atalhos de gestão de stock.</p></div></div>
+</div>
+<div class="stock-quick-actions">
+<button onclick="location.href='add-toner.html'" type="button">➕ Adicionar Toner</button>
+<button class="stock-qr-main-btn" onclick="window.stockFuturistaAbrirScannerQr &amp;&amp; window.stockFuturistaAbrirScannerQr()" type="button">📷 Scan QR — passar para histórico</button>
+<button onclick="location.href='historico.html'" type="button">↩ Histórico</button>
+<button onclick="location.href='etiquetas-word.html'" type="button">🏷️ Etiquetas Word</button>
+<button onclick="location.href='impressoras.html'" type="button">🖨️ Impressoras</button>
+<button onclick="location.href='manutencao-impressoras.html'" type="button">🔧 Manutenção Impressoras</button>
+</div>
+</article>
+<article class="stock-panel stock-alerts-panel">
+<div class="stock-panel-head">
+<div class="panel-title"><span>⚠️</span><div><h2>Alertas de stock</h2><p>Prioridades que requerem atenção.</p></div></div>
+<a href="notificacoes.html">Ver todos →</a>
+</div>
+<div class="stock-alert-list" id="stockAlertsList"></div>
+</article>
+<article class="stock-panel stock-color-panel">
+<div class="stock-panel-head">
+<div class="panel-title"><span>🎨</span><div><h2>Resumo por cor</h2><p>Total de unidades por cor.</p></div></div>
+<button onclick="exportarExcelStock()" type="button">Ver detalhes →</button>
+</div>
+<div class="stock-bars" id="stockColorBars"></div>
+</article>
+</aside>
+</section>
+<div class="stock-modal-overlay" hidden="" id="stockMovementsModal">
+<div class="stock-modal-card stock-modal-wide">
+<div class="stock-modal-head">
+<div>
+<h3>Todos os movimentos de stock</h3>
+<p>Entradas e saídas com paginação de 25 registos por página.</p>
+</div>
+<button class="stock-modal-close" onclick="window.stockFuturistaFecharMovimentos &amp;&amp; window.stockFuturistaFecharMovimentos()" type="button">Fechar</button>
+</div>
+<div class="stock-mini-table-wrap">
+<table class="stock-mini-table">
+<thead>
+<tr>
+<th>Data/Hora</th>
+<th>Tipo</th>
+<th>Cor</th>
+<th>Referência</th>
+<th>Quantidade</th>
+<th>Origem / Destino</th>
+<th>Utilizador</th>
+</tr>
+</thead>
+<tbody id="stockMovementsModalBody"></tbody>
+</table>
+</div>
+<div class="stock-modal-footer">
+<span id="stockMovementsModalInfo">0 registos</span>
+<div class="stock-pagination" id="stockMovementsModalPagination"></div>
+</div>
+</div>
+</div>
+<div class="stock-hidden-legacy" id="listaStock"></div>
+<div class="stock-hidden-legacy" id="countStock">0</div>
+<div class="modal-overlay" id="modalEditarStock" style="display:none;">
+<div class="modal-card">
+<div class="section-header"><div><h3>Editar Stock</h3><p class="section-subtitle">Editar toner em stock</p></div></div>
+<div class="form-grid">
+<label><span>Equipamento</span><input id="editStockEquipamento" type="text"/></label>
+<label><span>Cor</span><input id="editStockCor" type="text"/></label>
+<label><span>Localização</span><input id="editStockLocalizacao" type="text"/></label>
+<label><span>Lote</span><input id="editStockLote" type="text"/></label>
+<label><span>SDS Ref</span><input id="editStockSdsRef" type="text"/></label>
+<label><span>Código etiqueta</span><input id="editStockCodigoEtiqueta" type="text"/></label>
+<label><span>Data Scan</span><input id="editStockData" type="text"/></label>
+<label><span>Data Folha</span><input id="editStockDataFolha" type="text"/></label>
+</div>
+<div class="card-actions" style="margin-top:14px;">
+<button class="primary-btn" onclick="guardarEdicaoStockModal()">Guardar</button>
+<button class="secondary-btn" onclick="fecharEdicaoStockModal()">Cancelar</button>
+</div>
+</div>
+</div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="../js/app.js?v=1.58.163"></script>
+<script src="../js/appbraga-systems.js?v=1.58.163"></script>
+<script src="../js/core/helpers.js"></script>
+<script src="../js/stock-futurista.js?v=1.58.163"></script>
+<script src="../js/appbraga-scroll-systems.js?v=1.58.163"></script>
+<script src="../js/appbraga-area-nav.js?v=1.58.163"></script>
 </body>
 </html>

@@ -1,240 +1,241 @@
 <!DOCTYPE html>
+
 <html lang="pt">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-  <title>Scanner IA</title>
-  <meta name="theme-color" content="#020817">
-  <link rel="manifest" href="../manifest.json">
-  <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
-  <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/style.css?v=1.58.153">
-  <link rel="stylesheet" href="../css/appbraga-clean-layout.css?v=1.58.153">
-  <link rel="stylesheet" href="../css/scanner-ia-futurista.css?v=1.58.153">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="App Braga">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="format-detection" content="telephone=no">
-  <link rel="stylesheet" href="../css/appbraga-hero-padrao.css?v=1.58.153">
-  <link rel="stylesheet" href="../css/appbraga-scroll-systems.css?v=1.58.153">
-  <link rel="stylesheet" href="../css/appbraga-impressoras-padrao.css?v=1.58.153">
-  <link rel="stylesheet" href="../css/appbraga-fixed-scale.css?v=1.58.153">
+<script>
+(function(){
+  var v='1.58.163';
+  var key='appbraga-visual-clean-'+v;
+  try{
+    if(!sessionStorage.getItem(key)){
+      sessionStorage.setItem(key,'1');
+      if(window.caches) caches.keys().then(function(keys){ return Promise.all(keys.map(function(k){return caches.delete(k);})); }).catch(function(){});
+      if('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function(regs){ regs.forEach(function(r){ if(r.active) r.active.postMessage({type:'SKIP_WAITING'}); }); }).catch(function(){});
+    }
+  }catch(e){}
+})();
+</script>
+
+<meta charset="utf-8"/>
+<meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control"/>
+<meta content="no-cache" http-equiv="Pragma"/>
+<meta content="0" http-equiv="Expires"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Scanner IA</title>
+<meta content="#020817" name="theme-color"/>
+<link href="../manifest.json" rel="manifest"/>
+<link href="../icon-192.png" rel="icon" sizes="192x192" type="image/png"/>
+<link href="../icon-192.png" rel="apple-touch-icon"/>
+<link href="../css/appbraga-clean-layout.css?v=1.58.163" rel="stylesheet"/>
+<link href="../css/scanner-ia-futurista.css?v=1.58.163" rel="stylesheet"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="yes" name="mobile-web-app-capable"/>
+<meta content="App Braga" name="apple-mobile-web-app-title"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="telephone=no" name="format-detection"/>
+<link href="../css/appbraga-hero-padrao.css?v=1.58.163" rel="stylesheet"/>
+<link href="../css/appbraga-scroll-systems.css?v=1.58.163" rel="stylesheet"/>
+<link href="../css/appbraga-impressoras-padrao.css?v=1.58.163" rel="stylesheet"/>
+<link href="../css/appbraga-fixed-scale.css?v=1.58.163" rel="stylesheet"/>
+<link href="../css/appbraga-area-nav.css?v=1.58.163" rel="stylesheet"/>
+<link href="../css/appbraga-hero-logo-universal.css?v=1.58.163" rel="stylesheet"/>
 </head>
 <body class="scanner-ia-page">
-  <div class="ck-page">
-    <div class="ck-version">Versão&nbsp; v1.58.153</div>
-
-    <section class="ck-hero" aria-labelledby="scannerTitle">
-      <div class="ck-hero-inner">
-        <a class="ck-hero-home" href="index.html" aria-label="Voltar ao Portal AppBraga" title="Voltar ao Portal">
-          <img src="../assets/bragalis-home-logo-original.png?v=1.58.153" alt="AppBraga">
-        </a>
-        <div class="ck-hero-icon" aria-hidden="true"><span>🧠</span></div>
-        <div class="ck-hero-copy">
-          <h1 id="scannerTitle">Scanner IA</h1>
-          <p>Digitalize e analise documentos com Inteligência Artificial.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="ck-kpis" aria-label="Resumo do Scanner IA">
-      <div class="ck-kpi purple"><span class="ck-kpi-icon" aria-hidden="true">📄</span><div class="ck-kpi-label">Total digitalizações<strong id="scannerKpiTotal">0</strong><small>Desde o início</small></div></div>
-      <div class="ck-kpi green"><span class="ck-kpi-icon ck-icon-check" aria-hidden="true">✓</span><div class="ck-kpi-label">Processadas com sucesso<strong id="scannerKpiSuccess">0</strong><small>Este mês</small></div></div>
-      <div class="ck-kpi yellow"><span class="ck-kpi-icon" aria-hidden="true">◷</span><div class="ck-kpi-label">Em processamento<strong id="scannerKpiProcessing">0</strong><small>Agora</small></div></div>
-      <div class="ck-kpi red"><span class="ck-kpi-icon ck-icon-alert" aria-hidden="true">×</span><div class="ck-kpi-label">Erro na análise<strong id="scannerKpiErrors">0</strong><small>Este mês</small></div></div>
-      <div class="ck-kpi blue"><span class="ck-kpi-icon" aria-hidden="true">▤</span><div class="ck-kpi-label">Armazenamento<strong id="scannerKpiStorage">0 MB</strong><small>Utilizado</small></div></div>
-      <div class="ck-kpi purple"><span class="ck-kpi-icon" aria-hidden="true">📅</span><div class="ck-kpi-label">Última digitalização<strong id="scannerKpiLast">—</strong><small id="scannerKpiLastSub">Sem registos</small></div></div>
-    </section>
-
-    <section class="ck-main scanner-main">
-      <div class="scanner-left">
-        <article class="ck-panel scanner-upload-panel">
-          <div class="ck-panel-head">
-            <div class="ck-panel-title">
-              <span>🧠</span>
-              <div>
-                <h2>Novo Scanner com IA</h2>
-                <p>Faça upload de um documento para analisar e extrair informações automaticamente.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="scanner-tabs" role="tablist" aria-label="Tipo de entrada">
-            <label class="scanner-tab active" id="scannerUploadTab">
-              <input id="scannerIaInput" type="file" accept="image/*,application/pdf" hidden>
-              <span>⬆</span> Upload de Ficheiro
+<div class="ck-page">
+<div class="ck-version">Versão  v1.58.163</div>
+<section aria-labelledby="scannerTitle" class="ck-hero">
+<div class="ck-hero-inner">
+<a aria-label="Voltar ao Portal AppBraga" class="ck-hero-home" href="index.html" title="Voltar ao Portal">
+<img alt="AppBraga" src="../assets/bragalis-home-logo-original.png?v=1.58.163"/>
+</a>
+<div aria-hidden="true" class="ck-hero-icon"><span>🧠</span></div>
+<div class="ck-hero-copy">
+<h1 id="scannerTitle">Scanner IA</h1>
+<p>Digitalize e analise documentos com Inteligência Artificial.</p>
+</div>
+<div class="ab-hero-area-actions ab-hero-area-back-only" data-area="Administração" data-area-nav-static="1"><a aria-label="Voltar ao portal Administração" class="ab-hero-area-btn" href="portal-administracao.html" title="Voltar ao portal Administração">↩️</a></div></div>
+</section>
+<section aria-label="Resumo do Scanner IA" class="ck-kpis">
+<div class="ck-kpi purple"><span aria-hidden="true" class="ck-kpi-icon">📄</span><div class="ck-kpi-label">Total digitalizações<strong id="scannerKpiTotal">0</strong><small>Desde o início</small></div></div>
+<div class="ck-kpi green"><span aria-hidden="true" class="ck-kpi-icon ck-icon-check">✓</span><div class="ck-kpi-label">Processadas com sucesso<strong id="scannerKpiSuccess">0</strong><small>Este mês</small></div></div>
+<div class="ck-kpi yellow"><span aria-hidden="true" class="ck-kpi-icon">◷</span><div class="ck-kpi-label">Em processamento<strong id="scannerKpiProcessing">0</strong><small>Agora</small></div></div>
+<div class="ck-kpi red"><span aria-hidden="true" class="ck-kpi-icon ck-icon-alert">×</span><div class="ck-kpi-label">Erro na análise<strong id="scannerKpiErrors">0</strong><small>Este mês</small></div></div>
+<div class="ck-kpi blue"><span aria-hidden="true" class="ck-kpi-icon">▤</span><div class="ck-kpi-label">Armazenamento<strong id="scannerKpiStorage">0 MB</strong><small>Utilizado</small></div></div>
+<div class="ck-kpi purple"><span aria-hidden="true" class="ck-kpi-icon">📅</span><div class="ck-kpi-label">Última digitalização<strong id="scannerKpiLast">—</strong><small id="scannerKpiLastSub">Sem registos</small></div></div>
+</section>
+<section class="ck-main scanner-main">
+<div class="scanner-left">
+<article class="ck-panel scanner-upload-panel">
+<div class="ck-panel-head">
+<div class="ck-panel-title">
+<span>🧠</span>
+<div>
+<h2>Novo Scanner com IA</h2>
+<p>Faça upload de um documento para analisar e extrair informações automaticamente.</p>
+</div>
+</div>
+</div>
+<div aria-label="Tipo de entrada" class="scanner-tabs" role="tablist">
+<label class="scanner-tab active" id="scannerUploadTab">
+<input accept="image/*,application/pdf" hidden="" id="scannerIaInput" type="file"/>
+<span>⬆</span> Upload de Ficheiro
             </label>
-            <label class="scanner-tab">
-              <input id="scannerIaCamera" type="file" accept="image/*" capture="environment" hidden>
-              <span>📷</span> Scanner da Câmara
+<label class="scanner-tab">
+<input accept="image/*" capture="environment" hidden="" id="scannerIaCamera" type="file"/>
+<span>📷</span> Scanner da Câmara
             </label>
-          </div>
-
-          <div id="scannerDropZone" class="scanner-drop-zone" tabindex="0" role="button" aria-label="Selecionar ou largar ficheiro">
-            <div class="scanner-drop-icon">☁</div>
-            <strong>Arraste o ficheiro aqui</strong>
-            <button class="scanner-link-btn" type="button" id="scannerPickBtn">ou clique para procurar</button>
-            <small>Suporta PDF, JPG, PNG, WEBP e DOCX até 25MB.</small>
-          </div>
-
-          <div class="scanner-options-row">
-            <label>
-              <span>Nome do documento</span>
-              <input id="scannerIaFileName" type="text" placeholder="Documento_App_Braga">
-            </label>
-            <label>
-              <span>Tipo</span>
-              <select id="scannerIaDocType">
-                <option value="Documento">Documento</option>
-                <option value="Fatura">Fatura</option>
-                <option value="Relatório Técnico">Relatório Técnico</option>
-                <option value="Contrato">Contrato</option>
-                <option value="Orçamento">Orçamento</option>
-                <option value="Outro">Outro</option>
-              </select>
-            </label>
-            <label>
-              <span>Formato PDF</span>
-              <select id="scannerIaFormat">
-                <option value="a4" selected>A4</option>
-                <option value="letter">Letter</option>
-              </select>
-            </label>
-          </div>
-
-          <div class="scanner-check-row">
-            <label><input id="scannerIaAutoCrop" type="checkbox" checked> Cortar e limpar automaticamente</label>
-            <label><input id="scannerIaIncludeOcr" type="checkbox"> Incluir texto OCR no PDF</label>
-            <label><input id="scannerIaSaveFirebase" type="checkbox" checked> Guardar registo no histórico</label>
-          </div>
-
-          <div class="scanner-action-row">
-            <button class="ck-btn" type="button" data-scanner-action="enhance">✨ Melhorar</button>
-            <button class="ck-btn" type="button" data-scanner-action="rotate">↻ Rodar</button>
-            <button class="ck-btn" type="button" data-scanner-action="ocr">🔎 Ler texto</button>
-            <button class="ck-btn primary" type="button" data-scanner-action="pdf">📄 Criar PDF</button>
-            <button class="ck-btn" type="button" data-scanner-action="reset">Repor</button>
-          </div>
-
-          <div class="scanner-preview-grid">
-            <div class="scanner-preview-frame">
-              <div id="scannerIaEmpty" class="scanner-preview-empty">
-                <strong>Sem documento selecionado</strong>
-                <span>A pré-visualização aparece aqui depois do upload/foto.</span>
-              </div>
-              <canvas id="scannerIaCanvas" class="scanner-canvas" hidden></canvas>
-              <div id="scannerFileCard" class="scanner-file-card" hidden></div>
-            </div>
-            <div class="scanner-result-box">
-              <div class="scanner-result-head">
-                <strong>Resultado IA</strong>
-                <span id="scannerConfidenceBadge" class="scanner-status-pill neutral">Pronto</span>
-              </div>
-              <div id="scannerIaOcrBox" class="scanner-ocr-box">O texto/análise do documento aparece aqui.</div>
-              <div id="scannerIaStatus" class="scanner-status">Pronto. Escolhe um ficheiro ou tira uma fotografia.</div>
-            </div>
-          </div>
-        </article>
-
-        <article class="ck-panel scanner-list-panel">
-          <div class="ck-panel-head">
-            <div class="ck-panel-title">
-              <span>◷</span>
-              <div>
-                <h2>Digitalizações recentes</h2>
-                <p>Os seus últimos documentos digitalizados e analisados.</p>
-              </div>
-            </div>
-          </div>
-          <div class="scanner-filter-row">
-            <input id="scannerSearch" type="search" placeholder="Pesquisar documento...">
-            <select id="scannerFilterType"><option value="">Todos os tipos</option></select>
-            <select id="scannerFilterStatus">
-              <option value="">Todos os estados</option>
-              <option value="Concluído">Concluído</option>
-              <option value="Processando">Processando</option>
-              <option value="Erro na análise">Erro na análise</option>
-            </select>
-            <button class="ck-btn small" type="button" id="scannerClearFilters">☰ Limpar</button>
-          </div>
-          <div class="ck-table-wrap scanner-table-wrap">
-            <table class="ck-table scanner-table">
-              <thead>
-                <tr>
-                  <th>Documento</th>
-                  <th>Tipo</th>
-                  <th>Tamanho</th>
-                  <th>Data</th>
-                  <th>Estado</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody id="scannerHistoryBody"></tbody>
-            </table>
-          </div>
-          <div class="ck-table-footer">
-            <div class="ck-footer-left">Mostrar <select id="scannerPageSize"><option value="10">10</option><option value="20">20</option><option value="50">50</option></select> registos</div>
-            <div class="ck-footer-right"><span id="scannerPageInfo">0-0 de 0 registos</span><div class="ck-pages" id="scannerPagination"></div></div>
-          </div>
-        </article>
-      </div>
-
-      <aside class="ck-side scanner-side">
-        <article class="ck-panel">
-          <div class="ck-panel-head compact"><div class="ck-panel-title"><span>⚡</span><div><h3>Ações rápidas</h3><p>Ações frequentes para scanners.</p></div></div></div>
-          <div class="ck-quick-grid scanner-quick-grid">
-            <button class="ck-btn primary" type="button" id="scannerNewBtn">+ Novo Scanner</button>
-            <button class="ck-btn" type="button" id="scannerHistoryBtn">▣ Histórico completo</button>
-            <button class="ck-btn" type="button" id="scannerModelsBtn">▤ Modelos IA</button>
-            <button class="ck-btn" type="button" id="scannerSettingsBtn">⚙ Configurações</button>
-            <button class="ck-btn" type="button" id="scannerClearCacheBtn">🗑 Limpar Cache</button>
-            <button class="ck-btn" type="button" id="scannerExportBtn">⇩ Exportar Dados</button>
-            <button class="ck-btn" type="button" id="scannerReportBtn">▦ Relatório IA</button>
-          </div>
-        </article>
-
-        <article class="ck-panel">
-          <div class="ck-panel-head compact"><div class="ck-panel-title"><span>◉</span><div><h3>Resumo da IA</h3><p>Precisão das análises este mês.</p></div></div></div>
-          <div class="scanner-donut-wrap">
-            <div class="scanner-donut" id="scannerAccuracyDonut"></div>
-            <div class="scanner-donut-legend">
-              <div><span class="dot green"></span><strong>Precisão Alta</strong><em id="scannerAccHigh">0%</em></div>
-              <div><span class="dot yellow"></span><strong>Precisão Média</strong><em id="scannerAccMid">0%</em></div>
-              <div><span class="dot red"></span><strong>Erro de IA</strong><em id="scannerAccErr">0%</em></div>
-            </div>
-          </div>
-        </article>
-
-        <article class="ck-panel">
-          <div class="ck-panel-head compact"><div class="ck-panel-title"><span>▣</span><div><h3>Tipos de Documento</h3><p>Distribuição dos documentos digitalizados.</p></div></div></div>
-          <div class="scanner-type-bars" id="scannerTypeBars"></div>
-        </article>
-
-        <article class="ck-panel">
-          <div class="ck-panel-head compact"><div class="ck-panel-title"><span>🧳</span><div><h3>Informações do Sistema</h3><p>Estado atual do sistema de IA.</p></div></div></div>
-          <div class="scanner-system-grid">
-            <div><small>Modelo IA</small><strong>Ativo</strong><span></span></div>
-            <div><small>Serviço IA</small><strong>Online</strong><span></span></div>
-          </div>
-        </article>
-      </aside>
-    </section>
-
-  </div>
-
-  <input id="scannerHiddenPdf" type="file" accept="application/pdf" hidden>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-  <script src="../js/app.js?v=1.58.153"></script>
-  <script src="../js/appbraga-systems.js?v=1.58.153"></script>
-  <script src="../js/helpers.js?v=1.58.153"></script>
-  <script src="../js/scanner-ia.js?v=1.58.153"></script>
-  <script src="../js/appbraga-scroll-systems.js?v=1.58.153"></script>
+</div>
+<div aria-label="Selecionar ou largar ficheiro" class="scanner-drop-zone" id="scannerDropZone" role="button" tabindex="0">
+<div class="scanner-drop-icon">☁</div>
+<strong>Arraste o ficheiro aqui</strong>
+<button class="scanner-link-btn" id="scannerPickBtn" type="button">ou clique para procurar</button>
+<small>Suporta PDF, JPG, PNG, WEBP e DOCX até 25MB.</small>
+</div>
+<div class="scanner-options-row">
+<label>
+<span>Nome do documento</span>
+<input id="scannerIaFileName" placeholder="Documento_App_Braga" type="text"/>
+</label>
+<label>
+<span>Tipo</span>
+<select id="scannerIaDocType">
+<option value="Documento">Documento</option>
+<option value="Fatura">Fatura</option>
+<option value="Relatório Técnico">Relatório Técnico</option>
+<option value="Contrato">Contrato</option>
+<option value="Orçamento">Orçamento</option>
+<option value="Outro">Outro</option>
+</select>
+</label>
+<label>
+<span>Formato PDF</span>
+<select id="scannerIaFormat">
+<option selected="" value="a4">A4</option>
+<option value="letter">Letter</option>
+</select>
+</label>
+</div>
+<div class="scanner-check-row">
+<label><input checked="" id="scannerIaAutoCrop" type="checkbox"/> Cortar e limpar automaticamente</label>
+<label><input id="scannerIaIncludeOcr" type="checkbox"/> Incluir texto OCR no PDF</label>
+<label><input checked="" id="scannerIaSaveFirebase" type="checkbox"/> Guardar registo no histórico</label>
+</div>
+<div class="scanner-action-row">
+<button class="ck-btn" data-scanner-action="enhance" type="button">✨ Melhorar</button>
+<button class="ck-btn" data-scanner-action="rotate" type="button">↻ Rodar</button>
+<button class="ck-btn" data-scanner-action="ocr" type="button">🔎 Ler texto</button>
+<button class="ck-btn primary" data-scanner-action="pdf" type="button">📄 Criar PDF</button>
+<button class="ck-btn" data-scanner-action="reset" type="button">Repor</button>
+</div>
+<div class="scanner-preview-grid">
+<div class="scanner-preview-frame">
+<div class="scanner-preview-empty" id="scannerIaEmpty">
+<strong>Sem documento selecionado</strong>
+<span>A pré-visualização aparece aqui depois do upload/foto.</span>
+</div>
+<canvas class="scanner-canvas" hidden="" id="scannerIaCanvas"></canvas>
+<div class="scanner-file-card" hidden="" id="scannerFileCard"></div>
+</div>
+<div class="scanner-result-box">
+<div class="scanner-result-head">
+<strong>Resultado IA</strong>
+<span class="scanner-status-pill neutral" id="scannerConfidenceBadge">Pronto</span>
+</div>
+<div class="scanner-ocr-box" id="scannerIaOcrBox">O texto/análise do documento aparece aqui.</div>
+<div class="scanner-status" id="scannerIaStatus">Pronto. Escolhe um ficheiro ou tira uma fotografia.</div>
+</div>
+</div>
+</article>
+<article class="ck-panel scanner-list-panel">
+<div class="ck-panel-head">
+<div class="ck-panel-title">
+<span>◷</span>
+<div>
+<h2>Digitalizações recentes</h2>
+<p>Os seus últimos documentos digitalizados e analisados.</p>
+</div>
+</div>
+</div>
+<div class="scanner-filter-row">
+<input id="scannerSearch" placeholder="Pesquisar documento..." type="search"/>
+<select id="scannerFilterType"><option value="">Todos os tipos</option></select>
+<select id="scannerFilterStatus">
+<option value="">Todos os estados</option>
+<option value="Concluído">Concluído</option>
+<option value="Processando">Processando</option>
+<option value="Erro na análise">Erro na análise</option>
+</select>
+<button class="ck-btn small" id="scannerClearFilters" type="button">☰ Limpar</button>
+</div>
+<div class="ck-table-wrap scanner-table-wrap">
+<table class="ck-table scanner-table">
+<thead>
+<tr>
+<th>Documento</th>
+<th>Tipo</th>
+<th>Tamanho</th>
+<th>Data</th>
+<th>Estado</th>
+<th>Ações</th>
+</tr>
+</thead>
+<tbody id="scannerHistoryBody"></tbody>
+</table>
+</div>
+<div class="ck-table-footer">
+<div class="ck-footer-left">Mostrar <select id="scannerPageSize"><option value="10">10</option><option value="20">20</option><option value="50">50</option></select> registos</div>
+<div class="ck-footer-right"><span id="scannerPageInfo">0-0 de 0 registos</span><div class="ck-pages" id="scannerPagination"></div></div>
+</div>
+</article>
+</div>
+<aside class="ck-side scanner-side">
+<article class="ck-panel">
+<div class="ck-panel-head compact"><div class="ck-panel-title"><span>⚡</span><div><h3>Ações rápidas</h3><p>Ações frequentes para scanners.</p></div></div></div>
+<div class="ck-quick-grid scanner-quick-grid">
+<button class="ck-btn primary" id="scannerNewBtn" type="button">+ Novo Scanner</button>
+<button class="ck-btn" id="scannerHistoryBtn" type="button">▣ Histórico completo</button>
+<button class="ck-btn" id="scannerModelsBtn" type="button">▤ Modelos IA</button>
+<button class="ck-btn" id="scannerSettingsBtn" type="button">⚙ Configurações</button>
+<button class="ck-btn" id="scannerClearCacheBtn" type="button">🗑 Limpar Cache</button>
+<button class="ck-btn" id="scannerExportBtn" type="button">⇩ Exportar Dados</button>
+<button class="ck-btn" id="scannerReportBtn" type="button">▦ Relatório IA</button>
+</div>
+</article>
+<article class="ck-panel">
+<div class="ck-panel-head compact"><div class="ck-panel-title"><span>◉</span><div><h3>Resumo da IA</h3><p>Precisão das análises este mês.</p></div></div></div>
+<div class="scanner-donut-wrap">
+<div class="scanner-donut" id="scannerAccuracyDonut"></div>
+<div class="scanner-donut-legend">
+<div><span class="dot green"></span><strong>Precisão Alta</strong><em id="scannerAccHigh">0%</em></div>
+<div><span class="dot yellow"></span><strong>Precisão Média</strong><em id="scannerAccMid">0%</em></div>
+<div><span class="dot red"></span><strong>Erro de IA</strong><em id="scannerAccErr">0%</em></div>
+</div>
+</div>
+</article>
+<article class="ck-panel">
+<div class="ck-panel-head compact"><div class="ck-panel-title"><span>▣</span><div><h3>Tipos de Documento</h3><p>Distribuição dos documentos digitalizados.</p></div></div></div>
+<div class="scanner-type-bars" id="scannerTypeBars"></div>
+</article>
+<article class="ck-panel">
+<div class="ck-panel-head compact"><div class="ck-panel-title"><span>🧳</span><div><h3>Informações do Sistema</h3><p>Estado atual do sistema de IA.</p></div></div></div>
+<div class="scanner-system-grid">
+<div><small>Modelo IA</small><strong>Ativo</strong><span></span></div>
+<div><small>Serviço IA</small><strong>Online</strong><span></span></div>
+</div>
+</article>
+</aside>
+</section>
+</div>
+<input accept="application/pdf" hidden="" id="scannerHiddenPdf" type="file"/>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="../js/app.js?v=1.58.163"></script>
+<script src="../js/appbraga-systems.js?v=1.58.163"></script>
+<script src="../js/helpers.js?v=1.58.163"></script>
+<script src="../js/scanner-ia.js?v=1.58.163"></script>
+<script src="../js/appbraga-scroll-systems.js?v=1.58.163"></script>
+<script src="../js/appbraga-area-nav.js?v=1.58.163"></script>
 </body>
 </html>

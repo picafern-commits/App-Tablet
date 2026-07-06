@@ -1,6 +1,20 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
+<script>
+(function(){
+  var v='1.58.163';
+  var key='appbraga-visual-clean-'+v;
+  try{
+    if(!sessionStorage.getItem(key)){
+      sessionStorage.setItem(key,'1');
+      if(window.caches) caches.keys().then(function(keys){ return Promise.all(keys.map(function(k){return caches.delete(k);})); }).catch(function(){});
+      if('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function(regs){ regs.forEach(function(r){ if(r.active) r.active.postMessage({type:'SKIP_WAITING'}); }); }).catch(function(){});
+    }
+  }catch(e){}
+})();
+</script>
+
   <meta charset="UTF-8">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
@@ -11,17 +25,18 @@
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/portal-home.css?v=1.58.154">
-  <link rel="stylesheet" href="../css/portal-area.css?v=1.58.154">
-  <link rel="stylesheet" href="../css/appbraga-clean-layout.css?v=1.58.154">
+  <link rel="stylesheet" href="../css/portal-home.css?v=1.58.163">
+  <link rel="stylesheet" href="../css/portal-area.css?v=1.58.163">
+  <link rel="stylesheet" href="../css/appbraga-clean-layout.css?v=1.58.163">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="App Braga">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="format-detection" content="telephone=no">
-  <link rel="stylesheet" href="../css/appbraga-impressoras-padrao.css?v=1.58.154">
-  <link rel="stylesheet" href="../css/appbraga-fixed-scale.css?v=1.58.154">
-  <link rel="stylesheet" href="../css/appbraga-scroll-systems.css?v=1.58.154">
+  <link rel="stylesheet" href="../css/appbraga-impressoras-padrao.css?v=1.58.163">
+  <link rel="stylesheet" href="../css/appbraga-fixed-scale.css?v=1.58.163">
+  <link rel="stylesheet" href="../css/appbraga-scroll-systems.css?v=1.58.163">
+<link href="../css/appbraga-hero-logo-universal.css?v=1.58.163" rel="stylesheet"/>
 </head>
 <body class="portal-home">
   <div class="portal-orb left" aria-hidden="true"></div>
@@ -31,7 +46,7 @@
 
     <section class="portal-hero" aria-labelledby="portalTitle">
       <div>
-        <div class="portal-hero-logo" aria-hidden="true"><img src="../assets/bragalis-home-logo-original.png?v=1.58.154" alt=""></div>
+        <div class="portal-hero-logo" aria-hidden="true"><img src="../assets/bragalis-home-logo-original.png?v=1.58.163" alt=""></div>
         <h1 id="portalTitle">Bragalis T.I</h1>
         <p>Acede rapidamente às áreas principais da operação.</p>
       </div>
@@ -98,9 +113,9 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="../js/app.js?v=1.58.154"></script>
-  <script src="../js/appbraga-systems.js?v=1.58.154"></script>
-  <script src="../js/portal-home.js?v=1.58.154"></script>
-  <script src="../js/appbraga-scroll-systems.js?v=1.58.154"></script>
+  <script src="../js/app.js?v=1.58.163"></script>
+  <script src="../js/appbraga-systems.js?v=1.58.163"></script>
+  <script src="../js/portal-home.js?v=1.58.163"></script>
+  <script src="../js/appbraga-scroll-systems.js?v=1.58.163"></script>
 </body>
 </html>

@@ -1,194 +1,199 @@
 <!DOCTYPE html>
+
 <html lang="pt">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-  <title>Equipas Semanais</title>
-  <meta name="theme-color" content="#020817">
-  <link rel="manifest" href="../manifest.json">
-  <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
-  <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/style.css?v=1.58.153">
-  <link rel="stylesheet" href="../css/appbraga-clean-layout.css?v=1.58.153">
-  <link rel="stylesheet" href="../css/equipas-semanais.css?v=1.58.153">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="App Braga">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="format-detection" content="telephone=no">
-  <link rel="stylesheet" href="../css/appbraga-impressoras-padrao.css?v=1.58.153">
-  <link rel="stylesheet" href="../css/appbraga-scroll-systems.css?v=1.58.153">
-  <link rel="stylesheet" href="../css/appbraga-hero-padrao.css?v=1.58.153">
-  <link rel="stylesheet" href="../css/appbraga-fixed-scale.css?v=1.58.153">
+<script>
+(function(){
+  var v='1.58.163';
+  var key='appbraga-visual-clean-'+v;
+  try{
+    if(!sessionStorage.getItem(key)){
+      sessionStorage.setItem(key,'1');
+      if(window.caches) caches.keys().then(function(keys){ return Promise.all(keys.map(function(k){return caches.delete(k);})); }).catch(function(){});
+      if('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function(regs){ regs.forEach(function(r){ if(r.active) r.active.postMessage({type:'SKIP_WAITING'}); }); }).catch(function(){});
+    }
+  }catch(e){}
+})();
+</script>
+
+<meta charset="utf-8"/>
+<meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control"/>
+<meta content="no-cache" http-equiv="Pragma"/>
+<meta content="0" http-equiv="Expires"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Equipas Semanais</title>
+<meta content="#020817" name="theme-color"/>
+<link href="../manifest.json" rel="manifest"/>
+<link href="../icon-192.png" rel="icon" sizes="192x192" type="image/png"/>
+<link href="../icon-192.png" rel="apple-touch-icon"/>
+<link href="../css/appbraga-clean-layout.css?v=1.58.163" rel="stylesheet"/>
+<link href="../css/equipas-semanais.css?v=1.58.163" rel="stylesheet"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="yes" name="mobile-web-app-capable"/>
+<meta content="App Braga" name="apple-mobile-web-app-title"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="telephone=no" name="format-detection"/>
+<link href="../css/appbraga-impressoras-padrao.css?v=1.58.163" rel="stylesheet"/>
+<link href="../css/appbraga-scroll-systems.css?v=1.58.163" rel="stylesheet"/>
+<link href="../css/appbraga-hero-padrao.css?v=1.58.163" rel="stylesheet"/>
+<link href="../css/appbraga-fixed-scale.css?v=1.58.163" rel="stylesheet"/>
+<link href="../css/appbraga-area-nav.css?v=1.58.163" rel="stylesheet"/>
+<link href="../css/appbraga-hero-logo-universal.css?v=1.58.163" rel="stylesheet"/>
 </head>
 <body class="equipas-futurista-page">
-  <div class="ck-page eq-page">
-    <div class="ck-version">Versão&nbsp; v1.58.153</div>
-
-    <section class="ck-hero" aria-labelledby="eqTitle">
-      <div class="ck-hero-inner">
-        <a class="ck-hero-home" href="index.html" aria-label="Voltar ao Portal AppBraga" title="Voltar ao Portal">
-          <img src="../assets/bragalis-home-logo-original.png?v=1.58.153" alt="AppBraga">
-        </a>
-        <div class="ck-hero-icon" aria-hidden="true"><span class="eq-icon-hero">👥</span></div>
-        <div class="ck-hero-copy">
-          <h1 id="eqTitle">Equipas Semanais</h1>
-          <p>Gestão e rotação das equipas semanais.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="ck-kpis" aria-label="Resumo das equipas semanais">
-      <div class="ck-kpi purple"><span class="ck-kpi-icon" aria-hidden="true">👥</span><div class="ck-kpi-label">Total de Equipas<strong id="eqKpiTotal">0</strong><small>Registadas</small></div></div>
-      <div class="ck-kpi green"><span class="ck-kpi-icon ck-icon-check" aria-hidden="true">✓</span><div class="ck-kpi-label">Equipas Ativas<strong id="eqKpiAtivas">0</strong><small>Esta semana</small></div></div>
-      <div class="ck-kpi blue"><span class="ck-kpi-icon ck-icon-calendar" aria-hidden="true">▦</span><div class="ck-kpi-label">Total de Pessoas<strong id="eqKpiPessoas">0</strong><small>Atribuídas</small></div></div>
-      <div class="ck-kpi orange"><span class="ck-kpi-icon" aria-hidden="true">⟳</span><div class="ck-kpi-label">Rotação Semanal<strong id="eqKpiRotacao">Automática</strong><small id="eqKpiRotacaoSub">Terça-feira 00:00</small></div></div>
-      <div class="ck-kpi yellow"><span class="ck-kpi-icon" aria-hidden="true">◷</span><div class="ck-kpi-label">Próxima Rotação<strong id="eqKpiProxima">—</strong><small id="eqKpiProximaSub">—</small></div></div>
-      <div class="ck-kpi cyan"><span class="ck-kpi-icon" aria-hidden="true">↻</span><div class="ck-kpi-label">Histórico<strong id="eqKpiHistorico">0</strong><small>Últimas rotações</small></div></div>
-    </section>
-
-    <section class="ck-main eq-main">
-      <div class="eq-left-stack">
-        <article class="ck-panel eq-list-panel">
-          <div class="ck-panel-head">
-            <div class="ck-panel-title">
-              <span>👥</span>
-              <div>
-                <h2>Lista de Equipas Semanais</h2>
-                <p>Consulte e gerencie as equipas por semana.</p>
-              </div>
-            </div>
-            <div class="ck-search-row eq-search-row">
-              <input id="eqSearch" type="search" placeholder="Pesquisar por nome ou membro...">
-              <select id="eqFilterSemana"><option value="">Todas as semanas</option><option value="atual">Semana atual</option><option value="proxima">Próxima semana</option><option value="futuras">Futuras</option></select>
-              <select id="eqFilterEquipa"><option value="">Todas as equipas</option></select>
-              <select id="eqFilterSituacao"><option value="">Todas as situações</option><option value="ativa">Ativa</option><option value="agendada">Agendada</option><option value="planeada">Planeada</option></select>
-              <button class="ck-btn small" type="button" id="eqBtnLimpar">☰ Limpar filtros</button>
-            </div>
-          </div>
-
-          <div class="ck-table-wrap eq-table-wrap">
-            <table class="ck-table eq-table">
-              <thead>
-                <tr>
-                  <th>Semana</th>
-                  <th>Período</th>
-                  <th>Equipa</th>
-                  <th>Membros</th>
-                  <th>Responsável</th>
-                  <th>Situação</th>
-                  <th>Criada em</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody id="eqTableBody"></tbody>
-            </table>
-          </div>
-
-          <div class="ck-table-footer">
-            <div class="ck-footer-left">
-              <div class="ck-page-size">Mostrar
+<div class="ck-page eq-page">
+<div class="ck-version">Versão  v1.58.163</div>
+<section aria-labelledby="eqTitle" class="ck-hero">
+<div class="ck-hero-inner">
+<a aria-label="Voltar ao Portal AppBraga" class="ck-hero-home" href="index.html" title="Voltar ao Portal">
+<img alt="AppBraga" src="../assets/bragalis-home-logo-original.png?v=1.58.163"/>
+</a>
+<div aria-hidden="true" class="ck-hero-icon"><span class="eq-icon-hero">👥</span></div>
+<div class="ck-hero-copy">
+<h1 id="eqTitle">Equipas Semanais</h1>
+<p>Gestão e rotação das equipas semanais.</p>
+</div>
+<div class="ab-hero-area-actions ab-hero-area-back-only" data-area="Administração" data-area-nav-static="1"><a aria-label="Voltar ao portal Administração" class="ab-hero-area-btn" href="portal-administracao.html" title="Voltar ao portal Administração">↩️</a></div></div>
+</section>
+<section aria-label="Resumo das equipas semanais" class="ck-kpis">
+<div class="ck-kpi purple"><span aria-hidden="true" class="ck-kpi-icon">👥</span><div class="ck-kpi-label">Total de Equipas<strong id="eqKpiTotal">0</strong><small>Registadas</small></div></div>
+<div class="ck-kpi green"><span aria-hidden="true" class="ck-kpi-icon ck-icon-check">✓</span><div class="ck-kpi-label">Equipas Ativas<strong id="eqKpiAtivas">0</strong><small>Esta semana</small></div></div>
+<div class="ck-kpi blue"><span aria-hidden="true" class="ck-kpi-icon ck-icon-calendar">▦</span><div class="ck-kpi-label">Total de Pessoas<strong id="eqKpiPessoas">0</strong><small>Atribuídas</small></div></div>
+<div class="ck-kpi orange"><span aria-hidden="true" class="ck-kpi-icon">⟳</span><div class="ck-kpi-label">Rotação Semanal<strong id="eqKpiRotacao">Automática</strong><small id="eqKpiRotacaoSub">Terça-feira 00:00</small></div></div>
+<div class="ck-kpi yellow"><span aria-hidden="true" class="ck-kpi-icon">◷</span><div class="ck-kpi-label">Próxima Rotação<strong id="eqKpiProxima">—</strong><small id="eqKpiProximaSub">—</small></div></div>
+<div class="ck-kpi cyan"><span aria-hidden="true" class="ck-kpi-icon">↻</span><div class="ck-kpi-label">Histórico<strong id="eqKpiHistorico">0</strong><small>Últimas rotações</small></div></div>
+</section>
+<section class="ck-main eq-main">
+<div class="eq-left-stack">
+<article class="ck-panel eq-list-panel">
+<div class="ck-panel-head">
+<div class="ck-panel-title">
+<span>👥</span>
+<div>
+<h2>Lista de Equipas Semanais</h2>
+<p>Consulte e gerencie as equipas por semana.</p>
+</div>
+</div>
+<div class="ck-search-row eq-search-row">
+<input id="eqSearch" placeholder="Pesquisar por nome ou membro..." type="search"/>
+<select id="eqFilterSemana"><option value="">Todas as semanas</option><option value="atual">Semana atual</option><option value="proxima">Próxima semana</option><option value="futuras">Futuras</option></select>
+<select id="eqFilterEquipa"><option value="">Todas as equipas</option></select>
+<select id="eqFilterSituacao"><option value="">Todas as situações</option><option value="ativa">Ativa</option><option value="agendada">Agendada</option><option value="planeada">Planeada</option></select>
+<button class="ck-btn small" id="eqBtnLimpar" type="button">☰ Limpar filtros</button>
+</div>
+</div>
+<div class="ck-table-wrap eq-table-wrap">
+<table class="ck-table eq-table">
+<thead>
+<tr>
+<th>Semana</th>
+<th>Período</th>
+<th>Equipa</th>
+<th>Membros</th>
+<th>Responsável</th>
+<th>Situação</th>
+<th>Criada em</th>
+<th>Ações</th>
+</tr>
+</thead>
+<tbody id="eqTableBody"></tbody>
+</table>
+</div>
+<div class="ck-table-footer">
+<div class="ck-footer-left">
+<div class="ck-page-size">Mostrar
                 <select id="eqPageSize"><option value="10">10</option><option value="20">20</option><option value="50">50</option></select>
                 registos
               </div>
-            </div>
-            <div class="ck-footer-right">
-              <span id="eqTableSummary">0-0 de 0</span>
-              <div class="ck-pagination" id="eqPagination"></div>
-            </div>
-          </div>
-        </article>
-      </div>
-
-      <aside class="ck-side eq-side">
-        <article class="ck-panel">
-          <div class="ck-panel-head">
-            <div class="ck-panel-title"><span>⚡</span><div><h3>Ações rápidas</h3><p>Atalhos para gerir as equipas.</p></div></div>
-          </div>
-          <div class="ck-quick-grid eq-quick-grid">
-            <button class="ck-btn primary" type="button" id="eqBtnNova">+ Nova equipa semanal</button>
-            <button class="ck-btn" type="button" id="eqBtnRodar">⟳ Rodar equipas agora</button>
-            <button class="ck-btn" type="button" id="eqBtnDuplicar">▣ Duplicar última equipa</button>
-            <button class="ck-btn" type="button" id="eqBtnImportar">⇧ Importar CSV</button>
-            <button class="ck-btn" type="button" id="eqBtnExportar">⇩ Exportar CSV</button>
-            <button class="ck-btn" type="button" id="eqBtnAbrirTudo">▣ Abrir todas</button>
-            <button class="ck-btn" type="button" id="eqBtnFecharTudo">▣ Fechar todas</button>
-          </div>
-          <input id="eqImportFile" type="file" accept=".csv,text/csv" hidden>
-        </article>
-
-        <article class="ck-panel eq-summary-panel">
-          <div class="ck-panel-head compact">
-            <div class="ck-panel-title"><span>◔</span><div><h3>Resumo da semana atual</h3><p>Distribuição por equipa.</p></div></div>
-          </div>
-          <div class="eq-donut-row">
-            <div class="eq-donut" id="eqDonut" aria-hidden="true"></div>
-            <div class="eq-summary-list" id="eqResumoSemana"></div>
-          </div>
-        </article>
-
-        <article class="ck-panel">
-          <div class="ck-panel-head compact">
-            <div class="ck-panel-title"><span>◷</span><div><h3>Últimas atualizações</h3><p>Atividades recentes.</p></div></div>
-            <button class="ck-btn small" type="button" id="eqBtnVerAtualizacoes">Ver todas →</button>
-          </div>
-          <div class="eq-activity-list" id="eqActivityList"></div>
-        </article>
-      </aside>
-    </section>
-
-  </div>
-
-  <div class="ck-modal" id="eqModal" aria-hidden="true">
-    <div class="ck-modal-card eq-modal-card" role="dialog" aria-modal="true" aria-labelledby="eqModalTitle">
-      <div class="ck-modal-head">
-        <div><h3 id="eqModalTitle">Nova equipa semanal</h3><p>Escolha a semana, equipa, responsável e membros.</p></div>
-        <button class="ck-btn small" type="button" data-eq-close>Fechar</button>
-      </div>
-      <div class="ck-modal-body">
-        <div class="ck-form-grid two">
-          <label><span>Nome da equipa</span><input id="eqFormNome" type="text" placeholder="Ex.: Equipa Alfa"></label>
-          <label><span>Semana de</span><input id="eqFormSemana" type="date"></label>
-          <label><span>Responsável</span><input id="eqFormResponsavel" type="text" placeholder="Ex.: Ricardo Silva"></label>
-          <label><span>Situação</span><select id="eqFormSituacao"><option value="ativa">Ativa</option><option value="agendada">Agendada</option><option value="planeada">Planeada</option></select></label>
-        </div>
-        <div class="ck-form-grid two eq-member-picker">
-          <label><span>Adicionar membro</span><select id="eqUserSelect"><option value="">Selecionar user...</option></select></label>
-          <button class="ck-btn" type="button" id="eqBtnAddMember">+ Adicionar membro</button>
-        </div>
-        <div class="eq-selected-box">
-          <div class="eq-selected-head"><strong>Membros escolhidos</strong><span id="eqMembersCount">0 membros</span></div>
-          <div class="eq-selected-members" id="eqSelectedMembers">Ainda não escolheste nenhum membro.</div>
-        </div>
-        <label class="eq-notes-label"><span>Notas</span><textarea id="eqFormNotas" rows="3" placeholder="Observações internas da semana..."></textarea></label>
-        <div class="ck-modal-actions">
-          <button class="ck-btn" type="button" data-eq-close>Cancelar</button>
-          <button class="ck-btn primary" type="button" id="eqBtnGuardar">Guardar equipa semanal</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="ck-modal" id="eqDetailModal" aria-hidden="true">
-    <div class="ck-modal-card eq-modal-card" role="dialog" aria-modal="true" aria-labelledby="eqDetailTitle">
-      <div class="ck-modal-head">
-        <div><h3 id="eqDetailTitle">Detalhe da equipa</h3><p id="eqDetailSubtitle">—</p></div>
-        <button class="ck-btn small" type="button" data-eq-detail-close>Fechar</button>
-      </div>
-      <div class="ck-modal-body" id="eqDetailBody"></div>
-    </div>
-  </div>
-
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="../js/app.js?v=1.58.153"></script>
-  <script src="../js/appbraga-systems.js?v=1.58.153"></script>
-  <script src="../js/helpers.js?v=1.58.153"></script>
-  <script src="../js/equipas-semanais.js?v=1.58.153"></script>
-  <script src="../js/appbraga-scroll-systems.js?v=1.58.153"></script>
+</div>
+<div class="ck-footer-right">
+<span id="eqTableSummary">0-0 de 0</span>
+<div class="ck-pagination" id="eqPagination"></div>
+</div>
+</div>
+</article>
+</div>
+<aside class="ck-side eq-side">
+<article class="ck-panel">
+<div class="ck-panel-head">
+<div class="ck-panel-title"><span>⚡</span><div><h3>Ações rápidas</h3><p>Atalhos para gerir as equipas.</p></div></div>
+</div>
+<div class="ck-quick-grid eq-quick-grid">
+<button class="ck-btn primary" id="eqBtnNova" type="button">+ Nova equipa semanal</button>
+<button class="ck-btn" id="eqBtnRodar" type="button">⟳ Rodar equipas agora</button>
+<button class="ck-btn" id="eqBtnDuplicar" type="button">▣ Duplicar última equipa</button>
+<button class="ck-btn" id="eqBtnImportar" type="button">⇧ Importar CSV</button>
+<button class="ck-btn" id="eqBtnExportar" type="button">⇩ Exportar CSV</button>
+<button class="ck-btn" id="eqBtnAbrirTudo" type="button">▣ Abrir todas</button>
+<button class="ck-btn" id="eqBtnFecharTudo" type="button">▣ Fechar todas</button>
+</div>
+<input accept=".csv,text/csv" hidden="" id="eqImportFile" type="file"/>
+</article>
+<article class="ck-panel eq-summary-panel">
+<div class="ck-panel-head compact">
+<div class="ck-panel-title"><span>◔</span><div><h3>Resumo da semana atual</h3><p>Distribuição por equipa.</p></div></div>
+</div>
+<div class="eq-donut-row">
+<div aria-hidden="true" class="eq-donut" id="eqDonut"></div>
+<div class="eq-summary-list" id="eqResumoSemana"></div>
+</div>
+</article>
+<article class="ck-panel">
+<div class="ck-panel-head compact">
+<div class="ck-panel-title"><span>◷</span><div><h3>Últimas atualizações</h3><p>Atividades recentes.</p></div></div>
+<button class="ck-btn small" id="eqBtnVerAtualizacoes" type="button">Ver todas →</button>
+</div>
+<div class="eq-activity-list" id="eqActivityList"></div>
+</article>
+</aside>
+</section>
+</div>
+<div aria-hidden="true" class="ck-modal" id="eqModal">
+<div aria-labelledby="eqModalTitle" aria-modal="true" class="ck-modal-card eq-modal-card" role="dialog">
+<div class="ck-modal-head">
+<div><h3 id="eqModalTitle">Nova equipa semanal</h3><p>Escolha a semana, equipa, responsável e membros.</p></div>
+<button class="ck-btn small" data-eq-close="" type="button">Fechar</button>
+</div>
+<div class="ck-modal-body">
+<div class="ck-form-grid two">
+<label><span>Nome da equipa</span><input id="eqFormNome" placeholder="Ex.: Equipa Alfa" type="text"/></label>
+<label><span>Semana de</span><input id="eqFormSemana" type="date"/></label>
+<label><span>Responsável</span><input id="eqFormResponsavel" placeholder="Ex.: Ricardo Silva" type="text"/></label>
+<label><span>Situação</span><select id="eqFormSituacao"><option value="ativa">Ativa</option><option value="agendada">Agendada</option><option value="planeada">Planeada</option></select></label>
+</div>
+<div class="ck-form-grid two eq-member-picker">
+<label><span>Adicionar membro</span><select id="eqUserSelect"><option value="">Selecionar user...</option></select></label>
+<button class="ck-btn" id="eqBtnAddMember" type="button">+ Adicionar membro</button>
+</div>
+<div class="eq-selected-box">
+<div class="eq-selected-head"><strong>Membros escolhidos</strong><span id="eqMembersCount">0 membros</span></div>
+<div class="eq-selected-members" id="eqSelectedMembers">Ainda não escolheste nenhum membro.</div>
+</div>
+<label class="eq-notes-label"><span>Notas</span><textarea id="eqFormNotas" placeholder="Observações internas da semana..." rows="3"></textarea></label>
+<div class="ck-modal-actions">
+<button class="ck-btn" data-eq-close="" type="button">Cancelar</button>
+<button class="ck-btn primary" id="eqBtnGuardar" type="button">Guardar equipa semanal</button>
+</div>
+</div>
+</div>
+</div>
+<div aria-hidden="true" class="ck-modal" id="eqDetailModal">
+<div aria-labelledby="eqDetailTitle" aria-modal="true" class="ck-modal-card eq-modal-card" role="dialog">
+<div class="ck-modal-head">
+<div><h3 id="eqDetailTitle">Detalhe da equipa</h3><p id="eqDetailSubtitle">—</p></div>
+<button class="ck-btn small" data-eq-detail-close="" type="button">Fechar</button>
+</div>
+<div class="ck-modal-body" id="eqDetailBody"></div>
+</div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="../js/app.js?v=1.58.163"></script>
+<script src="../js/appbraga-systems.js?v=1.58.163"></script>
+<script src="../js/helpers.js?v=1.58.163"></script>
+<script src="../js/equipas-semanais.js?v=1.58.163"></script>
+<script src="../js/appbraga-scroll-systems.js?v=1.58.163"></script>
+<script src="../js/appbraga-area-nav.js?v=1.58.163"></script>
 </body>
 </html>

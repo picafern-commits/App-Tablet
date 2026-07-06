@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const VERSION = '1.58.153';
+  const VERSION = '1.58.163';
   const COLLECTIONS = ['notificacoes','notifications'];
   const HISTORY_COLLECTIONS = ['notificationHistory','notificacoesHistorico'];
   const DEVICES_COLLECTION = 'notificationDevices';

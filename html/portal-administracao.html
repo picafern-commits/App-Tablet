@@ -1,6 +1,20 @@
 <!DOCTYPE html>
 <html lang="pt-PT">
 <head>
+<script>
+(function(){
+  var v='1.58.163';
+  var key='appbraga-visual-clean-'+v;
+  try{
+    if(!sessionStorage.getItem(key)){
+      sessionStorage.setItem(key,'1');
+      if(window.caches) caches.keys().then(function(keys){ return Promise.all(keys.map(function(k){return caches.delete(k);})); }).catch(function(){});
+      if('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function(regs){ regs.forEach(function(r){ if(r.active) r.active.postMessage({type:'SKIP_WAITING'}); }); }).catch(function(){});
+    }
+  }catch(e){}
+})();
+</script>
+
   <meta charset="UTF-8">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
@@ -11,27 +25,27 @@
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/portal-home.css?v=1.58.154">
-  <link rel="stylesheet" href="../css/portal-area.css?v=1.58.154">
+  <link rel="stylesheet" href="../css/portal-home.css?v=1.58.163">
+  <link rel="stylesheet" href="../css/portal-area.css?v=1.58.163">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="App Braga">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="format-detection" content="telephone=no">
+<link href="../css/appbraga-hero-logo-universal.css?v=1.58.163" rel="stylesheet"/>
 </head>
 <body class="portal-area-page">
   <div class="portal-orb left" aria-hidden="true"></div>
   <div class="portal-orb right" aria-hidden="true"></div>
 
   <main class="portal-area-wrap">
-    <div class="portal-area-top">
-      <a class="portal-area-back" href="index.html">← Portal Inicial</a>
-      <span class="portal-area-version">v1.58.154</span>
+    <div class="portal-area-top portal-area-top-clean">
+      <span class="portal-area-version">v1.58.163</span>
     </div>
 
     <section class="portal-area-hero" aria-labelledby="areaTitle">
       <div>
-        <div class="portal-area-a" aria-hidden="true"></div>
+        <a class="portal-area-logo appbraga-home-orbit-btn" href="index.html" aria-label="Voltar ao Portal Inicial" title="Voltar ao Portal Inicial"><img src="../assets/bragalis-home-logo-original.png?v=1.58.163" alt="AppBraga"></a>
         <h1 id="areaTitle">Portal Administração</h1>
         <p>Acede rapidamente às páginas da área de administração.</p>
       </div>
@@ -67,6 +81,6 @@
     <footer class="portal-area-footer">Bragalis T.I • Navegação por áreas</footer>
   </main>
 
-  <script src="../js/portal-area.js?v=1.58.154"></script>
+  <script src="../js/portal-area.js?v=1.58.163"></script>
 </body>
 </html>

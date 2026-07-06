@@ -1,6 +1,6 @@
 (function(){
   'use strict';
-  const VERSION='1.58.153';
+  const VERSION='1.58.163';
   const COLLECTION='diretorioTelefonico';
   const LOCAL_KEY='appbraga_diretorio_v2';
   let contactos=[];
