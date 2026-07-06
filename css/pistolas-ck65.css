@@ -191,7 +191,7 @@ body.pistolas-ck65-page::after{background:
 }
 
 
-/* v1.58.108 — CK65 mais fiel ao estilo real da app */
+/* v1.58.153 — CK65 mais fiel ao estilo real da app */
 body.pistolas-ck65-page .version-badge,
 body.pistolas-ck65-page .app-version-badge,
 body.pistolas-ck65-page #appVersionBadge,
@@ -506,7 +506,7 @@ body.pistolas-ck65-page .ck-mini-table{
 }
 
 
-/* v1.58.108 — CK65 scroll corrigido + lista mais bonita */
+/* v1.58.153 — CK65 scroll corrigido + lista mais bonita */
 html,
 html:has(body.pistolas-ck65-page),
 body.pistolas-ck65-page{
@@ -765,7 +765,7 @@ body.pistolas-ck65-page .ck-version ~ .version-badge{
 }
 
 
-/* v1.58.108 — CK65 hero igual às outras páginas */
+/* v1.58.153 — CK65 hero igual às outras páginas */
 body.pistolas-ck65-page .ck-hero{
   display:flex!important;
   justify-content:center!important;
@@ -890,4 +890,65 @@ body.pistolas-ck65-page .ck-hero-copy p{
   body.pistolas-ck65-page .ck-hero-copy p{
     font-size:.9rem!important;
   }
+}
+
+
+/* v1.58.153 — Ajustes finais CK65: ícone KPI centrado, botões Ver todos compactos e sem botão Portal */
+body.pistolas-ck65-page .ck-kpi-icon.ck-icon-gun-small{
+  width:44px!important;
+  min-width:44px!important;
+  height:44px!important;
+  min-height:44px!important;
+  flex:0 0 44px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  position:relative!important;
+  overflow:hidden!important;
+}
+body.pistolas-ck65-page .ck-kpi-icon.ck-icon-gun-small::before{
+  left:7px!important;
+  top:13px!important;
+  width:29px!important;
+  height:9px!important;
+  border-width:3px!important;
+  border-right-width:4px!important;
+}
+body.pistolas-ck65-page .ck-kpi-icon.ck-icon-gun-small::after{
+  left:18px!important;
+  top:21px!important;
+  width:9px!important;
+  height:12px!important;
+  border-left-width:4px!important;
+  border-bottom-width:4px!important;
+}
+body.pistolas-ck65-page .ck-kpi-icon.ck-icon-gun-small > span::before{
+  left:31px!important;
+  top:15px!important;
+  width:9px!important;
+  height:3px!important;
+}
+body.pistolas-ck65-page .ck-kpi-icon.ck-icon-gun-small > span::after{
+  left:12px!important;
+  top:23px!important;
+  width:7px!important;
+  height:3px!important;
+  border-width:2px!important;
+}
+body.pistolas-ck65-page #ckBtnVerAlertas,
+body.pistolas-ck65-page #ckBtnVerIntervencoes{
+  width:auto!important;
+  min-width:92px!important;
+  max-width:116px!important;
+  height:30px!important;
+  min-height:30px!important;
+  padding:0 11px!important;
+  font-size:12px!important;
+  line-height:1!important;
+  border-radius:9px!important;
+  white-space:nowrap!important;
+  flex:0 0 auto!important;
+}
+body.pistolas-ck65-page .ck-back{
+  display:none!important;
 }

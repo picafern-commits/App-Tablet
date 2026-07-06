@@ -107,7 +107,7 @@ body.portal-home{
 .portal-brand:visited{color:#fff;}
 
 
-/* v1.58.75 — navegação por seleção: primeiro clique só seleciona o card.
+/* v1.58.153 — navegação por seleção: primeiro clique só seleciona o card.
    As opções internas só ficam clicáveis no card ativo. */
 .portal-card:not(.is-selected) .portal-links a,
 .portal-card:not(.is-selected) .portal-action{
@@ -162,14 +162,14 @@ body.portal-home{
   .portal-card:not(.is-selected)::after,
   .portal-card.is-selected::after{position:static;margin-left:auto;margin-bottom:8px;}
 }
-/* v1.58.75 — o card Impressoras abre diretamente a nova central da área. */
+/* v1.58.153 — o card Impressoras abre diretamente a nova central da área. */
 .portal-card-direct{cursor:pointer;}
 .portal-card-direct:not(.is-selected) .portal-action{opacity:1;pointer-events:none;}
 .portal-card-direct:not(.is-selected)::after{content:"Abrir";}
 .portal-card-direct:hover .portal-action{border-color:rgba(71,166,255,.72);box-shadow:0 0 24px rgba(47,140,255,.20);}
 
 
-/* v1.58.75 — Portal: card Impressoras volta a ter todas as páginas da área */
+/* v1.58.153 — Portal: card Impressoras volta a ter todas as páginas da área */
 .portal-card-impressoras .portal-links{
   gap:6px;
   margin-bottom:16px;
@@ -212,7 +212,7 @@ body.portal-home{
 }
 
 
-/* v1.58.75 — Portal full screen clean/encaixado */
+/* v1.58.153 — Portal full screen clean/encaixado */
 body.portal-home{
   min-height:100vh!important;
   overflow:hidden!important;
@@ -370,5 +370,74 @@ body.portal-home{
   .portal-card{
     height:auto!important;
     min-height:auto!important;
+  }
+}
+
+
+/* v1.58.153 — Portal Inicial: ajustes pedidos pelo Ricardo */
+.portal-header{
+  display:none!important;
+}
+
+.portal-wrap{
+  grid-template-rows:auto 1fr 42px!important;
+  gap:18px!important;
+  padding-top:42px!important;
+}
+
+.portal-hero{
+  margin-top:0!important;
+}
+
+.portal-hero-logo{
+  width:72px!important;
+  height:72px!important;
+  margin:0 auto 12px!important;
+  border-radius:999px!important;
+  clip-path:none!important;
+  padding:0!important;
+  background:radial-gradient(circle at 42% 34%, rgba(255,255,255,.26), rgba(34,125,255,.62) 36%, rgba(0,57,157,.98) 72%)!important;
+  box-shadow:0 0 38px rgba(35,139,255,.42), inset 0 1px 0 rgba(255,255,255,.22)!important;
+  border:1px solid rgba(96,174,255,.46)!important;
+  overflow:hidden!important;
+}
+
+.portal-hero-logo img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  display:block!important;
+}
+
+.portal-hero h1{
+  font-size:clamp(2.05rem,3.05vw,3.35rem)!important;
+  letter-spacing:-.055em!important;
+}
+
+.portal-card-direct{
+  cursor:pointer!important;
+}
+
+.portal-card-direct .portal-links,
+.portal-card-direct .portal-action{
+  pointer-events:none!important;
+}
+
+.portal-card-direct::after{
+  content:"Abrir"!important;
+}
+
+.portal-card-direct:hover::after{
+  opacity:1!important;
+  transform:translateY(0)!important;
+}
+
+.portal-card-direct.is-selected{
+  transform:none!important;
+}
+
+@media(max-width:1400px){
+  .portal-wrap{
+    padding-top:26px!important;
   }
 }

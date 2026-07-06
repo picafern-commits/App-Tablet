@@ -11,16 +11,16 @@
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/historico-futurista.css?v=1.58.133">
-  <link rel="stylesheet" href="../css/appbraga-clean-layout.css?v=1.58.133">
+  <link rel="stylesheet" href="../css/historico-futurista.css?v=1.58.153">
+  <link rel="stylesheet" href="../css/appbraga-clean-layout.css?v=1.58.153">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="App Braga">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="format-detection" content="telephone=no">
-  <link rel="stylesheet" href="../css/appbraga-impressoras-padrao.css?v=1.58.133">
-  <link rel="stylesheet" href="../css/appbraga-fixed-scale.css?v=1.58.133">
-  <link rel="stylesheet" href="../css/appbraga-scroll-systems.css?v=1.58.133">
+  <link rel="stylesheet" href="../css/appbraga-impressoras-padrao.css?v=1.58.153">
+  <link rel="stylesheet" href="../css/appbraga-fixed-scale.css?v=1.58.153">
+  <link rel="stylesheet" href="../css/appbraga-scroll-systems.css?v=1.58.153">
 </head>
 
 <body class="historico-futurista">
@@ -28,7 +28,7 @@
     <section class="hist-hero" aria-labelledby="histTitle">
       <div class="hist-hero-card">
         <a class="hist-hero-orbit appbraga-home-orbit-btn" href="index.html" aria-label="Voltar ao Portal AppBraga" title="Voltar ao Portal">
-          <img src="../assets/bragalis-home-logo-original.png?v=1.58.133" alt="AppBraga">
+          <img src="../assets/bragalis-home-logo-original.png?v=1.58.153" alt="AppBraga">
         </a>
         <div class="hist-hero-icon" aria-hidden="true">↺</div>
         <div>
@@ -94,21 +94,6 @@
           </div>
         </article>
 
-        <section class="hist-bottom-grid">
-          <article class="hist-panel">
-            <div class="hist-panel-head"><div class="panel-title"><span>🕘</span><div><h2>Atividade recente</h2><p>Últimas ações registadas no sistema.</p></div></div><button type="button" onclick="location.href='diagnostico.html'">Ver todas →</button></div>
-            <div class="hist-activity-list" id="histActivityList"></div>
-          </article>
-          <article class="hist-panel">
-            <div class="hist-panel-head"><div class="panel-title"><span>📤</span><div><h2>Exportação e arquivo</h2><p>Exportar dados do histórico ou consultar arquivos.</p></div></div></div>
-            <div class="hist-export-grid">
-              <button type="button" onclick="exportarExcelHistorico()">📗<strong>Exportar Excel</strong><span>Formato .csv</span></button>
-              <button type="button" onclick="exportarHistoricoPdfFuturista()">📕<strong>Exportar PDF</strong><span>Resumo imprimível</span></button>
-              <button type="button" onclick="filtrarPeriodoHistoricoFuturista()">📅<strong>Filtrar período</strong><span>Selecionar datas</span></button>
-              <button type="button" onclick="exportarExcelTudo()">📁<strong>Arquivo</strong><span>Registos completos</span></button>
-            </div>
-          </article>
-        </section>
       </main>
 
       <aside class="hist-right">
@@ -126,13 +111,6 @@
         <article class="hist-panel"><div class="hist-panel-head"><div class="panel-title"><span>🔁</span><div><h2>Movimentos recentes</h2><p>Últimos movimentos registados.</p></div></div><button type="button" onclick="limparFiltrosHistoricoFuturista()">Ver todos →</button></div><div class="hist-movements-list" id="histMovementsList"></div></article>
         <article class="hist-panel"><div class="hist-panel-head"><div class="panel-title"><span>📄</span><div><h2>Etiquetas Word</h2><p>Documentos gerados recentemente.</p></div></div><button type="button" onclick="location.href='etiquetas-word.html'">Ver todas →</button></div><div class="hist-labels-list" id="histLabelsList"></div></article>
       </aside>
-    </section>
-
-    <section class="hist-footer-stats">
-      <div><span>📌</span><small>Total de registos</small><strong id="histFooterTotal">0</strong></div>
-      <div><span>📅</span><small>Período atual</small><strong id="histFooterPeriodo">—</strong></div>
-      <div><span>👥</span><small>Utilizadores ativos</small><strong id="histFooterUsers">0</strong></div>
-      <div><span>💾</span><small>Tamanho estimado</small><strong id="histFooterSize">—</strong></div>
     </section>
 
     <div id="countUsados" class="hist-hidden-legacy">0</div>
@@ -161,11 +139,11 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="../js/app.js?v=1.58.133"></script>
-  <script src="../js/appbraga-systems.js?v=1.58.133"></script>
-  <script src="../js/sidebar-editor.js?v=1.58.133"></script>
+  <script src="../js/app.js?v=1.58.153"></script>
+  <script src="../js/appbraga-systems.js?v=1.58.153"></script>
+  <script src="../js/sidebar-editor.js?v=1.58.153"></script>
   <script src="../js/core/helpers.js"></script>
-  <script src="../js/historico-futurista.js?v=1.58.133"></script>
-  <script src="../js/appbraga-scroll-systems.js?v=1.58.133"></script>
+  <script src="../js/historico-futurista.js?v=1.58.153"></script>
+  <script src="../js/appbraga-scroll-systems.js?v=1.58.153"></script>
 </body>
 </html>

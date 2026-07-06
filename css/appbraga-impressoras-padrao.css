@@ -1,4 +1,4 @@
-/* AppBraga v1.58.122 — padrão visual único baseado na página Impressoras
+/* AppBraga v1.58.153 — padrão visual único baseado na página Impressoras
    Aplica o mesmo esquema de botões, texto, cores, cards, tabelas e scroll às páginas novas. */
 :root{
   --app-imp-bg:#030918;
@@ -277,10 +277,10 @@ button[data-action],button[data-cp-action],button[data-rd-action],button[data-di
   .ck-table-footer{flex-direction:column !important;align-items:flex-start !important;}
 }
 
-/* AppBraga v1.58.133 — limpeza visual segura: todas as páginas novas usam o mesmo esquema base.
+/* AppBraga v1.58.153 — limpeza visual segura: todas as páginas novas usam o mesmo esquema base.
    Não remove sistemas; apenas impede que visual antigo/sidebar/topbar antiga volte a mandar nas páginas novas. */
 :root{
-  --appbraga-version-tag:"v1.58.133";
+  --appbraga-version-tag:"v1.58.153";
 }
 body.add-toner-futurista,
 body.dashboard-futurista-body,

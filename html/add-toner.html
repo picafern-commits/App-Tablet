@@ -11,23 +11,23 @@
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/add-toner-futurista.css?v=1.58.133">
-  <link rel="stylesheet" href="../css/appbraga-clean-layout.css?v=1.58.133">
+  <link rel="stylesheet" href="../css/add-toner-futurista.css?v=1.58.153">
+  <link rel="stylesheet" href="../css/appbraga-clean-layout.css?v=1.58.153">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="App Braga">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="format-detection" content="telephone=no">
-  <link rel="stylesheet" href="../css/appbraga-impressoras-padrao.css?v=1.58.133">
-  <link rel="stylesheet" href="../css/appbraga-fixed-scale.css?v=1.58.133">
-  <link rel="stylesheet" href="../css/appbraga-scroll-systems.css?v=1.58.133">
+  <link rel="stylesheet" href="../css/appbraga-impressoras-padrao.css?v=1.58.153">
+  <link rel="stylesheet" href="../css/appbraga-fixed-scale.css?v=1.58.153">
+  <link rel="stylesheet" href="../css/appbraga-scroll-systems.css?v=1.58.153">
 </head>
 
 <body class="add-toner-futurista">
   <div class="toner-page">
 <section class="toner-hero">
       <div class="toner-hero-card">
-        <a class="toner-hero-orbit appbraga-home-orbit-btn" href="index.html" aria-label="Voltar ao Portal AppBraga" title="Voltar ao Portal"><img src="../assets/bragalis-home-logo-original.png?v=1.58.133" alt="AppBraga"></a>
+        <a class="toner-hero-orbit appbraga-home-orbit-btn" href="index.html" aria-label="Voltar ao Portal AppBraga" title="Voltar ao Portal"><img src="../assets/bragalis-home-logo-original.png?v=1.58.153" alt="AppBraga"></a>
         <div class="toner-hero-icon" aria-hidden="true">🖨️</div>
         <div>
           <h1>Adicionar Toner</h1>
@@ -49,27 +49,27 @@
       <article class="toner-kpi">
         <span class="kpi-icon orange">⌛</span>
         <div>
-          <span>Toners por validar</span>
-          <strong id="kpiPorValidar">8</strong>
-          <small>vs. ontem (9)</small>
+          <span>Toners em Stock</span>
+          <strong id="kpiPorValidar">0</strong>
+          <small>Disponíveis para usar</small>
         </div>
         <em class="trend down">↘ -11%</em>
       </article>
       <article class="toner-kpi">
         <span class="kpi-icon green">🖨️</span>
         <div>
-          <span>Equipamentos afetados</span>
-          <strong id="kpiEquipamentos">5</strong>
-          <small>vs. ontem (4)</small>
+          <span>Impressoras ligadas</span>
+          <strong id="kpiEquipamentos">0</strong>
+          <small>Equipamentos registados</small>
         </div>
         <em class="trend up">↗ +25%</em>
       </article>
       <article class="toner-kpi">
         <span class="kpi-icon purple">📄</span>
         <div>
-          <span>Etiquetas pendentes</span>
-          <strong id="kpiEtiquetas">18</strong>
-          <small>vs. ontem (17)</small>
+          <span>Etiquetas criadas</span>
+          <strong id="kpiEtiquetas">0</strong>
+          <small>Documentos gerados</small>
         </div>
         <em class="trend up">↗ +5%</em>
       </article>
@@ -89,8 +89,7 @@
           </div>
 
           <div class="toner-inline-scan">
-            <button type="button" class="toner-btn primary" onclick="abrirOCR()">📄 Ler Folha Toner</button>
-            <button type="button" class="toner-btn" onclick="startScanner()">📷 Ler QR / Câmara</button>
+            <button type="button" class="toner-btn primary toner-btn-full" onclick="abrirOCR()">📄 Ler Folha Toner</button>
             <input id="ocrInput" type="file" accept="image/*" capture="environment" style="display:none;" onchange="processarOCRInput(event)">
           </div>
           <div id="reader" class="scanner-box toner-reader-inline"></div>
@@ -226,13 +225,7 @@
             <button type="button" class="toner-btn" onclick="fecharSerie3Digitos()">Cancelar</button>
           </div>
         </article>
-
-        <article class="toner-tip">
-          <strong>ⓘ Dica:</strong>
-          <span>Após guardar o registo, poderá gerar etiquetas, consultar o histórico ou verificar o stock atualizado.</span>
-          <button type="button" onclick="this.closest('.toner-tip').remove()">×</button>
-        </article>
-      </main>
+</main>
 
       <aside class="toner-right">
         <article class="toner-panel">
@@ -253,37 +246,15 @@
           </div>
           <div class="recent-list" id="recentTonerList"></div>
         </article>
-
-        <div class="side-two">
-          <article class="toner-panel">
-            <div class="toner-panel-head compact">
-              <div class="panel-title"><span>🎨</span><div><h2>Cores mais usadas</h2><p>Últimos 7 dias</p></div></div>
-            </div>
-            <div class="donut-row">
-              <div class="donut-chart"></div>
-              <ul class="color-legend">
-                <li><span class="dot preto"></span>Preto <b>58%</b></li>
-                <li><span class="dot ciano"></span>Ciano <b>20%</b></li>
-                <li><span class="dot magenta"></span>Magenta <b>12%</b></li>
-                <li><span class="dot amarelo"></span>Amarelo <b>10%</b></li>
-              </ul>
-            </div>
-            <p class="total-units">Total: 90 unidades</p>
-          </article>
-
-          <article class="toner-panel">
-            <div class="toner-panel-head compact">
-              <div class="panel-title"><span>△</span><div><h2>Avisos de toner baixo</h2></div></div>
-              <a href="notificacoes.html">Ver todos →</a>
-            </div>
-            <div class="warning-list" id="tonerWarnings">
-              <div><span class="warn-dot red"></span>Kyocera P3155dn (Preto)<b>Crítico</b></div>
-              <div><span class="warn-dot orange"></span>Kyocera P3260dn (Preto)<b>Baixo</b></div>
-              <div><span class="warn-dot orange"></span>TASKalfa 255ci (Magenta)<b>Baixo</b></div>
-              <div><span class="warn-dot orange"></span>Kyocera ECOSYS M5526cdw (Preto)<b>Baixo</b></div>
-            </div>
-          </article>
-        </div>
+        <article class="toner-panel toner-low-wide">
+          <div class="toner-panel-head compact">
+            <div class="panel-title"><span>△</span><div><h2>Avisos de toner baixo</h2><p>Toners abaixo de 25%.</p></div></div>
+            <a href="notificacoes.html">Ver todos →</a>
+          </div>
+          <div class="warning-list warning-list-wide" id="tonerWarnings">
+            <div class="muted-line">Sem leituras abaixo de 25%.</div>
+          </div>
+        </article>
 </aside>
     </section>
   </div>
@@ -293,10 +264,10 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="../js/app.js?v=1.58.133"></script>
-  <script src="../js/appbraga-systems.js?v=1.58.133"></script>
-  <script src="../js/helpers.js?v=1.58.133"></script>
-  <script src="../js/add-toner-futurista.js?v=1.58.133"></script>
-  <script src="../js/appbraga-scroll-systems.js?v=1.58.133"></script>
+  <script src="../js/app.js?v=1.58.153"></script>
+  <script src="../js/appbraga-systems.js?v=1.58.153"></script>
+  <script src="../js/helpers.js?v=1.58.153"></script>
+  <script src="../js/add-toner-futurista.js?v=1.58.153"></script>
+  <script src="../js/appbraga-scroll-systems.js?v=1.58.153"></script>
 </body>
 </html>

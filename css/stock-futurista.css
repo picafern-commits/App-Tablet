@@ -683,7 +683,7 @@ body.stock-futurista::after {
 }
 
 
-/* v1.58.75 — alinhar Etiquetas Word com Movimentos recentes */
+/* v1.58.153 — alinhar Etiquetas Word com Movimentos recentes */
 body.stock-futurista .stock-right {
   display: grid !important;
   grid-template-rows: auto auto auto auto !important;
@@ -743,7 +743,7 @@ body.stock-futurista .stock-labels-list {
 }
 
 
-/* v1.58.75 — alinhamento correto: Etiquetas Word com Movimentos recentes
+/* v1.58.153 — alinhamento correto: Etiquetas Word com Movimentos recentes
    Sem margens negativas fixas. O offset é calculado em JS conforme o ecrã. */
 
 /* Neutraliza o remendo anterior */
@@ -781,7 +781,7 @@ body.stock-futurista .stock-color-panel .stock-bars {
 }
 
 
-/* v1.58.75 — logotipo no círculo do hero como botão para o Portal */
+/* v1.58.153 — logotipo no círculo do hero como botão para o Portal */
 .appbraga-home-hero-btn {
   text-decoration: none !important;
   cursor: pointer !important;
@@ -821,7 +821,7 @@ body.stock-futurista .stock-color-panel .stock-bars {
 }
 
 
-/* v1.58.75 — logotipo no círculo grande lateral do hero */
+/* v1.58.153 — logotipo no círculo grande lateral do hero */
 .appbraga-home-hero-btn {
   cursor: default !important;
   pointer-events: none !important;
@@ -874,7 +874,7 @@ body.stock-futurista .stock-color-panel .stock-bars {
 }
 
 
-/* v1.58.75 — logo original no círculo grande + clique funcional */
+/* v1.58.153 — logo original no círculo grande + clique funcional */
 .appbraga-home-orbit-btn {
   position: absolute !important;
   z-index: 8 !important;
@@ -939,7 +939,7 @@ body.stock-futurista .stock-color-panel .stock-bars {
 }
 
 
-/* v1.58.75 — força clique no logotipo do círculo grande */
+/* v1.58.153 — força clique no logotipo do círculo grande */
 body .imp-hero-orbit.appbraga-home-orbit-btn,
 body .toner-hero-orbit.appbraga-home-orbit-btn,
 body .stock-hero-orbit.appbraga-home-orbit-btn,
@@ -983,7 +983,7 @@ body .stock-hero-icon {
 }
 
 
-/* v1.58.75 — Stock funcional ligado aos sistemas antigos */
+/* v1.58.153 — Stock funcional ligado aos sistemas antigos */
 body.stock-futurista .stock-actions {
   display: flex !important;
   gap: 6px !important;
@@ -1018,7 +1018,7 @@ body.stock-futurista .stock-label-actions button {
 }
 
 
-/* v1.58.75 — alertas só sem stock + botões Etiquetas Word funcionais */
+/* v1.58.153 — alertas só sem stock + botões Etiquetas Word funcionais */
 body.stock-futurista .stock-alert-list .stock-alert:not(.crit) small {
   background: rgba(49, 219, 112, .16) !important;
   border-color: rgba(49, 219, 112, .32) !important;
@@ -1032,7 +1032,7 @@ body.stock-futurista .stock-label-actions button {
 }
 
 
-/* v1.58.75 — sem barra superior interna nas páginas futuristas
+/* v1.58.153 — sem barra superior interna nas páginas futuristas
    Regra para páginas atuais e futuras: usar apenas o hero/bloco principal. */
 body.dashboard-futurista-body .dash-top,
 body.impressoras-futurista .imp-topbar,
@@ -1068,7 +1068,7 @@ body.stock-futurista .stock-hero {
 }
 
 
-/* v1.58.75 — remove definitivamente a barra superior interna */
+/* v1.58.153 — remove definitivamente a barra superior interna */
 body.impressoras-futurista .imp-top,
 body.impressoras-futurista .imp-brand,
 body.impressoras-futurista .imp-top-actions,
@@ -1102,4 +1102,229 @@ body.dashboard-futurista-body .dashboard-shell {
 body.impressoras-futurista .imp-hero,
 body.dashboard-futurista-body .dash-hero {
   margin-top: 10px !important;
+}
+
+
+/* v1.58.153 — Stock: retirar Etiquetas Word e abrir movimentos completos em modal */
+body.stock-futurista .stock-right {
+  grid-template-rows: auto auto auto !important;
+}
+
+body.stock-futurista .stock-movements-wide {
+  min-height: 330px !important;
+}
+
+body.stock-futurista .stock-movements-wide .stock-mini-table-wrap {
+  min-height: 252px !important;
+}
+
+body.stock-futurista .stock-modal-overlay[hidden] {
+  display: none !important;
+}
+
+body.stock-futurista .stock-modal-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 24px !important;
+  background: rgba(0, 0, 0, .66) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+body.stock-futurista.stock-modal-open {
+  overflow: hidden !important;
+}
+
+body.stock-futurista .stock-modal-wide {
+  width: min(1180px, calc(100vw - 44px)) !important;
+  max-height: min(82vh, 860px) !important;
+  overflow: hidden !important;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) auto !important;
+  background: linear-gradient(180deg, rgba(7,25,54,.98), rgba(5,18,37,.98)) !important;
+  border: 1px solid rgba(78,146,255,.42) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 30px 80px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.04) !important;
+}
+
+body.stock-futurista .stock-modal-head {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  gap: 16px !important;
+  padding: 18px 20px !important;
+  border-bottom: 1px solid rgba(255,255,255,.07) !important;
+}
+
+body.stock-futurista .stock-modal-head h3 {
+  margin: 0 !important;
+  font-size: 20px !important;
+  font-weight: 950 !important;
+}
+
+body.stock-futurista .stock-modal-head p {
+  margin: 3px 0 0 !important;
+  color: var(--stock-muted) !important;
+  font-size: 13px !important;
+}
+
+body.stock-futurista .stock-modal-close {
+  height: 38px !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(92,151,225,.28) !important;
+  background: rgba(3,13,29,.72) !important;
+  color: #f7fbff !important;
+  padding: 0 14px !important;
+  font-weight: 900 !important;
+  cursor: pointer !important;
+}
+
+body.stock-futurista .stock-modal-wide .stock-mini-table-wrap {
+  overflow: auto !important;
+}
+
+body.stock-futurista .stock-modal-footer {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 14px 18px !important;
+  border-top: 1px solid rgba(255,255,255,.07) !important;
+  color: var(--stock-muted) !important;
+}
+
+body.stock-futurista .stock-pagination button:disabled {
+  opacity: .45 !important;
+  cursor: not-allowed !important;
+}
+
+
+/* v1.58.153 — Scanner QR no Stock para passar toner para histórico */
+.stock-qr-main-btn{
+  grid-column:auto !important;
+  background:linear-gradient(135deg, rgba(34,211,238,.95), rgba(37,99,235,.95)) !important;
+  color:#fff !important;
+  border-color:rgba(34,211,238,.42) !important;
+  box-shadow:0 12px 28px rgba(37,99,235,.18);
+}
+.stock-qr-scanner-panel[hidden]{display:none!important;}
+.stock-qr-scanner-panel{
+  margin-top:14px;
+  overflow:hidden;
+}
+.stock-qr-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin:10px 0 12px;
+}
+.stock-qr-actions button{
+  min-height:38px;
+  border-radius:10px;
+  border:1px solid rgba(59,130,246,.28);
+  background:rgba(2,8,23,.62);
+  color:#e5edf8;
+  font-weight:900;
+  cursor:pointer;
+}
+.stock-qr-actions .stock-qr-start{
+  background:linear-gradient(135deg, rgba(20,184,166,.95), rgba(37,99,235,.95));
+  color:#fff;
+}
+.stock-qr-preview-frame{
+  position:relative;
+  display:none;
+  min-height:0;
+  height:0;
+  overflow:hidden;
+  border-radius:16px;
+  border:1px dashed rgba(34,211,238,.34);
+  background:rgba(0,0,0,.30);
+}
+.stock-qr-preview-frame.active{
+  display:block;
+  height:360px;
+  min-height:360px;
+  margin-top:10px;
+}
+.stock-qr-reader,
+#stockQrReader,
+#stockQrReader > div,
+#stockQrReader video,
+#stockQrReader canvas{
+  width:100%!important;
+  height:100%!important;
+  min-height:360px!important;
+  border-radius:16px;
+  overflow:hidden;
+}
+#stockQrReader video{object-fit:cover!important;}
+.stock-qr-aim{pointer-events:none;position:absolute;inset:20px;border-radius:18px;border:1px solid rgba(255,255,255,.22);box-shadow:inset 0 0 0 9999px rgba(0,0,0,.08)}
+.stock-qr-aim span{position:absolute;width:34px;height:34px;border-color:#22d3ee;border-style:solid;filter:drop-shadow(0 0 8px rgba(34,211,238,.6))}
+.stock-qr-aim span:nth-child(1){top:0;left:0;border-width:3px 0 0 3px;border-top-left-radius:12px}
+.stock-qr-aim span:nth-child(2){top:0;right:0;border-width:3px 3px 0 0;border-top-right-radius:12px}
+.stock-qr-aim span:nth-child(3){bottom:0;left:0;border-width:0 0 3px 3px;border-bottom-left-radius:12px}
+.stock-qr-aim span:nth-child(4){bottom:0;right:0;border-width:0 3px 3px 0;border-bottom-right-radius:12px}
+.stock-qr-status{
+  margin-top:10px;
+  padding:10px 12px;
+  border-radius:12px;
+  background:rgba(15,23,42,.72);
+  border:1px solid rgba(148,163,184,.18);
+  color:#cbd5e1;
+  font-weight:850;
+}
+.stock-qr-status.ok{background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.38);color:#bbf7d0;}
+.stock-qr-status.erro{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.38);color:#fecaca;}
+@media(max-width:900px){.stock-qr-actions{grid-template-columns:1fr}.stock-qr-preview-frame.active{height:300px;min-height:300px}.stock-qr-reader,#stockQrReader,#stockQrReader > div,#stockQrReader video,#stockQrReader canvas{min-height:300px!important}}
+
+
+/* v1.58.153 — Scanner QR abre em modal e fica ao lado do Adicionar Toner */
+.stock-quick-actions .stock-qr-main-btn{
+  grid-column:auto !important;
+}
+.stock-quick-actions button:nth-child(1),
+.stock-quick-actions button:nth-child(2){
+  grid-column:auto !important;
+}
+.stock-qr-modal[hidden]{
+  display:none!important;
+}
+.stock-qr-modal{
+  position:fixed!important;
+  inset:0!important;
+  z-index:99999!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:24px!important;
+  background:rgba(2,8,23,.72)!important;
+  backdrop-filter:blur(14px)!important;
+  overflow:auto!important;
+}
+.stock-qr-modal-card{
+  width:min(860px, calc(100vw - 48px))!important;
+  max-height:calc(100vh - 48px)!important;
+  overflow:auto!important;
+  background:linear-gradient(180deg, rgba(10,28,58,.98), rgba(4,14,31,.98))!important;
+  border:1px solid rgba(34,211,238,.26)!important;
+  border-radius:20px!important;
+  box-shadow:0 30px 90px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.04) inset!important;
+}
+.stock-qr-modal-card .stock-panel-head{
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:linear-gradient(180deg, rgba(10,28,58,.98), rgba(4,14,31,.96));
+}
+.stock-qr-modal-card .stock-qr-preview-frame.active{
+  height:min(420px, 52vh);
+  min-height:min(420px, 52vh);
+}
+@media(max-width:900px){
+  .stock-quick-actions{grid-template-columns:1fr!important;}
+  .stock-qr-modal{padding:12px!important;}
+  .stock-qr-modal-card{width:calc(100vw - 24px)!important;max-height:calc(100vh - 24px)!important;}
 }

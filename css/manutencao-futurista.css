@@ -47,7 +47,7 @@ body.manutencao-futurista::after{background:radial-gradient(ellipse at 0% 45%,rg
 @media (max-width:900px){.mnt-page{padding:14px}.mnt-hero-card{width:100%;display:grid;justify-items:center;text-align:center;gap:16px;padding:22px}.mnt-hero-orbit{display:none}.mnt-hero h1{font-size:2.2rem}.mnt-hero p{font-size:1.05rem}.mnt-kpis,.mnt-filters,.mnt-form,.mnt-timeline{grid-template-columns:1fr}.mnt-panel-head{display:grid}.mnt-list-row,.mnt-bar{grid-template-columns:1fr}.mnt-timeline::after{display:none}.mnt-time-card::after{display:none}}
 
 
-/* v1.58.78 — Manutenção: layout ajustado para base Cloudflare */
+/* v1.58.153 — Manutenção: layout ajustado para base Cloudflare */
 body.manutencao-futurista{
   overflow-y:auto!important;
 }
@@ -437,7 +437,7 @@ body.manutencao-futurista .mnt-form textarea{
 }
 
 
-/* v1.58.79 — correção de ícones e labels na página Manutenção */
+/* v1.58.153 — correção de ícones e labels na página Manutenção */
 body.manutencao-futurista .mnt-kpi > div{
   min-width:0!important;
 }

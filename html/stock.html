@@ -11,23 +11,23 @@
   <link rel="manifest" href="../manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
   <link rel="apple-touch-icon" href="../icon-192.png">
-  <link rel="stylesheet" href="../css/stock-futurista.css?v=1.58.133">
-  <link rel="stylesheet" href="../css/appbraga-clean-layout.css?v=1.58.133">
+  <link rel="stylesheet" href="../css/stock-futurista.css?v=1.58.153">
+  <link rel="stylesheet" href="../css/appbraga-clean-layout.css?v=1.58.153">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="App Braga">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="format-detection" content="telephone=no">
-  <link rel="stylesheet" href="../css/appbraga-impressoras-padrao.css?v=1.58.133">
-  <link rel="stylesheet" href="../css/appbraga-fixed-scale.css?v=1.58.133">
-  <link rel="stylesheet" href="../css/appbraga-scroll-systems.css?v=1.58.133">
+  <link rel="stylesheet" href="../css/appbraga-impressoras-padrao.css?v=1.58.153">
+  <link rel="stylesheet" href="../css/appbraga-fixed-scale.css?v=1.58.153">
+  <link rel="stylesheet" href="../css/appbraga-scroll-systems.css?v=1.58.153">
 </head>
 
 <body class="stock-futurista">
   <div class="stock-page">
     <section class="stock-hero">
       <div class="stock-hero-card">
-        <a class="stock-hero-orbit appbraga-home-orbit-btn" href="index.html" aria-label="Voltar ao Portal AppBraga" title="Voltar ao Portal"><img src="../assets/bragalis-home-logo-original.png?v=1.58.133" alt="AppBraga"></a>
+        <a class="stock-hero-orbit appbraga-home-orbit-btn" href="index.html" aria-label="Voltar ao Portal AppBraga" title="Voltar ao Portal"><img src="../assets/bragalis-home-logo-original.png?v=1.58.153" alt="AppBraga"></a>
         <div class="stock-hero-icon" aria-hidden="true">🛢️</div>
         <div>
           <h1>Stock</h1>
@@ -131,6 +131,30 @@
           </div>
         </article>
 
+        <div id="stockQrScannerPanel" class="stock-modal-overlay stock-qr-modal" hidden>
+          <div class="stock-modal-card stock-qr-modal-card">
+          <div class="stock-panel-head">
+            <div class="panel-title">
+              <span>📷</span>
+              <div>
+                <h2>Scan QR do toner</h2>
+                <p>Leia a etiqueta QR para marcar o toner como usado e mover para o histórico.</p>
+              </div>
+            </div>
+            <button type="button" onclick="window.stockFuturistaFecharScannerQr && window.stockFuturistaFecharScannerQr()">Fechar</button>
+          </div>
+          <div class="stock-qr-actions">
+            <button type="button" class="stock-qr-start" onclick="window.startStockQrScanner && window.startStockQrScanner()">📷 Ligar câmara</button>
+            <button type="button" onclick="window.stopStockQrScanner && window.stopStockQrScanner()">⏹ Parar scanner</button>
+          </div>
+          <div id="stockQrPreviewFrame" class="stock-qr-preview-frame">
+            <div id="stockQrReader" class="stock-qr-reader"></div>
+            <div class="stock-qr-aim" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+          </div>
+          <div id="stockQrStatus" class="stock-qr-status">Scanner desligado. Carrega em “Ligar câmara” e aponta para o QR da etiqueta.</div>
+          </div>
+        </div>
+
         <article class="stock-panel stock-movements-wide">
           <div class="stock-panel-head">
             <div class="panel-title">
@@ -140,7 +164,7 @@
                 <p>Últimos movimentos de stock realizados.</p>
               </div>
             </div>
-            <a href="historico.html">Ver todos →</a>
+            <button type="button" onclick="window.stockFuturistaAbrirMovimentos && window.stockFuturistaAbrirMovimentos()">Ver todos →</button>
           </div>
           <div class="stock-mini-table-wrap">
             <table class="stock-mini-table">
@@ -168,6 +192,7 @@
           </div>
           <div class="stock-quick-actions">
             <button type="button" onclick="location.href='add-toner.html'">➕ Adicionar Toner</button>
+            <button type="button" class="stock-qr-main-btn" onclick="window.stockFuturistaAbrirScannerQr && window.stockFuturistaAbrirScannerQr()">📷 Scan QR — passar para histórico</button>
             <button type="button" onclick="location.href='historico.html'">↩ Histórico</button>
             <button type="button" onclick="location.href='etiquetas-word.html'">🏷️ Etiquetas Word</button>
             <button type="button" onclick="location.href='impressoras.html'">🖨️ Impressoras</button>
@@ -191,16 +216,40 @@
           <div class="stock-bars" id="stockColorBars"></div>
         </article>
 
-        <article class="stock-panel stock-labels-panel">
-          <div class="stock-panel-head">
-            <div class="panel-title"><span>📄</span><div><h2>Etiquetas Word</h2><p>Últimos documentos de etiquetas gerados.</p></div></div>
-            <a href="etiquetas-word.html">Ver todas →</a>
-          </div>
-          <div class="stock-labels-list" id="stockLabelsList"></div>
-        </article>
       </aside>
     </section>
 
+    <div id="stockMovementsModal" class="stock-modal-overlay" hidden>
+      <div class="stock-modal-card stock-modal-wide">
+        <div class="stock-modal-head">
+          <div>
+            <h3>Todos os movimentos de stock</h3>
+            <p>Entradas e saídas com paginação de 25 registos por página.</p>
+          </div>
+          <button type="button" class="stock-modal-close" onclick="window.stockFuturistaFecharMovimentos && window.stockFuturistaFecharMovimentos()">Fechar</button>
+        </div>
+        <div class="stock-mini-table-wrap">
+          <table class="stock-mini-table">
+            <thead>
+              <tr>
+                <th>Data/Hora</th>
+                <th>Tipo</th>
+                <th>Cor</th>
+                <th>Referência</th>
+                <th>Quantidade</th>
+                <th>Origem / Destino</th>
+                <th>Utilizador</th>
+              </tr>
+            </thead>
+            <tbody id="stockMovementsModalBody"></tbody>
+          </table>
+        </div>
+        <div class="stock-modal-footer">
+          <span id="stockMovementsModalInfo">0 registos</span>
+          <div class="stock-pagination" id="stockMovementsModalPagination"></div>
+        </div>
+      </div>
+    </div>
     <div id="listaStock" class="stock-hidden-legacy"></div>
     <div id="countStock" class="stock-hidden-legacy">0</div>
 
@@ -228,11 +277,11 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="../js/app.js?v=1.58.133"></script>
-  <script src="../js/appbraga-systems.js?v=1.58.133"></script>
-  <script src="../js/sidebar-editor.js?v=1.58.133"></script>
+  <script src="../js/app.js?v=1.58.153"></script>
+  <script src="../js/appbraga-systems.js?v=1.58.153"></script>
+  <script src="../js/sidebar-editor.js?v=1.58.153"></script>
   <script src="../js/core/helpers.js"></script>
-  <script src="../js/stock-futurista.js?v=1.58.133"></script>
-  <script src="../js/appbraga-scroll-systems.js?v=1.58.133"></script>
+  <script src="../js/stock-futurista.js?v=1.58.153"></script>
+  <script src="../js/appbraga-scroll-systems.js?v=1.58.153"></script>
 </body>
 </html>

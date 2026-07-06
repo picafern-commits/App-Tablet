@@ -1,5 +1,5 @@
 
-/* AppBraga v1.58.108 — Informações futurista no padrão da página Rádios */
+/* AppBraga v1.58.153 — Informações futurista no padrão da página Rádios */
 body.informacoes-futurista-page{
   min-height:100vh!important;
   overflow:auto!important;
@@ -86,3 +86,134 @@ body.informacoes-futurista-page .info-hero-icon span{font-size:34px;filter:drop-
 .info-toast.warn{border-color:rgba(255,190,60,.45);}
 @media(max-width:1500px){.info-search-row{grid-template-columns:1fr 1fr}.info-quick-grid{grid-template-columns:1fr}}
 @media(max-width:900px){.info-table{min-width:980px}.info-search-row{grid-template-columns:1fr}.info-category-form{grid-template-columns:1fr}.info-actions{justify-content:flex-start}}
+
+
+/* v1.58.153 — Informações: limpeza lateral, modal arrumado e sem botão Portal */
+body.informacoes-futurista-page .ck-back{
+  display:none!important;
+}
+body.informacoes-futurista-page .ck-side{
+  align-content:start!important;
+  align-items:stretch!important;
+}
+body.informacoes-futurista-page .ck-side > .ck-panel:only-child{
+  min-height:auto!important;
+}
+body.informacoes-futurista-page .info-modal-card{
+  width:min(720px, calc(100vw - 36px))!important;
+  max-width:720px!important;
+}
+body.informacoes-futurista-page .info-modal-card .ck-modal-body{
+  overflow:visible!important;
+}
+body.informacoes-futurista-page .info-modal-card .ck-form-grid.three{
+  display:grid!important;
+  grid-template-columns:repeat(3, minmax(0, 1fr))!important;
+  gap:14px!important;
+  align-items:start!important;
+}
+body.informacoes-futurista-page .info-modal-card .ck-form-grid label{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:7px!important;
+  min-width:0!important;
+  padding:0!important;
+  margin:0!important;
+  color:#dbe8fb!important;
+  font-weight:900!important;
+}
+body.informacoes-futurista-page .info-modal-card .ck-form-grid label.full{
+  grid-column:1 / -1!important;
+}
+body.informacoes-futurista-page .info-modal-card .ck-form-grid label > span{
+  display:block!important;
+  min-height:16px!important;
+  color:#d8e8ff!important;
+  font-size:12px!important;
+  line-height:1.15!important;
+  font-weight:900!important;
+}
+body.informacoes-futurista-page .info-modal-card input:not([type="checkbox"]),
+body.informacoes-futurista-page .info-modal-card select,
+body.informacoes-futurista-page .info-modal-card textarea{
+  width:100%!important;
+  min-width:0!important;
+  height:42px!important;
+  min-height:42px!important;
+  max-height:none!important;
+  padding:0 14px!important;
+  border-radius:10px!important;
+  border:1px solid rgba(86,143,217,.32)!important;
+  background:rgba(5,16,33,.82)!important;
+  color:#eef6ff!important;
+  font-size:13px!important;
+  line-height:1.2!important;
+  font-weight:800!important;
+  box-shadow:none!important;
+  transform:none!important;
+  appearance:auto!important;
+  -webkit-appearance:auto!important;
+}
+body.informacoes-futurista-page .info-modal-card textarea{
+  height:92px!important;
+  min-height:92px!important;
+  padding:12px 14px!important;
+  resize:vertical!important;
+}
+body.informacoes-futurista-page .info-modal-card select option{
+  background:#07162c!important;
+  color:#eef6ff!important;
+}
+body.informacoes-futurista-page .info-modal-card .info-check{
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:10px!important;
+  height:44px!important;
+  min-height:44px!important;
+  padding:0 12px!important;
+  border:1px solid rgba(86,143,217,.24)!important;
+  background:rgba(255,255,255,.035)!important;
+  border-radius:12px!important;
+}
+body.informacoes-futurista-page .info-modal-card .info-check input[type="checkbox"]{
+  width:16px!important;
+  min-width:16px!important;
+  height:16px!important;
+  min-height:16px!important;
+  max-width:16px!important;
+  max-height:16px!important;
+  margin:0!important;
+  padding:0!important;
+  flex:0 0 16px!important;
+  accent-color:#20c9ff!important;
+  appearance:auto!important;
+  -webkit-appearance:auto!important;
+  transform:none!important;
+}
+body.informacoes-futurista-page .info-modal-card .info-check span{
+  display:inline!important;
+  min-height:auto!important;
+  color:#d9e7f5!important;
+  font-size:12px!important;
+  line-height:1.2!important;
+  font-weight:900!important;
+}
+body.informacoes-futurista-page .info-modal-card .ck-modal-actions{
+  display:flex!important;
+  justify-content:flex-end!important;
+  align-items:center!important;
+  gap:10px!important;
+  margin-top:14px!important;
+}
+body.informacoes-futurista-page .info-modal-card .ck-modal-actions .ck-btn{
+  width:auto!important;
+  min-width:130px!important;
+  height:38px!important;
+}
+@media(max-width:900px){
+  body.informacoes-futurista-page .info-modal-card .ck-form-grid.three{
+    grid-template-columns:1fr!important;
+  }
+}

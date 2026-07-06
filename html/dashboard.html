@@ -11,24 +11,24 @@
 <link rel="manifest" href="../manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
 <link rel="apple-touch-icon" href="../icon-192.png">
-<link rel="stylesheet" href="../css/style.css?v=1.58.133">
-<link rel="stylesheet" href="../css/dashboard-futurista.css?v=1.58.133">
-  <link rel="stylesheet" href="../css/appbraga-clean-layout.css?v=1.58.133">
+<link rel="stylesheet" href="../css/style.css?v=1.58.153">
+<link rel="stylesheet" href="../css/dashboard-futurista.css?v=1.58.153">
+  <link rel="stylesheet" href="../css/appbraga-clean-layout.css?v=1.58.153">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="App Braga">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="format-detection" content="telephone=no">
-  <link rel="stylesheet" href="../css/appbraga-impressoras-padrao.css?v=1.58.133">
-  <link rel="stylesheet" href="../css/appbraga-fixed-scale.css?v=1.58.133">
-  <link rel="stylesheet" href="../css/appbraga-scroll-systems.css?v=1.58.133">
+  <link rel="stylesheet" href="../css/appbraga-impressoras-padrao.css?v=1.58.153">
+  <link rel="stylesheet" href="../css/appbraga-fixed-scale.css?v=1.58.153">
+  <link rel="stylesheet" href="../css/appbraga-scroll-systems.css?v=1.58.153">
 </head>
 <body class="dashboard-futurista-body dashboard-clean-v15871">
 <div class="dash-net" aria-hidden="true"></div>
 <main class="dashboard-futurista">
   <section class="dash-hero" aria-labelledby="dashTitle">
     <div class="dash-hero-inner">
-      <a class="dash-hero-orbit appbraga-home-orbit-btn" href="index.html" aria-label="Voltar ao Portal AppBraga" title="Voltar ao Portal"><img src="../assets/bragalis-home-logo-original.png?v=1.58.133" alt="AppBraga"></a>
+      <a class="dash-hero-orbit appbraga-home-orbit-btn" href="index.html" aria-label="Voltar ao Portal AppBraga" title="Voltar ao Portal"><img src="../assets/bragalis-home-logo-original.png?v=1.58.153" alt="AppBraga"></a>
       <div class="dash-hero-icon" aria-hidden="true">📊</div>
       <div>
         <h1 id="dashTitle">Dashboard</h1>
@@ -40,11 +40,11 @@
   <section class="dash-kpis" aria-label="Indicadores principais">
     <article class="dash-kpi dash-clickable" data-href="impressoras.html" tabindex="0" role="button" aria-label="Abrir Impressoras">
       <div class="dash-kpi-icon">🖨️</div>
-      <div><div class="dash-kpi-title">Impressoras</div><div class="dash-kpi-value" id="dashKpiImpressoras">128</div><div class="dash-kpi-sub" id="dashKpiImpressorasSub">Online</div></div>
+      <div><div class="dash-kpi-title">Impressoras</div><div class="dash-kpi-value" id="dashKpiImpressoras">14</div><div class="dash-kpi-sub" id="dashKpiImpressorasSub">Online</div></div>
     </article>
     <article class="dash-kpi green dash-clickable" data-href="pistolas.html" tabindex="0" role="button" aria-label="Abrir Equipamentos">
       <div class="dash-kpi-icon">📱</div>
-      <div><div class="dash-kpi-title">Equipamentos</div><div class="dash-kpi-value" id="dashKpiEquipamentos">—</div><div class="dash-kpi-sub">Registados</div></div>
+      <div><div class="dash-kpi-title">Equipamentos</div><div class="dash-kpi-value" id="dashKpiEquipamentos">—</div><div class="dash-kpi-sub" id="dashKpiEquipamentosSub">Registados</div></div>
     </article>
     <article class="dash-kpi purple dash-clickable" data-href="tarefas.html" tabindex="0" role="button" aria-label="Abrir Tarefas">
       <div class="dash-kpi-icon">✅</div>
@@ -56,11 +56,11 @@
     </article>
     <article class="dash-kpi cyan dash-clickable" data-href="users.html" tabindex="0" role="button" aria-label="Abrir Utilizadores">
       <div class="dash-kpi-icon">👥</div>
-      <div><div class="dash-kpi-title">Utilizadores</div><div class="dash-kpi-value" id="dashKpiUsers">24</div><div class="dash-kpi-sub">Ativos</div></div>
+      <div><div class="dash-kpi-title">Utilizadores</div><div class="dash-kpi-value" id="dashKpiUsers">—</div><div class="dash-kpi-sub" id="dashKpiUsersSub">Ativos</div></div>
     </article>
     <article class="dash-kpi orange dash-clickable" data-href="stock.html" tabindex="0" role="button" aria-label="Abrir Stock de Toners">
       <div class="dash-kpi-icon">📦</div>
-      <div><div class="dash-kpi-title">Stock Toners</div><div class="dash-kpi-value" id="dashKpiStock">—</div><div class="dash-kpi-sub">Em stock</div></div>
+      <div><div class="dash-kpi-title">Stock Toners</div><div class="dash-kpi-value" id="dashKpiStock">—</div><div class="dash-kpi-sub" id="dashKpiStockSub">Em stock</div></div>
     </article>
   </section>
 
@@ -75,10 +75,10 @@
         </div>
         <div class="dash-stock-mini">
           <h3>Stock por cor</h3>
-          <div class="dash-stock-line"><span>Preto</span><div class="dash-bar"><span style="width:72%"></span></div><b>8</b></div>
-          <div class="dash-stock-line"><span>Ciano</span><div class="dash-bar cyan"><span style="width:52%"></span></div><b>6</b></div>
-          <div class="dash-stock-line"><span>Magenta</span><div class="dash-bar purple"><span style="width:38%"></span></div><b>4</b></div>
-          <div class="dash-stock-line"><span>Amarelo</span><div class="dash-bar orange"><span style="width:45%"></span></div><b>5</b></div>
+          <div class="dash-stock-line" data-stock-color="preto"><span>Preto</span><div class="dash-bar"><span id="dashStockBarPreto" style="width:0%"></span></div><b id="dashStockCountPreto">—</b></div>
+          <div class="dash-stock-line" data-stock-color="ciano"><span>Ciano</span><div class="dash-bar cyan"><span id="dashStockBarCiano" style="width:0%"></span></div><b id="dashStockCountCiano">—</b></div>
+          <div class="dash-stock-line" data-stock-color="magenta"><span>Magenta</span><div class="dash-bar purple"><span id="dashStockBarMagenta" style="width:0%"></span></div><b id="dashStockCountMagenta">—</b></div>
+          <div class="dash-stock-line" data-stock-color="amarelo"><span>Amarelo</span><div class="dash-bar orange"><span id="dashStockBarAmarelo" style="width:0%"></span></div><b id="dashStockCountAmarelo">—</b></div>
         </div>
       </div>
       <div class="dash-panel-footer">
@@ -146,10 +146,8 @@
     <article class="dash-panel">
       <h2>☑️ Tarefas em andamento</h2>
       <small>Prioridades do dia e trabalhos em progresso.</small>
-      <div class="dash-list" id="dashTaskList">
-        <div class="dash-progress-row"><strong>Atualizar firmware das pistolas CK65</strong><span class="dash-badge info">Em progresso</span><div class="dash-progress"><span style="width:60%"></span></div><b>60%</b></div>
-        <div class="dash-progress-row"><strong>Auditoria de portas de rede</strong><span class="dash-badge info">Em progresso</span><div class="dash-progress"><span style="width:40%"></span></div><b>40%</b></div>
-        <div class="dash-progress-row"><strong>Relatório de utilização de impressoras</strong><span class="dash-badge warn">Pendente</span><div class="dash-progress"><span style="width:0%"></span></div><b>0%</b></div>
+      <div class="dash-list dash-task-real-list" id="dashTaskList">
+        <div class="dash-empty-inline">A carregar tarefas reais...</div>
       </div>
       <div class="dash-panel-footer"><a class="dash-link" href="tarefas.html">Ver todas as tarefas ›</a></div>
     </article>
@@ -174,13 +172,13 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="../js/app.js?v=1.58.133"></script>
-  <script src="../js/appbraga-systems.js?v=1.58.133"></script>
-<script src="../js/sidebar-editor.js?v=1.58.133"></script>
-<script src="../js/core/helpers.js?v=1.58.133"></script>
+<script src="../js/app.js?v=1.58.153"></script>
+  <script src="../js/appbraga-systems.js?v=1.58.153"></script>
+<script src="../js/sidebar-editor.js?v=1.58.153"></script>
+<script src="../js/core/helpers.js?v=1.58.153"></script>
 <script src="../js/enterprise/ops.js?v=ops-13"></script>
 <script src="../js/systems/backup/local-backup.js?v=backup-2"></script>
-<script src="../js/dashboard-futurista.js?v=1.58.133"></script>
-  <script src="../js/appbraga-scroll-systems.js?v=1.58.133"></script>
+<script src="../js/dashboard-futurista.js?v=1.58.153"></script>
+  <script src="../js/appbraga-scroll-systems.js?v=1.58.153"></script>
 </body>
 </html>

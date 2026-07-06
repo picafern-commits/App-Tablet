@@ -771,7 +771,7 @@ body.add-toner-futurista::after {
 }
 
 
-/* v1.58.75 layout hardening */
+/* v1.58.153 layout hardening */
 body.add-toner-futurista {
   min-width: 1280px;
 }
@@ -871,7 +871,7 @@ body.add-toner-futurista {
 }
 
 
-/* v1.58.75 — fullscreen + sem barra superior */
+/* v1.58.153 — fullscreen + sem barra superior */
 body.add-toner-futurista {
   min-width: 0 !important;
   width: 100% !important;
@@ -941,7 +941,7 @@ body.add-toner-futurista .toner-form-body {
 }
 
 
-/* v1.58.75 — ajustes Adicionar Toner */
+/* v1.58.153 — ajustes Adicionar Toner */
 body.add-toner-futurista .toner-inline-scan {
   display: grid !important;
   grid-template-columns: 1fr 1fr !important;
@@ -1052,7 +1052,7 @@ body.add-toner-futurista .warning-list div {
 }
 
 
-/* v1.58.75 — barra superior + fundo igual à página Impressoras */
+/* v1.58.153 — barra superior + fundo igual à página Impressoras */
 html,
 body.add-toner-futurista {
   background:
@@ -1226,7 +1226,7 @@ body.add-toner-futurista .toner-main-grid {
 }
 
 
-/* v1.58.75 — sem barra superior; hero igual ao bloco Impressoras */
+/* v1.58.153 — sem barra superior; hero igual ao bloco Impressoras */
 body.add-toner-futurista .toner-topbar {
   display: none !important;
 }
@@ -1352,7 +1352,7 @@ body.add-toner-futurista .toner-hero p {
 }
 
 
-/* v1.58.75 — hero Adicionar Toner com proporções iguais ao hero Impressoras */
+/* v1.58.153 — hero Adicionar Toner com proporções iguais ao hero Impressoras */
 body.add-toner-futurista .toner-topbar {
   display: none !important;
 }
@@ -1480,7 +1480,7 @@ body.add-toner-futurista .toner-hero p {
 }
 
 
-/* v1.58.75 — fundo do hero igual ao da página Impressoras */
+/* v1.58.153 — fundo do hero igual ao da página Impressoras */
 body.add-toner-futurista .toner-hero-card {
   width: 760px !important;
   max-width: calc(100vw - 48px) !important;
@@ -1540,7 +1540,7 @@ body.add-toner-futurista .toner-hero-icon {
 }
 
 
-/* v1.58.75 — hero com tamanho igual ao da página Impressoras */
+/* v1.58.153 — hero com tamanho igual ao da página Impressoras */
 body.add-toner-futurista .toner-hero {
   margin: 0 0 18px !important;
 }
@@ -1587,7 +1587,7 @@ body.add-toner-futurista .toner-hero p {
 }
 
 
-/* v1.58.75 — alinhar o design de Adicionar Toner com Impressoras */
+/* v1.58.153 — alinhar o design de Adicionar Toner com Impressoras */
 body.add-toner-futurista .toner-topbar {
   display: none !important;
 }
@@ -1887,7 +1887,7 @@ body.add-toner-futurista .toner-preview {
 }
 
 
-/* v1.58.75 — logotipo no círculo do hero como botão para o Portal */
+/* v1.58.153 — logotipo no círculo do hero como botão para o Portal */
 .appbraga-home-hero-btn {
   text-decoration: none !important;
   cursor: pointer !important;
@@ -1927,7 +1927,7 @@ body.add-toner-futurista .toner-preview {
 }
 
 
-/* v1.58.75 — logotipo no círculo grande lateral do hero */
+/* v1.58.153 — logotipo no círculo grande lateral do hero */
 .appbraga-home-hero-btn {
   cursor: default !important;
   pointer-events: none !important;
@@ -1980,7 +1980,7 @@ body.add-toner-futurista .toner-preview {
 }
 
 
-/* v1.58.75 — logo original no círculo grande + clique funcional */
+/* v1.58.153 — logo original no círculo grande + clique funcional */
 .appbraga-home-orbit-btn {
   position: absolute !important;
   z-index: 8 !important;
@@ -2045,7 +2045,7 @@ body.add-toner-futurista .toner-preview {
 }
 
 
-/* v1.58.75 — força clique no logotipo do círculo grande */
+/* v1.58.153 — força clique no logotipo do círculo grande */
 body .imp-hero-orbit.appbraga-home-orbit-btn,
 body .toner-hero-orbit.appbraga-home-orbit-btn,
 body .stock-hero-orbit.appbraga-home-orbit-btn,
@@ -2089,7 +2089,7 @@ body .stock-hero-icon {
 }
 
 
-/* v1.58.75 — sem barra superior interna nas páginas futuristas
+/* v1.58.153 — sem barra superior interna nas páginas futuristas
    Regra para páginas atuais e futuras: usar apenas o hero/bloco principal. */
 body.dashboard-futurista-body .dash-top,
 body.impressoras-futurista .imp-topbar,
@@ -2125,7 +2125,7 @@ body.stock-futurista .stock-hero {
 }
 
 
-/* v1.58.75 — remove definitivamente a barra superior interna */
+/* v1.58.153 — remove definitivamente a barra superior interna */
 body.impressoras-futurista .imp-top,
 body.impressoras-futurista .imp-brand,
 body.impressoras-futurista .imp-top-actions,
@@ -2159,4 +2159,112 @@ body.dashboard-futurista-body .dashboard-shell {
 body.impressoras-futurista .imp-hero,
 body.dashboard-futurista-body .dash-hero {
   margin-top: 10px !important;
+}
+
+/* v1.58.153 — ajustes finais Adicionar Toner */
+.toner-inline-scan{
+  grid-template-columns:1fr!important;
+}
+.toner-btn-full{
+  width:100%!important;
+  min-width:100%!important;
+}
+.toner-tip{display:none!important;}
+.toner-low-wide{
+  width:100%;
+  grid-column:1/-1;
+}
+.warning-list-wide{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  min-height:214px;
+}
+.warning-low-row{
+  display:grid;
+  grid-template-columns:14px minmax(0,1fr) 58px;
+  align-items:center;
+  gap:10px;
+  padding:10px 10px;
+  border:1px solid rgba(65,130,220,.18);
+  border-radius:12px;
+  background:rgba(4,15,33,.48);
+}
+.warning-low-main{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.warning-low-main strong{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-size:13px;
+}
+.warning-low-main small{
+  color:var(--toner-muted);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-size:11px;
+}
+.warning-percent{
+  justify-self:end;
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:950;
+  border:1px solid rgba(255,255,255,.12);
+}
+.warning-percent.low{color:#ffbb55;background:rgba(255,159,47,.12);border-color:rgba(255,159,47,.34);}
+.warning-percent.critical{color:#ff6b7c;background:rgba(255,81,104,.12);border-color:rgba(255,81,104,.34);}
+.recent-list .toner-recent-row{
+  grid-template-columns:minmax(0,1.4fr) minmax(96px,.6fr) minmax(80px,.45fr) 84px!important;
+  gap:10px;
+}
+.recent-main{
+  min-width:0;
+  display:grid!important;
+  grid-template-columns:10px minmax(0,1fr);
+  column-gap:8px;
+  align-items:center;
+}
+.recent-main .dot{grid-row:1/3;align-self:center;}
+.recent-main strong,
+.recent-main small{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.recent-main small{
+  grid-column:2;
+  color:var(--toner-muted);
+  font-size:11px;
+}
+.usage-pill{
+  justify-self:end;
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:950;
+  white-space:nowrap;
+}
+.usage-pill.available{color:#43e777;background:rgba(73,231,122,.12);border:1px solid rgba(73,231,122,.32);}
+.usage-pill.used{color:#ffbb55;background:rgba(255,159,47,.12);border:1px solid rgba(255,159,47,.34);}
+.muted-line{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:56px;
+  color:var(--toner-muted);
+  font-size:13px;
+  border:1px dashed rgba(96,165,250,.22);
+  border-radius:12px;
+  background:rgba(4,15,33,.34);
+}
+@media(max-width:1100px){
+  .recent-list .toner-recent-row{grid-template-columns:1fr!important;align-items:flex-start!important;}
+  .usage-pill{justify-self:start;}
 }
