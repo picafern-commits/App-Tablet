@@ -262,7 +262,7 @@
   function renderAlerts(items){
     const host = byId("stockAlertsList");
     if (!host) return;
-    // v1.58.163: alertas de stock só aparecem quando a quantidade é 0.
+    // v1.58.165: alertas de stock só aparecem quando a quantidade é 0.
     // Stock baixo continua visível no KPI/estado da tabela, mas não entra neste card.
     const alerts = getStock().filter(i => qty(i) <= 0).sort((a,b)=>qty(a)-qty(b)).slice(0, 5);
     if (!alerts.length) {
@@ -601,7 +601,7 @@
 
 
 
-  // v1.58.163 — botão QR no Stock: abre painel e usa o scanner antigo que passa o toner para Histórico.
+  // v1.58.165 — botão QR no Stock: abre painel e usa o scanner antigo que passa o toner para Histórico.
   async function abrirScannerQrStock(){
     const panel = byId("stockQrScannerPanel");
     if (!panel) {
@@ -798,7 +798,7 @@
 })();
 
 
-// v1.58.163 — ouvir resumo global de stock/alertas
+// v1.58.165 — ouvir resumo global de stock/alertas
 window.addEventListener("appbraga:systems:update", function(ev){
   try {
     if (!ev.detail) return;
