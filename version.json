@@ -1,5 +1,6 @@
 {
-  "version": "1.58.163",
-  "build": "clean-old-visual",
-  "updated": "2026-07-06"
+  "version": "1.58.165",
+  "build": "electron-new-only-clean",
+  "updated": "2026-07-06",
+  "notes": "Pacote limpo para Electron: removidos HTMLs duplicados/antigos, redirects antigos e ficheiros de visual antigo. Mantidos apenas visual novo e sistemas necessários."
 }

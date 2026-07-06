@@ -1,4 +1,4 @@
-/* AppBraga v1.58.163 — Notificações futurista funcional */
+/* AppBraga v1.58.165 — Notificações futurista funcional */
 :root{--not-bg:#020817;--not-panel:#07162d;--not-panel-2:#0a1c38;--not-line:rgba(77,151,255,.28);--not-line-2:rgba(114,173,255,.18);--not-text:#f4f8ff;--not-muted:#9db2d1;--not-blue:#2f8cff;--not-cyan:#13c8de;--not-green:#35d36a;--not-red:#ff4d5c;--not-orange:#ff9f1a;--not-purple:#8e55ff}
 html,body{margin:0;min-height:100%;background:#020817;color:var(--not-text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:auto!important}
 body.notificacoes-futurista-page{min-height:100vh;background:radial-gradient(circle at 18% 8%,rgba(35,101,255,.18),transparent 28rem),radial-gradient(circle at 85% 16%,rgba(0,211,255,.10),transparent 27rem),linear-gradient(135deg,#020817,#061326 50%,#020817);overflow:auto!important}
@@ -6,7 +6,7 @@ body.notificacoes-futurista-page::before{content:"";position:fixed;inset:0;point
 @media(max-width:1500px){.ck-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.ck-main{grid-template-columns:1fr}.ck-side{grid-template-columns:1fr 1fr;display:grid}.not-message{grid-column:1/-1}}@media(max-width:1100px){.ck-side{grid-template-columns:1fr}.not-form-grid{grid-template-columns:1fr 1fr}.not-filter-row{grid-template-columns:1fr;min-width:260px}.not-summary-row{grid-template-columns:1fr}.not-donut{margin:auto}}@media(max-width:760px){.ck-page{padding:14px 14px 96px}.ck-kpis{grid-template-columns:1fr}.not-form-grid,.not-compose-actions,.not-quick-grid{grid-template-columns:1fr}.ck-table-footer{flex-direction:column;align-items:flex-start}.not-detail-grid{grid-template-columns:1fr}.ck-btn{width:100%}}
 
 
-/* v1.58.163 — ajustes finais: botão compacto e donut centrado */
+/* v1.58.165 — ajustes finais: botão compacto e donut centrado */
 body.notificacoes-futurista-page #notBtnAlertas{
   width:auto!important;
   min-width:128px!important;

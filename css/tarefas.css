@@ -1,5 +1,5 @@
 
-/* AppBraga v1.58.163 - Tarefas futurista integrada no padrão Impressoras */
+/* AppBraga v1.58.165 - Tarefas futurista integrada no padrão Impressoras */
 html, body{
   min-height:100%;
   overflow:auto !important;
@@ -152,8 +152,8 @@ body.tarefas-futurista-page::before{
 }
 
 
-/* AppBraga v1.58.163 — alinhamento final da página Tarefas
-   Mantém a lógica v1.58.163 e corrige apenas layout, ícones, botões e footer. */
+/* AppBraga v1.58.165 — alinhamento final da página Tarefas
+   Mantém a lógica v1.58.165 e corrige apenas layout, ícones, botões e footer. */
 body.tarefas-futurista-page{
   overflow-x:hidden !important;
 }
@@ -477,11 +477,11 @@ body.tarefas-futurista-page .imp-back{
 }
 
 
-/* AppBraga v1.58.163 — o hero fica herdado do padrão Impressoras.
+/* AppBraga v1.58.165 — o hero fica herdado do padrão Impressoras.
    Não aplicar overrides de .imp-hero nesta página. */
 
 
-/* v1.58.163 — HERO PADRÃO IGUAL À PÁGINA RÁDIOS */
+/* v1.58.165 — HERO PADRÃO IGUAL À PÁGINA RÁDIOS */
 body.tarefas-futurista-page .ck-hero{
   display:flex!important;
   justify-content:center!important;

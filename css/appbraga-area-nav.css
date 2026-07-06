@@ -1,4 +1,4 @@
-/* AppBraga v1.58.163 — Navegação por área visível dentro do hero */
+/* AppBraga v1.58.165 — Navegação por área visível dentro do hero */
 :root{
   --ab-area-btn-size: 38px;
   --ab-area-gap: 8px;
@@ -142,7 +142,7 @@
 }
 
 
-/* AppBraga v1.58.163 — manter só o botão de voltar à área, maior e sem menu */
+/* AppBraga v1.58.165 — manter só o botão de voltar à área, maior e sem menu */
 :root{
   --ab-area-btn-size:52px;
   --ab-area-gap:0px;

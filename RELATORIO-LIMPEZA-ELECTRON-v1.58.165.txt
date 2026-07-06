@@ -1,0 +1,23 @@
+AppBraga / Bragalis T.I — v1.58.165
+Limpeza para Electron: pacote NOVO apenas.
+
+REMOVIDO:
+- HTMLs duplicados na raiz: add-toner.html, dashboard.html, stock.html, historico.html, etiquetas.html, etc.
+- Páginas legacy/redirect dentro de /html: assistente.html, equipamento.html, zonas.html.
+- CSS/JS visual antigo não referenciado: css/systems/, js/systems/, assistente-voz, equipment-extras.
+- Relatórios antigos de builds anteriores.
+- js/sw.js duplicado.
+- assets/images duplicado.
+
+MANTIDO:
+- index.html limpo que abre /html/index.html.
+- /html com páginas novas e portais novos.
+- CSS visual novo.
+- JS dos sistemas reais/Firebase.
+- Service Worker novo com limpeza de cache.
+- Icons, manifest e assets necessários.
+
+IMPORTANTE PARA ELECTRON:
+- O Electron deve abrir index.html deste pacote ou https://appbragatestes1.pages.dev/html/.
+- Não deve abrir dashboard.html, etiquetas.html ou outros ficheiros antigos na raiz.
+- Se o Electron tiver uma pasta app antiga, substituir a pasta completa pelo conteúdo deste ZIP.

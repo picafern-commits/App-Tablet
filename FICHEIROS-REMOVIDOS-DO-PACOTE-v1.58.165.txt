@@ -1,0 +1,44 @@
+Removidos do pacote limpo v1.58.165:
+
+HTMLs antigos/duplicados na raiz:
+- add-toner.html
+- computadores.html
+- config.html
+- dashboard.html
+- diagnostico.html
+- diretorio.html
+- equipas-semanais.html
+- etiquetas.html
+- etiquetas-word.html
+- historico.html
+- impressoras.html
+- informacoes.html
+- manutencao-impressoras.html
+- notificacoes.html
+- pistolas.html
+- portas.html
+- radios.html
+- scanner-ia.html
+- stock.html
+- tarefas.html
+- users.html
+
+Páginas legacy dentro de /html:
+- html/assistente.html
+- html/equipamento.html
+- html/zonas.html
+
+Pastas/ficheiros de visual antigo ou não usados:
+- css/systems/ exceto sistema de backup necessário em js/systems/backup/local-backup.js
+- js/systems/personal-tools.js
+- js/systems/zone-map.js
+- css/assistente-voz.css
+- js/assistente-voz.js
+- css/equipment-extras.css
+- js/equipment-extras.js
+- js/config-collapsible.js
+- js/quick-lock.js
+- js/sw.js duplicado
+- assets/images duplicado
+
+Mantido: visual novo, páginas novas em /html, portais, sistemas Firebase/JS necessários e limpeza de cache.
