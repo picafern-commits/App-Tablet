@@ -1,4 +1,4 @@
-/* v1.58.154 — Subportais por área: sem barra AppBraga/Admin, com símbolo A */
+/* v1.58.163 — Subportais por área: sem botão Portal Inicial, com logo hero AppBraga */
 body.portal-area-page{
   margin:0;
   min-height:100vh;
@@ -24,12 +24,42 @@ body.portal-area-page{
 }
 .portal-area-wrap{position:relative;z-index:1;min-height:100vh;padding:34px clamp(24px,4vw,72px) 34px;display:flex;flex-direction:column;gap:30px;}
 .portal-area-top{display:flex;justify-content:space-between;align-items:center;min-height:42px;}
+.portal-area-top-clean{justify-content:flex-end;}
 .portal-area-back{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:#dbeeff;border:1px solid rgba(123,184,255,.26);background:rgba(5,20,44,.46);border-radius:999px;padding:10px 14px;font-weight:850;font-size:14px;box-shadow:0 12px 32px rgba(0,0,0,.22);}
 .portal-area-version{font-size:12px;color:#b9c9df;border:1px solid rgba(123,184,255,.18);border-radius:999px;padding:6px 12px;background:rgba(5,20,44,.38);}
 .portal-area-hero{width:min(880px,82vw);min-height:176px;margin:0 auto 28px;display:grid;place-items:center;text-align:center;padding:28px 42px;border:1px solid rgba(123,184,255,.34);border-radius:28px;background:linear-gradient(180deg,rgba(10,43,91,.58),rgba(2,18,43,.56));box-shadow:0 22px 70px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.08);position:relative;overflow:hidden;}
 .portal-area-hero::after{content:"";position:absolute;left:18%;right:18%;bottom:-2px;height:3px;background:linear-gradient(90deg,transparent,#37d8ff,#fff,#37d8ff,transparent);filter:blur(.4px);box-shadow:0 0 22px #26a7ff;}
-.portal-area-a{width:76px;height:76px;margin:0 auto 14px;display:grid;place-items:center;color:#eaf8ff;font-weight:1000;font-size:52px;line-height:1;text-shadow:0 0 28px rgba(43,176,255,.80);}
-.portal-area-a::before{content:"A";font-family:Inter,system-ui,sans-serif;font-weight:1000;letter-spacing:-.12em;background:linear-gradient(180deg,#8ae7ff,#248cff 58%,#145eff);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(36,160,255,.72));}
+.portal-area-a{display:none!important;}
+.portal-area-logo{
+  width:118px;
+  height:118px;
+  min-width:118px;
+  min-height:118px;
+  max-width:118px;
+  max-height:118px;
+  margin:0 auto 18px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  position:relative;
+  overflow:hidden;
+  text-decoration:none;
+  border:1px solid rgba(64,130,255,.28);
+  background:transparent;
+  box-shadow:0 0 0 14px rgba(17,47,97,.18),0 0 0 30px rgba(17,47,97,.08),0 0 34px rgba(57,165,255,.24);
+}
+.portal-area-logo img{
+  width:92%;
+  height:92%;
+  object-fit:contain;
+  border-radius:50%;
+  display:block;
+  filter:drop-shadow(0 0 14px rgba(57,165,255,.35));
+}
+.portal-area-logo:hover{
+  border-color:rgba(102,190,255,.72);
+  box-shadow:0 0 0 14px rgba(17,47,97,.2),0 0 0 30px rgba(17,47,97,.1),0 0 44px rgba(57,165,255,.38);
+}
 .portal-area-hero h1{margin:0;font-size:clamp(2.25rem,4.4vw,4.25rem);line-height:1.02;letter-spacing:-.075em;text-shadow:0 12px 38px rgba(0,0,0,.45);}
 .portal-area-hero p{margin:16px 0 0;color:#d5e0f2;font-size:clamp(1rem,1.25vw,1.22rem);}
 .portal-area-grid{display:grid;grid-template-columns:repeat(3,minmax(260px,1fr));gap:clamp(18px,2vw,30px);width:min(1280px,100%);margin:0 auto;align-items:stretch;}
@@ -49,4 +79,4 @@ body.portal-home .portal-hero-logo img{width:76px;height:76px;object-fit:contain
 body.portal-home .portal-grid-home .portal-card{min-height:300px;}
 body.portal-home .portal-grid-home .portal-card p{max-width:18rem;}
 @media(max-width:1100px){.portal-area-grid{grid-template-columns:repeat(2,minmax(240px,1fr));}.portal-area-hero{width:min(880px,92vw);}}
-@media(max-width:720px){.portal-area-wrap{padding:20px 16px 28px;}.portal-area-grid{grid-template-columns:1fr;}.portal-area-hero{width:100%;min-height:160px;padding:24px 20px;margin-bottom:12px;}.portal-area-hero h1{font-size:2.2rem}.portal-area-card{min-height:220px}.portal-area-top{gap:10px}.portal-area-version{display:none;}}
+@media(max-width:720px){.portal-area-logo{width:92px;height:92px;min-width:92px;min-height:92px;max-width:92px;max-height:92px;margin-bottom:12px;}.portal-area-wrap{padding:20px 16px 28px;}.portal-area-grid{grid-template-columns:1fr;}.portal-area-hero{width:100%;min-height:160px;padding:24px 20px;margin-bottom:12px;}.portal-area-hero h1{font-size:2.2rem}.portal-area-card{min-height:220px}.portal-area-top{gap:10px}.portal-area-version{display:none;}}

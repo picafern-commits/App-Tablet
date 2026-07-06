@@ -1,6 +1,20 @@
 <!DOCTYPE html>
 <html lang="pt-PT">
 <head>
+<script>
+(function(){
+  var v='1.58.163';
+  var key='appbraga-visual-clean-'+v;
+  try{
+    if(!sessionStorage.getItem(key)){
+      sessionStorage.setItem(key,'1');
+      if(window.caches) caches.keys().then(function(keys){ return Promise.all(keys.map(function(k){return caches.delete(k);})); }).catch(function(){});
+      if('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function(regs){ regs.forEach(function(r){ if(r.active) r.active.postMessage({type:'SKIP_WAITING'}); }); }).catch(function(){});
+    }
+  }catch(e){}
+})();
+</script>
+
   <meta charset="UTF-8" />
   <meta http-equiv="refresh" content="0; url=html/index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
@@ -10,6 +24,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
   <script>window.location.replace("html/index.html");</script>
+<link href="css/appbraga-portais-logo-hero.css?v=1.58.163" rel="stylesheet"/>
 </head>
 <body>A redirecionar para a aplicação...</body>
 </html>

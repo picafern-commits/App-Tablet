@@ -8,7 +8,7 @@ body.diagnostico-futurista-page::before,body.diagnostico-futurista-page::after{c
 @media(max-width:1500px){.ck-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.ck-main{grid-template-columns:1fr}.ck-side{grid-template-columns:1fr 1fr}.diag-new-grid{grid-template-columns:1fr 1fr 1fr}.diag-new-grid button{grid-column:1/-1}.diag-filter-row{min-width:420px}}@media(max-width:1100px){.ck-side{grid-template-columns:1fr}.diag-bottom-grid,.diag-donut-row,.diag-system-summary{grid-template-columns:1fr}.diag-filter-row{grid-template-columns:1fr;min-width:260px}}@media(max-width:760px){.ck-page{padding:14px 14px 96px}.ck-kpis{grid-template-columns:1fr}.diag-new-grid{grid-template-columns:1fr}.ck-quick-grid{grid-template-columns:1fr}.ck-table-footer{flex-direction:column;align-items:flex-start}.diag-detail-grid{grid-template-columns:1fr}.ck-btn{width:100%}}
 
 
-/* v1.58.153 — ajustes finais: botão compacto Últimos Alertas */
+/* v1.58.163 — ajustes finais: botão compacto Últimos Alertas */
 body.diagnostico-futurista-page #diagBtnAlertas{
   width:auto!important;
   min-width:128px!important;

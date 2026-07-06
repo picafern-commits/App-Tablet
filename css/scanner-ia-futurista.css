@@ -1,4 +1,4 @@
-/* AppBraga v1.58.153 — Scanner IA futurista funcional */
+/* AppBraga v1.58.163 — Scanner IA futurista funcional */
 :root{
   --ck-bg:#020817;--ck-panel:#07182f;--ck-panel2:#091d3a;--ck-line:rgba(82,153,255,.28);--ck-line-soft:rgba(255,255,255,.065);--ck-text:#f7fbff;--ck-muted:#9fb5d8;--ck-blue:#148dff;--ck-cyan:#16d2ee;--ck-purple:#8756ff;--ck-green:#57df72;--ck-yellow:#ffbc52;--ck-red:#ff5567;
 }
@@ -67,7 +67,7 @@ body.scanner-ia-page:before{content:'';position:fixed;inset:0;pointer-events:non
 @media(max-width:900px){.scanner-action-row{grid-template-columns:1fr 1fr}.scanner-action-row .ck-btn.primary{grid-column:1/-1}.scanner-ia-page .ck-page{padding:14px 14px 78px}.scanner-ia-page .ck-kpis{grid-template-columns:1fr}.scanner-side{grid-template-columns:1fr}.scanner-options-row,.scanner-tabs,.scanner-filter-row{grid-template-columns:1fr}.scanner-ia-page .ck-quick-grid{grid-template-columns:1fr}.scanner-donut-wrap{grid-template-columns:1fr;justify-items:center}.scanner-ia-page .ck-table-footer{flex-direction:column;align-items:flex-start}.scanner-system-grid{grid-template-columns:1fr}}
 
 
-/* v1.58.153 scroll final */
+/* v1.58.163 scroll final */
 body.scanner-ia-page{position:static!important;height:auto!important;min-height:100vh!important;max-height:none!important;overflow-y:auto!important;overflow-x:auto!important;}
 .scanner-ia-page .ck-page{height:auto!important;min-height:100vh!important;max-height:none!important;overflow:visible!important;padding-bottom:132px!important;}
 .scanner-ia-page .scanner-main,.scanner-ia-page .scanner-left,.scanner-ia-page .scanner-side{height:auto!important;max-height:none!important;overflow:visible!important;}

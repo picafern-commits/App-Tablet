@@ -1,0 +1,33 @@
+LIMPEZA VISUAL ANTIGO - AppBraga
+Versão: v1.58.163
+
+Objetivo:
+Remover referências do visual antigo que ainda podiam aparecer no Electron/PWA, sem apagar sistemas antigos/Firebase.
+
+Feito:
+- Removidas referências a css/style.css nas páginas novas.
+- Removidas referências a app-theme-pro.css/js.
+- Removidas referências a sidebar-editor.js.
+- Substituídas páginas antigas assistente/equipamento/zonas por redirecionamentos seguros no visual novo.
+- Service Worker refeito para limpar caches antigos e carregar HTML sempre da rede.
+- Removidos ficheiros visuais antigos não usados no deploy.
+- Mantidos app.js, appbraga-systems.js e scripts funcionais antigos.
+
+Ficheiros removidos:
+- css/style.css
+- css/app-theme-pro.css
+- css/autozitania-bragalis.css
+- css/app-clean-pages.css
+- css/operational-improvements.css
+- css/dashboard-widgets.css
+- css/page-widgets.css
+- js/app-theme-pro.js
+- js/sidebar-editor.js
+- js/operational-improvements.js
+- js/dashboard-widgets.js
+- js/page-widgets.js
+- js/main.js
+- js/preload.js
+
+Nota:
+Se o Electron já tiver cache antiga, abrir uma página uma vez deve limpar cache; se continuar, limpar dados da app/Cache do Electron.
