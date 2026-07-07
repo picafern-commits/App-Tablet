@@ -1,6 +1,6 @@
 
 /*
-  AppBraga Clean Layout v1.58.168
+  AppBraga Clean Layout v1.58.169
   Regra comum:
   - páginas sem barra antiga
   - conteúdo ocupa o ecrã completo
@@ -406,7 +406,7 @@ a.dashboard-back,
 }
 
 
-/* v1.58.168 — hero padrão global em todas as páginas */
+/* v1.58.169 — hero padrão global em todas as páginas */
 body.dashboard-futurista-body .dashboard-futurista,
 body.impressoras-futurista .imp-page,
 body.stock-futurista .stock-page,

@@ -191,7 +191,7 @@ body.radios-futurista-page::after{background:
 }
 
 
-/* v1.58.168 — CK65 mais fiel ao estilo real da app */
+/* v1.58.169 — CK65 mais fiel ao estilo real da app */
 body.radios-futurista-page .version-badge,
 body.radios-futurista-page .app-version-badge,
 body.radios-futurista-page #appVersionBadge,
@@ -506,7 +506,7 @@ body.radios-futurista-page .ck-mini-table{
 }
 
 
-/* v1.58.168 — CK65 scroll corrigido + lista mais bonita */
+/* v1.58.169 — CK65 scroll corrigido + lista mais bonita */
 html,
 html:has(body.radios-futurista-page),
 body.radios-futurista-page{
@@ -765,7 +765,7 @@ body.radios-futurista-page .ck-version ~ .version-badge{
 }
 
 
-/* v1.58.168 — CK65 hero igual às outras páginas */
+/* v1.58.169 — CK65 hero igual às outras páginas */
 body.radios-futurista-page .ck-hero{
   display:flex!important;
   justify-content:center!important;
@@ -893,7 +893,7 @@ body.radios-futurista-page .ck-hero-copy p{
 }
 
 
-/* ===== Rádios v1.58.168 ajustes próprios ===== */
+/* ===== Rádios v1.58.169 ajustes próprios ===== */
 .rd-icon-radio{font-size:2.35rem;color:#fff;text-shadow:0 0 18px rgba(255,255,255,.75);}
 .ck-kpi::after{content:"";position:absolute;right:18px;bottom:28px;width:92px;height:24px;border-radius:999px;opacity:.9;background:linear-gradient(135deg,transparent 0 12%,currentColor 13% 16%,transparent 17% 30%,currentColor 31% 34%,transparent 35% 48%,currentColor 49% 52%,transparent 53% 68%,currentColor 69% 72%,transparent 73%);filter:drop-shadow(0 0 6px currentColor);}
 .ck-kpi.blue{color:var(--ck-blue)}.ck-kpi.green{color:var(--ck-green)}.ck-kpi.orange{color:var(--ck-orange)}.ck-kpi.red{color:var(--ck-red)}.ck-kpi.yellow{color:var(--ck-yellow)}.ck-kpi.purple{color:var(--ck-purple)}
@@ -917,7 +917,7 @@ body.radios-futurista-page .ck-hero-copy p{
 .ck-dot.disponivel{color:var(--ck-green)}.ck-dot.uso{color:var(--ck-blue)}.ck-dot.carga{color:var(--ck-yellow)}.ck-dot.avariada{color:var(--ck-red)}.ck-dot.manutencao{color:var(--ck-orange)}
 .ck-mini-row small{grid-column:2;color:var(--ck-muted);font-size:.78rem;margin-top:-6px}.ck-detail-item small{display:block;color:var(--ck-muted);font-size:.78rem;margin-bottom:5px}.ck-modal-list-item span{display:block;color:var(--ck-muted);margin:4px 0}.ck-page-dots{display:inline-flex;align-items:center;padding:0 2px;color:var(--ck-muted);font-weight:900}
 
-/* ===== Rádios v1.58.168 — Registos semanais fora da lista ===== */
+/* ===== Rádios v1.58.169 — Registos semanais fora da lista ===== */
 body.radios-futurista-page .rd-left-stack{
   display:grid!important;
   gap:14px!important;
@@ -1182,7 +1182,7 @@ body.radios-futurista-page .rd-check input{
 }
 
 
-/* v1.58.168 — Rádios ajustes finais: botões laterais compactos e sem botão Portal */
+/* v1.58.169 — Rádios ajustes finais: botões laterais compactos e sem botão Portal */
 body.radios-futurista-page .ck-back{
   display:none!important;
 }
