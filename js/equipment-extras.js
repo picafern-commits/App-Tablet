@@ -1,17 +1,17 @@
-(function(){
+﻿(function(){
   'use strict';
-  const VERSION = '1.58.169';
+  const VERSION = '1.58.172';
   const PAGE_MAP = {
-    'impressoras.html': { type:'impressora', title:'Impressoras', icon:'🖨️', source:'#impressorasTableBody tr' },
-    'computadores.html': { type:'computador', title:'Computadores', icon:'💻', source:'#listaPC .pc-card' },
-    'radios.html': { type:'radio', title:'Rádios', icon:'📡', source:'#listaRadios .radio-card' },
-    'pistolas.html': { type:'pistola', title:'Pistolas CK65', icon:'📟', source:'#listaPistolas .pc-card' }
+    'impressoras.html': { type:'impressora', title:'Impressoras', icon:'ðŸ–¨ï¸', source:'#impressorasTableBody tr' },
+    'computadores.html': { type:'computador', title:'Computadores', icon:'ðŸ’»', source:'#listaPC .pc-card' },
+    'radios.html': { type:'radio', title:'RÃ¡dios', icon:'ðŸ“¡', source:'#listaRadios .radio-card' },
+    'pistolas.html': { type:'pistola', title:'Pistolas CK65', icon:'ðŸ“Ÿ', source:'#listaPistolas .pc-card' }
   };
   const DEFAULT_CHECKS = {
-    impressora:['Ligada','Rede OK','Toner OK','Sem erro no painel','Teste de impressão','Limpeza efetuada'],
+    impressora:['Ligada','Rede OK','Toner OK','Sem erro no painel','Teste de impressÃ£o','Limpeza efetuada'],
     computador:['Liga sem erros','Rede OK','TeamViewer OK','Sophos OK','Office/Teams OK','Impressora configurada'],
-    radio:['Liga','Carrega corretamente','Som OK','Atribuição correta','Sem danos visíveis'],
-    pistola:['Liga','Wi‑Fi OK','Scanner OK','Bateria OK','Operador correto','Sem danos visíveis']
+    radio:['Liga','Carrega corretamente','Som OK','AtribuiÃ§Ã£o correta','Sem danos visÃ­veis'],
+    pistola:['Liga','Wiâ€‘Fi OK','Scanner OK','Bateria OK','Operador correto','Sem danos visÃ­veis']
   };
 
   const state = { cfg:null, selectedKey:'', current:null, checks:[], photos:[] };
@@ -31,7 +31,7 @@
       items = $all(cfg.source).map((tr, i) => {
         const cells = $all('td', tr).map(td => td.textContent.trim());
         const id = cells[1] || cells[4] || cells[0] || `impressora-${i+1}`;
-        return { key:`${cfg.type}:${slug(id)}`, id, label: cells[0] || id, meta:[cells[1], cells[2], cells[3], cells[4]].filter(Boolean).join(' · ') };
+        return { key:`${cfg.type}:${slug(id)}`, id, label: cells[0] || id, meta:[cells[1], cells[2], cells[3], cells[4]].filter(Boolean).join(' Â· ') };
       });
     } else if(cfg.type === 'computador'){
       items = $all(cfg.source).map((card, i) => {
@@ -68,7 +68,7 @@
       <div class="equipment-extras-head">
         <div class="equipment-extras-title">
           <div class="equipment-extras-icon">${state.cfg.icon}</div>
-          <div><h3>Galeria e Checklist</h3><p>Fotos e verificações rápidas por equipamento.</p></div>
+          <div><h3>Galeria e Checklist</h3><p>Fotos e verificaÃ§Ãµes rÃ¡pidas por equipamento.</p></div>
         </div>
         <button class="equipment-extra-btn secondary" type="button" id="eqRefreshBtn">Atualizar lista</button>
       </div>
@@ -80,15 +80,15 @@
         <div class="equipment-selected-meta" id="equipmentSelectedMeta">Escolhe um equipamento para ver a galeria e checklist.</div>
         <div class="equipment-extras-grid">
           <article class="equipment-extra-card">
-            <h4>📋 Checklist</h4>
+            <h4>ðŸ“‹ Checklist</h4>
             <div class="equipment-extra-toolbar">
-              <button class="equipment-extra-btn secondary" type="button" id="eqDefaultsBtn">Criar checklist padrão</button>
+              <button class="equipment-extra-btn secondary" type="button" id="eqDefaultsBtn">Criar checklist padrÃ£o</button>
             </div>
             <div id="equipmentChecklist" class="equipment-checklist"><div class="equipment-empty">Escolhe um equipamento.</div></div>
-            <div class="equipment-checklist-add"><input id="equipmentNewCheck" type="text" placeholder="Adicionar ponto à checklist"><button class="equipment-extra-btn" type="button" id="eqAddCheckBtn">Adicionar</button></div>
+            <div class="equipment-checklist-add"><input id="equipmentNewCheck" type="text" placeholder="Adicionar ponto Ã  checklist"><button class="equipment-extra-btn" type="button" id="eqAddCheckBtn">Adicionar</button></div>
           </article>
           <article class="equipment-extra-card">
-            <h4>📸 Galeria</h4>
+            <h4>ðŸ“¸ Galeria</h4>
             <div class="equipment-extra-toolbar">
               <input id="equipmentPhotoInput" type="file" accept="image/*" capture="environment" style="display:none">
               <button class="equipment-extra-btn" type="button" id="eqAddPhotoBtn">Adicionar foto</button>
@@ -120,7 +120,7 @@
     const old = sel.value;
     const items = readEquipmentFromDom();
     state.items = items;
-    sel.innerHTML = items.length ? `<option value="">Selecionar...</option>` + items.map(it => `<option value="${safe(it.key)}">${safe(it.label)}${it.meta ? ' — '+safe(it.meta.slice(0,70)) : ''}</option>`).join('') : `<option value="">Sem equipamentos encontrados</option>`;
+    sel.innerHTML = items.length ? `<option value="">Selecionar...</option>` + items.map(it => `<option value="${safe(it.key)}">${safe(it.label)}${it.meta ? ' â€” '+safe(it.meta.slice(0,70)) : ''}</option>`).join('') : `<option value="">Sem equipamentos encontrados</option>`;
     if(old && items.some(it=>it.key===old)) sel.value = old;
   }
 
@@ -132,7 +132,7 @@
     const item = getSelectedItem();
     state.current = item;
     state.selectedKey = item ? item.key : '';
-    $('#equipmentSelectedMeta').textContent = item ? `${item.label}${item.meta ? ' · '+item.meta : ''}` : 'Escolhe um equipamento.';
+    $('#equipmentSelectedMeta').textContent = item ? `${item.label}${item.meta ? ' Â· '+item.meta : ''}` : 'Escolhe um equipamento.';
     if(!item){ renderChecklist([]); renderGallery([]); return; }
     await Promise.all([loadChecklist(), loadPhotos()]);
   }
@@ -163,7 +163,7 @@
       <label class="equipment-check-item ${c.done?'is-done':''}">
         <input type="checkbox" ${c.done?'checked':''} data-check-index="${i}">
         <span>${safe(c.text || '-')}</span>
-        <button class="equipment-extra-btn danger" type="button" data-check-delete="${i}">×</button>
+        <button class="equipment-extra-btn danger" type="button" data-check-delete="${i}">Ã—</button>
       </label>`).join('');
     wrap.querySelectorAll('[data-check-index]').forEach(input => input.addEventListener('change', async e => {
       const i = Number(e.target.getAttribute('data-check-index'));
@@ -184,7 +184,7 @@
     if(!state.selectedKey) return show('Escolhe primeiro um equipamento.', 'erro');
     const base = DEFAULT_CHECKS[state.cfg.type] || ['Verificado'];
     state.checks = base.map(text => ({ text, done:false, createdAt:Date.now() }));
-    await saveChecklist(); renderChecklist(state.checks); show('Checklist padrão criada.', 'sucesso');
+    await saveChecklist(); renderChecklist(state.checks); show('Checklist padrÃ£o criada.', 'sucesso');
   }
   async function addChecklistItem(){
     if(!state.selectedKey) return show('Escolhe primeiro um equipamento.', 'erro');
@@ -233,8 +233,8 @@
   function renderGallery(photos){
     const gallery = $('#equipmentGallery'); if(!gallery) return;
     if(!state.selectedKey){ gallery.innerHTML = `<div class="equipment-empty">Escolhe um equipamento.</div>`; return; }
-    if(!photos.length){ gallery.innerHTML = `<div class="equipment-empty">Ainda não existem fotos.</div>`; return; }
-    gallery.innerHTML = photos.map(p => `<div class="equipment-photo"><img src="${safe(p.dataUrl)}" alt="Foto"><button type="button" data-photo-delete="${safe(p.id)}">×</button></div>`).join('');
+    if(!photos.length){ gallery.innerHTML = `<div class="equipment-empty">Ainda nÃ£o existem fotos.</div>`; return; }
+    gallery.innerHTML = photos.map(p => `<div class="equipment-photo"><img src="${safe(p.dataUrl)}" alt="Foto"><button type="button" data-photo-delete="${safe(p.id)}">Ã—</button></div>`).join('');
     gallery.querySelectorAll('[data-photo-delete]').forEach(btn => btn.addEventListener('click', async e => {
       if(!confirm('Apagar esta foto?')) return;
       const id = e.currentTarget.getAttribute('data-photo-delete');
@@ -254,3 +254,4 @@
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
+

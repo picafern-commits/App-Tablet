@@ -1,8 +1,8 @@
-/* AppBraga v1.58.169 — limpeza forte GitHub Pages + Electron.
-   Mantém Firebase/sistemas. Só elimina cache/rotas/visual antigo. */
+﻿/* AppBraga v1.58.172 â€” limpeza forte GitHub Pages + Electron.
+   MantÃ©m Firebase/sistemas. SÃ³ elimina cache/rotas/visual antigo. */
 (function(){
   'use strict';
-  var VERSION = '1.58.169';
+  var VERSION = '1.58.172';
   var CLEAN_KEY = 'appbraga-hard-clean-' + VERSION;
   var ROUTES = {
     'index': 'index.html',
@@ -11,8 +11,8 @@
     'add-toner': 'add-toner.html',
     'stock': 'stock.html',
     'historico': 'historico.html',
-    'etiquetas': 'etiquetas-word.html',
-    'etiquetas-word': 'etiquetas-word.html',
+    'etiquetas': '/html/etiquetas-word.html?v=1.58.172',
+    'etiquetas-word': '/html/etiquetas-word.html?v=1.58.172',
     'manutencao-impressoras': 'manutencao-impressoras.html',
     'pistolas': 'pistolas.html',
     'radios': 'radios.html',
@@ -51,6 +51,7 @@
     return '/' + parts.join('/') + '/';
   }
   function htmlUrl(file, extra){
+    if (/^\/html\//i.test(String(file || ''))) return file;
     if (isFileProtocol()) return 'html/' + file + '?v=' + VERSION + (extra || '');
     var base = projectBase();
     if (base === '//') base = '/';
@@ -98,7 +99,7 @@
   function detectOldVisualAndRedirect(){
     try {
       var bodyText = (document.body && document.body.innerText || '').slice(0, 2500);
-      var hasOldMarkers = /APP BRAGA PRO|Dashboard personaliz[aá]vel|Equipamentos em Destaque|Centro operacional|Favoritos/i.test(bodyText)
+      var hasOldMarkers = /APP BRAGA PRO|Dashboard personaliz[aÃ¡]vel|Equipamentos em Destaque|Centro operacional|Favoritos/i.test(bodyText)
         || document.querySelector('.enterprise-metrics, .personal-dashboard, .app-sidebar, [data-enterprise-displays]');
       if (hasOldMarkers) {
         var slug = currentSlug();
@@ -123,10 +124,10 @@
   else detectOldVisualAndRedirect();
 })();
 
-/* v1.58.169 — correção final Etiquetas Word: mata links antigos vindos da sidebar/Firebase/localStorage. */
+/* v1.58.172 â€” correÃ§Ã£o final Etiquetas Word: mata links antigos vindos da sidebar/Firebase/localStorage. */
 (function(){
   'use strict';
-  var VERSION = '1.58.169';
+  var VERSION = '1.58.172';
   function parts(url){ try { return new URL(url, location.href).pathname.split('/').filter(Boolean); } catch(e){ return []; } }
   function hasHtml(url){ return parts(url).indexOf('html') >= 0; }
   function fileOf(url){ var p = parts(url); return (p[p.length - 1] || '').toLowerCase(); }
@@ -140,9 +141,8 @@
     return '/' + p.join('/') + '/';
   }
   function target(){
-    if (location.protocol === 'file:') return 'etiquetas-word.html?v=' + VERSION + '&fix=etiquetas-word';
-    var base = projectBase();
-    return location.origin + base + 'html/etiquetas-word.html?v=' + VERSION + '&fix=etiquetas-word';
+    if (location.protocol === 'file:') return 'html/etiquetas-word.html?v=' + VERSION + '&fix=etiquetas-word';
+    return '/html/etiquetas-word.html?v=' + VERSION + '&fix=etiquetas-word';
   }
   function isOldEtiquetasUrl(url){
     var f = fileOf(url);
@@ -154,8 +154,8 @@
       ['href','data-go','data-direct'].forEach(function(attr){
         var val = el.getAttribute(attr);
         if (!val) return;
-        if (/etiquetas\.html/i.test(val) || (/etiquetas-word\.html/i.test(val) && /^\s*(\.\.\/|\/)/.test(val))) {
-          el.setAttribute(attr, 'etiquetas-word.html');
+        if (/etiquetas\.html/i.test(val) || (/etiquetas-word\.html/i.test(val) && !/\/html\/etiquetas-word\.html\?v=1\.58\.172/i.test(val))) {
+          el.setAttribute(attr, target());
         }
       });
     });
@@ -173,3 +173,5 @@
   if (document.readyState !== 'loading') fixElementLinks();
   try { new MutationObserver(fixElementLinks).observe(document.documentElement, { childList:true, subtree:true, attributes:true, attributeFilter:['href','data-go','data-direct'] }); } catch(e) {}
 })();
+
+

@@ -1,6 +1,6 @@
-(function(){
+﻿(function(){
   "use strict";
-  const VERSION = "1.58.169";
+  const VERSION = "1.58.172";
   const STORAGE_KEY = "appBraga.quickLock.enabled";
   const PIN_KEY = "appBraga.quickLock.pin";
   const LOGIN_PAGES = new Set(["index.html", "login.html", ""]);
@@ -44,9 +44,9 @@
       btn.id = "appQuickLockButton";
       btn.className = "app-quick-lock-button";
       btn.type = "button";
-      btn.title = "Bloqueio rápido da app";
-      btn.setAttribute("aria-label", "Bloqueio rápido da app");
-      btn.textContent = "🔒";
+      btn.title = "Bloqueio rÃ¡pido da app";
+      btn.setAttribute("aria-label", "Bloqueio rÃ¡pido da app");
+      btn.textContent = "ðŸ”’";
       btn.addEventListener("click", lockNow);
       document.body.appendChild(btn);
     }
@@ -55,18 +55,18 @@
   async function toggleQuickLock(){
     const next = !enabled;
     if (next && !getSavedPinHash()) {
-      const pin = prompt("Define um PIN simples para desbloquear o bloqueio rápido:");
-      if (!pin || String(pin).trim().length < 3) return showMessage("PIN inválido. Usa pelo menos 3 números.", "erro");
+      const pin = prompt("Define um PIN simples para desbloquear o bloqueio rÃ¡pido:");
+      if (!pin || String(pin).trim().length < 3) return showMessage("PIN invÃ¡lido. Usa pelo menos 3 nÃºmeros.", "erro");
       await savePin(String(pin).trim());
     }
     applyEnabled(next);
-    if (!hasDb()) return showMessage("Firebase indisponível. A preferência ficou guardada neste dispositivo.", "erro");
+    if (!hasDb()) return showMessage("Firebase indisponÃ­vel. A preferÃªncia ficou guardada neste dispositivo.", "erro");
     try {
       await window.db.collection("config").doc("layout").set({ quickLockEnabled: next, quickLockVersion: VERSION, updatedAt: Date.now() }, { merge: true });
-      showMessage(next ? "Bloqueio rápido ativado." : "Bloqueio rápido desativado.");
+      showMessage(next ? "Bloqueio rÃ¡pido ativado." : "Bloqueio rÃ¡pido desativado.");
     } catch(err) {
-      console.error("Erro ao guardar bloqueio rápido:", err);
-      showMessage("Não consegui guardar na Firebase. A app continua ligada e a preferência ficou local.", "erro");
+      console.error("Erro ao guardar bloqueio rÃ¡pido:", err);
+      showMessage("NÃ£o consegui guardar na Firebase. A app continua ligada e a preferÃªncia ficou local.", "erro");
     }
   }
   function lockNow(){
@@ -77,9 +77,9 @@
     const hasPin = !!getSavedPinHash();
     overlay.innerHTML = `
       <div class="app-quick-lock-card">
-        <div style="font-size:42px">🔒</div>
+        <div style="font-size:42px">ðŸ”’</div>
         <h2>App bloqueada</h2>
-        <p>A sessão continua ativa. Nada foi apagado.</p>
+        <p>A sessÃ£o continua ativa. Nada foi apagado.</p>
         ${hasPin ? `<input id="quickLockPinInput" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN">` : ``}
         <button class="primary-btn" type="button" id="quickLockUnlockBtn">Desbloquear</button>
         <div class="quick-lock-error" id="quickLockError"></div>
@@ -121,3 +121,4 @@
   window.desbloquearBloqueioRapidoApp = unlockNow;
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 })();
+

@@ -1,6 +1,6 @@
-(function(){
+﻿(function(){
   'use strict';
-  const VERSION='1.58.169';
+  const VERSION='1.58.172';
   const COLLECTION='diretorioTelefonico';
   const LOCAL_KEY='appbraga_diretorio_v2';
   let contactos=[];
@@ -20,9 +20,9 @@
   const uid=()=>`dir_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
   const nowIso=()=>new Date().toISOString();
   const formatDate=(v)=>{
-    if(!v) return '—';
+    if(!v) return 'â€”';
     const d = v?.toDate ? v.toDate() : new Date(v);
-    if(Number.isNaN(d.getTime())) return '—';
+    if(Number.isNaN(d.getTime())) return 'â€”';
     return d.toLocaleDateString('pt-PT')+', '+d.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
   };
   const initials=(name)=>{
@@ -58,20 +58,20 @@
   };
 
   function normalizeContact(raw={}){
-    const armazem = norm(raw.armazem || raw.warehouse || raw.localEmpresa || raw.empresa || raw.local || raw.store || raw.loja || 'Sem armazém');
-    const seccao = norm(raw.seccao || raw.secao || raw.section || raw.departamento || raw.area || 'Sem secção');
+    const armazem = norm(raw.armazem || raw.warehouse || raw.localEmpresa || raw.empresa || raw.local || raw.store || raw.loja || 'Sem armazÃ©m');
+    const seccao = norm(raw.seccao || raw.secao || raw.section || raw.departamento || raw.area || 'Sem secÃ§Ã£o');
     const nome = norm(raw.nome || raw.name || raw.utilizador || raw.contacto || raw.pessoa || raw.displayName || 'Sem nome');
     const estado = norm(raw.estado || raw.status || raw.state || 'Ativo');
     const email = cleanEmail(raw.email || raw.mail || raw.eMail, nome);
     const telefone = norm(raw.telefone || raw.phone || raw.fixo || raw.tel);
-    const telemovel = norm(raw.telemovel || raw.mobile || raw.movimento || raw.movel || raw.telemóvel);
-    const extensao = norm(raw.extensao || raw.extensão || raw.extension || raw.ext);
+    const telemovel = norm(raw.telemovel || raw.mobile || raw.movimento || raw.movel || raw.telemÃ³vel);
+    const extensao = norm(raw.extensao || raw.extensÃ£o || raw.extension || raw.ext);
     return {
       ...raw,
       id: String(raw.id || raw.firebaseId || raw._id || uid()),
       firebaseId: raw.firebaseId || raw.id || null,
       nome,
-      funcao: norm(raw.funcao || raw.função || raw.role || raw.cargo || raw.descricao || raw.descrição),
+      funcao: norm(raw.funcao || raw.funÃ§Ã£o || raw.role || raw.cargo || raw.descricao || raw.descriÃ§Ã£o),
       armazem,
       seccao,
       telefone,
@@ -79,7 +79,7 @@
       email,
       extensao,
       estado,
-      observacoes: norm(raw.observacoes || raw.observações || raw.notas || raw.notes),
+      observacoes: norm(raw.observacoes || raw.observaÃ§Ãµes || raw.notas || raw.notes),
       createdAt: raw.createdAt || raw.createdAtMs || raw.dataCriacao || raw.data || nowIso(),
       updatedAt: raw.updatedAt || raw.updatedAtMs || raw.dataAtualizacao || raw.data || nowIso()
     };
@@ -91,8 +91,8 @@
     try{ return JSON.parse(localStorage.getItem(LOCAL_KEY)||'[]').map(normalizeContact); }catch{ return []; }
   }
   function seedIfEmpty(){
-    // Não criar contactos de demonstração em produção.
-    // A versão antiga gerava nomes/emails fictícios quando o Diretório estava vazio; agora fica vazio até importar/criar contactos reais.
+    // NÃ£o criar contactos de demonstraÃ§Ã£o em produÃ§Ã£o.
+    // A versÃ£o antiga gerava nomes/emails fictÃ­cios quando o DiretÃ³rio estava vazio; agora fica vazio atÃ© importar/criar contactos reais.
     return;
   }
 
@@ -110,13 +110,13 @@
   }
 
 
-  function armazemKey(armazem){ return lower(armazem||'Sem armazém'); }
-  function groupKey(armazem,seccao){ return `${armazemKey(armazem)}::${lower(seccao||'Sem secção')}`; }
+  function armazemKey(armazem){ return lower(armazem||'Sem armazÃ©m'); }
+  function groupKey(armazem,seccao){ return `${armazemKey(armazem)}::${lower(seccao||'Sem secÃ§Ã£o')}`; }
   function countBy(list, fn){ const map=new Map(); list.forEach(item=>{ const key=fn(item); map.set(key,(map.get(key)||0)+1); }); return map; }
 
 
   function applyNaturalCollapse(){
-    // Diretório deve abrir naturalmente colapsado por Armazém.
+    // DiretÃ³rio deve abrir naturalmente colapsado por ArmazÃ©m.
     // Depois do primeiro carregamento, respeita as aberturas/fechos feitos pelo utilizador.
     if(naturalCollapseInitialized) return;
     collapsedSections.clear();
@@ -128,10 +128,10 @@
   function updateFilters(){
     const armSel=$('dirFilterArmazem'), secSel=$('dirFilterSeccao');
     const armVal=armSel?.value||'', secVal=secSel?.value||'';
-    const arms=[...new Set(contactos.map(c=>c.armazem||'Sem armazém'))].sort((a,b)=>a.localeCompare(b,'pt',{numeric:true}));
-    const secs=[...new Set(contactos.map(c=>c.seccao||'Sem secção'))].sort((a,b)=>a.localeCompare(b,'pt',{numeric:true}));
-    if(armSel){ armSel.innerHTML='<option value="">Todos os armazéns</option>'+arms.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join(''); armSel.value=armVal; }
-    if(secSel){ secSel.innerHTML='<option value="">Todas as secções</option>'+secs.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join(''); secSel.value=secVal; }
+    const arms=[...new Set(contactos.map(c=>c.armazem||'Sem armazÃ©m'))].sort((a,b)=>a.localeCompare(b,'pt',{numeric:true}));
+    const secs=[...new Set(contactos.map(c=>c.seccao||'Sem secÃ§Ã£o'))].sort((a,b)=>a.localeCompare(b,'pt',{numeric:true}));
+    if(armSel){ armSel.innerHTML='<option value="">Todos os armazÃ©ns</option>'+arms.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join(''); armSel.value=armVal; }
+    if(secSel){ secSel.innerHTML='<option value="">Todas as secÃ§Ãµes</option>'+secs.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join(''); secSel.value=secVal; }
     const dlA=$('dirArmazensLista'), dlS=$('dirSeccoesLista');
     if(dlA) dlA.innerHTML=arms.map(v=>`<option value="${esc(v)}"></option>`).join('');
     if(dlS) dlS.innerHTML=secs.map(v=>`<option value="${esc(v)}"></option>`).join('');
@@ -152,31 +152,31 @@
   function renderTable(list){
     const tbody=$('dirTableBody'); if(!tbody) return;
     const total=list.length;
-    const page=list; // Sem paginação: mostrar todos os contactos filtrados.
+    const page=list; // Sem paginaÃ§Ã£o: mostrar todos os contactos filtrados.
     if(!page.length){
       tbody.innerHTML='<tr><td colspan="8" class="dir-empty">Sem contactos para mostrar.</td></tr>';
     }else{
       const sectionTotals=countBy(list,c=>groupKey(c.armazem,c.seccao));
-      const armazemTotals=countBy(list,c=>c.armazem||'Sem armazém');
+      const armazemTotals=countBy(list,c=>c.armazem||'Sem armazÃ©m');
       let lastArm='';
       let lastSec='';
       const rows=[];
       page.forEach(c=>{
-        const arm=c.armazem||'Sem armazém';
-        const sec=c.seccao||'Sem secção';
+        const arm=c.armazem||'Sem armazÃ©m';
+        const sec=c.seccao||'Sem secÃ§Ã£o';
         const secKey=groupKey(arm,sec);
         const armKey=armazemKey(arm);
         const armClosed=collapsedArmazens.has(armKey);
         if(arm!==lastArm){
           const armTotal=armazemTotals.get(arm)||0;
-          rows.push(`<tr class="dir-group-row dir-group-armazem ${armClosed?'is-collapsed':''}" data-dir-armazem="${esc(armKey)}"><td colspan="8"><button type="button" class="dir-armazem-toggle" data-dir-armazem="${esc(armKey)}"><span>${armClosed?'▸':'▾'}</span><i>🏬</i><strong>${esc(arm)}</strong><em>${armTotal} contacto${armTotal===1?'':'s'}</em></button></td></tr>`);
+          rows.push(`<tr class="dir-group-row dir-group-armazem ${armClosed?'is-collapsed':''}" data-dir-armazem="${esc(armKey)}"><td colspan="8"><button type="button" class="dir-armazem-toggle" data-dir-armazem="${esc(armKey)}"><span>${armClosed?'â–¸':'â–¾'}</span><i>ðŸ¬</i><strong>${esc(arm)}</strong><em>${armTotal} contacto${armTotal===1?'':'s'}</em></button></td></tr>`);
           lastArm=arm; lastSec='';
         }
         if(armClosed) return;
         if(sec!==lastSec){
           const secTotal=sectionTotals.get(secKey)||0;
           const closed=collapsedSections.has(secKey);
-          rows.push(`<tr class="dir-group-row dir-group-seccao ${closed?'is-collapsed':''}" data-dir-section="${esc(secKey)}"><td colspan="8"><button type="button" class="dir-section-toggle" data-dir-section="${esc(secKey)}"><span>${closed?'▸':'▾'}</span><strong>${esc(sec)}</strong><em>${secTotal} contacto${secTotal===1?'':'s'}</em></button></td></tr>`);
+          rows.push(`<tr class="dir-group-row dir-group-seccao ${closed?'is-collapsed':''}" data-dir-section="${esc(secKey)}"><td colspan="8"><button type="button" class="dir-section-toggle" data-dir-section="${esc(secKey)}"><span>${closed?'â–¸':'â–¾'}</span><strong>${esc(sec)}</strong><em>${secTotal} contacto${secTotal===1?'':'s'}</em></button></td></tr>`);
           lastSec=sec;
         }
         if(collapsedSections.has(secKey)) return;
@@ -185,16 +185,16 @@
         const firstPhone = c.telefone || c.telemovel || '';
         rows.push(`<tr class="dir-contact-row" data-dir-section-row="${esc(secKey)}">
           <td><div class="dir-person"><span class="dir-avatar">${esc(initials(c.nome))}</span><div class="dir-name"><strong>${esc(c.nome)}</strong><small>ID: ${esc(c.firebaseId||c.id)}</small></div></div></td>
-          <td>${esc(c.funcao||'—')}</td>
-          <td>${esc(c.armazem||'—')}</td>
-          <td>${esc(c.seccao||'—')}</td>
-          <td><div class="dir-contact">${firstPhone?`<a href="tel:${esc(phone)}">☎ ${esc(firstPhone)}</a>`:'<span class="dir-muted">☎ —</span>'}${c.email?`<a href="mailto:${esc(c.email)}">✉ ${esc(c.email)}</a>`:'<span class="dir-muted">✉ —</span>'}</div></td>
-          <td>${esc(c.extensao||'—')}</td>
-          <td><span class="dir-pill ${st}">${st==='ativo'?'Ativo':st==='ausente'?'Ausente':'Inativo'} <span>●</span></span></td>
+          <td>${esc(c.funcao||'â€”')}</td>
+          <td>${esc(c.armazem||'â€”')}</td>
+          <td>${esc(c.seccao||'â€”')}</td>
+          <td><div class="dir-contact">${firstPhone?`<a href="tel:${esc(phone)}">â˜Ž ${esc(firstPhone)}</a>`:'<span class="dir-muted">â˜Ž â€”</span>'}${c.email?`<a href="mailto:${esc(c.email)}">âœ‰ ${esc(c.email)}</a>`:'<span class="dir-muted">âœ‰ â€”</span>'}</div></td>
+          <td>${esc(c.extensao||'â€”')}</td>
+          <td><span class="dir-pill ${st}">${st==='ativo'?'Ativo':st==='ausente'?'Ausente':'Inativo'} <span>â—</span></span></td>
           <td><div class="dir-actions">
-            <button class="dir-icon-btn" type="button" title="Ver" data-dir-action="view" data-id="${esc(c.id)}">☎</button>
-            ${c.email?`<a class="dir-icon-btn mail" title="Email" href="mailto:${esc(c.email)}">✉</a>`:`<button class="dir-icon-btn mail" type="button" title="Sem email" disabled>✉</button>`}
-            <button class="dir-icon-btn" type="button" title="Editar" data-dir-action="edit" data-id="${esc(c.id)}">✎</button>
+            <button class="dir-icon-btn" type="button" title="Ver" data-dir-action="view" data-id="${esc(c.id)}">â˜Ž</button>
+            ${c.email?`<a class="dir-icon-btn mail" title="Email" href="mailto:${esc(c.email)}">âœ‰</a>`:`<button class="dir-icon-btn mail" type="button" title="Sem email" disabled>âœ‰</button>`}
+            <button class="dir-icon-btn" type="button" title="Editar" data-dir-action="edit" data-id="${esc(c.id)}">âœŽ</button>
           </div></td>
         </tr>`);
       });
@@ -212,7 +212,7 @@
 
   function renderDonut(){
     const counts=new Map();
-    contactos.forEach(c=>counts.set(c.armazem||'Sem armazém',(counts.get(c.armazem||'Sem armazém')||0)+1));
+    contactos.forEach(c=>counts.set(c.armazem||'Sem armazÃ©m',(counts.get(c.armazem||'Sem armazÃ©m')||0)+1));
     const sorted=[...counts.entries()].sort((a,b)=>b[1]-a[1]);
     const total=Math.max(1,contactos.length);
     const colors=['#38bdf8','#8b5cf6','#22c55e','#f59e0b','#94a3b8','#ef4444'];
@@ -227,7 +227,7 @@
         const top = sorted.slice(0,6);
         const outros = sorted.slice(6).reduce((s,x)=>s+x[1],0);
         legend.innerHTML = top.map(([label,n],i)=>`<div class="dir-legend-row"><span class="dir-legend-dot" style="--c:${colors[i%colors.length]}"></span><span>${esc(label)}</span><strong>${n}</strong><small>${((n/total)*100).toFixed(1)}%</small></div>`).join('')
-          + (outros ? `<div class="dir-legend-row"><span class="dir-legend-dot" style="--c:#94a3b8"></span><span>Outros armazéns</span><strong>${outros}</strong><small></small></div>` : '')
+          + (outros ? `<div class="dir-legend-row"><span class="dir-legend-dot" style="--c:#94a3b8"></span><span>Outros armazÃ©ns</span><strong>${outros}</strong><small></small></div>` : '')
           + `<div class="dir-legend-row dir-total-row"><span></span><span>Total</span><strong>${contactos.length}</strong><small></small></div>`;
       }
     }
@@ -238,17 +238,17 @@
     const noPhone=contactos.filter(c=>!c.telefone&&!c.telemovel&&!c.email).length;
     const ausentes=contactos.filter(c=>stateClass(c.estado)==='ausente').length;
     const alerts=[];
-    if(noExt) alerts.push({c:'#f59e0b',t:`${noExt} contactos sem extensão atribuída`,p:'Atribua extensões para facilitar o contacto interno.',time:'Atual'});
+    if(noExt) alerts.push({c:'#f59e0b',t:`${noExt} contactos sem extensÃ£o atribuÃ­da`,p:'Atribua extensÃµes para facilitar o contacto interno.',time:'Atual'});
     if(ausentes) alerts.push({c:'#f97316',t:`${ausentes} contactos ausentes`,p:'Verifique a disponibilidade da equipa.',time:'Hoje'});
-    if(noPhone) alerts.push({c:'#ef4444',t:`${noPhone} contactos sem contacto direto`,p:'Atualize telefone, telemóvel ou email.',time:'Atual'});
-    if(!alerts.length) alerts.push({c:'#22c55e',t:'Sem alertas críticos neste momento.',p:'Diretório operacional.',time:'—'});
+    if(noPhone) alerts.push({c:'#ef4444',t:`${noPhone} contactos sem contacto direto`,p:'Atualize telefone, telemÃ³vel ou email.',time:'Atual'});
+    if(!alerts.length) alerts.push({c:'#22c55e',t:'Sem alertas crÃ­ticos neste momento.',p:'DiretÃ³rio operacional.',time:'â€”'});
     const el=$('dirAlertsList'); if(el) el.innerHTML=alerts.map(a=>`<div class="ck-list-row"><span class="ck-list-dot" style="--c:${a.c}"></span><div><strong>${esc(a.t)}</strong><p>${esc(a.p)}</p></div><time>${esc(a.time)}</time></div>`).join('');
   }
 
   function renderRecent(){
     const recent=[...contactos].sort((a,b)=>new Date(b.updatedAt||b.createdAt||0)-new Date(a.updatedAt||a.createdAt||0)).slice(0,4);
     const el=$('dirRecentRecords');
-    if(el) el.innerHTML=recent.length? recent.map(c=>`<div class="ck-mini-row"><span class="ck-list-dot" style="--c:#22c55e"></span><div><strong>Contacto ${esc(c.nome)} atualizado</strong><p>${esc(c.armazem)} · ${esc(c.seccao)}</p></div><time>${formatDate(c.updatedAt||c.createdAt)}</time></div>`).join('') : '<div class="ck-mini-row"><span class="ck-list-dot"></span><div><strong>Sem atualizações registadas.</strong></div><time>—</time></div>';
+    if(el) el.innerHTML=recent.length? recent.map(c=>`<div class="ck-mini-row"><span class="ck-list-dot" style="--c:#22c55e"></span><div><strong>Contacto ${esc(c.nome)} atualizado</strong><p>${esc(c.armazem)} Â· ${esc(c.seccao)}</p></div><time>${formatDate(c.updatedAt||c.createdAt)}</time></div>`).join('') : '<div class="ck-mini-row"><span class="ck-list-dot"></span><div><strong>Sem atualizaÃ§Ãµes registadas.</strong></div><time>â€”</time></div>';
   }
 
   function render(){
@@ -318,20 +318,20 @@
     $('dirDetailTitle').textContent=c.nome;
     const grid=$('dirDetailGrid');
     if(grid) grid.innerHTML=[
-      ['Nome',c.nome],['Função',c.funcao||'—'],['Armazém',c.armazem],['Secção',c.seccao],['Telefone',c.telefone||'—'],['Telemóvel',c.telemovel||'—'],['Email',c.email||'—'],['Extensão',c.extensao||'—'],['Estado',c.estado],['Observações',c.observacoes||'—']
+      ['Nome',c.nome],['FunÃ§Ã£o',c.funcao||'â€”'],['ArmazÃ©m',c.armazem],['SecÃ§Ã£o',c.seccao],['Telefone',c.telefone||'â€”'],['TelemÃ³vel',c.telemovel||'â€”'],['Email',c.email||'â€”'],['ExtensÃ£o',c.extensao||'â€”'],['Estado',c.estado],['ObservaÃ§Ãµes',c.observacoes||'â€”']
     ].map(([k,v])=>`<div class="ck-detail-item"><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join('');
     const modal=$('dirModalDetalhe'); if(modal) modal.style.display='block';
   }
   function closeDetail(){ const m=$('dirModalDetalhe'); if(m) m.style.display='none'; detailId=null; }
 
   function exportCsv(){
-    const rows=[['Nome','Função','Armazém','Secção','Telefone','Telemóvel','Email','Extensão','Estado','Observações'],...getFiltered().map(c=>[c.nome,c.funcao,c.armazem,c.seccao,c.telefone,c.telemovel,c.email,c.extensao,c.estado,c.observacoes])];
+    const rows=[['Nome','FunÃ§Ã£o','ArmazÃ©m','SecÃ§Ã£o','Telefone','TelemÃ³vel','Email','ExtensÃ£o','Estado','ObservaÃ§Ãµes'],...getFiltered().map(c=>[c.nome,c.funcao,c.armazem,c.seccao,c.telefone,c.telemovel,c.email,c.extensao,c.estado,c.observacoes])];
     const csv=rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';')).join('\n');
     const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`diretorio-${new Date().toISOString().slice(0,10)}.csv`; a.click(); URL.revokeObjectURL(a.href);
   }
 
   function buildCsvFrom(list){
-    const rows=[['Nome','Função','Armazém','Secção','Telefone','Telemóvel','Email','Extensão','Estado','Observações'],...list.map(c=>[c.nome,c.funcao,c.armazem,c.seccao,c.telefone,c.telemovel,c.email,c.extensao,c.estado,c.observacoes])];
+    const rows=[['Nome','FunÃ§Ã£o','ArmazÃ©m','SecÃ§Ã£o','Telefone','TelemÃ³vel','Email','ExtensÃ£o','Estado','ObservaÃ§Ãµes'],...list.map(c=>[c.nome,c.funcao,c.armazem,c.seccao,c.telefone,c.telemovel,c.email,c.extensao,c.estado,c.observacoes])];
     return rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';')).join('\n');
   }
   function downloadCsv(csv, filename){
@@ -347,7 +347,7 @@
   }
   function openDeleteAllModal(){
     const total=$('dirDeleteAllTotal'); if(total) total.textContent=`${contactos.length} contacto${contactos.length===1?'':'s'}`;
-    const fb=$('dirDeleteAllFirebase'); if(fb) fb.textContent=dbReady()?'Ligado':'Sem ligação / fallback local';
+    const fb=$('dirDeleteAllFirebase'); if(fb) fb.textContent=dbReady()?'Ligado':'Sem ligaÃ§Ã£o / fallback local';
     const phrase=$('dirDeleteAllPhrase'); if(phrase) phrase.value='';
     const check=$('dirDeleteAllBackup'); if(check) check.checked=false;
     updateDeleteAllState();
@@ -365,10 +365,10 @@
   async function deleteAllContacts(){
     const phrase=($('dirDeleteAllPhrase')?.value||'').trim();
     const checked=!!$('dirDeleteAllBackup')?.checked;
-    if(phrase!=='APAGAR TODOS' || !checked){ alert('Para apagar tudo tens de escrever APAGAR TODOS e confirmar a cópia de segurança.'); return; }
-    if(!contactos.length){ alert('Não existem contactos para apagar.'); closeDeleteAllModal(); return; }
+    if(phrase!=='APAGAR TODOS' || !checked){ alert('Para apagar tudo tens de escrever APAGAR TODOS e confirmar a cÃ³pia de seguranÃ§a.'); return; }
+    if(!contactos.length){ alert('NÃ£o existem contactos para apagar.'); closeDeleteAllModal(); return; }
     const totalBefore=contactos.length;
-    const finalOk=confirm(`Última confirmação: apagar definitivamente ${totalBefore} contacto${totalBefore===1?'':'s'} do Diretório?`);
+    const finalOk=confirm(`Ãšltima confirmaÃ§Ã£o: apagar definitivamente ${totalBefore} contacto${totalBefore===1?'':'s'} do DiretÃ³rio?`);
     if(!finalOk) return;
     const btn=$('dirBtnConfirmarApagarTodos');
     if(btn){ btn.disabled=true; btn.textContent='A apagar...'; }
@@ -393,7 +393,7 @@
       naturalCollapseInitialized=false;
       render();
       closeDeleteAllModal();
-      alert(`Diretório limpo: ${totalBefore} contacto${totalBefore===1?'':'s'} apagado${totalBefore===1?'':'s'}.`);
+      alert(`DiretÃ³rio limpo: ${totalBefore} contacto${totalBefore===1?'':'s'} apagado${totalBefore===1?'':'s'}.`);
     }catch(err){
       console.error(err);
       alert('Erro ao apagar todos os contactos: '+(err.message||err));
@@ -404,25 +404,25 @@
   async function importRows(rows){
     const mapped=rows.map(r=>normalizeContact({
       nome:r.Nome||r.nome||r.Name||r.name,
-      funcao:r.Função||r.Funcao||r.Cargo||r.funcao||r.role,
-      armazem:r.Armazém||r.Armazem||r.Local||r.local||r.armazem,
-      seccao:r.Secção||r.Seccao||r.Secao||r.Departamento||r.seccao,
+      funcao:r.FunÃ§Ã£o||r.Funcao||r.Cargo||r.funcao||r.role,
+      armazem:r.ArmazÃ©m||r.Armazem||r.Local||r.local||r.armazem,
+      seccao:r.SecÃ§Ã£o||r.Seccao||r.Secao||r.Departamento||r.seccao,
       telefone:r.Telefone||r.phone||r.Tel,
-      telemovel:r.Telemóvel||r.Telemovel||r.Mobile||r.telemovel,
+      telemovel:r.TelemÃ³vel||r.Telemovel||r.Mobile||r.telemovel,
       email:r.Email||r.email,
-      extensao:r.Extensão||r.Extensao||r.Extension||r.extensao,
+      extensao:r.ExtensÃ£o||r.Extensao||r.Extension||r.extensao,
       estado:r.Estado||r.estado||'Ativo',
-      observacoes:r.Observações||r.Observacoes||r.Notas||r.notas
+      observacoes:r.ObservaÃ§Ãµes||r.Observacoes||r.Notas||r.notas
     })).filter(c=>c.nome && c.nome!=='Sem nome');
-    if(!mapped.length){ alert('Não encontrei contactos válidos no ficheiro.'); return; }
-    if(!confirm(`Importar ${mapped.length} contactos para o diretório?`)) return;
+    if(!mapped.length){ alert('NÃ£o encontrei contactos vÃ¡lidos no ficheiro.'); return; }
+    if(!confirm(`Importar ${mapped.length} contactos para o diretÃ³rio?`)) return;
     try{
       if(dbReady()){
         let batch=window.db.batch(); let ops=0;
         mapped.forEach(c=>{ const data={...c}; delete data.id; delete data.firebaseId; batch.set(window.db.collection(COLLECTION).doc(),data); ops++; if(ops>=450){ batch.commit(); batch=window.db.batch(); ops=0; } });
         if(ops) await batch.commit();
       }else{ contactos=[...mapped,...contactos]; saveLocal(); render(); }
-      alert('Importação concluída.');
+      alert('ImportaÃ§Ã£o concluÃ­da.');
     }catch(err){ console.error(err); alert('Erro ao importar: '+(err.message||err)); }
   }
   function handleImport(file){
@@ -435,7 +435,7 @@
           const text=e.target.result; const lines=String(text).split(/\r?\n/).filter(Boolean); const headers=lines.shift().split(/[;,]/).map(h=>h.trim().replace(/^"|"$/g,''));
           rows=lines.map(line=>{ const cols=line.split(/[;,]/).map(c=>c.trim().replace(/^"|"$/g,'')); const obj={}; headers.forEach((h,i)=>obj[h]=cols[i]||''); return obj; });
         }else{
-          if(!window.XLSX) throw new Error('Biblioteca Excel indisponível.');
+          if(!window.XLSX) throw new Error('Biblioteca Excel indisponÃ­vel.');
           const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'}); rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
         }
         await importRows(rows);
@@ -481,10 +481,11 @@
           contactos=[]; snap.forEach(doc=>contactos.push(normalizeContact({firebaseId:doc.id,id:doc.id,...doc.data()})));
           if(!contactos.length){ contactos=loadLocal(); seedIfEmpty(); }
           saveLocal(); applyNaturalCollapse(); render();
-        },err=>{ console.warn('Diretório Firebase indisponível:',err); contactos=loadLocal(); seedIfEmpty(); applyNaturalCollapse(); render(); });
-      }catch(err){ console.warn('Erro a iniciar Firebase diretório:',err); }
+        },err=>{ console.warn('DiretÃ³rio Firebase indisponÃ­vel:',err); contactos=loadLocal(); seedIfEmpty(); applyNaturalCollapse(); render(); });
+      }catch(err){ console.warn('Erro a iniciar Firebase diretÃ³rio:',err); }
     }
   }
   document.addEventListener('DOMContentLoaded',start);
   window.AppBragaDiretorio={render,exportCsv,exportAllCsv,openModal,openDeleteAllModal};
 })();
+

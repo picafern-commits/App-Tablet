@@ -1,7 +1,7 @@
-
+﻿
 (() => {
   'use strict';
-  const VERSION = '1.58.169';
+  const VERSION = '1.58.172';
   const COLLECTION = 'personalTasks';
   const LOCAL_KEY = 'appbraga_tarefas_fallback_v1';
   const PAGE = { items: [], filtered: [], page: 1, pageSize: 10, unsubscribe: null, dbReady: false, minhasOnly: false };
@@ -27,18 +27,18 @@
     const d = new Date(v); return Number.isNaN(d.getTime()) ? 0 : d.getTime();
   }
   function formatDateTime(v){
-    const t = toMillis(v); if (!t) return '—';
+    const t = toMillis(v); if (!t) return 'â€”';
     const d = new Date(t);
     return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
   function formatDue(date){
-    if (!date) return {main:'—', sub:'Sem prazo', kind:''};
+    if (!date) return {main:'â€”', sub:'Sem prazo', kind:''};
     const today = todayKey();
     if (date === today) return {main:date.split('-').reverse().join('/'), sub:'Hoje', kind:'danger'};
     const days = Math.ceil((new Date(date+'T00:00:00') - new Date(today+'T00:00:00')) / 86400000);
     if (days < 0) return {main:date.split('-').reverse().join('/'), sub:`${Math.abs(days)} dias em atraso`, kind:'danger'};
     if (days === 0) return {main:date.split('-').reverse().join('/'), sub:'Hoje', kind:'danger'};
-    if (days === 1) return {main:date.split('-').reverse().join('/'), sub:'Amanhã', kind:''};
+    if (days === 1) return {main:date.split('-').reverse().join('/'), sub:'AmanhÃ£', kind:''};
     return {main:date.split('-').reverse().join('/'), sub:`${days} dias`, kind:''};
   }
   function statusOf(task){
@@ -51,17 +51,17 @@
   function priorityOf(task){
     const raw = norm(task.prioridade || task.priority || 'sem');
     if (raw.includes('urgent') || raw.includes('alta') || raw.includes('crit')) return 'alta';
-    if (raw.includes('media') || raw.includes('média') || raw.includes('normal')) return 'media';
+    if (raw.includes('media') || raw.includes('mÃ©dia') || raw.includes('normal')) return 'media';
     if (raw.includes('baixa') || raw.includes('low')) return 'baixa';
     return 'sem';
   }
-  function priorityLabel(p){ return ({alta:'Alta',media:'Média',baixa:'Baixa',sem:'Sem prioridade'})[p] || 'Sem prioridade'; }
-  function statusLabel(s){ return ({pendente:'Pendente',progresso:'Em progresso',concluida:'Concluída',vencida:'Vencida'})[s] || 'Pendente'; }
+  function priorityLabel(p){ return ({alta:'Alta',media:'MÃ©dia',baixa:'Baixa',sem:'Sem prioridade'})[p] || 'Sem prioridade'; }
+  function statusLabel(s){ return ({pendente:'Pendente',progresso:'Em progresso',concluida:'ConcluÃ­da',vencida:'Vencida'})[s] || 'Pendente'; }
   function priorityWeight(p){ return ({alta:0,media:1,baixa:2,sem:3})[p] ?? 3; }
   function normalizeTask(doc){
     const d = doc || {};
     const id = d.id || d.docId || d.uid || `local_${Math.random().toString(36).slice(2)}`;
-    const title = d.title || d.titulo || d.nome || d.tarefa || 'Tarefa sem título';
+    const title = d.title || d.titulo || d.nome || d.tarefa || 'Tarefa sem tÃ­tulo';
     return {
       ...d,
       id,
@@ -87,9 +87,9 @@
     const existing = loadLocal();
     if (existing.length) return localStorage.setItem('appbraga_tarefas_seeded_v158102','1');
     const base = [
-      {id:'seed-1',title:'Instalação Kyocera Ilha 02',description:'Instalar impressora Kyocera na Ilha 02 - escritório',owner:'Cesar-PT',category:'Instalação',priority:'alta',status:'progresso',dueDate:todayKey(),createdAt:now()-3600000},
-      {id:'seed-2',title:'Reunião de Equipa',description:'Reunião semanal para alinhamento de processos',owner:'Elisabete-PT',category:'Reunião',priority:'media',status:'pendente',dueDate:addDays(2),createdAt:now()-86400000},
-      {id:'seed-3',title:'Manutenção P3155dn',description:'Verificar manutenção da P3155dn - Balcão 01',owner:'Machado-PT',category:'Manutenção',priority:'alta',status:'pendente',dueDate:addDays(3),createdAt:now()-1800000}
+      {id:'seed-1',title:'InstalaÃ§Ã£o Kyocera Ilha 02',description:'Instalar impressora Kyocera na Ilha 02 - escritÃ³rio',owner:'Cesar-PT',category:'InstalaÃ§Ã£o',priority:'alta',status:'progresso',dueDate:todayKey(),createdAt:now()-3600000},
+      {id:'seed-2',title:'ReuniÃ£o de Equipa',description:'ReuniÃ£o semanal para alinhamento de processos',owner:'Elisabete-PT',category:'ReuniÃ£o',priority:'media',status:'pendente',dueDate:addDays(2),createdAt:now()-86400000},
+      {id:'seed-3',title:'ManutenÃ§Ã£o P3155dn',description:'Verificar manutenÃ§Ã£o da P3155dn - BalcÃ£o 01',owner:'Machado-PT',category:'ManutenÃ§Ã£o',priority:'alta',status:'pendente',dueDate:addDays(3),createdAt:now()-1800000}
     ];
     saveLocal(base);
     localStorage.setItem('appbraga_tarefas_seeded_v158102','1');
@@ -185,19 +185,19 @@
   function taskRow(t){
     const s = statusOf(t), p = priorityOf(t), due = formatDue(t.dueDate);
     return `<tr>
-      <td><div class="tasks-title-cell"><button class="tasks-check ${s==='concluida'?'is-done':''}" type="button" title="Marcar concluída" data-toggle-done="${escapeHtml(t.id)}"></button><div class="tasks-name"><strong>${escapeHtml(t.title)}</strong>${t.category?`<small>${escapeHtml(t.category)}</small>`:''}</div></div></td>
-      <td><div class="tasks-description">${escapeHtml(t.description || '—')}</div></td>
-      <td><span class="tasks-owner">${escapeHtml(t.owner || 'Sem responsável')}</span></td>
+      <td><div class="tasks-title-cell"><button class="tasks-check ${s==='concluida'?'is-done':''}" type="button" title="Marcar concluÃ­da" data-toggle-done="${escapeHtml(t.id)}"></button><div class="tasks-name"><strong>${escapeHtml(t.title)}</strong>${t.category?`<small>${escapeHtml(t.category)}</small>`:''}</div></div></td>
+      <td><div class="tasks-description">${escapeHtml(t.description || 'â€”')}</div></td>
+      <td><span class="tasks-owner">${escapeHtml(t.owner || 'Sem responsÃ¡vel')}</span></td>
       <td><span class="tasks-tag tasks-prio-${p}">${priorityLabel(p)}</span></td>
       <td><span class="tasks-tag tasks-state-${s}">${statusLabel(s)}</span></td>
       <td><span class="tasks-date"><strong>${escapeHtml(due.main)}</strong><small class="${due.kind}">${escapeHtml(due.sub)}</small></span></td>
       <td><span class="tasks-date"><strong>${escapeHtml(formatDateTime(t.createdAt).split(' ')[0])}</strong><small>${escapeHtml(formatDateTime(t.createdAt).split(' ')[1] || '')}</small></span></td>
-      <td><div class="tasks-actions"><button class="tasks-icon-btn" type="button" data-edit-task="${escapeHtml(t.id)}" title="Editar">✎</button><button class="tasks-icon-btn" type="button" data-cycle-task="${escapeHtml(t.id)}" title="Avançar estado">⋮</button><button class="tasks-icon-btn delete" type="button" data-delete-task="${escapeHtml(t.id)}" title="Apagar">🗑</button></div></td>
+      <td><div class="tasks-actions"><button class="tasks-icon-btn" type="button" data-edit-task="${escapeHtml(t.id)}" title="Editar">âœŽ</button><button class="tasks-icon-btn" type="button" data-cycle-task="${escapeHtml(t.id)}" title="AvanÃ§ar estado">â‹®</button><button class="tasks-icon-btn delete" type="button" data-delete-task="${escapeHtml(t.id)}" title="Apagar">ðŸ—‘</button></div></td>
     </tr>`;
   }
   function taskMobileCard(t){
     const s = statusOf(t), p = priorityOf(t), due = formatDue(t.dueDate);
-    return `<article class="tasks-mobile-card"><div class="tasks-mobile-card-head"><div><h3>${escapeHtml(t.title)}</h3><p>${escapeHtml(t.description || '—')}</p></div><button class="tasks-check ${s==='concluida'?'is-done':''}" type="button" data-toggle-done="${escapeHtml(t.id)}"></button></div><div class="tasks-mobile-meta"><span class="tasks-tag tasks-prio-${p}">${priorityLabel(p)}</span><span class="tasks-tag tasks-state-${s}">${statusLabel(s)}</span><span class="tasks-tag">${escapeHtml(t.owner || 'Sem responsável')}</span><span class="tasks-tag">${escapeHtml(due.sub)}</span></div><div class="tasks-actions"><button class="tasks-icon-btn" type="button" data-edit-task="${escapeHtml(t.id)}">✎</button><button class="tasks-icon-btn" type="button" data-cycle-task="${escapeHtml(t.id)}">⋮</button><button class="tasks-icon-btn delete" type="button" data-delete-task="${escapeHtml(t.id)}">🗑</button></div></article>`;
+    return `<article class="tasks-mobile-card"><div class="tasks-mobile-card-head"><div><h3>${escapeHtml(t.title)}</h3><p>${escapeHtml(t.description || 'â€”')}</p></div><button class="tasks-check ${s==='concluida'?'is-done':''}" type="button" data-toggle-done="${escapeHtml(t.id)}"></button></div><div class="tasks-mobile-meta"><span class="tasks-tag tasks-prio-${p}">${priorityLabel(p)}</span><span class="tasks-tag tasks-state-${s}">${statusLabel(s)}</span><span class="tasks-tag">${escapeHtml(t.owner || 'Sem responsÃ¡vel')}</span><span class="tasks-tag">${escapeHtml(due.sub)}</span></div><div class="tasks-actions"><button class="tasks-icon-btn" type="button" data-edit-task="${escapeHtml(t.id)}">âœŽ</button><button class="tasks-icon-btn" type="button" data-cycle-task="${escapeHtml(t.id)}">â‹®</button><button class="tasks-icon-btn delete" type="button" data-delete-task="${escapeHtml(t.id)}">ðŸ—‘</button></div></article>`;
   }
   function renderTable(items){
     const total = items.length; PAGE.pageSize = Number($('taskPageSize')?.value || 10); const pages = Math.max(1, Math.ceil(total/PAGE.pageSize)); if (PAGE.page > pages) PAGE.page = pages;
@@ -208,9 +208,9 @@
     $('taskTableSummary').textContent = total ? `${start+1}-${Math.min(start+PAGE.pageSize,total)} de ${total} registos` : '0-0 de 0';
     const pag = $('taskPagination'); pag.innerHTML = '';
     const makeBtn = (txt, disabled, click, active=false) => { const b=document.createElement('button'); b.type='button'; b.textContent=txt; b.className=active?'active':''; b.disabled=disabled; b.addEventListener('click', click); return b; };
-    pag.appendChild(makeBtn('«', PAGE.page<=1, () => { PAGE.page--; render(); }));
+    pag.appendChild(makeBtn('Â«', PAGE.page<=1, () => { PAGE.page--; render(); }));
     for(let i=1;i<=pages;i++){ if(i>5 && i<pages) continue; pag.appendChild(makeBtn(String(i), false, () => { PAGE.page=i; render(); }, i===PAGE.page)); }
-    pag.appendChild(makeBtn('»', PAGE.page>=pages, () => { PAGE.page++; render(); }));
+    pag.appendChild(makeBtn('Â»', PAGE.page>=pages, () => { PAGE.page++; render(); }));
     bindRowActions();
   }
   function renderSide(items){
@@ -221,9 +221,9 @@
     $('taskDonut').style.background = `conic-gradient(#ef4444 0 ${degAlta}deg,#fbbf24 ${degAlta}deg ${degAlta+degMedia}deg,#22c55e ${degAlta+degMedia}deg ${degAlta+degMedia+degBaixa}deg,#94a3b8 ${degAlta+degMedia+degBaixa}deg 360deg)`;
     $('taskPriorityLegend').innerHTML = ['alta','media','baixa','sem'].map(k => `<div class="tasks-legend-row"><span class="tasks-dot ${k}"></span><span>${priorityLabel(k)}</span><strong>${counts[k]} (${items.length ? ((counts[k]/items.length)*100).toFixed(1) : '0.0'}%)</strong></div>`).join('');
     const overdue = items.filter(t => statusOf(t)==='vencida').slice(0,4);
-    $('taskOverdueList').innerHTML = overdue.length ? overdue.map(t => `<div class="tasks-side-row"><div><strong>${escapeHtml(t.title)}</strong><small>${escapeHtml(t.description || t.owner || 'Sem descrição')}</small></div><div class="tasks-side-date">${escapeHtml(formatDue(t.dueDate).main)}<br><small>${escapeHtml(formatDue(t.dueDate).sub)}</small></div></div>`).join('') : '<div class="tasks-empty">Sem tarefas vencidas.</div>';
+    $('taskOverdueList').innerHTML = overdue.length ? overdue.map(t => `<div class="tasks-side-row"><div><strong>${escapeHtml(t.title)}</strong><small>${escapeHtml(t.description || t.owner || 'Sem descriÃ§Ã£o')}</small></div><div class="tasks-side-date">${escapeHtml(formatDue(t.dueDate).main)}<br><small>${escapeHtml(formatDue(t.dueDate).sub)}</small></div></div>`).join('') : '<div class="tasks-empty">Sem tarefas vencidas.</div>';
     const today = items.filter(t => t.dueDate === todayKey() && statusOf(t)!=='concluida').slice(0,4);
-    $('taskTodayList').innerHTML = today.length ? today.map(t => `<div class="tasks-side-row"><div><strong>${escapeHtml(t.title)}</strong><small>${escapeHtml(t.owner || 'Sem responsável')}</small></div><div class="tasks-side-date ok">Hoje</div></div>`).join('') : '<div class="tasks-empty">Sem tarefas para hoje.</div>';
+    $('taskTodayList').innerHTML = today.length ? today.map(t => `<div class="tasks-side-row"><div><strong>${escapeHtml(t.title)}</strong><small>${escapeHtml(t.owner || 'Sem responsÃ¡vel')}</small></div><div class="tasks-side-date ok">Hoje</div></div>`).join('') : '<div class="tasks-empty">Sem tarefas para hoje.</div>';
   }
   function render(){
     const all = PAGE.items.map(normalizeTask);
@@ -237,7 +237,7 @@
     document.querySelectorAll('[data-cycle-task]').forEach(btn => btn.onclick = () => { const t=PAGE.items.find(x=>x.id===btn.dataset.cycleTask); const s=statusOf(t); const next = s==='pendente'?'progresso':(s==='progresso'?'concluida':'pendente'); setTaskStatus(t.id,next); });
   }
   function exportCsv(items=PAGE.filtered){
-    const rows = [['Tarefa','Descrição','Responsável','Categoria','Prioridade','Estado','Prazo','Criada em'], ...items.map(t => [t.title,t.description,t.owner,t.category,priorityLabel(priorityOf(t)),statusLabel(statusOf(t)),t.dueDate,formatDateTime(t.createdAt)])];
+    const rows = [['Tarefa','DescriÃ§Ã£o','ResponsÃ¡vel','Categoria','Prioridade','Estado','Prazo','Criada em'], ...items.map(t => [t.title,t.description,t.owner,t.category,priorityLabel(priorityOf(t)),statusLabel(statusOf(t)),t.dueDate,formatDateTime(t.createdAt)])];
     const csv = rows.map(r => r.map(v => '"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\n');
     const blob = new Blob([csv], {type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`tarefas-appbraga-${todayKey()}.csv`; a.click(); URL.revokeObjectURL(a.href);
   }
@@ -250,10 +250,11 @@
     $('taskBtnLimpar').onclick = () => { $('taskSearch').value=''; $('taskFilterStatus').value=''; $('taskFilterPriority').value=''; PAGE.minhasOnly=false; PAGE.page=1; render(); };
     $('taskBtnMinhas').onclick = () => { PAGE.minhasOnly=!PAGE.minhasOnly; $('taskBtnMinhas').classList.toggle('primary', PAGE.minhasOnly); PAGE.page=1; render(); };
     $('taskBtnRelatorio').onclick = () => exportCsv();
-    $('taskBtnCalendario').onclick = () => { $('taskFilterStatus').value=''; $('taskFilterPriority').value=''; $('taskSearch').value=''; PAGE.page=1; render(); toast('Calendário','A lista ficou ordenada por prioridade e prazo.'); };
-    $('taskBtnConfig').onclick = () => toast('Configurações','Configurações rápidas de tarefas ficam nesta área.');
+    $('taskBtnCalendario').onclick = () => { $('taskFilterStatus').value=''; $('taskFilterPriority').value=''; $('taskSearch').value=''; PAGE.page=1; render(); toast('CalendÃ¡rio','A lista ficou ordenada por prioridade e prazo.'); };
+    $('taskBtnConfig').onclick = () => toast('ConfiguraÃ§Ãµes','ConfiguraÃ§Ãµes rÃ¡pidas de tarefas ficam nesta Ã¡rea.');
     $('taskBtnVerVencidas').onclick = () => { $('taskFilterStatus').value='vencida'; PAGE.page=1; render(); window.scrollTo({top:0,behavior:'smooth'}); };
     document.querySelectorAll('[data-task-filter-kpi]').forEach(btn => btn.addEventListener('click', () => { const f=btn.dataset.taskFilterKpi; $('taskFilterStatus').value = f==='all' ? '' : (f==='hoje' ? '' : f); $('taskSearch').value=''; PAGE.page=1; render(); if(f==='hoje'){ const today=PAGE.items.filter(t=>t.dueDate===todayKey()).map(t=>t.title).join(' '); $('taskSearch').value=''; PAGE.filtered = PAGE.items.filter(t=>t.dueDate===todayKey()); renderTable(PAGE.filtered); } }));
   }
   document.addEventListener('DOMContentLoaded', () => { bind(); setupFirebase(); });
 })();
+

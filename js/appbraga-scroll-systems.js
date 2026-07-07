@@ -1,5 +1,5 @@
-
-// AppBraga v1.58.169 — força scroll nas páginas novas após carregar.
+﻿
+// AppBraga v1.58.172 â€” forÃ§a scroll nas pÃ¡ginas novas apÃ³s carregar.
 (function(){
   try{
     document.documentElement.style.overflowY='auto';
@@ -11,7 +11,7 @@
 })();
 
 
-// AppBraga v1.58.169 — desbloqueio extra do scroll no Scanner IA e páginas novas.
+// AppBraga v1.58.172 â€” desbloqueio extra do scroll no Scanner IA e pÃ¡ginas novas.
 (function(){
   function unlockScroll(){
     try{
@@ -47,7 +47,7 @@
 })();
 
 
-// AppBraga v1.58.169 — desbloqueio final do scroll na página Notificações.
+// AppBraga v1.58.172 â€” desbloqueio final do scroll na pÃ¡gina NotificaÃ§Ãµes.
 (function(){
   function unlockNotificationsScroll(){
     try{
@@ -87,3 +87,4 @@
   setTimeout(unlockNotificationsScroll,900);
   setTimeout(unlockNotificationsScroll,1800);
 })();
+

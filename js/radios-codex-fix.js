@@ -1,7 +1,7 @@
-(() => {
+﻿(() => {
   'use strict';
 
-  const VERSION = '1.58.169';
+  const VERSION = '1.58.172';
   const COLLECTION = 'radios';
   const RECORDS_COLLECTION = 'radiosIntervencoes';
   const LEGACY_RECORDS_COLLECTION = 'radioHistory';
@@ -30,7 +30,7 @@
     unsubscribeLegacyRecords: null,
     unsubscribeWeekly: null,
     legacyRecords: [],
-    recordMode: 'Intervenção'
+    recordMode: 'IntervenÃ§Ã£o'
   };
 
   const $ = (id) => document.getElementById(id);
@@ -75,16 +75,16 @@
 
   function sampleRadios() {
     return [
-      ['RAD-001','4532107893','Motorola XT420','Braga','Disponível','',''],
+      ['RAD-001','4532107893','Motorola XT420','Braga','DisponÃ­vel','',''],
       ['RAD-002','4532107894','Kenwood TK-3501','Vila Real','Em uso','Ricardo',''],
-      ['RAD-003','4532107895','Hytera PD405','Armazém','Em carga','',''],
-      ['RAD-004','4532107896','Motorola XT420','Loja','Disponível','',''],
-      ['RAD-005','4532107897','Kenwood TK-3501','Oficina','Avariada','','Falha no botão PTT'],
+      ['RAD-003','4532107895','Hytera PD405','ArmazÃ©m','Em carga','',''],
+      ['RAD-004','4532107896','Motorola XT420','Loja','DisponÃ­vel','',''],
+      ['RAD-005','4532107897','Kenwood TK-3501','Oficina','Avariada','','Falha no botÃ£o PTT'],
       ['RAD-006','4532107898','Hytera PD405','Braga','Em uso','Equipa Loja',''],
-      ['RAD-007','4532107899','Motorola XT420','Vila Real','Disponível','',''],
-      ['RAD-008','4532107900','Kenwood TK-3501','Armazém','Em carga','',''],
-      ['RAD-009','4532107901','Hytera PD405','Loja','Em uso','Armazém',''],
-      ['RAD-010','4532107902','Motorola XT420','Oficina','Disponível','','']
+      ['RAD-007','4532107899','Motorola XT420','Vila Real','DisponÃ­vel','',''],
+      ['RAD-008','4532107900','Kenwood TK-3501','ArmazÃ©m','Em carga','',''],
+      ['RAD-009','4532107901','Hytera PD405','Loja','Em uso','ArmazÃ©m',''],
+      ['RAD-010','4532107902','Motorola XT420','Oficina','DisponÃ­vel','','']
     ].map(([codigo, serie, modelo, local, estado, user, notas], index) => ({
       id: `sample-${index + 1}`,
       codigo,
@@ -107,9 +107,9 @@
     const assigned = !!(radio.userNome || radio.user || radio.utilizador || radio.operadorAtual || radio.assignedTo);
     if (raw.includes('avari')) return 'Avariada';
     if (raw.includes('carga') || raw.includes('charging')) return 'Em carga';
-    if (raw.includes('manut') || raw.includes('repar')) return 'Em manutenção';
+    if (raw.includes('manut') || raw.includes('repar')) return 'Em manutenÃ§Ã£o';
     if (raw.includes('uso') || raw.includes('utiliza') || raw.includes('atrib') || assigned) return 'Em uso';
-    return 'Disponível';
+    return 'DisponÃ­vel';
   }
 
   function estadoKey(value) {
@@ -128,7 +128,7 @@
 
   function estadoIcon(value) {
     const key = estadoKey(value);
-    return key === 'uso' ? '👤' : key === 'carga' ? '⚡' : key === 'avariada' ? '!' : key === 'manutencao' ? '🛠' : '✓';
+    return key === 'uso' ? 'ðŸ‘¤' : key === 'carga' ? 'âš¡' : key === 'avariada' ? '!' : key === 'manutencao' ? 'ðŸ› ' : 'âœ“';
   }
 
   function radioCode(radio) {
@@ -140,7 +140,7 @@
   }
 
   function radioModel(radio) {
-    return radio.modelo || radio.model || radio.nomeModelo || 'Rádio';
+    return radio.modelo || radio.model || radio.nomeModelo || 'RÃ¡dio';
   }
 
   function radioLocal(radio) {
@@ -152,12 +152,12 @@
   }
 
   function formatDate(value) {
-    if (!value) return '—';
+    if (!value) return 'â€”';
     let date = null;
     if (typeof value === 'object' && typeof value.toDate === 'function') date = value.toDate();
     else if (typeof value === 'number') date = new Date(value);
     else if (typeof value === 'string') date = new Date(value);
-    if (!date || Number.isNaN(date.getTime())) return '—';
+    if (!date || Number.isNaN(date.getTime())) return 'â€”';
     return date.toLocaleString('pt-PT', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
   }
 
@@ -184,7 +184,7 @@
   }
 
   function weekLabel(value) {
-    if (!value) return '—';
+    if (!value) return 'â€”';
     const d = new Date(`${value}T00:00:00`);
     if (Number.isNaN(d.getTime())) return value;
     const end = new Date(d);
@@ -230,17 +230,17 @@
 
   function normalizeWeeklyAssignment(item = {}, index = 0) {
     const radioId = item.radioId || item.radioDocId || item.idRadio || item.id || item.codigo || `legacy-${index}`;
-    const codigo = item.codigo || item.radioCodigo || item.radioNome || item.nomeRadio || item.nome || `Rádio ${index + 1}`;
+    const codigo = item.codigo || item.radioCodigo || item.radioNome || item.nomeRadio || item.nome || `RÃ¡dio ${index + 1}`;
     const serial = item.serial || item.radioSerial || item.numeroSerie || item.sn || item.serie || '';
     const user1 = item.user1Nome || item.userNome || item.user || item.utilizador || '';
     const user2 = item.user2Nome || '';
     const local = item.local || item.localizacao || item.piso || item.zone || item.zona || '';
-    const estado = item.estado || item.status || (user1 || user2 ? 'Em uso' : 'Disponível');
+    const estado = item.estado || item.status || (user1 || user2 ? 'Em uso' : 'DisponÃ­vel');
     return {
       radioId: String(radioId),
       codigo,
       serial,
-      modelo: item.modelo || item.model || item.radioModelo || 'Rádio',
+      modelo: item.modelo || item.model || item.radioModelo || 'RÃ¡dio',
       local,
       estado: normalizeEstado(estado, item),
       bateria: item.bateria || item.battery || 'OK',
@@ -261,7 +261,7 @@
     const rows = sourceRows.map(normalizeWeeklyAssignment);
     const savedAt = dateToMs(raw.savedAt || raw.updatedAt || raw.createdAt || raw.startAt || raw.data) || Date.now();
     const total = Number(raw.total ?? rows.length ?? 0);
-    const ok = Number(raw.ok ?? rows.filter((row) => row.ok && row.presente !== false && !['Avariada','Em manutenção'].includes(normalizeEstado(row.estado))).length);
+    const ok = Number(raw.ok ?? rows.filter((row) => row.ok && row.presente !== false && !['Avariada','Em manutenÃ§Ã£o'].includes(normalizeEstado(row.estado))).length);
     const alertas = Number(raw.alertas ?? Math.max(0, total - ok));
     return {
       ...raw,
@@ -316,8 +316,8 @@
   function weeklyCounts(reg) {
     const rows = Array.isArray(reg?.radios) ? reg.radios : [];
     const total = Number(reg?.total ?? rows.length ?? 0);
-    const ok = Number(reg?.ok ?? rows.filter((row) => row.ok && row.presente !== false && !['Avariada','Em manutenção'].includes(normalizeEstado(row.estado))).length);
-    const alertas = Number(reg?.alertas ?? rows.filter((row) => !row.ok || row.presente === false || ['Avariada','Em manutenção'].includes(normalizeEstado(row.estado))).length);
+    const ok = Number(reg?.ok ?? rows.filter((row) => row.ok && row.presente !== false && !['Avariada','Em manutenÃ§Ã£o'].includes(normalizeEstado(row.estado))).length);
+    const alertas = Number(reg?.alertas ?? rows.filter((row) => !row.ok || row.presente === false || ['Avariada','Em manutenÃ§Ã£o'].includes(normalizeEstado(row.estado))).length);
     return { total, ok, alertas };
   }
 
@@ -402,17 +402,17 @@
         <td><span class="rd-state ${estadoClass(estado)}"><span>${estadoIcon(estado)}</span>${esc(estado)}</span></td>
         <td>${esc(lastRecordLabel(radio))}</td>
         <td>
-          <button class="rd-action-btn" type="button" title="Ver" data-action="view" data-id="${esc(radio.id)}">⊙</button>
-          <button class="rd-action-btn" type="button" title="Editar" data-action="edit" data-id="${esc(radio.id)}">✎</button>
-          <span class="rd-menu"><button class="rd-action-btn" type="button" title="Mais" data-action="menu">⋮</button><span class="rd-menu-pop">
-            <button type="button" data-action="use" data-id="${esc(radio.id)}">Registar utilização</button>
-            <button type="button" data-action="return" data-id="${esc(radio.id)}">Registar devolução</button>
-            <button type="button" data-action="record" data-id="${esc(radio.id)}">Registar intervenção</button>
+          <button class="rd-action-btn" type="button" title="Ver" data-action="view" data-id="${esc(radio.id)}">âŠ™</button>
+          <button class="rd-action-btn" type="button" title="Editar" data-action="edit" data-id="${esc(radio.id)}">âœŽ</button>
+          <span class="rd-menu"><button class="rd-action-btn" type="button" title="Mais" data-action="menu">â‹®</button><span class="rd-menu-pop">
+            <button type="button" data-action="use" data-id="${esc(radio.id)}">Registar utilizaÃ§Ã£o</button>
+            <button type="button" data-action="return" data-id="${esc(radio.id)}">Registar devoluÃ§Ã£o</button>
+            <button type="button" data-action="record" data-id="${esc(radio.id)}">Registar intervenÃ§Ã£o</button>
             <button type="button" data-action="delete" data-id="${esc(radio.id)}">Apagar</button>
           </span></span>
         </td>
       </tr>`;
-    }).join('') : `<tr><td colspan="6"><div class="reference-empty">Sem rádios para mostrar.</div></td></tr>`;
+    }).join('') : `<tr><td colspan="6"><div class="reference-empty">Sem rÃ¡dios para mostrar.</div></td></tr>`;
 
     const end = total ? Math.min(start + state.pageSize, total) : 0;
     setText('rdTableSummary', `${total ? start + 1 : 0}-${end} de ${total}`);
@@ -423,15 +423,15 @@
     const node = $('rdPagination');
     if (!node) return;
     const pages = Math.max(1, Math.ceil(total / state.pageSize));
-    let html = `<button type="button" ${state.page <= 1 ? 'disabled' : ''} data-page="${state.page - 1}">«</button>`;
+    let html = `<button type="button" ${state.page <= 1 ? 'disabled' : ''} data-page="${state.page - 1}">Â«</button>`;
     for (let i = 1; i <= pages; i += 1) {
       if (pages > 6 && i !== 1 && i !== pages && Math.abs(i - state.page) > 1) {
-        if (i === 2 || i === pages - 1) html += `<span class="ck-page-dots">…</span>`;
+        if (i === 2 || i === pages - 1) html += `<span class="ck-page-dots">â€¦</span>`;
         continue;
       }
       html += `<button type="button" class="${i === state.page ? 'active' : ''}" data-page="${i}">${i}</button>`;
     }
-    html += `<button type="button" ${state.page >= pages ? 'disabled' : ''} data-page="${state.page + 1}">»</button>`;
+    html += `<button type="button" ${state.page >= pages ? 'disabled' : ''} data-page="${state.page + 1}">Â»</button>`;
     node.innerHTML = html;
   }
 
@@ -441,9 +441,9 @@
     const bad = state.radios.filter((radio) => estadoKey(normalizeEstado(radio.estado, radio)) === 'avariada');
     const maint = state.radios.filter((radio) => estadoKey(normalizeEstado(radio.estado, radio)) === 'manutencao');
     const alerts = [];
-    if (bad.length) alerts.push(`${bad.length} rádio${bad.length === 1 ? '' : 's'} avariad${bad.length === 1 ? 'a' : 'as'} requer${bad.length === 1 ? '' : 'em'} intervenção.`);
-    if (maint.length) alerts.push(`${maint.length} rádio${maint.length === 1 ? '' : 's'} em manutenção.`);
-    node.innerHTML = alerts.length ? alerts.map((item) => `<div class="ck-list-item"><strong>${esc(item)}</strong><small>Verifique o estado antes de entregar à equipa.</small></div>`).join('') : `<div class="ck-list-item"><span>Sem alertas críticos neste momento.</span></div>`;
+    if (bad.length) alerts.push(`${bad.length} rÃ¡dio${bad.length === 1 ? '' : 's'} avariad${bad.length === 1 ? 'a' : 'as'} requer${bad.length === 1 ? '' : 'em'} intervenÃ§Ã£o.`);
+    if (maint.length) alerts.push(`${maint.length} rÃ¡dio${maint.length === 1 ? '' : 's'} em manutenÃ§Ã£o.`);
+    node.innerHTML = alerts.length ? alerts.map((item) => `<div class="ck-list-item"><strong>${esc(item)}</strong><small>Verifique o estado antes de entregar Ã  equipa.</small></div>`).join('') : `<div class="ck-list-item"><span>Sem alertas crÃ­ticos neste momento.</span></div>`;
   }
 
   function renderSummaryBars() {
@@ -452,11 +452,11 @@
     const s = stats();
     const total = s.total || 1;
     const rows = [
-      ['Disponíveis', s.disponivel, 'green'],
-      ['Em utilização', s.uso, 'blue'],
+      ['DisponÃ­veis', s.disponivel, 'green'],
+      ['Em utilizaÃ§Ã£o', s.uso, 'blue'],
       ['Em carga', s.carga, 'yellow'],
       ['Avariadas', s.avariada, 'red'],
-      ['Em manutenção', s.manutencao, 'orange']
+      ['Em manutenÃ§Ã£o', s.manutencao, 'orange']
     ];
     node.innerHTML = rows.map(([label, count, color]) => {
       const pct = s.total ? Math.round((count / total) * 1000) / 10 : 0;
@@ -465,13 +465,13 @@
   }
 
   function recordLabel(record) {
-    const code = record.radioCodigo || record.radioNome || record.codigo || 'Rádio';
+    const code = record.radioCodigo || record.radioNome || record.codigo || 'RÃ¡dio';
     const tipo = record.tipo || 'Registo';
-    if (tipo === 'Utilização') return `${code} marcada como em utilização`;
-    if (tipo === 'Devolução') return `${code} registada como devolvida`;
+    if (tipo === 'UtilizaÃ§Ã£o') return `${code} marcada como em utilizaÃ§Ã£o`;
+    if (tipo === 'DevoluÃ§Ã£o') return `${code} registada como devolvida`;
     if (tipo === 'Carga') return `${code} colocada em carga`;
     if (tipo === 'Avaria') return `${code} registada como avariada`;
-    return `${code} — ${tipo}`;
+    return `${code} â€” ${tipo}`;
   }
 
   function renderRecent() {
@@ -487,7 +487,7 @@
     const select = $('rdRecordRadio');
     if (!select) return;
     const current = selectedId || state.selectedId || select.value || '';
-    select.innerHTML = state.radios.map((radio) => `<option value="${esc(radio.id)}" ${String(radio.id) === String(current) ? 'selected' : ''}>${esc(radioCode(radio))} — ${esc(radioSerial(radio))}</option>`).join('');
+    select.innerHTML = state.radios.map((radio) => `<option value="${esc(radio.id)}" ${String(radio.id) === String(current) ? 'selected' : ''}>${esc(radioCode(radio))} â€” ${esc(radioSerial(radio))}</option>`).join('');
   }
 
 
@@ -500,7 +500,7 @@
     const latestCounts = weeklyCounts(latest || {});
     node.innerHTML = `
       <div><small>Semana atual</small><strong>${esc(weekLabel(week))}</strong></div>
-      <div><small>Último registo</small><strong>${latest ? esc(weekLabel(latest.semana)) : '—'}</strong></div>
+      <div><small>Ãšltimo registo</small><strong>${latest ? esc(weekLabel(latest.semana)) : 'â€”'}</strong></div>
       <div><small>Alertas</small><strong class="${latestCounts.alertas ? 'rd-weekly-bad' : ''}">${latest ? latestCounts.alertas : 0}</strong></div>`;
   }
 
@@ -513,15 +513,15 @@
       const counts = weeklyCounts(reg);
       const alertClass = counts.alertas ? 'rd-weekly-alert' : 'rd-weekly-ok';
       return `<tr data-weekly-id="${esc(reg.id || reg.semana)}">
-        <td><strong>${esc(reg.label || weekLabel(reg.semana))}</strong><small class="rd-weekly-sub">${esc(reg.recordId || reg.weekKey || reg.semana || '')}${reg._legacy ? ' · antigo' : ''}</small></td>
-        <td>${esc(reg.responsavel || '—')}</td>
+        <td><strong>${esc(reg.label || weekLabel(reg.semana))}</strong><small class="rd-weekly-sub">${esc(reg.recordId || reg.weekKey || reg.semana || '')}${reg._legacy ? ' Â· antigo' : ''}</small></td>
+        <td>${esc(reg.responsavel || 'â€”')}</td>
         <td><strong>${counts.total}</strong></td>
         <td><span class="rd-weekly-pill ok">${counts.ok}</span></td>
         <td><span class="rd-weekly-pill ${alertClass}">${counts.alertas}</span></td>
         <td>${esc(formatDate(reg.savedAt || reg.updatedAt || reg.createdAt))}</td>
         <td class="rd-weekly-actions-cell">
-          <button class="rd-action-btn" type="button" title="Editar" data-weekly-action="edit" data-id="${esc(reg.id || reg.semana)}">✎</button>
-          <button class="rd-action-btn" type="button" title="Apagar" data-weekly-action="delete" data-id="${esc(reg.id || reg.semana)}">🗑</button>
+          <button class="rd-action-btn" type="button" title="Editar" data-weekly-action="edit" data-id="${esc(reg.id || reg.semana)}">âœŽ</button>
+          <button class="rd-action-btn" type="button" title="Apagar" data-weekly-action="delete" data-id="${esc(reg.id || reg.semana)}">ðŸ—‘</button>
         </td>
       </tr>`;
     }).join('') : `<tr><td colspan="7"><div class="reference-empty">Sem registos semanais guardados.</div></td></tr>`;
@@ -536,14 +536,14 @@
       <td><label class="rd-check"><input type="checkbox" data-weekly-field="presente" ${row.presente !== false ? 'checked' : ''}><span>Sim</span></label></td>
       <td><input type="text" data-weekly-field="local" value="${esc(row.local || '')}" placeholder="Local"></td>
       <td><select data-weekly-field="estado">
-        ${['Disponível','Em uso','Em carga','Avariada','Em manutenção'].map((value) => `<option value="${value}" ${normalizeEstado(row.estado) === value ? 'selected' : ''}>${value}</option>`).join('')}
+        ${['DisponÃ­vel','Em uso','Em carga','Avariada','Em manutenÃ§Ã£o'].map((value) => `<option value="${value}" ${normalizeEstado(row.estado) === value ? 'selected' : ''}>${value}</option>`).join('')}
       </select></td>
       <td><select data-weekly-field="bateria">
-        ${['OK','Baixa','A carregar','Sem bateria','Não testada'].map((value) => `<option value="${value}" ${String(row.bateria || 'OK') === value ? 'selected' : ''}>${value}</option>`).join('')}
+        ${['OK','Baixa','A carregar','Sem bateria','NÃ£o testada'].map((value) => `<option value="${value}" ${String(row.bateria || 'OK') === value ? 'selected' : ''}>${value}</option>`).join('')}
       </select></td>
       <td><label class="rd-check"><input type="checkbox" data-weekly-field="ok" ${row.ok !== false ? 'checked' : ''}><span>OK</span></label></td>
       <td><input type="text" data-weekly-field="notas" value="${esc(row.notas || '')}" placeholder="Notas"></td>
-    </tr>`).join('') || `<tr><td colspan="7"><div class="reference-empty">Sem rádios para conferir.</div></td></tr>`;
+    </tr>`).join('') || `<tr><td colspan="7"><div class="reference-empty">Sem rÃ¡dios para conferir.</div></td></tr>`;
     updateWeeklyModalStats();
   }
 
@@ -557,7 +557,7 @@
         ...base,
         presente: !!get('presente')?.checked,
         local: text(get('local')?.value),
-        estado: text(get('estado')?.value) || 'Disponível',
+        estado: text(get('estado')?.value) || 'DisponÃ­vel',
         bateria: text(get('bateria')?.value) || 'OK',
         ok: !!get('ok')?.checked,
         notas: text(get('notas')?.value)
@@ -572,7 +572,7 @@
     if (!node) return;
     const rows = readWeeklyEditorRowsNoLoop();
     const total = rows.length;
-    const ok = rows.filter((row) => row.ok && row.presente !== false && !['Avariada','Em manutenção'].includes(normalizeEstado(row.estado)) && !['Baixa','Sem bateria','Não testada'].includes(row.bateria)).length;
+    const ok = rows.filter((row) => row.ok && row.presente !== false && !['Avariada','Em manutenÃ§Ã£o'].includes(normalizeEstado(row.estado)) && !['Baixa','Sem bateria','NÃ£o testada'].includes(row.bateria)).length;
     const alertas = Math.max(0, total - ok);
     node.innerHTML = `<span><small>Total</small><strong>${total}</strong></span><span><small>OK</small><strong>${ok}</strong></span><span><small>Alertas</small><strong class="${alertas ? 'rd-weekly-bad' : ''}">${alertas}</strong></span>`;
   }
@@ -588,7 +588,7 @@
         ...base,
         presente: !!get('presente')?.checked,
         local: text(get('local')?.value),
-        estado: text(get('estado')?.value) || 'Disponível',
+        estado: text(get('estado')?.value) || 'DisponÃ­vel',
         bateria: text(get('bateria')?.value) || 'OK',
         ok: !!get('ok')?.checked,
         notas: text(get('notas')?.value)
@@ -605,7 +605,7 @@
     const currentWeek = currentWeekStart();
     const existing = id ? state.weekly.find((item) => String(item.id || item.semana) === String(id)) : state.weekly.find((item) => item.semana === currentWeek);
     state.weeklyEditingId = existing ? (existing.id || existing.semana) : currentWeek;
-    $('rdWeeklyModalTitle').textContent = existing ? `Editar registo semanal — ${weekLabel(existing.semana)}` : 'Novo registo semanal dos rádios';
+    $('rdWeeklyModalTitle').textContent = existing ? `Editar registo semanal â€” ${weekLabel(existing.semana)}` : 'Novo registo semanal dos rÃ¡dios';
     $('rdWeeklySemana').value = existing?.semana || currentWeek;
     $('rdWeeklyResponsavel').value = existing?.responsavel || '';
     $('rdWeeklyObs').value = existing?.observacoes || existing?.obs || '';
@@ -618,7 +618,7 @@
     const semana = $('rdWeeklySemana')?.value || currentWeekStart();
     const rows = readWeeklyEditorRows();
     const total = rows.length;
-    const ok = rows.filter((row) => row.ok && row.presente !== false && !['Avariada','Em manutenção'].includes(normalizeEstado(row.estado)) && !['Baixa','Sem bateria','Não testada'].includes(row.bateria)).length;
+    const ok = rows.filter((row) => row.ok && row.presente !== false && !['Avariada','Em manutenÃ§Ã£o'].includes(normalizeEstado(row.estado)) && !['Baixa','Sem bateria','NÃ£o testada'].includes(row.bateria)).length;
     const alertas = Math.max(0, total - ok);
     const payload = {
       id: semana,
@@ -655,7 +655,7 @@
 
   async function deleteWeeklyRecord(id) {
     const item = state.weekly.find((reg) => String(reg.id || reg.semana) === String(id));
-    if (!item) return toast('Registo semanal não encontrado.', 'error');
+    if (!item) return toast('Registo semanal nÃ£o encontrado.', 'error');
     if (!confirm(`Apagar o registo semanal de ${weekLabel(item.semana)}?`)) return;
     try {
       const firestore = db();
@@ -717,7 +717,7 @@
       state.weeklyLegacy = LEGACY_WEEKLY_LOCAL_KEYS.flatMap((key) => loadLocal(key, [])).map((item) => normalizeWeeklyRecord(item, item.id || item.semana || item.weekKey, 'localLegacy'));
       mergeWeeklyRecords();
       renderAll();
-      toast('Firebase indisponível: modo local ativo.', 'error');
+      toast('Firebase indisponÃ­vel: modo local ativo.', 'error');
       return;
     }
 
@@ -772,7 +772,7 @@
         }, (error) => console.warn(`Sem leitura em ${collectionName}:`, error));
         state.weeklyLegacyUnsubs.push(unsubscribe);
       } catch (error) {
-        console.warn(`Não foi possível ligar a ${collectionName}:`, error);
+        console.warn(`NÃ£o foi possÃ­vel ligar a ${collectionName}:`, error);
       }
     });
   }
@@ -792,12 +792,12 @@
   function openRadioModal(id = null) {
     const radio = id ? getRadio(id) : null;
     state.editingId = radio ? radio.id : null;
-    $('rdModalRadioTitle').textContent = radio ? `Editar ${radioCode(radio)}` : 'Nova rádio';
+    $('rdModalRadioTitle').textContent = radio ? `Editar ${radioCode(radio)}` : 'Nova rÃ¡dio';
     $('rdFormCodigo').value = radio ? radioCode(radio) : nextCode();
     $('rdFormSerie').value = radio ? radioSerial(radio) : '';
     $('rdFormModelo').value = radio ? radioModel(radio) : '';
     $('rdFormLocal').value = radio ? radioLocal(radio) : '';
-    $('rdFormEstado').value = radio ? normalizeEstado(radio.estado, radio) : 'Disponível';
+    $('rdFormEstado').value = radio ? normalizeEstado(radio.estado, radio) : 'DisponÃ­vel';
     $('rdFormUser').value = radio ? radioUser(radio) : '';
     $('rdFormMac').value = radio?.mac || '';
     $('rdFormCanal').value = radio?.canal || radio?.rf || '';
@@ -819,9 +819,9 @@
       nome: codigo,
       serial: text($('rdFormSerie')?.value),
       numeroSerie: text($('rdFormSerie')?.value),
-      modelo: text($('rdFormModelo')?.value) || 'Rádio',
+      modelo: text($('rdFormModelo')?.value) || 'RÃ¡dio',
       local: text($('rdFormLocal')?.value) || 'Sem local',
-      estado: text($('rdFormEstado')?.value) || 'Disponível',
+      estado: text($('rdFormEstado')?.value) || 'DisponÃ­vel',
       userNome: text($('rdFormUser')?.value),
       user: text($('rdFormUser')?.value),
       mac: text($('rdFormMac')?.value),
@@ -834,7 +834,7 @@
 
   async function saveRadio() {
     const payload = payloadFromForm();
-    if (!payload.codigo) return toast('Indica o código da rádio.', 'error');
+    if (!payload.codigo) return toast('Indica o cÃ³digo da rÃ¡dio.', 'error');
     try {
       const firestore = db();
       if (firestore) {
@@ -847,16 +847,16 @@
         renderAll();
       }
       closeModal('radio');
-      toast('Rádio guardada.');
+      toast('RÃ¡dio guardada.');
     } catch (error) {
       console.error(error);
-      toast('Erro ao guardar rádio.', 'error');
+      toast('Erro ao guardar rÃ¡dio.', 'error');
     }
   }
 
   async function deleteRadio(id) {
     const radio = getRadio(id);
-    if (!radio) return toast('Rádio não encontrada.', 'error');
+    if (!radio) return toast('RÃ¡dio nÃ£o encontrada.', 'error');
     if (!confirm(`Apagar ${radioCode(radio)}?`)) return;
     try {
       const firestore = db();
@@ -866,43 +866,43 @@
         saveLocal(LOCAL_RADIOS_KEY, state.radios);
         renderAll();
       }
-      toast('Rádio apagada.');
+      toast('RÃ¡dio apagada.');
     } catch (error) {
       console.error(error);
-      toast('Erro ao apagar rádio.', 'error');
+      toast('Erro ao apagar rÃ¡dio.', 'error');
     }
   }
 
   function openDetail(id) {
     const radio = getRadio(id);
-    if (!radio) return toast('Rádio não encontrada.', 'error');
+    if (!radio) return toast('RÃ¡dio nÃ£o encontrada.', 'error');
     state.selectedId = id;
     $('rdDetailTitle').textContent = radioCode(radio);
     const estado = normalizeEstado(radio.estado, radio);
     const fields = [
-      ['Código', radioCode(radio)], ['N.º Série', radioSerial(radio)], ['Modelo', radioModel(radio)],
-      ['Local', radioLocal(radio)], ['Estado', estado], ['Utilizador', radioUser(radio) || '—'],
-      ['MAC', radio.mac || '—'], ['Canal/RF', radio.canal || radio.rf || '—'], ['Notas', radio.notas || '—']
+      ['CÃ³digo', radioCode(radio)], ['N.Âº SÃ©rie', radioSerial(radio)], ['Modelo', radioModel(radio)],
+      ['Local', radioLocal(radio)], ['Estado', estado], ['Utilizador', radioUser(radio) || 'â€”'],
+      ['MAC', radio.mac || 'â€”'], ['Canal/RF', radio.canal || radio.rf || 'â€”'], ['Notas', radio.notas || 'â€”']
     ];
     $('rdDetailGrid').innerHTML = fields.map(([k, v]) => `<div class="ck-detail-item"><small>${esc(k)}</small><strong>${esc(v)}</strong></div>`).join('');
     const records = getRadioRecords(id).slice(0, 6);
-    $('rdDetailRecords').innerHTML = records.length ? records.map((record) => `<div class="ck-modal-list-item"><strong>${esc(record.tipo || 'Registo')}</strong><span>${esc(record.notas || record.obs || 'Sem notas')}</span><small>${esc(formatDate(record.createdAt || record.dataMs))}</small></div>`).join('') : '<div class="reference-empty">Sem registos para este rádio.</div>';
+    $('rdDetailRecords').innerHTML = records.length ? records.map((record) => `<div class="ck-modal-list-item"><strong>${esc(record.tipo || 'Registo')}</strong><span>${esc(record.notas || record.obs || 'Sem notas')}</span><small>${esc(formatDate(record.createdAt || record.dataMs))}</small></div>`).join('') : '<div class="reference-empty">Sem registos para este rÃ¡dio.</div>';
     $('rdDetailEditBtn').onclick = () => { closeModal('detail'); openRadioModal(id); };
-    $('rdDetailInterventionBtn').onclick = () => { closeModal('detail'); openRecordModal('Intervenção', id); };
+    $('rdDetailInterventionBtn').onclick = () => { closeModal('detail'); openRecordModal('IntervenÃ§Ã£o', id); };
     $('rdModalDetalhe').style.display = 'flex';
   }
 
-  function openRecordModal(mode = 'Intervenção', id = '') {
+  function openRecordModal(mode = 'IntervenÃ§Ã£o', id = '') {
     state.recordMode = mode;
     state.selectedId = id || state.selectedId || state.radios[0]?.id || '';
     renderRecordSelect(state.selectedId);
-    const titleMap = { 'Utilização':'Registar utilização', 'Devolução':'Registar devolução', 'Intervenção':'Registar intervenção' };
+    const titleMap = { 'UtilizaÃ§Ã£o':'Registar utilizaÃ§Ã£o', 'DevoluÃ§Ã£o':'Registar devoluÃ§Ã£o', 'IntervenÃ§Ã£o':'Registar intervenÃ§Ã£o' };
     $('rdModalRegistoTitle').textContent = titleMap[mode] || `Registar ${mode}`;
     $('rdRecordTipo').value = mode;
-    const stateByMode = { 'Utilização':'Em uso', 'Devolução':'Disponível', 'Intervenção':'Disponível', 'Carga':'Em carga', 'Avaria':'Avariada' };
-    $('rdRecordEstado').value = stateByMode[mode] || 'Disponível';
+    const stateByMode = { 'UtilizaÃ§Ã£o':'Em uso', 'DevoluÃ§Ã£o':'DisponÃ­vel', 'IntervenÃ§Ã£o':'DisponÃ­vel', 'Carga':'Em carga', 'Avaria':'Avariada' };
+    $('rdRecordEstado').value = stateByMode[mode] || 'DisponÃ­vel';
     const radio = getRadio(state.selectedId);
-    $('rdRecordUser').value = mode === 'Devolução' ? '' : (radio ? radioUser(radio) : '');
+    $('rdRecordUser').value = mode === 'DevoluÃ§Ã£o' ? '' : (radio ? radioUser(radio) : '');
     $('rdRecordData').value = isoLocalNow();
     $('rdRecordLocal').value = radio ? radioLocal(radio) : '';
     $('rdRecordNotas').value = '';
@@ -912,9 +912,9 @@
   async function saveRecord() {
     const radioId = $('rdRecordRadio')?.value || '';
     const radio = getRadio(radioId);
-    if (!radio) return toast('Escolhe uma rádio.', 'error');
-    const tipo = text($('rdRecordTipo')?.value) || 'Intervenção';
-    const estadoDepois = text($('rdRecordEstado')?.value) || 'Disponível';
+    if (!radio) return toast('Escolhe uma rÃ¡dio.', 'error');
+    const tipo = text($('rdRecordTipo')?.value) || 'IntervenÃ§Ã£o';
+    const estadoDepois = text($('rdRecordEstado')?.value) || 'DisponÃ­vel';
     const createdAt = $('rdRecordData')?.value ? new Date($('rdRecordData').value).getTime() : Date.now();
     const user = text($('rdRecordUser')?.value);
     const local = text($('rdRecordLocal')?.value) || radioLocal(radio);
@@ -984,21 +984,21 @@
   function showAllAlerts() {
     const bad = state.radios.filter((radio) => ['avariada','manutencao'].includes(estadoKey(normalizeEstado(radio.estado, radio))));
     if (!bad.length) return toast('Sem alertas para mostrar.');
-    alert(bad.map((radio) => `${radioCode(radio)} — ${normalizeEstado(radio.estado, radio)} — ${radioLocal(radio)}`).join('\n'));
+    alert(bad.map((radio) => `${radioCode(radio)} â€” ${normalizeEstado(radio.estado, radio)} â€” ${radioLocal(radio)}`).join('\n'));
   }
 
   function showAllRecords() {
     const items = [...state.records, ...state.legacyRecords].sort((a,b) => Number(b.createdAt || b.dataMs || 0) - Number(a.createdAt || a.dataMs || 0));
     if (!items.length) return toast('Sem registos para mostrar.');
-    alert(items.slice(0, 20).map((record) => `${recordLabel(record)} — ${formatDate(record.createdAt || record.dataMs)}`).join('\n'));
+    alert(items.slice(0, 20).map((record) => `${recordLabel(record)} â€” ${formatDate(record.createdAt || record.dataMs)}`).join('\n'));
   }
 
   function bind() {
     $('rdBtnNova')?.addEventListener('click', () => openRadioModal());
     $('rdSaveRadioBtn')?.addEventListener('click', saveRadio);
-    $('rdBtnUtilizacao')?.addEventListener('click', () => openRecordModal('Utilização'));
-    $('rdBtnDevolucao')?.addEventListener('click', () => openRecordModal('Devolução'));
-    $('rdBtnIntervencao')?.addEventListener('click', () => openRecordModal('Intervenção'));
+    $('rdBtnUtilizacao')?.addEventListener('click', () => openRecordModal('UtilizaÃ§Ã£o'));
+    $('rdBtnDevolucao')?.addEventListener('click', () => openRecordModal('DevoluÃ§Ã£o'));
+    $('rdBtnIntervencao')?.addEventListener('click', () => openRecordModal('IntervenÃ§Ã£o'));
     $('rdBtnRelatorio')?.addEventListener('click', downloadCsv);
     $('rdBtnSemanalRapido')?.addEventListener('click', () => openWeeklyModal());
     $('rdBtnNovoSemanal')?.addEventListener('click', () => openWeeklyModal());
@@ -1035,9 +1035,9 @@
       document.querySelectorAll('.rd-menu.open').forEach((menu) => menu.classList.remove('open'));
       if (action === 'view') return openDetail(id);
       if (action === 'edit') return openRadioModal(id);
-      if (action === 'use') return openRecordModal('Utilização', id);
-      if (action === 'return') return openRecordModal('Devolução', id);
-      if (action === 'record') return openRecordModal('Intervenção', id);
+      if (action === 'use') return openRecordModal('UtilizaÃ§Ã£o', id);
+      if (action === 'return') return openRecordModal('DevoluÃ§Ã£o', id);
+      if (action === 'record') return openRecordModal('IntervenÃ§Ã£o', id);
       if (action === 'delete') return deleteRadio(id);
     });
 
@@ -1068,3 +1068,4 @@
 
   window.RadiosPage = { openRadioModal, closeModal, openRecordModal, openWeeklyModal, saveRadio, saveRecord, saveWeeklyRecord, deleteRadio, deleteWeeklyRecord, downloadCsv, exportWeeklyCsv, renderAll };
 })();
+

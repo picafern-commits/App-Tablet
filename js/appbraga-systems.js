@@ -1,13 +1,13 @@
-
+﻿
 /*
-  AppBraga Systems v1.58.169
-  Camada comum para movimentos, alertas, notificações, logs,
-  resumo de stock, manutenção, etiquetas e diagnóstico.
+  AppBraga Systems v1.58.172
+  Camada comum para movimentos, alertas, notificaÃ§Ãµes, logs,
+  resumo de stock, manutenÃ§Ã£o, etiquetas e diagnÃ³stico.
 */
 (function(){
-  if (window.AppBragaSystems && window.AppBragaSystems.version === "1.58.169") return;
+  if (window.AppBragaSystems && window.AppBragaSystems.version === "1.58.172") return;
 
-  const VERSION = "1.58.169";
+  const VERSION = "1.58.172";
   const CACHE_KEY = "appbraga-systems-cache-v1";
   const ALERT_KEYS_KEY = "appbraga-alert-keys-v1";
 
@@ -164,7 +164,7 @@
   function resumoMovimento(tipo, d){
     const t = tipo || "movimento";
     const eq = d.equipamento || d.modelo || d.referencia || "";
-    if (eq) return `${t} — ${eq}`;
+    if (eq) return `${t} â€” ${eq}`;
     return t;
   }
 
@@ -183,7 +183,7 @@
 
   async function criarNotificacao(titulo, mensagem, dados = {}){
     const payload = {
-      titulo: titulo || "Notificação",
+      titulo: titulo || "NotificaÃ§Ã£o",
       mensagem: mensagem || "",
       prioridade: dados.prioridade || "normal",
       estado: dados.estado || "nao_lida",
@@ -256,11 +256,11 @@
     if (path.includes("impressoras")) return "Impressoras";
     if (path.includes("add-toner")) return "Adicionar Toner";
     if (path.includes("etiquetas")) return "Etiquetas Word";
-    if (path.includes("manutencao")) return "Manutenção";
-    if (path.includes("historico")) return "Histórico";
+    if (path.includes("manutencao")) return "ManutenÃ§Ã£o";
+    if (path.includes("historico")) return "HistÃ³rico";
     if (path.includes("dashboard")) return "Dashboard";
-    if (path.includes("diagnostico")) return "Diagnóstico";
-    if (path.includes("notificacoes")) return "Notificações";
+    if (path.includes("diagnostico")) return "DiagnÃ³stico";
+    if (path.includes("notificacoes")) return "NotificaÃ§Ãµes";
     return "AppBraga";
   }
 
@@ -295,7 +295,7 @@
       if (q <= 0) {
         out.push({
           tipo:"stock_sem_unidades",
-          titulo:`Sem stock — ${corOf(item)} ${equipOf(item) || refOf(item)}`,
+          titulo:`Sem stock â€” ${corOf(item)} ${equipOf(item) || refOf(item)}`,
           prioridade:"alta",
           referencia:refOf(item),
           equipamento:equipOf(item),
@@ -330,8 +330,8 @@
       if (pct === 25) {
         out.push({
           tipo:"toner_25",
-          titulo:`Toner a 25% — ${equipamento}`,
-          mensagem:`${equipamento} — ${cor} chegou a 25% (${localizacao || "sem local"})`,
+          titulo:`Toner a 25% â€” ${equipamento}`,
+          mensagem:`${equipamento} â€” ${cor} chegou a 25% (${localizacao || "sem local"})`,
           prioridade:"media",
           equipamento, localizacao, cor, percentagem:pct,
           key:`toner25-${idOf(item)||equipamento}-${cor}`
@@ -340,8 +340,8 @@
       if (pct <= 0) {
         out.push({
           tipo:"toner_0",
-          titulo:`Toner a 0% — ${equipamento}`,
-          mensagem:`${equipamento} — ${cor} chegou a 0% (${localizacao || "sem local"})`,
+          titulo:`Toner a 0% â€” ${equipamento}`,
+          mensagem:`${equipamento} â€” ${cor} chegou a 0% (${localizacao || "sem local"})`,
           prioridade:"critica",
           equipamento, localizacao, cor, percentagem:pct,
           key:`toner0-${idOf(item)||equipamento}-${cor}`
@@ -351,8 +351,8 @@
       if (Number.isFinite(prev) && prev <= 0 && (pct === 99 || pct === 100)) {
         out.push({
           tipo:"toner_reposto",
-          titulo:`Toner reposto — ${equipamento}`,
-          mensagem:`${equipamento} — ${cor} passou de 0% para ${pct}%`,
+          titulo:`Toner reposto â€” ${equipamento}`,
+          mensagem:`${equipamento} â€” ${cor} passou de 0% para ${pct}%`,
           prioridade:"baixa",
           equipamento, localizacao, cor, percentagem:pct,
           key:`toner-reposto-${idOf(item)||equipamento}-${cor}-${Date.now()}`
@@ -394,7 +394,7 @@
       if (st === "atrasada" || st === "critica") {
         out.push({
           tipo: st === "atrasada" ? "manutencao_atrasada" : "manutencao_critica",
-          titulo: `${st === "atrasada" ? "Manutenção atrasada" : "Manutenção crítica"} — ${equipOf(item) || "Equipamento"}`,
+          titulo: `${st === "atrasada" ? "ManutenÃ§Ã£o atrasada" : "ManutenÃ§Ã£o crÃ­tica"} â€” ${equipOf(item) || "Equipamento"}`,
           prioridade: st === "atrasada" ? "alta" : "critica",
           equipamento: equipOf(item),
           localizacao: localOf(item),
@@ -423,7 +423,7 @@
   async function registarTonerAdicionado(dados = {}){
     const id = await criarMovimento("entrada_stock", {
       area:"Adicionar Toner",
-      titulo:`Toner adicionado — ${dados.equipamento || dados.modelo || dados.cor || "Toner"}`,
+      titulo:`Toner adicionado â€” ${dados.equipamento || dados.modelo || dados.cor || "Toner"}`,
       descricao:"Registo de entrada de toner no stock.",
       ...dados
     });
@@ -434,7 +434,7 @@
   async function registarEtiquetaGerada(dados = {}){
     const id = await criarMovimento("etiqueta_gerada", {
       area:"Etiquetas Word",
-      titulo:`Etiqueta gerada — ${dados.referencia || dados.codigoEtiqueta || dados.equipamento || "Etiqueta"}`,
+      titulo:`Etiqueta gerada â€” ${dados.referencia || dados.codigoEtiqueta || dados.equipamento || "Etiqueta"}`,
       descricao:"Documento Word de etiqueta gerado.",
       estado:"Gerado",
       ...dados
@@ -444,9 +444,9 @@
 
   async function registarIntervencao(dados = {}){
     const id = await criarMovimento("manutencao", {
-      area:"Manutenção",
-      titulo:`Intervenção — ${dados.equipamento || dados.modelo || "Equipamento"}`,
-      descricao:dados.pedido || dados.descricao || "Intervenção técnica registada.",
+      area:"ManutenÃ§Ã£o",
+      titulo:`IntervenÃ§Ã£o â€” ${dados.equipamento || dados.modelo || "Equipamento"}`,
+      descricao:dados.pedido || dados.descricao || "IntervenÃ§Ã£o tÃ©cnica registada.",
       ...dados
     });
     await avaliarManutencaoEAlertas();
@@ -456,7 +456,7 @@
   async function registarLeituraImpressora(dados = {}){
     const id = await criarMovimento("leitura_impressora", {
       area:"Impressoras",
-      titulo:`Leitura — ${dados.equipamento || dados.modelo || "Impressora"}`,
+      titulo:`Leitura â€” ${dados.equipamento || dados.modelo || "Impressora"}`,
       descricao:"Leitura de estado/toner registada.",
       ...dados
     });
@@ -588,7 +588,7 @@
     };
   }
 
-  // Compatibilidade: envolver funções antigas sem as partir.
+  // Compatibilidade: envolver funÃ§Ãµes antigas sem as partir.
   function wrapOnce(name, wrapper){
     const original = window[name];
     if (typeof original !== "function" || original.__appbragaSystemsWrapped) return;
@@ -665,7 +665,7 @@
     isToday
   };
 
-  // Aliases globais para páginas antigas/nova camada.
+  // Aliases globais para pÃ¡ginas antigas/nova camada.
   window.criarMovimentoAppBraga = criarMovimento;
   window.criarAlertaAppBraga = criarAlerta;
   window.criarNotificacaoAppBraga = criarNotificacao;
@@ -687,3 +687,4 @@
     setTimeout(installLegacyHooks, 1800);
   }
 })();
+

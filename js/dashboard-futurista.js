@@ -1,4 +1,4 @@
-(function(){
+﻿(function(){
   'use strict';
   function $(id){return document.getElementById(id)}
   function text(id,v){const el=$(id); if(el) el.textContent = v}
@@ -52,12 +52,12 @@
 
   function updateDerived(){
     /*
-      v1.58.169
+      v1.58.172
       O dashboard passou a ter contadores reais ligados por listeners Firebase.
-      Esta função antiga lia métricas escondidas/temporárias e voltava a escrever
-      zeros ou traços por cima dos números certos a cada intervalo, causando o
+      Esta funÃ§Ã£o antiga lia mÃ©tricas escondidas/temporÃ¡rias e voltava a escrever
+      zeros ou traÃ§os por cima dos nÃºmeros certos a cada intervalo, causando o
       efeito de os contadores aparecerem e desaparecerem.
-      Quando o modo real está ativo, esta função só mantém a disponibilidade.
+      Quando o modo real estÃ¡ ativo, esta funÃ§Ã£o sÃ³ mantÃ©m a disponibilidade.
     */
     const sistema = $('dashSistemaDisponibilidade');
     if(sistema){ sistema.textContent = navigator.onLine ? '99.7%' : 'Offline'; }
@@ -67,10 +67,10 @@
     const stock = readInt('dashStockTotal');
     const manut = readInt('dashTicketsAbertos');
     const impOk = readInt('dashImpressorasOk');
-    text('dashKpiEquipamentos', totalEq || '—');
-    text('dashKpiStock', stock || '—');
+    text('dashKpiEquipamentos', totalEq || 'â€”');
+    text('dashKpiStock', stock || 'â€”');
     text('dashKpiTarefas', manut || '0');
-    text('dashKpiImpressorasOk', impOk || '—');
+    text('dashKpiImpressorasOk', impOk || 'â€”');
     const impTotal = readInt('dashKpiImpressoras');
     if(impTotal && impOk){ text('dashKpiImpressorasSub', 'Online: ' + impOk); }
   }
@@ -107,13 +107,13 @@
 })();
 
 
-// v1.58.169 — estado global para dashboard
+// v1.58.172 â€” estado global para dashboard
 window.addEventListener("appbraga:systems:update", function(ev){
   try { window.__appbragaSystemsDashboard = ev.detail || {}; } catch(e) {}
 });
 
 
-/* v1.58.169 — Dashboard: dados reais estáveis sem flicker nos contadores */
+/* v1.58.172 â€” Dashboard: dados reais estÃ¡veis sem flicker nos contadores */
 (function(){
   'use strict';
 
@@ -126,7 +126,7 @@ window.addEventListener("appbraga:systems:update", function(ev){
   };
 
   const $ = (id) => document.getElementById(id);
-  const set = (id, value) => { const el = $(id); if (el) el.textContent = String(value ?? '—'); };
+  const set = (id, value) => { const el = $(id); if (el) el.textContent = String(value ?? 'â€”'); };
   const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (ch) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const norm = (value) => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
   const toArr = (value) => Array.isArray(value) ? value : [];
@@ -159,7 +159,7 @@ window.addEventListener("appbraga:systems:update", function(ev){
     return t ? new Date(t).toISOString().slice(0,10) : '';
   }
 
-  function fmtDate(value, empty='—'){
+  function fmtDate(value, empty='â€”'){
     const date = dateOnly(value);
     if (!date) return empty;
     const [y,m,d] = date.split('-');
@@ -178,7 +178,7 @@ window.addEventListener("appbraga:systems:update", function(ev){
   }
 
   function statusLabel(status){
-    return ({ pendente:'Pendente', progresso:'Em progresso', concluida:'Concluída', vencida:'Vencida' })[status] || 'Pendente';
+    return ({ pendente:'Pendente', progresso:'Em progresso', concluida:'ConcluÃ­da', vencida:'Vencida' })[status] || 'Pendente';
   }
 
   function badgeClass(status){
@@ -189,7 +189,7 @@ window.addEventListener("appbraga:systems:update", function(ev){
     const t = doc || {};
     return {
       id: t.id || t.docId || t.uid || '',
-      title: t.title || t.titulo || t.nome || t.tarefa || 'Tarefa sem título',
+      title: t.title || t.titulo || t.nome || t.tarefa || 'Tarefa sem tÃ­tulo',
       owner: t.owner || t.responsavel || t.user || t.utilizador || '',
       status: statusOfTask(t),
       createdAt: t.createdAt || t.criadoEm || t.dataCriacao || t.created || t.createdAtMs || '',
@@ -245,20 +245,20 @@ window.addEventListener("appbraga:systems:update", function(ev){
         equipmentKeys.add(`${name}:${key}`);
       });
     });
-    // Se as coleções novas ainda não carregaram, aproveita os arrays antigos/globais já existentes.
+    // Se as coleÃ§Ãµes novas ainda nÃ£o carregaram, aproveita os arrays antigos/globais jÃ¡ existentes.
     try { if (typeof pcsGlobal !== 'undefined') toArr(pcsGlobal).forEach((i, idx)=>equipmentKeys.add(`pcs:${norm(i.nome||i.name||i.idDoc||idx)}`)); } catch(_){ }
     try { if (typeof radiosData !== 'undefined') toArr(radiosData).forEach((i, idx)=>equipmentKeys.add(`radios:${norm(i.serial||i.serie||i.nome||i.id||idx)}`)); } catch(_){ }
     try { toArr(window.pistolasData).forEach((i, idx)=>equipmentKeys.add(`pistolas:${norm(i.serie||i.serial||i.codigo||i.id||idx)}`)); } catch(_){ }
     try { toArr(window.portasData).forEach((i, idx)=>{}); } catch(_){ }
-    set('dashKpiEquipamentos', equipmentKeys.size || '—');
-    set('dashKpiEquipamentosSub', equipmentKeys.size ? 'Pistolas, rádios e PCs' : 'Registados');
+    set('dashKpiEquipamentos', equipmentKeys.size || 'â€”');
+    set('dashKpiEquipamentosSub', equipmentKeys.size ? 'Pistolas, rÃ¡dios e PCs' : 'Registados');
 
     const usersTotal = state.users.length || toArr(window.usersData).length;
-    set('dashKpiUsers', usersTotal || '—');
+    set('dashKpiUsers', usersTotal || 'â€”');
     set('dashKpiUsersSub', usersTotal ? 'Registados' : 'Ativos');
 
     const stockTotal = state.stock.length || (typeof stockGlobal !== 'undefined' ? toArr(stockGlobal).length : 0);
-    set('dashKpiStock', stockTotal || '—');
+    set('dashKpiStock', stockTotal || 'â€”');
     set('dashKpiStockSub', stockTotal ? 'Toners em stock' : 'Em stock');
 
     const openTasks = state.tasks.filter(t => !['concluida'].includes(t.status)).length;
@@ -301,9 +301,9 @@ window.addEventListener("appbraga:systems:update", function(ev){
       const due = dateOnly(t.dueDate);
       const danger = status === 'vencida' || (due && due < todayKey());
       return `<div class="dash-task-real-row" title="${esc(t.title)}">
-        <div><strong>${esc(t.title)}</strong><small>${esc(t.owner || 'Sem responsável')}</small></div>
+        <div><strong>${esc(t.title)}</strong><small>${esc(t.owner || 'Sem responsÃ¡vel')}</small></div>
         <span class="dash-badge ${badgeClass(status)}">${esc(statusLabel(status))}</span>
-        <div class="dash-task-date"><em>Criada</em><span>${esc(fmtDate(t.createdAt, '—'))}</span></div>
+        <div class="dash-task-date"><em>Criada</em><span>${esc(fmtDate(t.createdAt, 'â€”'))}</span></div>
         <div class="dash-task-date ${danger ? 'danger' : ''}"><em>Prazo</em><span>${esc(fmtDate(t.dueDate, 'Sem prazo'))}</span></div>
       </div>`;
     }).join('');
@@ -360,3 +360,4 @@ window.addEventListener("appbraga:systems:update", function(ev){
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once:true });
   else boot();
 })();
+

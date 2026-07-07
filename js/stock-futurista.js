@@ -1,4 +1,4 @@
-
+﻿
 (function(){
   const STOCK_CACHE_KEY = "appBragaStockFuturistaStock";
   const HIST_CACHE_KEY = "appBragaStockFuturistaHistorico";
@@ -89,7 +89,7 @@
   }
 
   function fmtDate(v){
-    if (!v) return "—";
+    if (!v) return "â€”";
     if (v && typeof v.toDate === "function") {
       try { return v.toDate().toLocaleDateString("pt-PT"); } catch(e) {}
     }
@@ -97,7 +97,7 @@
       try { return new Date(v.seconds * 1000).toLocaleDateString("pt-PT"); } catch(e) {}
     }
     const raw = String(v || "").trim();
-    if (!raw) return "—";
+    if (!raw) return "â€”";
     if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
       const [y,m,d] = raw.split("-");
       return `${d}/${m}/${y}`;
@@ -142,7 +142,7 @@
   }
 
   function refOf(item){
-    return item?.referencia || item?.ref || item?.sdsRef || item?.lote || item?.codigoEtiqueta || item?.idInterno || item?.idDoc || "—";
+    return item?.referencia || item?.ref || item?.sdsRef || item?.lote || item?.codigoEtiqueta || item?.idInterno || item?.idDoc || "â€”";
   }
 
   function equipOf(item){
@@ -150,11 +150,11 @@
   }
 
   function localOf(item){
-    return item?.localizacao || item?.local || item?.armazem || "Sem localização";
+    return item?.localizacao || item?.local || item?.armazem || "Sem localizaÃ§Ã£o";
   }
 
   function dateOf(item){
-    return item?.data || item?.dataScan || item?.dataEtiqueta || item?.dataFolha || item?.createdAt || item?.created || item?.createdAtMs || "—";
+    return item?.data || item?.dataScan || item?.dataEtiqueta || item?.dataFolha || item?.createdAt || item?.created || item?.createdAtMs || "â€”";
   }
 
   function getItemId(item){
@@ -164,7 +164,7 @@
   function statusFor(q){
     if (q <= 0) return ["Sem stock", "zero"];
     if (q <= 5) return ["Baixo", "low"];
-    return ["Disponível", "ok"];
+    return ["DisponÃ­vel", "ok"];
   }
 
   function stockSearchBlob(item){
@@ -192,7 +192,7 @@
     if (!sel) return;
     const current = sel.value;
     const locais = [...new Set((items || getStock()).map(localOf).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"pt"));
-    const html = '<option value="">Todos os armazéns</option>' + locais.map(l => `<option value="${esc(l)}">${esc(l)}</option>`).join("");
+    const html = '<option value="">Todos os armazÃ©ns</option>' + locais.map(l => `<option value="${esc(l)}">${esc(l)}</option>`).join("");
     if (sel.dataset.stockOptionsHtml !== html) {
       sel.innerHTML = html;
       sel.dataset.stockOptionsHtml = html;
@@ -228,7 +228,7 @@
     if (!items.length) {
       tbody.innerHTML = '<tr><td colspan="8" class="stock-empty-row">Sem toners em stock para os filtros atuais.</td></tr>';
       const info = byId("stockTableInfo");
-      if (info) info.textContent = "Mostrando 0 referências";
+      if (info) info.textContent = "Mostrando 0 referÃªncias";
       return;
     }
 
@@ -247,23 +247,23 @@
         <td>${esc(fmtDate(dateOf(item)))}</td>
         <td>
           <div class="stock-actions stock-actions-no-view">
-            <button class="stock-action-icon" type="button" data-stock-action="use" data-id="${esc(id)}" title="Marcar usado">↩</button>
-            <button class="stock-action-icon" type="button" data-stock-action="edit" data-id="${esc(id)}" title="Editar">✎</button>
-            <button class="stock-action-icon" type="button" data-stock-action="delete" data-id="${esc(id)}" title="Apagar">🗑</button>
+            <button class="stock-action-icon" type="button" data-stock-action="use" data-id="${esc(id)}" title="Marcar usado">â†©</button>
+            <button class="stock-action-icon" type="button" data-stock-action="edit" data-id="${esc(id)}" title="Editar">âœŽ</button>
+            <button class="stock-action-icon" type="button" data-stock-action="delete" data-id="${esc(id)}" title="Apagar">ðŸ—‘</button>
           </div>
         </td>
       </tr>`;
     }).join("");
 
     const info = byId("stockTableInfo");
-    if (info) info.textContent = `Mostrando 1 a ${Math.min(items.length, 50)} de ${items.length} referências`;
+    if (info) info.textContent = `Mostrando 1 a ${Math.min(items.length, 50)} de ${items.length} referÃªncias`;
   }
 
   function renderAlerts(items){
     const host = byId("stockAlertsList");
     if (!host) return;
-    // v1.58.169: alertas de stock só aparecem quando a quantidade é 0.
-    // Stock baixo continua visível no KPI/estado da tabela, mas não entra neste card.
+    // v1.58.172: alertas de stock sÃ³ aparecem quando a quantidade Ã© 0.
+    // Stock baixo continua visÃ­vel no KPI/estado da tabela, mas nÃ£o entra neste card.
     const alerts = getStock().filter(i => qty(i) <= 0).sort((a,b)=>qty(a)-qty(b)).slice(0, 5);
     if (!alerts.length) {
       host.innerHTML = '<div class="stock-alert"><span class="stock-alert-dot"></span><span>Sem artigos sem stock neste momento</span><small>OK</small></div>';
@@ -271,7 +271,7 @@
     }
     host.innerHTML = alerts.map(item => `<div class="stock-alert crit">
       <span class="stock-alert-dot"></span>
-      <span>${esc(colorName(item))} — ${esc(equipOf(item))} — ${esc(localOf(item))}</span>
+      <span>${esc(colorName(item))} â€” ${esc(equipOf(item))} â€” ${esc(localOf(item))}</span>
       <small>Sem stock</small>
     </div>`).join("");
   }
@@ -300,7 +300,7 @@
     }));
     const saidas = sortRecent(getHistorico()).map(i => ({
       dataRaw: i?.usadoAt || i?.created || i?.createdAt || dateOf(i),
-      data: fmtDate(i?.usadoAt || i?.created || i?.createdAt || dateOf(i)), tipo: "Saída", cor: colorName(i), ref: refOf(i),
+      data: fmtDate(i?.usadoAt || i?.created || i?.createdAt || dateOf(i)), tipo: "SaÃ­da", cor: colorName(i), ref: refOf(i),
       quantidade: qty(i), local: localOf(i), user: i?.user || i?.utilizador || "Sistema"
     }));
     return [...entradas, ...saidas].sort((a,b)=>dateMs(b.dataRaw || b.data)-dateMs(a.dataRaw || a.data));
@@ -315,7 +315,7 @@
       return;
     }
     host.innerHTML = rows.slice(0, 5).map(m => `<tr>
-      <td>${esc(m.data || "—")}</td>
+      <td>${esc(m.data || "â€”")}</td>
       <td><span class="stock-status ${m.tipo === "Entrada" ? "ok" : "low"}">${esc(m.tipo)}</span></td>
       <td><span class="stock-color-dot ${colorCls(m.cor)}"></span>${esc(m.cor)}</td>
       <td>${esc(m.ref)}</td>
@@ -341,7 +341,7 @@
     const slice = rows.slice(start, start + MOVEMENTS_PER_PAGE);
 
     body.innerHTML = slice.length ? slice.map(m => `<tr>
-      <td>${esc(m.data || "—")}</td>
+      <td>${esc(m.data || "â€”")}</td>
       <td><span class="stock-status ${m.tipo === "Entrada" ? "ok" : "low"}">${esc(m.tipo)}</span></td>
       <td><span class="stock-color-dot ${colorCls(m.cor)}"></span>${esc(m.cor)}</td>
       <td>${esc(m.ref)}</td>
@@ -353,16 +353,16 @@
     info.textContent = total ? `${start + 1}-${Math.min(start + MOVEMENTS_PER_PAGE, total)} de ${total} registos` : "0 registos";
 
     const buttons = [];
-    buttons.push(`<button type="button" ${stockMovementsPage <= 1 ? "disabled" : ""} data-stock-mov-page="${stockMovementsPage - 1}">‹</button>`);
+    buttons.push(`<button type="button" ${stockMovementsPage <= 1 ? "disabled" : ""} data-stock-mov-page="${stockMovementsPage - 1}">â€¹</button>`);
     const candidates = [1, stockMovementsPage - 1, stockMovementsPage, stockMovementsPage + 1, pages].filter(n => n >= 1 && n <= pages);
     const unique = [...new Set(candidates)].sort((a,b)=>a-b);
     let last = 0;
     unique.forEach(n => {
-      if (last && n - last > 1) buttons.push(`<button type="button" disabled>…</button>`);
+      if (last && n - last > 1) buttons.push(`<button type="button" disabled>â€¦</button>`);
       buttons.push(`<button type="button" class="${n === stockMovementsPage ? "active" : ""}" data-stock-mov-page="${n}">${n}</button>`);
       last = n;
     });
-    buttons.push(`<button type="button" ${stockMovementsPage >= pages ? "disabled" : ""} data-stock-mov-page="${stockMovementsPage + 1}">›</button>`);
+    buttons.push(`<button type="button" ${stockMovementsPage >= pages ? "disabled" : ""} data-stock-mov-page="${stockMovementsPage + 1}">â€º</button>`);
     pager.innerHTML = buttons.join("");
   }
 
@@ -409,22 +409,22 @@
     const fallback = sortRecent(getStock()).filter(i => i?.codigoEtiqueta || i?.sdsRef || i?.lote).map(buildLabelFromStock);
     const list = (labels.length ? labels : fallback).slice(0, 4);
     if (!list.length) {
-      host.innerHTML = '<div class="stock-label-row"><strong>Sem etiquetas recentes</strong><span>—</span><span>—</span><span></span></div>';
+      host.innerHTML = '<div class="stock-label-row"><strong>Sem etiquetas recentes</strong><span>â€”</span><span>â€”</span><span></span></div>';
       return;
     }
 
     host.innerHTML = list.map(item => {
       const id = getItemId(item);
       const code = item?.codigoEtiqueta || item?.codigoScan || item?.sdsRef || item?.lote || "Etiqueta";
-      const name = item?.titulo || item?.nome || `Etiquetas Toner — ${code}.docx`;
+      const name = item?.titulo || item?.nome || `Etiquetas Toner â€” ${code}.docx`;
       const date = fmtDate(item?.created || item?.createdAt || item?.createdAtMs || item?.data || item?.dataFolha);
       return `<div class="stock-label-row" data-label-id="${esc(id)}">
         <strong>${esc(name)}</strong>
         <span>${esc(code)}</span>
         <span>${esc(date)}</span>
         <span class="stock-label-actions">
-          <button type="button" data-label-action="print" data-id="${esc(id)}" onclick="window.stockFuturistaImprimirEtiqueta && window.stockFuturistaImprimirEtiqueta('${esc(id)}')" title="Imprimir">🖨</button>
-          <button type="button" data-label-action="open" data-id="${esc(id)}" onclick="window.stockFuturistaAbrirEtiquetas && window.stockFuturistaAbrirEtiquetas()" title="Abrir etiquetas">↗</button>
+          <button type="button" data-label-action="print" data-id="${esc(id)}" onclick="window.stockFuturistaImprimirEtiqueta && window.stockFuturistaImprimirEtiqueta('${esc(id)}')" title="Imprimir">ðŸ–¨</button>
+          <button type="button" data-label-action="open" data-id="${esc(id)}" onclick="window.stockFuturistaAbrirEtiquetas && window.stockFuturistaAbrirEtiquetas()" title="Abrir etiquetas">â†—</button>
         </span>
       </div>`;
     }).join("");
@@ -466,10 +466,10 @@
 
   async function fallbackUsar(id){
     const db = getDb();
-    if (!db) return showMsg("Firebase indisponível.", "erro");
+    if (!db) return showMsg("Firebase indisponÃ­vel.", "erro");
     const ref = db.collection("stock").doc(id);
     const snap = await ref.get();
-    if (!snap.exists) return showMsg("Toner não encontrado.", "erro");
+    if (!snap.exists) return showMsg("Toner nÃ£o encontrado.", "erro");
     await db.collection("historico").add({
       ...snap.data(),
       estado: "usado",
@@ -478,30 +478,30 @@
       created: new Date()
     });
     await ref.delete();
-    showMsg("Toner movido para histórico.");
+    showMsg("Toner movido para histÃ³rico.");
   }
 
   async function fallbackDelete(id){
     if (!confirm("Queres apagar este item do stock?")) return;
     const db = getDb();
-    if (!db) return showMsg("Firebase indisponível.", "erro");
+    if (!db) return showMsg("Firebase indisponÃ­vel.", "erro");
     await db.collection("stock").doc(id).delete();
     showMsg("Item de stock apagado.");
   }
 
   function fallbackEdit(id){
     const item = getStock().find(x => getItemId(x) === id);
-    if (!item) return showMsg("Item de stock não encontrado.", "erro");
+    if (!item) return showMsg("Item de stock nÃ£o encontrado.", "erro");
     try { localStorage.setItem("editarToner", JSON.stringify(item)); } catch(e) {}
     window.location.href = "add-toner.html";
   }
 
   function abrirFicha(id){
     const item = getStock().find(x => getItemId(x) === id);
-    if (!item) return showMsg("Item de stock não encontrado.", "erro");
+    if (!item) return showMsg("Item de stock nÃ£o encontrado.", "erro");
     const old = globalValue("equipmentFichaLinkAppBraga");
     if (typeof old === "function") {
-      // Como a função antiga devolve link HTML, o fallback mais seguro é abrir edição/modal.
+      // Como a funÃ§Ã£o antiga devolve link HTML, o fallback mais seguro Ã© abrir ediÃ§Ã£o/modal.
       if (typeof window.abrirEditarStockModal === "function") return window.abrirEditarStockModal(id);
     }
     if (typeof window.abrirEditarStockModal === "function") return window.abrirEditarStockModal(id);
@@ -519,8 +519,8 @@
   function labelRowsHtml(item){
     const rows = [
       ["Local", item?.localCurto || item?.localizacao],
-      ["Série", item?.serie],
-      ["Armazém", item?.armazem],
+      ["SÃ©rie", item?.serie],
+      ["ArmazÃ©m", item?.armazem],
       ["Equipamento", item?.equipamento],
       ["Cor", item?.cor],
       ["Lote", item?.lote],
@@ -566,7 +566,7 @@
 
     setTimeout(() => {
       try { window.print(); }
-      catch(e) { console.error(e); showMsg("Erro ao abrir impressão da etiqueta.", "erro"); }
+      catch(e) { console.error(e); showMsg("Erro ao abrir impressÃ£o da etiqueta.", "erro"); }
       setTimeout(() => { try { overlay.remove(); } catch(e) {} }, 900);
     }, 150);
   }
@@ -574,8 +574,8 @@
   async function printLabel(id){
     const found = findLabelOrStock(id);
     if (!found.item) {
-      showMsg("Etiqueta não encontrada. Vou abrir a página Etiquetas Word.", "erro");
-      window.location.href = "etiquetas-word.html";
+      showMsg("Etiqueta nÃ£o encontrada. Vou abrir a pÃ¡gina Etiquetas Word.", "erro");
+      window.location.href = "/html/etiquetas-word.html?v=1.58.172";
       return;
     }
 
@@ -588,12 +588,12 @@
       }
     } catch(e) {}
 
-    // Fallback próprio da página Stock: funciona mesmo sem abrir etiquetas-word.html.
+    // Fallback prÃ³prio da pÃ¡gina Stock: funciona mesmo sem abrir etiquetas-word.html.
     printLabelLocal(found.item);
   }
 
   function openLabelsPage(){
-    window.location.href = "etiquetas-word.html";
+    window.location.href = "/html/etiquetas-word.html?v=1.58.172";
   }
 
   window.stockFuturistaImprimirEtiqueta = printLabel;
@@ -601,18 +601,18 @@
 
 
 
-  // v1.58.169 — botão QR no Stock: abre painel e usa o scanner antigo que passa o toner para Histórico.
+  // v1.58.172 â€” botÃ£o QR no Stock: abre painel e usa o scanner antigo que passa o toner para HistÃ³rico.
   async function abrirScannerQrStock(){
     const panel = byId("stockQrScannerPanel");
     if (!panel) {
-      showMsg("Modal de scanner QR não encontrado.", "erro");
+      showMsg("Modal de scanner QR nÃ£o encontrado.", "erro");
       return;
     }
     panel.hidden = false;
     panel.removeAttribute("hidden");
     const status = byId("stockQrStatus");
     if (status) {
-      status.textContent = "Scanner pronto. Carrega em “Ligar câmara” e aponta para o QR da etiqueta.";
+      status.textContent = "Scanner pronto. Carrega em â€œLigar cÃ¢maraâ€ e aponta para o QR da etiqueta.";
       status.className = "stock-qr-status";
     }
     try { document.body.classList.add("stock-qr-modal-open"); } catch(e) {}
@@ -652,7 +652,7 @@
           }
         } catch(e) {
           console.error(e);
-          showMsg("Erro ao executar ação do stock.", "erro");
+          showMsg("Erro ao executar aÃ§Ã£o do stock.", "erro");
         }
       }
 
@@ -717,14 +717,14 @@
         writeCache(STOCK_CACHE_KEY, items);
       }
       renderAll();
-      // Não chamar o renderer antigo porque a página nova usa tabela própria.
+      // NÃ£o chamar o renderer antigo porque a pÃ¡gina nova usa tabela prÃ³pria.
       return true;
     };
 
     const oldFiltrar = window.filtrar;
     window.filtrar = function(){
       renderAll();
-      // Só chama o antigo se houver a lista antiga visível.
+      // SÃ³ chama o antigo se houver a lista antiga visÃ­vel.
       const legacy = byId("listaStock");
       if (legacy && legacy.offsetParent && typeof oldFiltrar === "function") {
         try { return oldFiltrar(); } catch(e) {}
@@ -755,8 +755,8 @@
   }
 
   function startRealtimeFallback(){
-    // O listener principal de stock já existe no app.js, mas este fallback garante
-    // que a página Stock continua funcional mesmo que o renderer antigo não dispare.
+    // O listener principal de stock jÃ¡ existe no app.js, mas este fallback garante
+    // que a pÃ¡gina Stock continua funcional mesmo que o renderer antigo nÃ£o dispare.
     if (window.__stockFuturistaRealtimeStarted) return;
     window.__stockFuturistaRealtimeStarted = true;
 
@@ -798,7 +798,7 @@
 })();
 
 
-// v1.58.169 — ouvir resumo global de stock/alertas
+// v1.58.172 â€” ouvir resumo global de stock/alertas
 window.addEventListener("appbraga:systems:update", function(ev){
   try {
     if (!ev.detail) return;
@@ -806,3 +806,5 @@ window.addEventListener("appbraga:systems:update", function(ev){
     window.__appbragaAlertasStock = (ev.detail.alertas || []).filter(function(a){ return String(a.tipo||"").includes("stock"); });
   } catch(e) {}
 });
+
+

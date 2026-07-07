@@ -1,5 +1,5 @@
-(function(){
-  const VERSION = '1.58.169';
+﻿(function(){
+  const VERSION = '1.58.172';
   const LOCAL_KEYS = {
     pistols: 'appbraga-ck65-pistols-v1',
     interventions: 'appbraga-ck65-interventions-v1'
@@ -79,7 +79,7 @@
   }
   function formatDateTime(value, compact){
     const ms = toMs(value);
-    if(!ms) return '—';
+    if(!ms) return 'â€”';
     const d = new Date(ms);
     if(compact){
       return `${two(d.getDate())}/${two(d.getMonth()+1)}/${d.getFullYear()} ${two(d.getHours())}:${two(d.getMinutes())}`;
@@ -103,18 +103,18 @@
   function interventionIdOf(item, index){ return item?.idDoc || item?.firebaseId || item?.id || item?.localId || `local-ck65-int-${index}`; }
   function statusMeta(raw){
     const value = norm(raw);
-    if(value.includes('avari')) return { key:'broken', label:'Avariada', short:'Crítico' };
-    if(value.includes('reserv')) return { key:'reserved', label:'Reservada', short:'Atenção' };
-    if(value.includes('manuten') || value.includes('repar')) return { key:'maintenance', label:'Em manutenção', short:'Atenção' };
-    return { key:'available', label:'Disponível', short:'OK' };
+    if(value.includes('avari')) return { key:'broken', label:'Avariada', short:'CrÃ­tico' };
+    if(value.includes('reserv')) return { key:'reserved', label:'Reservada', short:'AtenÃ§Ã£o' };
+    if(value.includes('manuten') || value.includes('repar')) return { key:'maintenance', label:'Em manutenÃ§Ã£o', short:'AtenÃ§Ã£o' };
+    return { key:'available', label:'DisponÃ­vel', short:'OK' };
   }
   function deriveLegacyStatus(item){
     if(item && item.estado) return item.estado;
     const prontas = String(item?.prontas ?? '').trim();
     const op = norm(item?.operador);
     if(op.includes('reserva')) return 'Reservada';
-    if(prontas && prontas !== '0' && prontas !== 'nao') return 'Disponível';
-    return 'Disponível';
+    if(prontas && prontas !== '0' && prontas !== 'nao') return 'DisponÃ­vel';
+    return 'DisponÃ­vel';
   }
   function generateCodeFromIndex(index){ return `CK65-${String(index + 1).padStart(3,'0')}`; }
   function normalizePistol(item, index){
@@ -164,11 +164,11 @@
       id,
       pistolId: String(item?.pistolaId || item?.ck65Id || '').trim(),
       pistolCode: String(item?.pistolaCodigo || item?.codigo || item?.num || '').trim(),
-      type: String(item?.tipo || 'Intervenção').trim(),
+      type: String(item?.tipo || 'IntervenÃ§Ã£o').trim(),
       technician: String(item?.tecnico || item?.operador || '').trim(),
       local: String(item?.local || item?.armazem || '').trim(),
       notes: String(item?.notas || item?.descricao || '').trim(),
-      statusAfter: statusMeta(item?.estadoApos || item?.estado || 'Em manutenção'),
+      statusAfter: statusMeta(item?.estadoApos || item?.estado || 'Em manutenÃ§Ã£o'),
       dateAt: when,
       createdAt: item?.createdAt || when,
       updatedAt: item?.updatedAt || when
@@ -299,19 +299,19 @@
             <td>
               <div class="ck-code-cell">
                 <a href="javascript:void(0)" class="ck-code-link" onclick='window.CK65Page.openDetail(${JSON.stringify(String(p.id))})'>${esc(p.code)}</a>
-                <span class="ck-code-sub">${esc(p.serial || 'Sem série')}</span>
+                <span class="ck-code-sub">${esc(p.serial || 'Sem sÃ©rie')}</span>
               </div>
             </td>
             <td>${esc(p.model)}</td>
             <td>${esc(p.local)}</td>
-            <td><span class="ck-state ${meta.key}">${meta.key === 'available' ? '✓' : meta.key === 'maintenance' ? '🛠' : meta.key === 'broken' ? '⚠' : '⏲'} ${esc(meta.label)}</span></td>
+            <td><span class="ck-state ${meta.key}">${meta.key === 'available' ? 'âœ“' : meta.key === 'maintenance' ? 'ðŸ› ' : meta.key === 'broken' ? 'âš ' : 'â²'} ${esc(meta.label)}</span></td>
             <td>${esc(p.ultimaIntervencaoTexto || formatDateTime(p.ultimaIntervencaoAt))}</td>
             <td>
               <div class="ck-actions">
                 <button class="ck-icon-btn" type="button" title="Ver" onclick='window.CK65Page.openDetail(${JSON.stringify(String(p.id))})'><span class="ck-eye-dot"></span></button>
-                <button class="ck-icon-btn" type="button" title="Intervenção" onclick='window.CK65Page.openInterventionModal(${JSON.stringify(String(p.id))})'>⌁</button>
+                <button class="ck-icon-btn" type="button" title="IntervenÃ§Ã£o" onclick='window.CK65Page.openInterventionModal(${JSON.stringify(String(p.id))})'>âŒ</button>
                 <div>
-                  <button class="ck-icon-btn" type="button" title="Mais" onclick='window.CK65Page.toggleMenu(event, ${JSON.stringify(String(p.id))})'>⋮</button>
+                  <button class="ck-icon-btn" type="button" title="Mais" onclick='window.CK65Page.toggleMenu(event, ${JSON.stringify(String(p.id))})'>â‹®</button>
                   <div class="ck-menu" id="${menuId}">
                     <button type="button" onclick='window.CK65Page.openPistolModal(${JSON.stringify(String(p.id))})'>Editar</button>
                     <button type="button" class="delete" onclick='window.CK65Page.deletePistol(${JSON.stringify(String(p.id))})'>Apagar</button>
@@ -334,15 +334,15 @@
     const wrap = $('ckPagination');
     const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
     const buttons = [];
-    buttons.push(`<button class="ck-page-btn" ${state.page <= 1 ? 'disabled' : ''} type="button" onclick="window.CK65Page.goPage(${state.page - 1})">«</button>`);
+    buttons.push(`<button class="ck-page-btn" ${state.page <= 1 ? 'disabled' : ''} type="button" onclick="window.CK65Page.goPage(${state.page - 1})">Â«</button>`);
     for(let i=1;i<=totalPages;i++){
       if(totalPages > 7 && i !== 1 && i !== totalPages && Math.abs(i - state.page) > 1){
-        if((i === 2 && state.page > 4) || (i === totalPages - 1 && state.page < totalPages - 3)) buttons.push('<span style="padding:0 4px;opacity:.7;">…</span>');
+        if((i === 2 && state.page > 4) || (i === totalPages - 1 && state.page < totalPages - 3)) buttons.push('<span style="padding:0 4px;opacity:.7;">â€¦</span>');
         continue;
       }
       buttons.push(`<button class="ck-page-btn ${i === state.page ? 'active' : ''}" type="button" onclick="window.CK65Page.goPage(${i})">${i}</button>`);
     }
-    buttons.push(`<button class="ck-page-btn" ${state.page >= totalPages ? 'disabled' : ''} type="button" onclick="window.CK65Page.goPage(${state.page + 1})">»</button>`);
+    buttons.push(`<button class="ck-page-btn" ${state.page >= totalPages ? 'disabled' : ''} type="button" onclick="window.CK65Page.goPage(${state.page + 1})">Â»</button>`);
     wrap.innerHTML = buttons.join('');
   }
 
@@ -356,7 +356,7 @@
       .slice(0, 5);
 
     if(!alerts.length){
-      wrap.innerHTML = '<div class="ck-empty">Sem alertas críticos neste momento.</div>';
+      wrap.innerHTML = '<div class="ck-empty">Sem alertas crÃ­ticos neste momento.</div>';
       return;
     }
 
@@ -366,10 +366,10 @@
         <div class="ck-alert ${crit ? 'crit' : ''}">
           <span class="ck-alert-dot"></span>
           <div>
-            <div class="ck-alert-title">${esc(p.code)} — ${esc(p.estado.label)}</div>
+            <div class="ck-alert-title">${esc(p.code)} â€” ${esc(p.estado.label)}</div>
             <span class="ck-alert-sub">${esc(p.local)}</span>
           </div>
-          <small>${crit ? 'Crítico' : 'Atenção'}</small>
+          <small>${crit ? 'CrÃ­tico' : 'AtenÃ§Ã£o'}</small>
         </div>
       `;
     }).join('');
@@ -379,8 +379,8 @@
     const wrap = $('ckSummaryBars');
     const total = state.pistols.length;
     const entries = [
-      { key:'available', label:'Disponíveis' },
-      { key:'maintenance', label:'Em manutenção' },
+      { key:'available', label:'DisponÃ­veis' },
+      { key:'maintenance', label:'Em manutenÃ§Ã£o' },
       { key:'broken', label:'Avariadas' },
       { key:'reserved', label:'Reservadas' }
     ];
@@ -404,7 +404,7 @@
     const wrap = $('ckRecentInterventions');
     const recent = sortRecent(state.interventions).slice(0,4);
     if(!recent.length){
-      wrap.innerHTML = '<div class="ck-empty">Sem intervenções registadas.</div>';
+      wrap.innerHTML = '<div class="ck-empty">Sem intervenÃ§Ãµes registadas.</div>';
       return;
     }
     wrap.innerHTML = recent.map(function(item){
@@ -414,7 +414,7 @@
           <span class="ck-mini-dot ${severity}"></span>
           <div>
             <div class="ck-mini-title">${esc(formatDateTime(item.dateAt, true))} &nbsp; ${esc(item.pistolCode || 'CK65')}</div>
-            <div class="ck-mini-sub">${esc(item.type)}${item.technician ? ' — ' + esc(item.technician) : ''}</div>
+            <div class="ck-mini-sub">${esc(item.type)}${item.technician ? ' â€” ' + esc(item.technician) : ''}</div>
           </div>
         </div>
       `;
@@ -439,7 +439,7 @@
     $('ckFormSerie').value = '';
     $('ckFormModelo').value = 'CK65';
     $('ckFormLocal').value = '';
-    $('ckFormEstado').value = 'Disponível';
+    $('ckFormEstado').value = 'DisponÃ­vel';
     $('ckFormOperador').value = '';
     $('ckFormCn').value = '';
     $('ckFormSn').value = '';
@@ -457,7 +457,7 @@
     state.currentEditId = id || null;
     if(id){
       const item = getPistolById(id);
-      if(!item){ notify('Pistola não encontrada.', 'erro'); return; }
+      if(!item){ notify('Pistola nÃ£o encontrada.', 'erro'); return; }
       $('ckModalPistolaTitle').textContent = 'Editar pistola CK65';
       $('ckModalPistolaSubtitle').textContent = 'Atualize os dados da pistola selecionada.';
       $('ckFormCodigo').value = item.code;
@@ -503,7 +503,7 @@
       updatedAt: nowDate()
     };
     if(!payload.codigo){ payload.codigo = `CK65-${String(state.pistols.length + 1).padStart(3,'0')}`; payload.num = payload.codigo; }
-    if(!payload.serie && !payload.codigo){ notify('Preenche pelo menos o código ou o número de série.', 'erro'); return; }
+    if(!payload.serie && !payload.codigo){ notify('Preenche pelo menos o cÃ³digo ou o nÃºmero de sÃ©rie.', 'erro'); return; }
 
     const db = getDb();
     try{
@@ -522,7 +522,7 @@
             renderAll();
           }
         }
-        try{ window.AppBragaSystems?.criarMovimento?.('Editar CK65', { area:'CK65', titulo:`Pistola atualizada — ${payload.codigo}`, equipamento:payload.codigo, localizacao:payload.local, estado:payload.estado }); }catch(e){}
+        try{ window.AppBragaSystems?.criarMovimento?.('Editar CK65', { area:'CK65', titulo:`Pistola atualizada â€” ${payload.codigo}`, equipamento:payload.codigo, localizacao:payload.local, estado:payload.estado }); }catch(e){}
         notify('Pistola atualizada com sucesso.');
       } else {
         payload.createdAt = nowDate();
@@ -536,7 +536,7 @@
           persistCurrentToLocal();
           renderAll();
         }
-        try{ window.AppBragaSystems?.criarMovimento?.('Nova CK65', { area:'CK65', titulo:`Nova pistola — ${payload.codigo}`, equipamento:payload.codigo, localizacao:payload.local, estado:payload.estado }); }catch(e){}
+        try{ window.AppBragaSystems?.criarMovimento?.('Nova CK65', { area:'CK65', titulo:`Nova pistola â€” ${payload.codigo}`, equipamento:payload.codigo, localizacao:payload.local, estado:payload.estado }); }catch(e){}
         notify('Pistola criada com sucesso.');
       }
       closePistolModal();
@@ -561,7 +561,7 @@
         persistCurrentToLocal();
         renderAll();
       }
-      try{ window.AppBragaSystems?.criarMovimento?.('Apagar CK65', { area:'CK65', titulo:`Pistola removida — ${item.code}`, equipamento:item.code, localizacao:item.local, estado:item.estado.label }); }catch(e){}
+      try{ window.AppBragaSystems?.criarMovimento?.('Apagar CK65', { area:'CK65', titulo:`Pistola removida â€” ${item.code}`, equipamento:item.code, localizacao:item.local, estado:item.estado.label }); }catch(e){}
       notify('Pistola apagada.');
     } catch(error){
       console.error('Erro ao apagar pistola CK65:', error);
@@ -573,7 +573,7 @@
     const select = $('ckIntervPistola');
     const list = sortByCode(state.pistols);
     select.innerHTML = list.map(function(item){
-      return `<option value="${esc(item.id)}">${esc(item.code)} — ${esc(item.local)}</option>`;
+      return `<option value="${esc(item.id)}">${esc(item.code)} â€” ${esc(item.local)}</option>`;
     }).join('');
     if(selectedId){ select.value = String(selectedId); }
   }
@@ -582,10 +582,10 @@
     state.currentInterventionId = pistolId || null;
     fillInterventionPistolOptions(pistolId || state.currentDetailId || (state.pistols[0] && state.pistols[0].id));
     const pistol = getPistolById($('ckIntervPistola').value);
-    $('ckIntervTipo').value = 'Diagnóstico';
+    $('ckIntervTipo').value = 'DiagnÃ³stico';
     $('ckIntervTecnico').value = '';
     $('ckIntervData').value = formatInputDateTime(nowDate());
-    $('ckIntervEstado').value = pistol ? pistol.estado.label : 'Disponível';
+    $('ckIntervEstado').value = pistol ? pistol.estado.label : 'DisponÃ­vel';
     $('ckIntervLocal').value = pistol ? pistol.local : '';
     $('ckIntervNotas').value = '';
     openModal($('ckModalIntervencao'));
@@ -636,16 +636,16 @@
         renderAll();
       }
       try{
-        window.AppBragaSystems?.criarMovimento?.('Intervenção CK65', {
+        window.AppBragaSystems?.criarMovimento?.('IntervenÃ§Ã£o CK65', {
           area:'CK65',
-          titulo:`${payload.tipo} — ${payload.pistolaCodigo}`,
+          titulo:`${payload.tipo} â€” ${payload.pistolaCodigo}`,
           descricao:payload.notas,
           equipamento:payload.pistolaCodigo,
           localizacao:payload.local,
           estado:payload.estadoApos
         });
         if(statusMeta(status).key === 'broken' || statusMeta(status).key === 'maintenance'){
-          window.AppBragaSystems?.criarNotificacao?.('CK65 requer atenção', `${payload.pistolaCodigo} ficou em estado ${status}.`, {
+          window.AppBragaSystems?.criarNotificacao?.('CK65 requer atenÃ§Ã£o', `${payload.pistolaCodigo} ficou em estado ${status}.`, {
             area:'CK65',
             tipo:'ck65',
             equipamento:payload.pistolaCodigo,
@@ -655,39 +655,39 @@
         }
       }catch(e){}
       closeInterventionModal();
-      notify('Intervenção registada com sucesso.');
+      notify('IntervenÃ§Ã£o registada com sucesso.');
     } catch(error){
-      console.error('Erro ao registar intervenção CK65:', error);
-      notify('Erro ao registar a intervenção.', 'erro');
+      console.error('Erro ao registar intervenÃ§Ã£o CK65:', error);
+      notify('Erro ao registar a intervenÃ§Ã£o.', 'erro');
     }
   }
 
   function openDetail(id){
     const pistol = getPistolById(id);
-    if(!pistol){ notify('Pistola não encontrada.', 'erro'); return; }
+    if(!pistol){ notify('Pistola nÃ£o encontrada.', 'erro'); return; }
     state.currentDetailId = id;
-    $('ckDetailTitle').textContent = `${pistol.code} — ${pistol.model}`;
+    $('ckDetailTitle').textContent = `${pistol.code} â€” ${pistol.model}`;
     $('ckDetailGrid').innerHTML = [
-      ['Código', pistol.code],
-      ['N.º Série', pistol.serial || 'Sem série'],
+      ['CÃ³digo', pistol.code],
+      ['N.Âº SÃ©rie', pistol.serial || 'Sem sÃ©rie'],
       ['Modelo', pistol.model],
       ['Estado', pistol.estado.label],
       ['Local', pistol.local],
-      ['Operador', pistol.operador || '—'],
-      ['CN', pistol.cn || '—'],
-      ['SN', pistol.sn || '—'],
-      ['MAC', pistol.mac || '—'],
-      ['Password', pistol.password || '—'],
-      ['Última intervenção', pistol.ultimaIntervencaoTexto || formatDateTime(pistol.ultimaIntervencaoAt)],
-      ['Notas', pistol.notes || 'Sem observações']
+      ['Operador', pistol.operador || 'â€”'],
+      ['CN', pistol.cn || 'â€”'],
+      ['SN', pistol.sn || 'â€”'],
+      ['MAC', pistol.mac || 'â€”'],
+      ['Password', pistol.password || 'â€”'],
+      ['Ãšltima intervenÃ§Ã£o', pistol.ultimaIntervencaoTexto || formatDateTime(pistol.ultimaIntervencaoAt)],
+      ['Notas', pistol.notes || 'Sem observaÃ§Ãµes']
     ].map(function(entry){
       return `<div class="ck-detail-item"><span>${esc(entry[0])}</span><strong>${esc(entry[1])}</strong></div>`;
     }).join('');
 
     const history = getInterventionsForPistol(id).slice(0, 6);
     $('ckDetailInterventions').innerHTML = history.length ? history.map(function(item){
-      return `<div class="ck-modal-list-item"><div class="title">${esc(item.type)} — ${esc(formatDateTime(item.dateAt, true))}</div><div class="sub">${esc(item.technician || 'Sem técnico')} · ${esc(item.local || pistol.local)}${item.notes ? ' · ' + esc(item.notes) : ''}</div></div>`;
-    }).join('') : '<div class="ck-empty">Sem intervenções registadas para esta pistola.</div>';
+      return `<div class="ck-modal-list-item"><div class="title">${esc(item.type)} â€” ${esc(formatDateTime(item.dateAt, true))}</div><div class="sub">${esc(item.technician || 'Sem tÃ©cnico')} Â· ${esc(item.local || pistol.local)}${item.notes ? ' Â· ' + esc(item.notes) : ''}</div></div>`;
+    }).join('') : '<div class="ck-empty">Sem intervenÃ§Ãµes registadas para esta pistola.</div>';
 
     $('ckDetailEditBtn').onclick = function(){ closeDetailModal(); openPistolModal(id); };
     $('ckDetailInterventionBtn').onclick = function(){ closeDetailModal(); openInterventionModal(id); };
@@ -696,9 +696,9 @@
 
   function exportReport(){
     const list = state.filtered.length ? state.filtered : state.pistols;
-    if(!list.length){ notify('Não existem dados para exportar.', 'erro'); return; }
+    if(!list.length){ notify('NÃ£o existem dados para exportar.', 'erro'); return; }
     const lines = [
-      ['Código','Série','Modelo','Local','Estado','Última intervenção','Operador','CN','SN','MAC','Notas'].join(';')
+      ['CÃ³digo','SÃ©rie','Modelo','Local','Estado','Ãšltima intervenÃ§Ã£o','Operador','CN','SN','MAC','Notas'].join(';')
     ];
     list.forEach(function(item){
       lines.push([
@@ -860,3 +860,4 @@
   setTimeout(forceScrollUnlock, 500);
   setTimeout(forceScrollUnlock, 1500);
 })();
+

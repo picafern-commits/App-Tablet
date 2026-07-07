@@ -1,7 +1,7 @@
-(() => {
+﻿(() => {
   'use strict';
 
-  const VERSION = '1.58.169';
+  const VERSION = '1.58.172';
   const COLLECTION = 'portas';
   const HISTORY_COLLECTION = 'portasHistorico';
   const LOCAL_KEY = 'appbraga_portas_rede_fallback_v158109';
@@ -35,7 +35,7 @@
     const n = new Date(value).getTime(); return Number.isNaN(n) ? 0 : n;
   }
   function formatDate(value, full=false){
-    const ms = toMs(value); if(!ms) return '—';
+    const ms = toMs(value); if(!ms) return 'â€”';
     return new Date(ms).toLocaleString('pt-PT', full ? {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'} : {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
   }
   function todayKey(){return new Date().toISOString().slice(0,10);}
@@ -45,7 +45,7 @@
     const raw = lower(value || porta.estado || porta.status || '');
     if(raw.includes('erro') || raw.includes('falha') || raw.includes('down')) return 'Erro';
     if(raw.includes('desativ') || raw.includes('inativ') || raw.includes('disabled') || raw.includes('livre')) return 'Desativada';
-    if(raw.includes('monitor')) return 'Não monitorizada';
+    if(raw.includes('monitor')) return 'NÃ£o monitorizada';
     if(raw.includes('ativa') || raw.includes('ocup') || raw.includes('active') || raw.includes('up')) return 'Ativa';
     const hasAny = !!(porta.ip || porta.dispositivo || porta.equipamento || porta.user || porta.utilizador);
     return hasAny ? 'Ativa' : 'Desativada';
@@ -57,7 +57,7 @@
     if(raw.includes('monitor')) return 'monitorizar';
     return 'ativa';
   }
-  function estadoIcon(value){const k=estadoKey(value); return k==='erro'?'×':k==='desativada'?'⊘':k==='monitorizar'?'○':'✓';}
+  function estadoIcon(value){const k=estadoKey(value); return k==='erro'?'Ã—':k==='desativada'?'âŠ˜':k==='monitorizar'?'â—‹':'âœ“';}
   function statusDotClass(value){const k=estadoKey(value); return k==='erro'?'bad':k==='desativada'||k==='monitorizar'?'warn':'';}
 
   function normalizePorta(doc){
@@ -97,7 +97,7 @@
       id,
       portaId: data.portaId || data.portId || data.refId || '',
       porta: data.porta || data.nome || data.codigo || '',
-      tipo: data.tipo || data.acao || data.action || 'Atualização',
+      tipo: data.tipo || data.acao || data.action || 'AtualizaÃ§Ã£o',
       descricao: data.descricao || data.description || data.notas || '',
       autor: data.autor || data.user || data.responsavel || 'Sistema',
       createdAt: data.createdAt || data.data || data.date || Date.now()
@@ -106,14 +106,14 @@
 
   function seedPortas(){
     return [
-      ['Gi0/1','PR-0001','SW-Core-01','192.168.1.10','Servidor-Files','10','Gestão','Ativa','1 Gbps','Full Duplex','Acesso'],
-      ['Gi0/2','PR-0002','SW-Core-01','192.168.1.20','Servidor-Backup','10','Gestão','Ativa','1 Gbps','Full Duplex','Trunk'],
-      ['Gi0/3','PR-0003','SW-Core-01','192.168.2.15','PC-Admin-01','20','Funcionários','Ativa','1 Gbps','Full Duplex','Acesso'],
-      ['Gi0/4','PR-0004','SW-Core-01','','Não atribuído','','Sem VLAN','Desativada','','','Acesso'],
-      ['Gi0/5','PR-0005','SW-Access-01','192.168.2.25','PC-Vendas-01','20','Funcionários','Ativa','100 Mbps','Full Duplex','Acesso'],
-      ['Gi0/6','PR-0006','SW-Access-01','192.168.2.26','PC-Vendas-02','20','Funcionários','Erro','','','Acesso'],
+      ['Gi0/1','PR-0001','SW-Core-01','192.168.1.10','Servidor-Files','10','GestÃ£o','Ativa','1 Gbps','Full Duplex','Acesso'],
+      ['Gi0/2','PR-0002','SW-Core-01','192.168.1.20','Servidor-Backup','10','GestÃ£o','Ativa','1 Gbps','Full Duplex','Trunk'],
+      ['Gi0/3','PR-0003','SW-Core-01','192.168.2.15','PC-Admin-01','20','FuncionÃ¡rios','Ativa','1 Gbps','Full Duplex','Acesso'],
+      ['Gi0/4','PR-0004','SW-Core-01','','NÃ£o atribuÃ­do','','Sem VLAN','Desativada','','','Acesso'],
+      ['Gi0/5','PR-0005','SW-Access-01','192.168.2.25','PC-Vendas-01','20','FuncionÃ¡rios','Ativa','100 Mbps','Full Duplex','Acesso'],
+      ['Gi0/6','PR-0006','SW-Access-01','192.168.2.26','PC-Vendas-02','20','FuncionÃ¡rios','Erro','','','Acesso'],
       ['Gi0/7','PR-0007','SW-Access-01','192.168.3.30','Impressora-Piso1','30','Impressoras','Ativa','100 Mbps','Full Duplex','Acesso'],
-      ['Gi0/8','PR-0008','SW-Access-01','','Não atribuído','','Sem VLAN','Desativada','','','Acesso'],
+      ['Gi0/8','PR-0008','SW-Access-01','','NÃ£o atribuÃ­do','','Sem VLAN','Desativada','','','Acesso'],
       ['Gi0/9','PR-0009','SW-Access-02','192.168.4.40','AP-WiFi-Piso2','40','WiFi','Ativa','1 Gbps','Full Duplex','Trunk'],
       ['Gi0/10','PR-0010','SW-Access-02','192.168.4.41','AP-WiFi-Piso2-2','40','WiFi','Ativa','1 Gbps','Full Duplex','Trunk']
     ].map((r,i)=>normalizePorta({id:`sample-${i+1}`,porta:r[0],codigo:r[1],switchNome:r[2],ip:r[3],dispositivo:r[4],vlan:r[5],vlanNome:r[6],estado:r[7],velocidade:r[8],duplex:r[9],tipo:r[10],updatedAt:Date.now()-(i+1)*900000,createdAt:Date.now()-(i+3)*86400000}));
@@ -174,15 +174,15 @@
     else tbody.innerHTML = pageItems.map(p=>{
       const k=estadoKey(p.estado); const dot=statusDotClass(p.estado); const typeCls=lower(p.tipo).includes('trunk')?' trunk':'';
       return `<tr>
-        <td><div class="ck-code-cell"><span class="pr-port-icon ${esc(k)}">🔌</span><div><a class="ck-code-link" data-action="detail" data-id="${esc(p.id)}">${esc(p.porta)}</a><span class="ck-code-sub">ID: ${esc(p.codigo || p.id || '-')}</span></div></div></td>
+        <td><div class="ck-code-cell"><span class="pr-port-icon ${esc(k)}">ðŸ”Œ</span><div><a class="ck-code-link" data-action="detail" data-id="${esc(p.id)}">${esc(p.porta)}</a><span class="ck-code-sub">ID: ${esc(p.codigo || p.id || '-')}</span></div></div></td>
         <td><span class="pr-switch-main">${esc(p.switchNome)}</span><span class="pr-sub">${esc(p.local || '')}</span></td>
-        <td><span class="pr-ip-main">${esc(p.ip || '—')}</span><span class="pr-sub">${esc(p.dispositivo || 'Não atribuído')}</span></td>
-        <td><strong>${esc(p.vlan || '—')}</strong><span class="pr-sub">${esc(p.vlanNome || 'Sem VLAN')}</span></td>
+        <td><span class="pr-ip-main">${esc(p.ip || 'â€”')}</span><span class="pr-sub">${esc(p.dispositivo || 'NÃ£o atribuÃ­do')}</span></td>
+        <td><strong>${esc(p.vlan || 'â€”')}</strong><span class="pr-sub">${esc(p.vlanNome || 'Sem VLAN')}</span></td>
         <td><span class="ck-state ${esc(k)}">${estadoIcon(p.estado)} ${esc(p.estado)}</span></td>
-        <td><strong>${esc(p.velocidade || '—')}</strong><span class="pr-sub">${esc(p.duplex || '')}</span></td>
+        <td><strong>${esc(p.velocidade || 'â€”')}</strong><span class="pr-sub">${esc(p.duplex || '')}</span></td>
         <td><span class="pr-type${typeCls}">${esc(p.tipo || 'Acesso')}</span></td>
         <td><strong>${formatDate(p.updatedAt, false)}</strong><span class="pr-status-dot ${dot}"></span><span class="pr-sub">${formatDate(p.updatedAt, true).split(', ')[1] || ''}</span></td>
-        <td><div class="ck-actions"><button class="ck-icon-btn" title="Ver" data-action="detail" data-id="${esc(p.id)}">⊙</button><button class="ck-icon-btn" title="Editar" data-action="edit" data-id="${esc(p.id)}">✎</button><button class="ck-icon-btn" title="Mais" data-action="menu" data-id="${esc(p.id)}">⋮</button><div class="ck-menu" id="prMenu-${esc(p.id)}"><button data-action="toggle" data-id="${esc(p.id)}">Alterar estado</button><button data-action="history" data-id="${esc(p.id)}">Histórico</button><button class="delete" data-action="delete" data-id="${esc(p.id)}">Apagar</button></div></div></td>
+        <td><div class="ck-actions"><button class="ck-icon-btn" title="Ver" data-action="detail" data-id="${esc(p.id)}">âŠ™</button><button class="ck-icon-btn" title="Editar" data-action="edit" data-id="${esc(p.id)}">âœŽ</button><button class="ck-icon-btn" title="Mais" data-action="menu" data-id="${esc(p.id)}">â‹®</button><div class="ck-menu" id="prMenu-${esc(p.id)}"><button data-action="toggle" data-id="${esc(p.id)}">Alterar estado</button><button data-action="history" data-id="${esc(p.id)}">HistÃ³rico</button><button class="delete" data-action="delete" data-id="${esc(p.id)}">Apagar</button></div></div></td>
       </tr>`;
     }).join('');
     const end = Math.min(start + pageItems.length, list.length);
@@ -192,10 +192,10 @@
 
   function renderPagination(totalPages){
     const box=$('prPagination'); if(!box) return;
-    let html = `<button class="ck-page-btn" ${state.page<=1?'disabled':''} data-page="prev">«</button>`;
+    let html = `<button class="ck-page-btn" ${state.page<=1?'disabled':''} data-page="prev">Â«</button>`;
     const max=5; let start=Math.max(1,state.page-2), end=Math.min(totalPages,start+max-1); start=Math.max(1,end-max+1);
     for(let i=start;i<=end;i++) html += `<button class="ck-page-btn ${i===state.page?'active':''}" data-page="${i}">${i}</button>`;
-    html += `<button class="ck-page-btn" ${state.page>=totalPages?'disabled':''} data-page="next">»</button>`;
+    html += `<button class="ck-page-btn" ${state.page>=totalPages?'disabled':''} data-page="next">Â»</button>`;
     box.innerHTML=html;
   }
 
@@ -206,7 +206,7 @@
     let acc = 0; const parts=[];
     vals.forEach((v,i)=>{const s=acc; const e=acc+(v/total)*100; parts.push(`${colors[i]} ${s}% ${e}%`); acc=e;});
     if($('prDonut')) $('prDonut').style.background = `conic-gradient(${parts.join(',')})`;
-    const rows = [['Ativas',stats.ativa,colors[0]],['Desativadas',stats.desativada,colors[1]],['Erros',stats.erro,colors[2]],['Não monitorizadas',stats.monitorizar,colors[3]]];
+    const rows = [['Ativas',stats.ativa,colors[0]],['Desativadas',stats.desativada,colors[1]],['Erros',stats.erro,colors[2]],['NÃ£o monitorizadas',stats.monitorizar,colors[3]]];
     if($('prDonutLegend')) $('prDonutLegend').innerHTML = rows.map(([label,val,color])=>`<div class="pr-legend-row"><i class="pr-legend-dot" style="background:${color}"></i><span>${label}</span><small>${val}</small><em>${((val/total)*100).toFixed(1)}%</em></div>`).join('');
   }
 
@@ -215,17 +215,17 @@
     const erros = state.portas.filter(p=>estadoKey(p.estado)==='erro');
     const desat = state.portas.filter(p=>estadoKey(p.estado)==='desativada');
     const alerts=[];
-    if(erros.length) alerts.push({type:'crit',title:`${erros.length} porta${erros.length>1?'s':''} com erro de ligação`,sub:erros.slice(0,4).map(p=>p.porta).join(', '),time:'Agora'});
+    if(erros.length) alerts.push({type:'crit',title:`${erros.length} porta${erros.length>1?'s':''} com erro de ligaÃ§Ã£o`,sub:erros.slice(0,4).map(p=>p.porta).join(', '),time:'Agora'});
     if(desat.length) alerts.push({type:'warn',title:`${desat.length} porta${desat.length>1?'s':''} desativada${desat.length>1?'s':''}`,sub:desat.slice(0,4).map(p=>p.porta).join(', '),time:'Atual'});
-    if(!state.history.length) alerts.push({type:'ok',title:'Sem alterações recentes registadas',sub:'Adiciona uma porta ou faz uma alteração para criar histórico.',time:'—'});
-    box.innerHTML = alerts.length ? alerts.map(a=>`<div class="ck-alert ${a.type==='crit'?'crit':a.type==='ok'?'ok':''}"><i class="ck-alert-dot"></i><div><span class="ck-alert-title">${esc(a.title)}</span><span class="ck-alert-sub">${esc(a.sub)}</span></div><small>${esc(a.time)}</small></div>`).join('') : '<div class="ck-empty">Sem alertas críticos neste momento.</div>';
+    if(!state.history.length) alerts.push({type:'ok',title:'Sem alteraÃ§Ãµes recentes registadas',sub:'Adiciona uma porta ou faz uma alteraÃ§Ã£o para criar histÃ³rico.',time:'â€”'});
+    box.innerHTML = alerts.length ? alerts.map(a=>`<div class="ck-alert ${a.type==='crit'?'crit':a.type==='ok'?'ok':''}"><i class="ck-alert-dot"></i><div><span class="ck-alert-title">${esc(a.title)}</span><span class="ck-alert-sub">${esc(a.sub)}</span></div><small>${esc(a.time)}</small></div>`).join('') : '<div class="ck-empty">Sem alertas crÃ­ticos neste momento.</div>';
   }
 
   function renderRecent(){
     const box=$('prRecentRecords'); if(!box) return;
     const list = [...state.history].sort((a,b)=>toMs(b.createdAt)-toMs(a.createdAt)).slice(0,5);
-    if(!list.length){box.innerHTML='<div class="ck-empty">Sem atualizações registadas.</div>';return;}
-    box.innerHTML = list.map(h=>`<div class="ck-mini-row"><i class="ck-mini-dot ${lower(h.tipo).includes('apag')?'bad':lower(h.tipo).includes('erro')?'warn':''}"></i><div><span class="ck-mini-title">${esc(h.porta || 'Porta')} — ${esc(h.tipo)}</span><div class="ck-mini-sub">${esc(h.descricao || h.autor || '')}</div></div><small>${formatDate(h.createdAt)}</small></div>`).join('');
+    if(!list.length){box.innerHTML='<div class="ck-empty">Sem atualizaÃ§Ãµes registadas.</div>';return;}
+    box.innerHTML = list.map(h=>`<div class="ck-mini-row"><i class="ck-mini-dot ${lower(h.tipo).includes('apag')?'bad':lower(h.tipo).includes('erro')?'warn':''}"></i><div><span class="ck-mini-title">${esc(h.porta || 'Porta')} â€” ${esc(h.tipo)}</span><div class="ck-mini-sub">${esc(h.descricao || h.autor || '')}</div></div><small>${formatDate(h.createdAt)}</small></div>`).join('');
   }
 
   function renderAll(){
@@ -253,7 +253,7 @@
     const entry = {id:uid(), portaId:porta.id || porta.firebaseId || '', porta:porta.porta || porta.codigo || '', tipo, descricao, autor:'Ricardo', createdAt:Date.now()};
     state.history.unshift(entry); saveLocal(LOCAL_HISTORY_KEY,state.history);
     if(db()){
-      try{await db().collection(HISTORY_COLLECTION).add({...entry, createdAt: firebase.firestore.FieldValue.serverTimestamp()});}catch(e){console.warn('Histórico local', e);}
+      try{await db().collection(HISTORY_COLLECTION).add({...entry, createdAt: firebase.firestore.FieldValue.serverTimestamp()});}catch(e){console.warn('HistÃ³rico local', e);}
     }
   }
 
@@ -274,7 +274,7 @@
         toast('Porta criada.');
       }
       closeModal('prModalPorta'); state.editingId=null;
-    }catch(e){console.error(e); toast('Não foi possível guardar. Usei fallback local.', 'error'); const p=normalizePorta({...data,id:state.editingId||uid(),createdAt:Date.now()}); state.portas=state.editingId?state.portas.map(x=>x.id===state.editingId?p:x):[p,...state.portas]; saveLocal(LOCAL_KEY,state.portas); renderAll(); closeModal('prModalPorta');}
+    }catch(e){console.error(e); toast('NÃ£o foi possÃ­vel guardar. Usei fallback local.', 'error'); const p=normalizePorta({...data,id:state.editingId||uid(),createdAt:Date.now()}); state.portas=state.editingId?state.portas.map(x=>x.id===state.editingId?p:x):[p,...state.portas]; saveLocal(LOCAL_KEY,state.portas); renderAll(); closeModal('prModalPorta');}
   }
 
   async function deletePorta(id){
@@ -284,38 +284,38 @@
       if(db() && !String(id).startsWith('local_') && !String(id).startsWith('sample-')) await db().collection(COLLECTION).doc(id).delete();
       state.portas=state.portas.filter(x=>x.id!==id); saveLocal(LOCAL_KEY,state.portas); renderAll();
       await addHistory(p,'Apagada','Porta removida'); toast('Porta apagada.');
-    }catch(e){console.error(e); toast('Não foi possível apagar.', 'error');}
+    }catch(e){console.error(e); toast('NÃ£o foi possÃ­vel apagar.', 'error');}
   }
   async function toggleEstado(id){
     const p=getById(id); if(!p) return;
-    const order=['Ativa','Desativada','Erro','Não monitorizada'];
+    const order=['Ativa','Desativada','Erro','NÃ£o monitorizada'];
     const next=order[(order.indexOf(p.estado)+1)%order.length] || 'Ativa';
     try{
       if(db() && !String(id).startsWith('local_') && !String(id).startsWith('sample-')) await db().collection(COLLECTION).doc(id).set({estado:next,updatedAt:Date.now()},{merge:true});
       state.portas=state.portas.map(x=>x.id===id?normalizePorta({...x,estado:next,updatedAt:Date.now()}):x); saveLocal(LOCAL_KEY,state.portas); renderAll();
-      await addHistory({...p,estado:next}, 'Estado alterado', `${p.estado} → ${next}`); toast('Estado alterado.');
-    }catch(e){console.error(e); toast('Não foi possível alterar estado.', 'error');}
+      await addHistory({...p,estado:next}, 'Estado alterado', `${p.estado} â†’ ${next}`); toast('Estado alterado.');
+    }catch(e){console.error(e); toast('NÃ£o foi possÃ­vel alterar estado.', 'error');}
   }
 
   function showDetail(id){
     const p=getById(id); if(!p) return;
     if($('prDetailTitle')) $('prDetailTitle').textContent = `Porta ${p.porta}`;
-    const rows=[['ID',p.codigo||p.id],['Switch',p.switchNome],['IP',p.ip||'—'],['Dispositivo',p.dispositivo||'Não atribuído'],['VLAN',`${p.vlan||'—'} ${p.vlanNome?'- '+p.vlanNome:''}`],['Estado',p.estado],['Velocidade',`${p.velocidade||'—'} ${p.duplex||''}`],['Tipo',p.tipo],['Local',p.local||'—'],['Notas',p.notas||'—']];
+    const rows=[['ID',p.codigo||p.id],['Switch',p.switchNome],['IP',p.ip||'â€”'],['Dispositivo',p.dispositivo||'NÃ£o atribuÃ­do'],['VLAN',`${p.vlan||'â€”'} ${p.vlanNome?'- '+p.vlanNome:''}`],['Estado',p.estado],['Velocidade',`${p.velocidade||'â€”'} ${p.duplex||''}`],['Tipo',p.tipo],['Local',p.local||'â€”'],['Notas',p.notas||'â€”']];
     if($('prDetailGrid')) $('prDetailGrid').innerHTML = rows.map(([k,v])=>`<div class="ck-detail-item"><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join('');
     const hist=state.history.filter(h=>h.portaId===p.id || h.porta===p.porta).sort((a,b)=>toMs(b.createdAt)-toMs(a.createdAt)).slice(0,8);
-    if($('prDetailHistory')) $('prDetailHistory').innerHTML = hist.length ? hist.map(h=>`<div class="ck-modal-list-item"><div class="title">${esc(h.tipo)} · ${formatDate(h.createdAt,true)}</div><div class="sub">${esc(h.descricao || h.autor || '')}</div></div>`).join('') : '<div class="ck-empty">Sem histórico para esta porta.</div>';
+    if($('prDetailHistory')) $('prDetailHistory').innerHTML = hist.length ? hist.map(h=>`<div class="ck-modal-list-item"><div class="title">${esc(h.tipo)} Â· ${formatDate(h.createdAt,true)}</div><div class="sub">${esc(h.descricao || h.autor || '')}</div></div>`).join('') : '<div class="ck-empty">Sem histÃ³rico para esta porta.</div>';
     openModal('prModalDetalhe');
   }
   function showHistory(id=''){
     const list = (id ? state.history.filter(h=>h.portaId===id || h.porta===(getById(id)||{}).porta) : state.history).sort((a,b)=>toMs(b.createdAt)-toMs(a.createdAt));
-    if($('prHistoryList')) $('prHistoryList').innerHTML = list.length ? list.map(h=>`<div class="ck-modal-list-item"><div class="title">${esc(h.porta || 'Porta')} — ${esc(h.tipo)} · ${formatDate(h.createdAt,true)}</div><div class="sub">${esc(h.descricao || '')} ${h.autor ? '· '+esc(h.autor) : ''}</div></div>`).join('') : '<div class="ck-empty">Sem histórico registado.</div>';
+    if($('prHistoryList')) $('prHistoryList').innerHTML = list.length ? list.map(h=>`<div class="ck-modal-list-item"><div class="title">${esc(h.porta || 'Porta')} â€” ${esc(h.tipo)} Â· ${formatDate(h.createdAt,true)}</div><div class="sub">${esc(h.descricao || '')} ${h.autor ? 'Â· '+esc(h.autor) : ''}</div></div>`).join('') : '<div class="ck-empty">Sem histÃ³rico registado.</div>';
     openModal('prModalHistorico');
   }
   function showConfig(){
     const switches=[...new Set(state.portas.map(p=>p.switchNome).filter(Boolean))];
     const vlans=[...new Set(state.portas.map(p=>String(p.vlan||'')).filter(Boolean))];
     const locais=[...new Set(state.portas.map(p=>p.local).filter(Boolean))];
-    const rows=[['Switches',switches.length],['VLANs',vlans.length],['Locais',locais.length],['Portas registadas',state.portas.length],['Coleção Firebase',COLLECTION],['Histórico',HISTORY_COLLECTION]];
+    const rows=[['Switches',switches.length],['VLANs',vlans.length],['Locais',locais.length],['Portas registadas',state.portas.length],['ColeÃ§Ã£o Firebase',COLLECTION],['HistÃ³rico',HISTORY_COLLECTION]];
     if($('prConfigGrid')) $('prConfigGrid').innerHTML = rows.map(([k,v])=>`<div class="ck-detail-item"><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join('');
     openModal('prModalConfig');
   }
@@ -324,7 +324,7 @@
     getFiltered().forEach(p=>rows.push([p.porta,p.codigo,p.switchNome,p.ip,p.dispositivo,p.vlan,p.vlanNome,p.estado,p.velocidade,p.duplex,p.tipo,p.local,p.notas,formatDate(p.updatedAt,true)]));
     const csv=rows.map(r=>r.map(c=>`"${String(c??'').replace(/"/g,'""')}"`).join(';')).join('\n');
     const blob=new Blob([`\ufeff${csv}`],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob); const a=document.createElement('a');
-    a.href=url; a.download=`portas-rede-${todayKey()}.csv`; a.click(); URL.revokeObjectURL(url); toast('Relatório CSV gerado.');
+    a.href=url; a.download=`portas-rede-${todayKey()}.csv`; a.click(); URL.revokeObjectURL(url); toast('RelatÃ³rio CSV gerado.');
   }
 
   function bindEvents(){
@@ -371,3 +371,4 @@
   function init(){bindEvents(); bindFirebase();}
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init,{once:true}); else init();
 })();
+

@@ -1,4 +1,4 @@
-/* v1.58.169 — Impressoras: render estável, stock/etiquetas/histórico/manutenção reais */
+﻿/* v1.58.172 â€” Impressoras: render estÃ¡vel, stock/etiquetas/histÃ³rico/manutenÃ§Ã£o reais */
 (function(){
   'use strict';
 
@@ -66,7 +66,7 @@
   }
   function fmtDate(v, withTime=false){
     const ms = dateMs(v);
-    if (!ms) return '—';
+    if (!ms) return 'â€”';
     const d = new Date(ms);
     const date = d.toLocaleDateString('pt-PT');
     const time = d.toLocaleTimeString('pt-PT', {hour:'2-digit', minute:'2-digit'});
@@ -175,9 +175,9 @@
       if (typeof fn === 'function') estado = fn(item.ip);
     } catch(e){}
     const n = norm(estado);
-    if (toner !== null && toner <= 10) return {label:'Crítico', cls:'critical'};
+    if (toner !== null && toner <= 10) return {label:'CrÃ­tico', cls:'critical'};
     if (toner !== null && toner <= 25) return {label:'Baixo', cls:'low'};
-    if (n.includes('crit') || n.includes('offline')) return {label:'Crítico', cls:'critical'};
+    if (n.includes('crit') || n.includes('offline')) return {label:'CrÃ­tico', cls:'critical'};
     if (n.includes('baixo') || n.includes('pend') || n.includes('repar')) return {label:'Baixo', cls:'low'};
     return {label:'Online', cls:'online'};
   }
@@ -202,11 +202,11 @@
     return 1;
   }
   function equipOf(item){ return item?.equipamento || item?.modelo || item?.printer || item?.nome || item?.impressora || 'Impressora'; }
-  function localOf(item){ return item?.localizacao || item?.local || item?.armazem || item?.setor || '—'; }
+  function localOf(item){ return item?.localizacao || item?.local || item?.armazem || item?.setor || 'â€”'; }
   function serieOf(item){ return item?.serie || item?.serial || item?.numeroSerie || ''; }
   function corOf(item){ return item?.cor || item?.color || item?.toner || 'Preto'; }
   function statusOfMaint(item){ return item?.estado || item?.status || 'Aberta'; }
-  function maintTitle(item){ return item?.pedido || item?.tipo || item?.intervencao || item?.motivo || item?.descricao || 'Intervenção técnica'; }
+  function maintTitle(item){ return item?.pedido || item?.tipo || item?.intervencao || item?.motivo || item?.descricao || 'IntervenÃ§Ã£o tÃ©cnica'; }
   function maintDate(item){ return item?.dataAgendada || item?.data || item?.createdAt || item?.created || item?.updatedAt || item?.vencimento || ''; }
 
   function renderKPIs(data){
@@ -247,7 +247,7 @@
       const tonerLabel = toner === null ? 'Sem leitura' : `${toner}%`;
       const fillWidth = toner === null ? 0 : toner;
       const fillClass = toner === null ? 'unknown' : (toner <= 10 ? 'critical' : (toner <= 25 ? 'low' : 'ok'));
-      const ipHtml = ip && ip !== '-' ? `<a class="imp-ip-link" href="http://${esc(ip)}" target="_blank" rel="noopener">${esc(ip)}</a>` : '—';
+      const ipHtml = ip && ip !== '-' ? `<a class="imp-ip-link" href="http://${esc(ip)}" target="_blank" rel="noopener">${esc(ip)}</a>` : 'â€”';
       return `<tr>
         <td><div class="imp-printer-cell"><img class="imp-printer-thumb" src="${printerImage(item)}" alt=""><span><a class="imp-printer-name" href="${ip && ip !== '-' ? 'http://'+esc(ip) : '#'}" target="_blank" rel="noopener">${esc(modelo)}</a></span></div></td>
         <td>${esc(serie)}</td>
@@ -256,7 +256,7 @@
         <td><div class="imp-toner-cell"><div class="imp-toner-meta"><span>Preto</span><strong>${tonerLabel}</strong></div><div class="imp-toner-track" title="Toner preto ${tonerLabel}"><div class="imp-toner-fill ${fillClass}" style="width:${fillWidth}%"></div></div></div></td>
         <td><span class="imp-status-badge ${st.cls}">${esc(st.label)}</span></td>
         <td>${esc(item.ultimaLeitura || item.lastRead || 'Hoje, 09:12')}</td>
-        <td><div class="imp-actions"><button class="imp-action-icon" onclick="abrirIP('${esc(ip)}')" title="Abrir IP">👁</button><button class="imp-action-icon" onclick='abrirHistoricoImpressora(${actionData})' title="Histórico">📊</button><button class="imp-action-icon" onclick='abrirManutencaoDireta(${actionData})' title="Mais">⋮</button></div></td>
+        <td><div class="imp-actions"><button class="imp-action-icon" onclick="abrirIP('${esc(ip)}')" title="Abrir IP">ðŸ‘</button><button class="imp-action-icon" onclick='abrirHistoricoImpressora(${actionData})' title="HistÃ³rico">ðŸ“Š</button><button class="imp-action-icon" onclick='abrirManutencaoDireta(${actionData})' title="Mais">â‹®</button></div></td>
       </tr>`;
     }).join('');
   }
@@ -265,8 +265,8 @@
     const rows = toArray(data).map((item, idx)=>({item, idx, toner: tonerPercent(item,idx)})).filter(x=>x.toner !== null && x.toner <= 25).slice(0,4);
     el.innerHTML = rows.length ? rows.map(({item, toner})=>{
       const crit = toner <= 10;
-      return `<div class="imp-alert ${crit?'crit':''}"><span class="imp-alert-dot"></span><span>${esc(item.modelo || item.nome)} — Preto ${toner}% — ${esc(localOf(item))}</span><small>${crit?'Crítico':'Baixo'}</small></div>`;
-    }).join('') : '<div class="imp-alert"><span class="imp-alert-dot"></span><span>Sem alertas críticos neste momento</span><small>OK</small></div>';
+      return `<div class="imp-alert ${crit?'crit':''}"><span class="imp-alert-dot"></span><span>${esc(item.modelo || item.nome)} â€” Preto ${toner}% â€” ${esc(localOf(item))}</span><small>${crit?'CrÃ­tico':'Baixo'}</small></div>`;
+    }).join('') : '<div class="imp-alert"><span class="imp-alert-dot"></span><span>Sem alertas crÃ­ticos neste momento</span><small>OK</small></div>';
   }
   function readLastStockCounts(){
     try {
@@ -293,7 +293,7 @@
     const previous = state.lastStockCounts || readLastStockCounts();
 
     // Evita o piscar: se um listener antigo/Firebase devolver vazio por instantes,
-    // não limpa o resumo que já estava correto no ecrã.
+    // nÃ£o limpa o resumo que jÃ¡ estava correto no ecrÃ£.
     if (!total && previous && totalCounts(previous) > 0) {
       counts = {...counts, ...previous};
     } else if (total > 0) {
@@ -319,7 +319,7 @@
     if (item?.titulo || item?.nome || item?.fileName) return item.titulo || item.nome || item.fileName;
     const loc = item?.localCurto || item?.localizacao || item?.armazem || 'Etiqueta';
     const ref = item?.serie || item?.codigoEtiqueta || item?.sdsRef || '';
-    return `Etiqueta ${String(loc).trim()}${ref ? ' — '+ref : ''}.docx`;
+    return `Etiqueta ${String(loc).trim()}${ref ? ' â€” '+ref : ''}.docx`;
   }
   function renderWordList(){
     const host = byId('impWordList'); if (!host) return;
@@ -341,16 +341,16 @@
       kind: 'troca',
       title: `Toner trocado${corOf(item) ? ' ('+corOf(item)+')' : ''}`,
       main: equipOf(item),
-      sub: [localOf(item), serieOf(item)].filter(Boolean).join(' · '),
+      sub: [localOf(item), serieOf(item)].filter(Boolean).join(' Â· '),
       status: 'Sucesso'
     }));
     const low = getPrinters().map((item, idx)=>({item, idx, toner:tonerPercent(item,idx)})).filter(x=>x.toner !== null && x.toner <= 25).map(({item, toner}) => ({
       __date: item.ultimaLeitura || item.lastReadAt || item.updatedAt || Date.now(),
       kind: 'falta',
-      title: `Falta de toner — Preto ${toner}%`,
+      title: `Falta de toner â€” Preto ${toner}%`,
       main: item.modelo || item.nome || 'Impressora',
-      sub: [localOf(item), item.ip].filter(Boolean).join(' · '),
-      status: toner <= 10 ? 'Crítico' : 'Baixo'
+      sub: [localOf(item), item.ip].filter(Boolean).join(' Â· '),
+      status: toner <= 10 ? 'CrÃ­tico' : 'Baixo'
     }));
     const alertas = toArray(globalValue('__appbragaAlertasToner')).map(a => ({
       __date: a.createdAt || a.created || a.data || Date.now(),
@@ -358,7 +358,7 @@
       title: a.titulo || a.title || 'Falta de toner',
       main: a.equipamento || a.printer || a.modelo || 'Impressora',
       sub: a.descricao || a.message || a.localizacao || '',
-      status: norm(a.prioridade || a.level || '').includes('crit') ? 'Crítico' : 'Baixo'
+      status: norm(a.prioridade || a.level || '').includes('crit') ? 'CrÃ­tico' : 'Baixo'
     }));
     return uniqueBy(sortRecent([...used, ...low, ...alertas]), i => norm([i.kind,i.title,i.main,i.sub].join('|')));
   }
@@ -367,7 +367,7 @@
       __date: maintDate(item),
       title: maintTitle(item),
       main: equipOf(item),
-      sub: [localOf(item), item.tecnico || item.responsavel || item.user || ''].filter(Boolean).join(' · '),
+      sub: [localOf(item), item.tecnico || item.responsavel || item.user || ''].filter(Boolean).join(' Â· '),
       status: statusOfMaint(item) || 'Aberta'
     }));
   }
@@ -384,19 +384,19 @@
       host.innerHTML = `<div class="imp-empty-panel">${esc(emptyText)}</div>` + Array.from({length:4}).map(()=>'<div class="imp-placeholder-row"></div>').join('');
       return;
     }
-    const html = visible.map(item => `<div class="imp-dashboard-row"><span>${esc(fmtDate(item.__date, true))}</span><strong>${esc(item.title)}<small>${esc(item.main)}${item.sub ? ' · '+esc(item.sub) : ''}</small></strong><span class="tag ${rowStatusClass(item.status)}">${esc(item.status)}</span></div>`).join('');
+    const html = visible.map(item => `<div class="imp-dashboard-row"><span>${esc(fmtDate(item.__date, true))}</span><strong>${esc(item.title)}<small>${esc(item.main)}${item.sub ? ' Â· '+esc(item.sub) : ''}</small></strong><span class="tag ${rowStatusClass(item.status)}">${esc(item.status)}</span></div>`).join('');
     const fillers = Array.from({length:Math.max(0,5-visible.length)}).map(()=>'<div class="imp-placeholder-row"></div>').join('');
     host.innerHTML = html + fillers;
   }
   function renderHistoryAndMaint(){
     const hist = byId('impHistoryList');
-    if (hist) renderFixedRows(hist, buildTonerHistory(), 'Sem histórico de toner para mostrar.');
+    if (hist) renderFixedRows(hist, buildTonerHistory(), 'Sem histÃ³rico de toner para mostrar.');
     const man = byId('impMaintenanceList');
-    if (man) renderFixedRows(man, buildMaintenance(), 'Sem manutenções registadas.');
+    if (man) renderFixedRows(man, buildMaintenance(), 'Sem manutenÃ§Ãµes registadas.');
     const diag = byId('impDiagnosticList');
     if (diag) {
       diag.classList.add('imp-fixed-list');
-      diag.innerHTML = '<div class="imp-empty-panel">Diagnóstico sem dados para já.</div>' + Array.from({length:4}).map(()=>'<div class="imp-placeholder-row"></div>').join('');
+      diag.innerHTML = '<div class="imp-empty-panel">DiagnÃ³stico sem dados para jÃ¡.</div>' + Array.from({length:4}).map(()=>'<div class="imp-placeholder-row"></div>').join('');
     }
   }
   function renderAll(data){
@@ -439,10 +439,10 @@
     const sub = byId('impListModalSub');
     const body = byId('impListModalBody');
     const info = byId('impListModalPage');
-    if (title) title.textContent = state.modalType === 'manut' ? 'Histórico de manutenção' : 'Histórico de toner';
-    if (sub) sub.textContent = `${rows.length} registos · 25 por página`;
-    if (info) info.textContent = `Página ${state.modalPage} de ${totalPages}`;
-    if (body) body.innerHTML = page.length ? page.map(item => `<div class="imp-modal-row"><span>${esc(fmtDate(item.__date, true))}</span><strong>${esc(item.title)}<small>${esc(item.main)}${item.sub ? ' · '+esc(item.sub) : ''}</small></strong><em class="tag ${rowStatusClass(item.status)}">${esc(item.status)}</em></div>`).join('') : '<div class="imp-empty-panel">Sem registos para mostrar.</div>';
+    if (title) title.textContent = state.modalType === 'manut' ? 'HistÃ³rico de manutenÃ§Ã£o' : 'HistÃ³rico de toner';
+    if (sub) sub.textContent = `${rows.length} registos Â· 25 por pÃ¡gina`;
+    if (info) info.textContent = `PÃ¡gina ${state.modalPage} de ${totalPages}`;
+    if (body) body.innerHTML = page.length ? page.map(item => `<div class="imp-modal-row"><span>${esc(fmtDate(item.__date, true))}</span><strong>${esc(item.title)}<small>${esc(item.main)}${item.sub ? ' Â· '+esc(item.sub) : ''}</small></strong><em class="tag ${rowStatusClass(item.status)}">${esc(item.status)}</em></div>`).join('') : '<div class="imp-empty-panel">Sem registos para mostrar.</div>';
   }
   function openModal(type){ state.modalType = type === 'manut' ? 'manut' : 'hist'; state.modalPage = 1; renderModal(); setModal(true); }
   function bindModal(){
@@ -511,3 +511,4 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, {once:true});
   else boot();
 })();
+

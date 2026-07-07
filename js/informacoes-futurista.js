@@ -1,7 +1,7 @@
-
+﻿
 (() => {
   'use strict';
-  const VERSION = '1.58.169';
+  const VERSION = '1.58.172';
   const COLLECTION = 'informacoes';
   const CATEGORIES_COLLECTION = 'informacoesCategorias';
   const LOCAL_KEY = 'appbraga_informacoes_fallback_v158106';
@@ -27,7 +27,7 @@
   function nowDate(){ return new Date().toISOString().slice(0,10); }
   function nowTime(){ return new Date().toTimeString().slice(0,5); }
   function formatDate(d){
-    if(!d) return '—';
+    if(!d) return 'â€”';
     try{ const dt = d && typeof d.toDate==='function' ? d.toDate() : new Date(d); if(!isNaN(dt)) return dt.toLocaleDateString('pt-PT'); }catch(_){}
     return text(d);
   }
@@ -40,7 +40,7 @@
     if(!d) return 0; if(typeof d==='number') return d; if(d && typeof d.toDate==='function') return d.toDate().getTime();
     const t = new Date(d).getTime(); return Number.isFinite(t) ? t : 0;
   }
-  function normalizePriority(v){ const r=lower(v); if(r.includes('alt')) return 'Alta'; if(r.includes('baix')) return 'Baixa'; if(r.includes('sem')) return 'Sem prioridade'; return 'Média'; }
+  function normalizePriority(v){ const r=lower(v); if(r.includes('alt')) return 'Alta'; if(r.includes('baix')) return 'Baixa'; if(r.includes('sem')) return 'Sem prioridade'; return 'MÃ©dia'; }
   function normalizeStatus(v,item={}){
     if(item.arquivada || item.archived) return 'Arquivada';
     if(item.fixada || item.pinned) return 'Fixada';
@@ -53,7 +53,7 @@
     const data = item.data || item.date || item.createdAt || item.created || Date.now();
     const title = text(item.titulo || item.assunto || item.title || item.nome || 'Sem assunto');
     const desc = text(item.descricao || item.texto || item.obs || item.observacoes || item.body || '');
-    const prioridade = normalizePriority(item.prioridade || item.priority || (item.importante || item.important ? 'Alta' : 'Média'));
+    const prioridade = normalizePriority(item.prioridade || item.priority || (item.importante || item.important ? 'Alta' : 'MÃ©dia'));
     const estado = normalizeStatus(item.estado || item.status, item);
     return {
       id,
@@ -75,16 +75,16 @@
   }
   function sampleItems(){
     const arr = [
-      ['Atualização de horários','RH','Média','Ricardo','Publicada','Novos horários de atendimento para a equipa a partir desta semana.',false,true,false],
-      ['Manutenção da rede','TI','Alta','César-PT','Importante','Manutenção de rede programada para hoje às 18:00.',false,false,true],
-      ['Inventário do armazém','Operações','Média','Machado-PT','Publicada','Reforço de organização e validação de inventário no armazém.',true,false,false],
-      ['Formação interna','Formação','Baixa','Elisabete-PT','Agendada','Formação interna agendada para amanhã.',false,false,false],
-      ['Aviso de segurança','Segurança','Alta','Rafael Silva','Fixada','Relembrar procedimentos de segurança e acessos internos.',false,true,true],
-      ['Encerramento mensal','Administração','Média','Nelson','Arquivada','Informação de encerramento mensal arquivada.',true,false,false]
+      ['AtualizaÃ§Ã£o de horÃ¡rios','RH','MÃ©dia','Ricardo','Publicada','Novos horÃ¡rios de atendimento para a equipa a partir desta semana.',false,true,false],
+      ['ManutenÃ§Ã£o da rede','TI','Alta','CÃ©sar-PT','Importante','ManutenÃ§Ã£o de rede programada para hoje Ã s 18:00.',false,false,true],
+      ['InventÃ¡rio do armazÃ©m','OperaÃ§Ãµes','MÃ©dia','Machado-PT','Publicada','ReforÃ§o de organizaÃ§Ã£o e validaÃ§Ã£o de inventÃ¡rio no armazÃ©m.',true,false,false],
+      ['FormaÃ§Ã£o interna','FormaÃ§Ã£o','Baixa','Elisabete-PT','Agendada','FormaÃ§Ã£o interna agendada para amanhÃ£.',false,false,false],
+      ['Aviso de seguranÃ§a','SeguranÃ§a','Alta','Rafael Silva','Fixada','Relembrar procedimentos de seguranÃ§a e acessos internos.',false,true,true],
+      ['Encerramento mensal','AdministraÃ§Ã£o','MÃ©dia','Nelson','Arquivada','InformaÃ§Ã£o de encerramento mensal arquivada.',true,false,false]
     ];
     return arr.map((a,i)=>normalize({titulo:a[0],categoria:a[1],prioridade:a[2],autor:a[3],estado:a[4],descricao:a[5],lida:a[6],fixada:a[7],importante:a[8],data:new Date(Date.now()-i*86400000).toISOString(),createdAt:Date.now()-i*86400000,updatedAt:Date.now()-i*3600000},`sample-${i}`));
   }
-  function defaultCategories(){ return ['RH','TI','Operações','Segurança','Administração','Formação','Geral']; }
+  function defaultCategories(){ return ['RH','TI','OperaÃ§Ãµes','SeguranÃ§a','AdministraÃ§Ã£o','FormaÃ§Ã£o','Geral']; }
   function getFiltered(){
     const q=lower($('infoSearch')?.value||''); const cat=text($('infoFilterCategoria')?.value||''); const st=text($('infoFilterEstado')?.value||'');
     let rows=state.items.slice();
@@ -111,16 +111,16 @@
     const start=(state.page-1)*size; const pageRows=rows.slice(start,start+size); const body=$('infoTableBody');
     if(body) body.innerHTML=pageRows.length?pageRows.map(x=>`
       <tr class="${!x.lida?'info-unread':''}">
-        <td><div class="info-title-cell"><span class="info-dot ${rowDot(x)}"></span><div class="info-title-main"><strong>${esc(x.titulo)}</strong><small>${esc(x.descricao||'Sem descrição')}</small></div></div></td>
+        <td><div class="info-title-cell"><span class="info-dot ${rowDot(x)}"></span><div class="info-title-main"><strong>${esc(x.titulo)}</strong><small>${esc(x.descricao||'Sem descriÃ§Ã£o')}</small></div></div></td>
         <td><span class="info-badge info-cat ${catClass(x.categoria)}">${esc(x.categoria)}</span></td>
-        <td><span class="info-badge ${prioClass(x.prioridade)}">${x.prioridade==='Alta'?'↑':x.prioridade==='Baixa'?'↓':x.prioridade==='Sem prioridade'?'•':'•'} ${esc(x.prioridade)}</span></td>
+        <td><span class="info-badge ${prioClass(x.prioridade)}">${x.prioridade==='Alta'?'â†‘':x.prioridade==='Baixa'?'â†“':x.prioridade==='Sem prioridade'?'â€¢':'â€¢'} ${esc(x.prioridade)}</span></td>
         <td>${esc(x.autor)}</td>
         <td><div class="info-date"><strong>${formatDate(x.data)}</strong><small>${formatTime(x.data)}</small></div></td>
-        <td><span class="info-badge ${statusClass(x.estado)}">${x.estado==='Publicada'?'✓':x.estado==='Importante'?'!':x.estado==='Fixada'?'📌':x.estado==='Arquivada'?'▣':'◷'} ${esc(x.estado)}</span></td>
-        <td><div class="info-actions"><button class="ck-icon-btn" title="Ver" data-info-view="${esc(x.id)}">👁</button><button class="ck-icon-btn" title="Editar" data-info-edit="${esc(x.id)}">✎</button><button class="ck-icon-btn" title="Mais" data-info-more="${esc(x.id)}">⋮</button></div></td>
-      </tr>`).join(''):`<tr><td colspan="7"><div class="ck-empty">Sem informações para mostrar.</div></td></tr>`;
+        <td><span class="info-badge ${statusClass(x.estado)}">${x.estado==='Publicada'?'âœ“':x.estado==='Importante'?'!':x.estado==='Fixada'?'ðŸ“Œ':x.estado==='Arquivada'?'â–£':'â—·'} ${esc(x.estado)}</span></td>
+        <td><div class="info-actions"><button class="ck-icon-btn" title="Ver" data-info-view="${esc(x.id)}">ðŸ‘</button><button class="ck-icon-btn" title="Editar" data-info-edit="${esc(x.id)}">âœŽ</button><button class="ck-icon-btn" title="Mais" data-info-more="${esc(x.id)}">â‹®</button></div></td>
+      </tr>`).join(''):`<tr><td colspan="7"><div class="ck-empty">Sem informaÃ§Ãµes para mostrar.</div></td></tr>`;
     const from=total?start+1:0, to=Math.min(start+size,total); if($('infoTableSummary')) $('infoTableSummary').textContent=`${from}-${to} de ${total}`; if($('infoListCount')) $('infoListCount').textContent=total;
-    const pag=$('infoPagination'); if(pag){ let html=`<button ${state.page<=1?'disabled':''} data-info-page="${state.page-1}">«</button>`; for(let p=1;p<=pages;p++){ if(pages<=5 || p===1 || p===pages || Math.abs(p-state.page)<=1) html+=`<button class="${p===state.page?'active':''}" data-info-page="${p}">${p}</button>`; } html+=`<button ${state.page>=pages?'disabled':''} data-info-page="${state.page+1}">»</button>`; pag.innerHTML=html; }
+    const pag=$('infoPagination'); if(pag){ let html=`<button ${state.page<=1?'disabled':''} data-info-page="${state.page-1}">Â«</button>`; for(let p=1;p<=pages;p++){ if(pages<=5 || p===1 || p===pages || Math.abs(p-state.page)<=1) html+=`<button class="${p===state.page?'active':''}" data-info-page="${p}">${p}</button>`; } html+=`<button ${state.page>=pages?'disabled':''} data-info-page="${state.page+1}">Â»</button>`; pag.innerHTML=html; }
     renderKpis(); renderSide(); bindDynamic();
   }
   function renderKpis(){
@@ -130,11 +130,11 @@
   function setText(id,v){ const el=$(id); if(el) el.textContent=v; }
   function renderSide(){
     const active=state.items.filter(x=>!x.arquivada); const alerts=active.filter(x=>x.importante||x.estado==='Importante'||!x.lida).slice(0,4);
-    const alertsEl=$('infoAlertsList'); if(alertsEl) alertsEl.innerHTML=alerts.length?alerts.map(x=>`<div class="ck-alert-row"><span class="ck-mini-dot ${x.importante?'bad':'warn'}"></span><div><strong>${esc(x.titulo)}</strong><small>${esc(x.descricao||x.categoria)}</small></div><em>${formatDate(x.data)}</em></div>`).join(''):`<div class="ck-empty">Sem alertas críticos neste momento.</div>`;
+    const alertsEl=$('infoAlertsList'); if(alertsEl) alertsEl.innerHTML=alerts.length?alerts.map(x=>`<div class="ck-alert-row"><span class="ck-mini-dot ${x.importante?'bad':'warn'}"></span><div><strong>${esc(x.titulo)}</strong><small>${esc(x.descricao||x.categoria)}</small></div><em>${formatDate(x.data)}</em></div>`).join(''):`<div class="ck-empty">Sem alertas crÃ­ticos neste momento.</div>`;
     const counts={}; active.forEach(x=>counts[x.categoria]=(counts[x.categoria]||0)+1); const total=Math.max(active.length,1); const bars=$('infoCategoryBars');
     if(bars) bars.innerHTML=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([name,count])=>`<div class="ck-bar"><span>${esc(name)}</span><div class="ck-bar-line"><span class="ck-bar-fill" style="width:${Math.round(count/total*100)}%"></span></div><strong>${count}</strong><small>${(count/total*100).toFixed(1)}%</small></div>`).join('') || `<div class="ck-empty">Sem categorias.</div>`;
     const rec=active.slice().sort((a,b)=>toMs(b.updatedAt)-toMs(a.updatedAt)).slice(0,5); const recent=$('infoRecentList');
-    if(recent) recent.innerHTML=rec.length?rec.map(x=>`<div class="ck-mini-row"><span class="ck-mini-dot ${rowDot(x)}"></span><div><div class="ck-mini-title">${esc(x.titulo)}</div><div class="ck-mini-sub">${esc(x.categoria)} · ${formatDate(x.updatedAt||x.data)}</div></div></div>`).join(''):`<div class="ck-empty">Sem atualizações registadas.</div>`;
+    if(recent) recent.innerHTML=rec.length?rec.map(x=>`<div class="ck-mini-row"><span class="ck-mini-dot ${rowDot(x)}"></span><div><div class="ck-mini-title">${esc(x.titulo)}</div><div class="ck-mini-sub">${esc(x.categoria)} Â· ${formatDate(x.updatedAt||x.data)}</div></div></div>`).join(''):`<div class="ck-empty">Sem atualizaÃ§Ãµes registadas.</div>`;
     renderFilters();
   }
   function renderFilters(){
@@ -152,8 +152,8 @@
   }
   function get(id){ return state.items.find(x=>x.id===id); }
   function openForm(id=''){
-    state.editingId=id||null; const x=id?get(id):null; if($('infoModalTitle')) $('infoModalTitle').textContent=x?'Editar informação':'Nova informação';
-    $('infoFormTitulo').value=x?.titulo||''; $('infoFormCategoria').value=x?.categoria||''; $('infoFormPrioridade').value=x?.prioridade||'Média'; $('infoFormEstado').value=x?.estado||'Publicada'; $('infoFormAutor').value=x?.autor||'';
+    state.editingId=id||null; const x=id?get(id):null; if($('infoModalTitle')) $('infoModalTitle').textContent=x?'Editar informaÃ§Ã£o':'Nova informaÃ§Ã£o';
+    $('infoFormTitulo').value=x?.titulo||''; $('infoFormCategoria').value=x?.categoria||''; $('infoFormPrioridade').value=x?.prioridade||'MÃ©dia'; $('infoFormEstado').value=x?.estado||'Publicada'; $('infoFormAutor').value=x?.autor||'';
     const dt=x?new Date(toMs(x.data)):new Date(); $('infoFormData').value=!isNaN(dt)?dt.toISOString().slice(0,10):nowDate(); $('infoFormHora').value=!isNaN(dt)?dt.toTimeString().slice(0,5):nowTime();
     $('infoFormDescricao').value=x?.descricao||''; $('infoFormFixada').checked=!!x?.fixada; $('infoFormImportante').checked=!!x?.importante; $('infoFormLida').checked=!!x?.lida;
     showModal('form'); setTimeout(()=>$('infoFormTitulo')?.focus(),50);
@@ -161,7 +161,7 @@
   function showModal(name){ const id={form:'infoModalForm',detail:'infoModalDetalhe',categorias:'infoModalCategorias'}[name]; if($(id)) $(id).style.display='flex'; }
   function closeModal(name){ const id={form:'infoModalForm',detail:'infoModalDetalhe',categorias:'infoModalCategorias'}[name]; if($(id)) $(id).style.display='none'; }
   async function saveItem(){
-    const titulo=text($('infoFormTitulo').value); if(!titulo){toast('Indica o assunto da informação.','warn'); return;}
+    const titulo=text($('infoFormTitulo').value); if(!titulo){toast('Indica o assunto da informaÃ§Ã£o.','warn'); return;}
     const cat=text($('infoFormCategoria').value)||'Geral'; const date=text($('infoFormData').value)||nowDate(); const hour=text($('infoFormHora').value)||nowTime();
     const dataIso=new Date(`${date}T${hour}:00`).toISOString();
     const payload={titulo,assunto:titulo,categoria:cat,prioridade:$('infoFormPrioridade').value,estado:$('infoFormEstado').value,autor:text($('infoFormAutor').value)||'Sem autor',descricao:text($('infoFormDescricao').value),texto:text($('infoFormDescricao').value),data:dataIso,lida:!!$('infoFormLida').checked,fixada:!!$('infoFormFixada').checked,importante:!!$('infoFormImportante').checked,arquivada:$('infoFormEstado').value==='Arquivada',updatedAt:Date.now()};
@@ -170,17 +170,17 @@
       const database=db();
       if(database){ if(state.editingId && !state.editingId.startsWith('sample-')) await database.collection(COLLECTION).doc(state.editingId).set(payload,{merge:true}); else await database.collection(COLLECTION).add({...payload,createdAt:Date.now()}); }
       else saveLocalItem(payload);
-      await ensureCategory(cat); toast('Informação guardada.'); closeModal('form');
-    }catch(e){ console.error(e); saveLocalItem(payload); toast('Firebase indisponível: guardado localmente.','warn'); closeModal('form'); }
+      await ensureCategory(cat); toast('InformaÃ§Ã£o guardada.'); closeModal('form');
+    }catch(e){ console.error(e); saveLocalItem(payload); toast('Firebase indisponÃ­vel: guardado localmente.','warn'); closeModal('form'); }
   }
   function saveLocalItem(payload){ let arr=loadLocal(LOCAL_KEY,[]); if(state.editingId){ const i=arr.findIndex(x=>x.id===state.editingId); if(i>=0) arr[i]={...arr[i],...payload}; else arr.unshift({...payload,id:uid(),createdAt:Date.now()}); } else arr.unshift({...payload,id:uid(),createdAt:Date.now()}); saveLocal(LOCAL_KEY,arr); state.items=arr.map(x=>normalize(x,x.id)); renderTable(); }
   async function ensureCategory(cat){ if(!cat) return; const cats=loadLocal(LOCAL_CAT_KEY,defaultCategories()); if(!cats.map(lower).includes(lower(cat))){cats.push(cat); saveLocal(LOCAL_CAT_KEY,cats);} try{ const database=db(); if(database) await database.collection(CATEGORIES_COLLECTION).doc(cat).set({nome:cat,updatedAt:Date.now()},{merge:true}); }catch(_){} }
-  function viewItem(id){ const x=get(id); if(!x) return; $('infoDetailTitle').textContent=x.titulo; $('infoDetailSub').textContent=`${x.categoria} · ${x.autor} · ${formatDate(x.data)}`; $('infoDetailBody').innerHTML=`<div class="info-detail-meta"><span class="info-badge info-cat ${catClass(x.categoria)}">${esc(x.categoria)}</span><span class="info-badge ${prioClass(x.prioridade)}">${esc(x.prioridade)}</span><span class="info-badge ${statusClass(x.estado)}">${esc(x.estado)}</span></div><div class="info-detail-text">${esc(x.descricao||'Sem descrição.')}</div><div class="ck-modal-actions"><button class="ck-btn" data-info-edit="${esc(x.id)}">Editar</button><button class="ck-btn" id="infoDetailRead">${x.lida?'Marcar não lida':'Marcar lida'}</button><button class="ck-btn" id="infoDetailPin">${x.fixada?'Desafixar':'Fixar'}</button></div>`; showModal('detail'); $('infoDetailRead').onclick=()=>toggleField(id,'lida',!x.lida); $('infoDetailPin').onclick=()=>toggleField(id,'fixada',!x.fixada); bindDynamic(); if(!x.lida) toggleField(id,'lida',true,true); }
-  async function updateItem(id, patch, silent=false){ const x=get(id); if(!x) return; const payload={...patch,updatedAt:Date.now()}; try{ const database=db(); if(database && !id.startsWith('sample-')) await database.collection(COLLECTION).doc(id).set(payload,{merge:true}); else throw new Error('local'); if(!silent) toast('Informação atualizada.'); }catch(_){ let arr=loadLocal(LOCAL_KEY,state.items.map(i=>({...i.raw,id:i.id}))); const idx=arr.findIndex(i=>(i.id||'')===id); if(idx>=0) arr[idx]={...arr[idx],...payload}; saveLocal(LOCAL_KEY,arr); state.items=state.items.map(i=>i.id===id?normalize({...i.raw,...payload},id):i); renderTable(); if(!silent) toast('Atualizado localmente.','warn'); } }
+  function viewItem(id){ const x=get(id); if(!x) return; $('infoDetailTitle').textContent=x.titulo; $('infoDetailSub').textContent=`${x.categoria} Â· ${x.autor} Â· ${formatDate(x.data)}`; $('infoDetailBody').innerHTML=`<div class="info-detail-meta"><span class="info-badge info-cat ${catClass(x.categoria)}">${esc(x.categoria)}</span><span class="info-badge ${prioClass(x.prioridade)}">${esc(x.prioridade)}</span><span class="info-badge ${statusClass(x.estado)}">${esc(x.estado)}</span></div><div class="info-detail-text">${esc(x.descricao||'Sem descriÃ§Ã£o.')}</div><div class="ck-modal-actions"><button class="ck-btn" data-info-edit="${esc(x.id)}">Editar</button><button class="ck-btn" id="infoDetailRead">${x.lida?'Marcar nÃ£o lida':'Marcar lida'}</button><button class="ck-btn" id="infoDetailPin">${x.fixada?'Desafixar':'Fixar'}</button></div>`; showModal('detail'); $('infoDetailRead').onclick=()=>toggleField(id,'lida',!x.lida); $('infoDetailPin').onclick=()=>toggleField(id,'fixada',!x.fixada); bindDynamic(); if(!x.lida) toggleField(id,'lida',true,true); }
+  async function updateItem(id, patch, silent=false){ const x=get(id); if(!x) return; const payload={...patch,updatedAt:Date.now()}; try{ const database=db(); if(database && !id.startsWith('sample-')) await database.collection(COLLECTION).doc(id).set(payload,{merge:true}); else throw new Error('local'); if(!silent) toast('InformaÃ§Ã£o atualizada.'); }catch(_){ let arr=loadLocal(LOCAL_KEY,state.items.map(i=>({...i.raw,id:i.id}))); const idx=arr.findIndex(i=>(i.id||'')===id); if(idx>=0) arr[idx]={...arr[idx],...payload}; saveLocal(LOCAL_KEY,arr); state.items=state.items.map(i=>i.id===id?normalize({...i.raw,...payload},id):i); renderTable(); if(!silent) toast('Atualizado localmente.','warn'); } }
   function toggleField(id,field,value,silent=false){ const patch={[field]:value}; if(field==='fixada') patch.estado=value?'Fixada':'Publicada'; if(field==='importante') patch.estado=value?'Importante':'Publicada'; updateItem(id,patch,silent); if(!silent) closeModal('detail'); }
-  function quickMore(id){ const x=get(id); if(!x) return; const choice=prompt(`Ações para "${x.titulo}":\n1 - Fixar/Desafixar\n2 - Importante/Normal\n3 - Arquivar/Desarquivar\n4 - Marcar lida/não lida\n5 - Apagar`, '1'); if(!choice) return; if(choice==='1') toggleField(id,'fixada',!x.fixada); else if(choice==='2') toggleField(id,'importante',!x.importante); else if(choice==='3') toggleField(id,'arquivada',!x.arquivada); else if(choice==='4') toggleField(id,'lida',!x.lida); else if(choice==='5') deleteItem(id); }
-  async function deleteItem(id){ const x=get(id); if(!x || !confirm(`Apagar "${x.titulo}"?`)) return; try{ const database=db(); if(database && !id.startsWith('sample-')) await database.collection(COLLECTION).doc(id).delete(); else throw new Error('local'); toast('Informação apagada.'); }catch(_){ let arr=loadLocal(LOCAL_KEY,state.items.map(i=>({...i.raw,id:i.id}))).filter(i=>(i.id||'')!==id); saveLocal(LOCAL_KEY,arr); state.items=state.items.filter(i=>i.id!==id); renderTable(); toast('Informação apagada localmente.','warn'); } }
-  function exportCsv(){ const rows=getFiltered(); const header=['Assunto','Categoria','Prioridade','Autor','Data','Estado','Lida','Descrição']; const csv=[header,...rows.map(x=>[x.titulo,x.categoria,x.prioridade,x.autor,formatDate(x.data),x.estado,x.lida?'Sim':'Não',x.descricao])].map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';')).join('\n'); const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`informacoes-appbraga-${nowDate()}.csv`; a.click(); URL.revokeObjectURL(a.href); }
+  function quickMore(id){ const x=get(id); if(!x) return; const choice=prompt(`AÃ§Ãµes para "${x.titulo}":\n1 - Fixar/Desafixar\n2 - Importante/Normal\n3 - Arquivar/Desarquivar\n4 - Marcar lida/nÃ£o lida\n5 - Apagar`, '1'); if(!choice) return; if(choice==='1') toggleField(id,'fixada',!x.fixada); else if(choice==='2') toggleField(id,'importante',!x.importante); else if(choice==='3') toggleField(id,'arquivada',!x.arquivada); else if(choice==='4') toggleField(id,'lida',!x.lida); else if(choice==='5') deleteItem(id); }
+  async function deleteItem(id){ const x=get(id); if(!x || !confirm(`Apagar "${x.titulo}"?`)) return; try{ const database=db(); if(database && !id.startsWith('sample-')) await database.collection(COLLECTION).doc(id).delete(); else throw new Error('local'); toast('InformaÃ§Ã£o apagada.'); }catch(_){ let arr=loadLocal(LOCAL_KEY,state.items.map(i=>({...i.raw,id:i.id}))).filter(i=>(i.id||'')!==id); saveLocal(LOCAL_KEY,arr); state.items=state.items.filter(i=>i.id!==id); renderTable(); toast('InformaÃ§Ã£o apagada localmente.','warn'); } }
+  function exportCsv(){ const rows=getFiltered(); const header=['Assunto','Categoria','Prioridade','Autor','Data','Estado','Lida','DescriÃ§Ã£o']; const csv=[header,...rows.map(x=>[x.titulo,x.categoria,x.prioridade,x.autor,formatDate(x.data),x.estado,x.lida?'Sim':'NÃ£o',x.descricao])].map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';')).join('\n'); const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`informacoes-appbraga-${nowDate()}.csv`; a.click(); URL.revokeObjectURL(a.href); }
   function load(){
     const local=loadLocal(LOCAL_KEY,[]); state.items=local.length?local.map(x=>normalize(x,x.id)):sampleItems(); state.categories=loadLocal(LOCAL_CAT_KEY,defaultCategories()); renderTable();
     const database=db(); if(database){
@@ -205,3 +205,4 @@
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
+

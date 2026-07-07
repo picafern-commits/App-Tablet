@@ -1,8 +1,8 @@
-/* AppBraga v1.58.169 — Scanner IA futurista funcional */
+﻿/* AppBraga v1.58.172 â€” Scanner IA futurista funcional */
 (() => {
   'use strict';
 
-  const VERSION = '1.58.169';
+  const VERSION = '1.58.172';
   const COLLECTION = 'scannerIaDigitalizacoes';
   const LOCAL_KEY = 'appbraga_scanner_ia_history_v158125';
   const state = { original:null, processed:null, selectedFile:null, selectedMeta:null, ocrText:'', items:[], page:1, pageSize:10, unsub:null, processing:false };
@@ -28,17 +28,17 @@
   }
   function setStatus(message,type='info'){
     if(els.status){ els.status.textContent = message; els.status.dataset.type = type; }
-    if(els.confidence){ els.confidence.textContent = type === 'ok' ? 'Concluído' : type === 'warn' ? 'Atenção' : type === 'error' ? 'Erro' : state.processing ? 'A processar' : 'Pronto'; els.confidence.className = `scanner-status-pill ${type === 'ok' ? 'ok' : type === 'warn' ? 'warn' : type === 'error' ? 'error' : 'neutral'}`; }
+    if(els.confidence){ els.confidence.textContent = type === 'ok' ? 'ConcluÃ­do' : type === 'warn' ? 'AtenÃ§Ã£o' : type === 'error' ? 'Erro' : state.processing ? 'A processar' : 'Pronto'; els.confidence.className = `scanner-status-pill ${type === 'ok' ? 'ok' : type === 'warn' ? 'warn' : type === 'error' ? 'error' : 'neutral'}`; }
   }
   function normalizeFileName(value){
     const base = text(value) || todayName();
     return base.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'_').replace(/^_+|_+$/g,'') || todayName();
   }
   function todayName(){ const d = new Date(); const pad = n => String(n).padStart(2,'0'); return `Documento_${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`; }
-  function fmtDate(v){ try{ const d = v && typeof v.toDate === 'function' ? v.toDate() : new Date(v); if(!isNaN(d)) return d.toLocaleDateString('pt-PT'); }catch(_){} return '—'; }
+  function fmtDate(v){ try{ const d = v && typeof v.toDate === 'function' ? v.toDate() : new Date(v); if(!isNaN(d)) return d.toLocaleDateString('pt-PT'); }catch(_){} return 'â€”'; }
   function fmtTime(v){ try{ const d = v && typeof v.toDate === 'function' ? v.toDate() : new Date(v); if(!isNaN(d)) return d.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'}); }catch(_){} return ''; }
   function toMs(v){ if(!v) return 0; if(typeof v === 'number') return v; if(v && typeof v.toDate === 'function') return v.toDate().getTime(); const t = new Date(v).getTime(); return Number.isFinite(t) ? t : 0; }
-  function sizeText(bytes){ const n = Number(bytes||0); if(n >= 1024*1024*1024) return (n/1024/1024/1024).toFixed(2)+' GB'; if(n >= 1024*1024) return (n/1024/1024).toFixed(1)+' MB'; if(n >= 1024) return Math.round(n/1024)+' KB'; return n ? n+' B' : '—'; }
+  function sizeText(bytes){ const n = Number(bytes||0); if(n >= 1024*1024*1024) return (n/1024/1024/1024).toFixed(2)+' GB'; if(n >= 1024*1024) return (n/1024/1024).toFixed(1)+' MB'; if(n >= 1024) return Math.round(n/1024)+' KB'; return n ? n+' B' : 'â€”'; }
   function extOf(name,type){ const n = lower(name); if(type && type.includes('pdf')) return 'PDF'; if(type && type.includes('word')) return 'DOCX'; if(type && type.includes('image')) return (n.split('.').pop() || 'IMG').toUpperCase(); const e = (n.split('.').pop() || '').toUpperCase(); return e || 'FIC'; }
   function typeClass(tipo){ const t=lower(tipo); if(t.includes('pdf')) return 'pdf'; if(t.includes('doc')) return 'doc'; if(['jpg','jpeg','png','webp','img'].some(x=>t.includes(x))) return 'img'; return 'doc'; }
   function statusClass(st){ const s=lower(st); if(s.includes('erro')) return 'error'; if(s.includes('process')) return 'processing'; return 'ok'; }
@@ -46,7 +46,7 @@
     const name = text(item.name || item.nome || item.fileName || item.ficheiro || item.documento || 'Documento sem nome');
     const ext = text(item.ext || item.tipoFicheiro || extOf(name,item.mimeType || item.type));
     const docType = text(item.docType || item.tipo || item.categoria || item.tipoDocumento || (ext === 'PDF' ? 'PDF' : ['JPG','JPEG','PNG','WEBP'].includes(ext) ? 'JPG/PNG' : 'Documento'));
-    const status = text(item.status || item.estado || 'Concluído');
+    const status = text(item.status || item.estado || 'ConcluÃ­do');
     return {
       id: id || item.id || uid(),
       name,
@@ -57,7 +57,7 @@
       createdAt: item.createdAt || item.data || item.created || Date.now(),
       updatedAt: item.updatedAt || item.updated || item.createdAt || item.data || Date.now(),
       ocrText: text(item.ocrText || item.texto || item.analise || ''),
-      confidence: Number(item.confidence ?? item.precisao ?? (status === 'Concluído' ? 92 : status.includes('Erro') ? 20 : 62)),
+      confidence: Number(item.confidence ?? item.precisao ?? (status === 'ConcluÃ­do' ? 92 : status.includes('Erro') ? 20 : 62)),
       source: text(item.source || item.origem || 'local'),
       raw: item
     };
@@ -85,21 +85,21 @@
     if(els.historyBody){
       els.historyBody.innerHTML = pageRows.length ? pageRows.map(x => `
         <tr>
-          <td><div class="scanner-doc-cell"><span class="scanner-doc-icon ${typeClass(x.ext)}">${esc(x.ext.slice(0,3))}</span><div class="scanner-doc-main"><strong>${esc(x.name)}</strong><small>${esc(x.ocrText ? x.ocrText.slice(0,78) : 'Sem análise detalhada')}</small></div></div></td>
+          <td><div class="scanner-doc-cell"><span class="scanner-doc-icon ${typeClass(x.ext)}">${esc(x.ext.slice(0,3))}</span><div class="scanner-doc-main"><strong>${esc(x.name)}</strong><small>${esc(x.ocrText ? x.ocrText.slice(0,78) : 'Sem anÃ¡lise detalhada')}</small></div></div></td>
           <td><span class="scanner-badge ${typeClass(x.ext)}">${esc(x.docType || x.ext)}</span></td>
           <td>${esc(sizeText(x.size))}</td>
           <td><strong>${fmtDate(x.createdAt)}</strong><br><small>${fmtTime(x.createdAt)}</small></td>
           <td><span class="scanner-badge ${statusClass(x.status)}">${esc(x.status)}</span></td>
-          <td><div class="scanner-actions"><button class="ck-icon-btn" title="Ver análise" data-view="${esc(x.id)}">👁</button><button class="ck-icon-btn" title="Descarregar/gerar PDF" data-pdf="${esc(x.id)}">⇩</button><button class="ck-icon-btn" title="Apagar" data-del="${esc(x.id)}">⋮</button></div></td>
-        </tr>`).join('') : '<tr><td colspan="6" style="text-align:center;color:#9fb6d8;padding:24px;font-weight:900">Sem digitalizações para mostrar.</td></tr>';
+          <td><div class="scanner-actions"><button class="ck-icon-btn" title="Ver anÃ¡lise" data-view="${esc(x.id)}">ðŸ‘</button><button class="ck-icon-btn" title="Descarregar/gerar PDF" data-pdf="${esc(x.id)}">â‡©</button><button class="ck-icon-btn" title="Apagar" data-del="${esc(x.id)}">â‹®</button></div></td>
+        </tr>`).join('') : '<tr><td colspan="6" style="text-align:center;color:#9fb6d8;padding:24px;font-weight:900">Sem digitalizaÃ§Ãµes para mostrar.</td></tr>';
     }
     const end = total ? Math.min(total,start+state.pageSize) : 0;
     if(els.pageInfo) els.pageInfo.textContent = `${total ? start+1 : 0}-${end} de ${total} registos`;
     if(els.pagination){
-      let html = `<button class="ck-page-btn" ${state.page<=1?'disabled':''} data-page="${state.page-1}">«</button>`;
+      let html = `<button class="ck-page-btn" ${state.page<=1?'disabled':''} data-page="${state.page-1}">Â«</button>`;
       const max = Math.min(pages,5); let from = Math.max(1, Math.min(state.page-2, pages-max+1));
       for(let p=from; p<from+max; p++) html += `<button class="ck-page-btn ${p===state.page?'active':''}" data-page="${p}">${p}</button>`;
-      html += `<button class="ck-page-btn" ${state.page>=pages?'disabled':''} data-page="${state.page+1}">»</button>`;
+      html += `<button class="ck-page-btn" ${state.page>=pages?'disabled':''} data-page="${state.page+1}">Â»</button>`;
       els.pagination.innerHTML = html;
     }
     renderStats();
@@ -117,7 +117,7 @@
     setText('scannerKpiProcessing', processing);
     setText('scannerKpiErrors', errors);
     setText('scannerKpiStorage', sizeText(storage));
-    setText('scannerKpiLast', last ? (fmtDate(last.createdAt) === new Date().toLocaleDateString('pt-PT') ? 'Hoje' : fmtDate(last.createdAt)) : '—');
+    setText('scannerKpiLast', last ? (fmtDate(last.createdAt) === new Date().toLocaleDateString('pt-PT') ? 'Hoje' : fmtDate(last.createdAt)) : 'â€”');
     setText('scannerKpiLastSub', last ? (fmtTime(last.createdAt) || 'Registada') : 'Sem registos');
   }
   function setText(id,val){ const el=$(id); if(el) el.textContent = val; }
@@ -132,7 +132,7 @@
     if(els.typeBars){
       els.typeBars.innerHTML = top.length ? top.map(([name,count],i)=>{
         const pct = Math.round(count/total*1000)/10;
-        const icon = lower(name).includes('pdf')?'▧':lower(name).includes('jpg')||lower(name).includes('png')?'▧':lower(name).includes('doc')?'▤':'▣';
+        const icon = lower(name).includes('pdf')?'â–§':lower(name).includes('jpg')||lower(name).includes('png')?'â–§':lower(name).includes('doc')?'â–¤':'â–£';
         return `<div class="scanner-type-row"><div class="scanner-type-name"><span class="scanner-type-icon">${icon}</span>${esc(name)}</div><div class="scanner-bar-track"><div class="scanner-bar-fill" style="width:${pct}%"></div></div><div class="scanner-type-count">${count} (${pct}%)</div></div>`;
       }).join('') : '<div class="ck-empty" style="padding:10px 0;color:#9fb6d8;font-weight:800">Sem documentos registados.</div>';
     }
@@ -164,39 +164,39 @@
   async function ensureTesseract(){ if(window.Tesseract) return; await new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
   async function runOcr(){
     const canvas=ensureCanvas(); if(!canvas || canvas.hidden){ setStatus('Seleciona uma imagem primeiro.','warn'); return; }
-    try{ state.processing=true; renderStats(); setStatus('A ler texto com OCR... pode demorar um pouco.','info'); await ensureTesseract(); const result=await Tesseract.recognize(canvas.toDataURL('image/png'),'por+eng',{logger:()=>{}}); state.ocrText=text(result?.data?.text); if(els.ocrBox) els.ocrBox.textContent=state.ocrText || 'Não foi possível detetar texto.'; setStatus(state.ocrText?'OCR concluído.':'OCR concluído, mas não encontrou texto.', state.ocrText?'ok':'warn'); await saveCurrentRecord('Concluído', state.ocrText ? 94 : 65); }catch(e){ setStatus('Erro no OCR: '+(e.message||e),'error'); await saveCurrentRecord('Erro na análise',20); } finally{ state.processing=false; renderStats(); }
+    try{ state.processing=true; renderStats(); setStatus('A ler texto com OCR... pode demorar um pouco.','info'); await ensureTesseract(); const result=await Tesseract.recognize(canvas.toDataURL('image/png'),'por+eng',{logger:()=>{}}); state.ocrText=text(result?.data?.text); if(els.ocrBox) els.ocrBox.textContent=state.ocrText || 'NÃ£o foi possÃ­vel detetar texto.'; setStatus(state.ocrText?'OCR concluÃ­do.':'OCR concluÃ­do, mas nÃ£o encontrou texto.', state.ocrText?'ok':'warn'); await saveCurrentRecord('ConcluÃ­do', state.ocrText ? 94 : 65); }catch(e){ setStatus('Erro no OCR: '+(e.message||e),'error'); await saveCurrentRecord('Erro na anÃ¡lise',20); } finally{ state.processing=false; renderStats(); }
   }
   async function createPdf(){
     const canvas=ensureCanvas(); if(!canvas || canvas.hidden){ setStatus('Seleciona uma imagem primeiro.','warn'); return; }
-    if(!window.jspdf?.jsPDF){ setStatus('Biblioteca PDF ainda não carregou. Tenta novamente.','warn'); return; }
+    if(!window.jspdf?.jsPDF){ setStatus('Biblioteca PDF ainda nÃ£o carregou. Tenta novamente.','warn'); return; }
     const { jsPDF } = window.jspdf; const format=els.format?.value||'a4'; const orientation=canvas.width>canvas.height?'landscape':'portrait'; const pdf=new jsPDF({orientation,unit:'mm',format}); const pageW=pdf.internal.pageSize.getWidth(), pageH=pdf.internal.pageSize.getHeight(), margin=7; let drawW=pageW-margin*2, drawH=canvas.height*drawW/canvas.width; if(drawH>pageH-margin*2){ drawH=pageH-margin*2; drawW=canvas.width*drawH/canvas.height; } const x=(pageW-drawW)/2,y=(pageH-drawH)/2; pdf.setFillColor(255,255,255); pdf.rect(0,0,pageW,pageH,'F'); pdf.addImage(canvas.toDataURL('image/jpeg',.94),'JPEG',x,y,drawW,drawH,undefined,'FAST');
     if(state.ocrText && els.includeOcr?.checked){ pdf.addPage(format,'portrait'); pdf.setFontSize(12); pdf.text('Texto detetado por OCR',12,14); pdf.setFontSize(9); pdf.text(pdf.splitTextToSize(state.ocrText,pageW-24),12,24); }
-    const fileName=normalizeFileName(els.fileName?.value||todayName())+'.pdf'; pdf.save(fileName); await saveCurrentRecord('Concluído',92,{name:fileName, ext:'PDF', size: Math.round(canvas.toDataURL('image/jpeg',.85).length*0.75)}); setStatus('PDF criado: '+fileName,'ok'); toast('PDF criado com sucesso.');
+    const fileName=normalizeFileName(els.fileName?.value||todayName())+'.pdf'; pdf.save(fileName); await saveCurrentRecord('ConcluÃ­do',92,{name:fileName, ext:'PDF', size: Math.round(canvas.toDataURL('image/jpeg',.85).length*0.75)}); setStatus('PDF criado: '+fileName,'ok'); toast('PDF criado com sucesso.');
   }
-  async function saveCurrentRecord(status='Concluído', confidence=90, override={}){
+  async function saveCurrentRecord(status='ConcluÃ­do', confidence=90, override={}){
     if(!els.saveFirebase?.checked) return;
     const f=state.selectedFile; const meta={ id:uid(), name: override.name || normalizeFileName(els.fileName?.value || f?.name || todayName()), ext: override.ext || extOf(f?.name || override.name || '', f?.type || ''), docType: els.docType?.value || 'Documento', size: override.size || f?.size || 0, status, confidence, ocrText: state.ocrText || '', createdAt: Date.now(), updatedAt: Date.now(), source: 'scanner-ia' };
     const database=db();
     try{ if(database){ const doc=await database.collection(COLLECTION).add(meta); meta.id=doc.id; } else throw new Error('local'); }catch(_){ const list=loadLocal(); list.unshift(meta); saveLocal(list); state.items=[normalize(meta,meta.id),...state.items.filter(x=>x.id!==meta.id)]; renderTable(); }
   }
   async function handleFile(file){
-    if(!file) return; if(file.size > 25*1024*1024){ setStatus('O ficheiro é maior que 25MB.','warn'); return; }
-    state.selectedFile=file; state.selectedMeta={name:file.name,type:file.type,size:file.size}; state.ocrText=''; if(els.ocrBox) els.ocrBox.textContent='A análise aparece aqui depois do processamento.'; if(els.fileName && !els.fileName.value) els.fileName.value = (file.name || todayName()).replace(/\.[^.]+$/,'');
+    if(!file) return; if(file.size > 25*1024*1024){ setStatus('O ficheiro Ã© maior que 25MB.','warn'); return; }
+    state.selectedFile=file; state.selectedMeta={name:file.name,type:file.type,size:file.size}; state.ocrText=''; if(els.ocrBox) els.ocrBox.textContent='A anÃ¡lise aparece aqui depois do processamento.'; if(els.fileName && !els.fileName.value) els.fileName.value = (file.name || todayName()).replace(/\.[^.]+$/,'');
     const isImage = file.type && file.type.startsWith('image/');
-    if(isImage){ try{ state.processing=true; renderStats(); setStatus('A preparar imagem...','info'); const img=await loadImage(file); drawImageToCanvas(img); await saveCurrentRecord('Concluído',90,{name:file.name, ext:extOf(file.name,file.type), size:file.size}); }catch(e){ setStatus('Erro ao abrir imagem: '+(e.message||e),'error'); await saveCurrentRecord('Erro na análise',15,{name:file.name, ext:extOf(file.name,file.type), size:file.size}); } finally{ state.processing=false; renderStats(); } }
-    else { if(els.empty) els.empty.style.display='none'; if(els.canvas) els.canvas.hidden=true; if(els.fileCard){ els.fileCard.hidden=false; els.fileCard.innerHTML=`<strong>${esc(file.name)}</strong><small>${esc(extOf(file.name,file.type))} · ${esc(sizeText(file.size))}</small><small>Documento registado. Para análise OCR completa, usa imagem/foto ou exporta para PDF no sistema original.</small>`; } setStatus('Ficheiro registado no histórico.','ok'); await saveCurrentRecord('Concluído',88,{name:file.name, ext:extOf(file.name,file.type), size:file.size}); }
+    if(isImage){ try{ state.processing=true; renderStats(); setStatus('A preparar imagem...','info'); const img=await loadImage(file); drawImageToCanvas(img); await saveCurrentRecord('ConcluÃ­do',90,{name:file.name, ext:extOf(file.name,file.type), size:file.size}); }catch(e){ setStatus('Erro ao abrir imagem: '+(e.message||e),'error'); await saveCurrentRecord('Erro na anÃ¡lise',15,{name:file.name, ext:extOf(file.name,file.type), size:file.size}); } finally{ state.processing=false; renderStats(); } }
+    else { if(els.empty) els.empty.style.display='none'; if(els.canvas) els.canvas.hidden=true; if(els.fileCard){ els.fileCard.hidden=false; els.fileCard.innerHTML=`<strong>${esc(file.name)}</strong><small>${esc(extOf(file.name,file.type))} Â· ${esc(sizeText(file.size))}</small><small>Documento registado. Para anÃ¡lise OCR completa, usa imagem/foto ou exporta para PDF no sistema original.</small>`; } setStatus('Ficheiro registado no histÃ³rico.','ok'); await saveCurrentRecord('ConcluÃ­do',88,{name:file.name, ext:extOf(file.name,file.type), size:file.size}); }
   }
-  function viewRecord(id){ const x=state.items.find(i=>i.id===id); if(!x) return; alert(`${x.name}\n\nTipo: ${x.docType}\nEstado: ${x.status}\nData: ${fmtDate(x.createdAt)} ${fmtTime(x.createdAt)}\n\n${x.ocrText || 'Sem texto/análise guardada.'}`); }
+  function viewRecord(id){ const x=state.items.find(i=>i.id===id); if(!x) return; alert(`${x.name}\n\nTipo: ${x.docType}\nEstado: ${x.status}\nData: ${fmtDate(x.createdAt)} ${fmtTime(x.createdAt)}\n\n${x.ocrText || 'Sem texto/anÃ¡lise guardada.'}`); }
   async function deleteRecord(id){ const x=state.items.find(i=>i.id===id); if(!x) return; if(!confirm(`Apagar registo "${x.name}"?`)) return; try{ const database=db(); if(database && !id.startsWith('local_')) await database.collection(COLLECTION).doc(id).delete(); else throw new Error('local'); toast('Registo apagado.'); }catch(_){ const list=loadLocal().filter(i=>(i.id||'')!==id); saveLocal(list); state.items=state.items.filter(i=>i.id!==id); renderTable(); toast('Registo apagado localmente.'); } }
   function exportCsv(){ const rows=currentRows(); const header=['Documento','Tipo','Extensao','Tamanho','Estado','Data','Precisao','Texto']; const csv=[header,...rows.map(x=>[x.name,x.docType,x.ext,sizeText(x.size),x.status,new Date(toMs(x.createdAt)||Date.now()).toISOString(),x.confidence,x.ocrText])].map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';')).join('\n'); const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`scanner-ia-${new Date().toISOString().slice(0,10)}.csv`; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); }
-  function clearCache(){ if(!confirm('Limpar histórico local/cache do Scanner IA? Os dados do Firebase não são apagados.')) return; localStorage.removeItem(LOCAL_KEY); state.items=state.items.filter(x=>!x.id.startsWith('local_')); renderTable(); toast('Cache local limpa.'); }
+  function clearCache(){ if(!confirm('Limpar histÃ³rico local/cache do Scanner IA? Os dados do Firebase nÃ£o sÃ£o apagados.')) return; localStorage.removeItem(LOCAL_KEY); state.items=state.items.filter(x=>!x.id.startsWith('local_')); renderTable(); toast('Cache local limpa.'); }
   function bind(){
     Object.assign(els,{input:$('scannerIaInput'),camera:$('scannerIaCamera'),drop:$('scannerDropZone'),pick:$('scannerPickBtn'),canvas:$('scannerIaCanvas'),empty:$('scannerIaEmpty'),fileCard:$('scannerFileCard'),fileName:$('scannerIaFileName'),docType:$('scannerIaDocType'),format:$('scannerIaFormat'),autoCrop:$('scannerIaAutoCrop'),includeOcr:$('scannerIaIncludeOcr'),saveFirebase:$('scannerIaSaveFirebase'),status:$('scannerIaStatus'),ocrBox:$('scannerIaOcrBox'),confidence:$('scannerConfidenceBadge'),historyBody:$('scannerHistoryBody'),search:$('scannerSearch'),filterType:$('scannerFilterType'),filterStatus:$('scannerFilterStatus'),pageSize:$('scannerPageSize'),pageInfo:$('scannerPageInfo'),pagination:$('scannerPagination'),typeBars:$('scannerTypeBars')});
     [els.input,els.camera].forEach(inp=>inp?.addEventListener('change',e=>handleFile(e.target.files?.[0])));
     els.pick?.addEventListener('click',()=>els.input?.click());
     els.drop?.addEventListener('click',(e)=>{ if(e.target === els.drop || e.target.closest('.scanner-drop-zone')) els.input?.click(); });
     els.drop?.addEventListener('dragover',e=>{e.preventDefault(); els.drop.classList.add('drag');}); els.drop?.addEventListener('dragleave',()=>els.drop.classList.remove('drag')); els.drop?.addEventListener('drop',e=>{e.preventDefault(); els.drop.classList.remove('drag'); handleFile(e.dataTransfer.files?.[0]);});
-    $('scannerNewBtn')?.addEventListener('click',()=>els.input?.click()); $('scannerHistoryBtn')?.addEventListener('click',()=>document.querySelector('.scanner-list-panel')?.scrollIntoView({behavior:'smooth'})); $('scannerModelsBtn')?.addEventListener('click',()=>toast('Modelos IA ativos: OCR por imagem + PDF A4.')); $('scannerSettingsBtn')?.addEventListener('click',()=>toast('Configurações rápidas aplicadas no painel principal.')); $('scannerClearCacheBtn')?.addEventListener('click',clearCache); $('scannerExportBtn')?.addEventListener('click',exportCsv); $('scannerReportBtn')?.addEventListener('click',exportCsv); $('scannerClearFilters')?.addEventListener('click',()=>{ if(els.search) els.search.value=''; if(els.filterType) els.filterType.value=''; if(els.filterStatus) els.filterStatus.value=''; state.page=1; renderTable(); });
+    $('scannerNewBtn')?.addEventListener('click',()=>els.input?.click()); $('scannerHistoryBtn')?.addEventListener('click',()=>document.querySelector('.scanner-list-panel')?.scrollIntoView({behavior:'smooth'})); $('scannerModelsBtn')?.addEventListener('click',()=>toast('Modelos IA ativos: OCR por imagem + PDF A4.')); $('scannerSettingsBtn')?.addEventListener('click',()=>toast('ConfiguraÃ§Ãµes rÃ¡pidas aplicadas no painel principal.')); $('scannerClearCacheBtn')?.addEventListener('click',clearCache); $('scannerExportBtn')?.addEventListener('click',exportCsv); $('scannerReportBtn')?.addEventListener('click',exportCsv); $('scannerClearFilters')?.addEventListener('click',()=>{ if(els.search) els.search.value=''; if(els.filterType) els.filterType.value=''; if(els.filterStatus) els.filterStatus.value=''; state.page=1; renderTable(); });
     els.autoCrop?.addEventListener('change',autoEnhance); [els.search,els.filterType,els.filterStatus].forEach(el=>el?.addEventListener('input',()=>{state.page=1;renderTable();})); els.pageSize?.addEventListener('change',()=>{state.pageSize=Number(els.pageSize.value||10);state.page=1;renderTable();});
     els.pagination?.addEventListener('click',e=>{const b=e.target.closest('[data-page]'); if(!b||b.disabled) return; state.page=Number(b.dataset.page||1); renderTable();});
     document.addEventListener('click',e=>{ const v=e.target.closest('[data-view]'); if(v) viewRecord(v.dataset.view); const d=e.target.closest('[data-del]'); if(d) deleteRecord(d.dataset.del); const p=e.target.closest('[data-pdf]'); if(p) { const x=state.items.find(i=>i.id===p.dataset.pdf); if(x && state.selectedFile && x.name === state.selectedFile.name && !els.canvas?.hidden) createPdf(); else toast('Para descarregar PDF, abre/cria o documento no scanner atual.'); } });
@@ -214,3 +214,4 @@
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind); else bind();
 })();
+

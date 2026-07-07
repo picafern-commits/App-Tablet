@@ -1,41 +1,41 @@
-/* App Braga - Sidebar editavel v1.56.9 - Firebase persistente */
+﻿/* App Braga - Sidebar editavel v1.56.9 - Firebase persistente */
 (function(){
   'use strict';
   const STORAGE_KEY = 'appBraga.sidebar.customLayout';
   const LEGACY_STORAGE_KEYS = ['appBraga.sidebar.customLayout.v1568','appBraga.sidebar.customLayout.v1567','appBraga.sidebar.customLayout.v1566'];
   const FIRESTORE_COLLECTION = 'config';
   const FIRESTORE_DOC = 'sidebarLayout';
-  const CURRENT_VERSION = '1.58.169';
+  const CURRENT_VERSION = '1.58.172';
 
   const DEFAULT_PAGES = [
-    { id:'dashboard', label:'Dashboard', href:'index.html', icon:'🏠', group:'favoritos', locked:true },
-    { id:'stock', label:'Stock', href:'stock.html', icon:'📦', group:'favoritos' },
-    { id:'diretorio', label:'Diretório', href:'diretorio.html', icon:'☎️', group:'favoritos' },
-    { id:'impressoras', label:'Impressoras', href:'impressoras.html', icon:'🖨️', group:'favoritos' },
-    { id:'add-toner', label:'Adicionar Toner', href:'add-toner.html', icon:'➕', group:'operacao' },
-    { id:'historico', label:'Histórico', href:'historico.html', icon:'🧾', group:'operacao' },
-    { id:'tarefas', label:'Tarefas', href:'tarefas.html', icon:'✅', group:'operacao' },
-    { id:'equipas-semanais', label:'Equipas Semanais', href:'equipas-semanais.html', icon:'👥', group:'operacao' },
-    { id:'scanner-ia', label:'Scanner IA', href:'scanner-ia.html', icon:'📄', group:'operacao' },
-    { id:'etiquetas-word', label:'Etiquetas Word', href:'etiquetas-word.html', icon:'🏷️', group:'operacao' },
-    { id:'manutencao-impressoras', label:'Manutenção Impressoras', href:'manutencao-impressoras.html', icon:'🛠️', group:'equipamentos' },
-    { id:'computadores', label:'Computadores', href:'computadores.html', icon:'💻', group:'equipamentos' },
-    { id:'pistolas', label:'Pistolas CK65', href:'pistolas.html', icon:'📟', group:'equipamentos' },
-    { id:'radios', label:'Rádios', href:'radios.html', icon:'📡', group:'equipamentos' },
-    { id:'portas', label:'Portas Rede', href:'portas.html', icon:'🔌', group:'infraestrutura' },
-    { id:'informacoes', label:'Informações', href:'informacoes.html', icon:'ℹ️', group:'infraestrutura' },
-    { id:'users', label:'Users', href:'users.html', icon:'👥', group:'administracao' },
-    { id:'diagnostico', label:'Diagnóstico', href:'diagnostico.html', icon:'🩺', group:'administracao' },
-    { id:'notificacoes', label:'Notificações', href:'notificacoes.html', icon:'🔔', group:'administracao' },
-    { id:'config', label:'Configurações', href:'config.html', icon:'⚙️', group:'administracao', locked:true }
+    { id:'dashboard', label:'Dashboard', href:'index.html', icon:'ðŸ ', group:'favoritos', locked:true },
+    { id:'stock', label:'Stock', href:'stock.html', icon:'ðŸ“¦', group:'favoritos' },
+    { id:'diretorio', label:'DiretÃ³rio', href:'diretorio.html', icon:'â˜Žï¸', group:'favoritos' },
+    { id:'impressoras', label:'Impressoras', href:'impressoras.html', icon:'ðŸ–¨ï¸', group:'favoritos' },
+    { id:'add-toner', label:'Adicionar Toner', href:'add-toner.html', icon:'âž•', group:'operacao' },
+    { id:'historico', label:'HistÃ³rico', href:'historico.html', icon:'ðŸ§¾', group:'operacao' },
+    { id:'tarefas', label:'Tarefas', href:'tarefas.html', icon:'âœ…', group:'operacao' },
+    { id:'equipas-semanais', label:'Equipas Semanais', href:'equipas-semanais.html', icon:'ðŸ‘¥', group:'operacao' },
+    { id:'scanner-ia', label:'Scanner IA', href:'scanner-ia.html', icon:'ðŸ“„', group:'operacao' },
+    { id:'etiquetas-word', label:'Etiquetas Word', href:'/html/etiquetas-word.html?v=1.58.172', icon:'ðŸ·ï¸', group:'operacao' },
+    { id:'manutencao-impressoras', label:'ManutenÃ§Ã£o Impressoras', href:'manutencao-impressoras.html', icon:'ðŸ› ï¸', group:'equipamentos' },
+    { id:'computadores', label:'Computadores', href:'computadores.html', icon:'ðŸ’»', group:'equipamentos' },
+    { id:'pistolas', label:'Pistolas CK65', href:'pistolas.html', icon:'ðŸ“Ÿ', group:'equipamentos' },
+    { id:'radios', label:'RÃ¡dios', href:'radios.html', icon:'ðŸ“¡', group:'equipamentos' },
+    { id:'portas', label:'Portas Rede', href:'portas.html', icon:'ðŸ”Œ', group:'infraestrutura' },
+    { id:'informacoes', label:'InformaÃ§Ãµes', href:'informacoes.html', icon:'â„¹ï¸', group:'infraestrutura' },
+    { id:'users', label:'Users', href:'users.html', icon:'ðŸ‘¥', group:'administracao' },
+    { id:'diagnostico', label:'DiagnÃ³stico', href:'diagnostico.html', icon:'ðŸ©º', group:'administracao' },
+    { id:'notificacoes', label:'NotificaÃ§Ãµes', href:'notificacoes.html', icon:'ðŸ””', group:'administracao' },
+    { id:'config', label:'ConfiguraÃ§Ãµes', href:'config.html', icon:'âš™ï¸', group:'administracao', locked:true }
   ];
 
   const DEFAULT_GROUPS = [
-    { id:'favoritos', label:'Favoritos', icon:'⭐', locked:true, alwaysOpen:true },
-    { id:'operacao', label:'Operação', icon:'⚡' },
-    { id:'equipamentos', label:'Equipamentos', icon:'🧰' },
-    { id:'infraestrutura', label:'Infraestrutura', icon:'🌐' },
-    { id:'administracao', label:'Administração', icon:'⚙️', locked:true }
+    { id:'favoritos', label:'Favoritos', icon:'â­', locked:true, alwaysOpen:true },
+    { id:'operacao', label:'OperaÃ§Ã£o', icon:'âš¡' },
+    { id:'equipamentos', label:'Equipamentos', icon:'ðŸ§°' },
+    { id:'infraestrutura', label:'Infraestrutura', icon:'ðŸŒ' },
+    { id:'administracao', label:'AdministraÃ§Ã£o', icon:'âš™ï¸', locked:true }
   ];
 
   function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
@@ -61,8 +61,8 @@
     if (isEtiquetasLegacy) {
       clean.id = 'etiquetas-word';
       clean.label = clean.label || 'Etiquetas Word';
-      clean.href = 'etiquetas-word.html';
-      clean.icon = clean.icon || '🏷️';
+      clean.href = '/html/etiquetas-word.html?v=1.58.172';
+      clean.icon = clean.icon || 'ðŸ·ï¸';
       clean.group = clean.group || 'operacao';
     }
     return clean;
@@ -126,7 +126,7 @@
       pagesById.set(next.id, next);
     });
     let pages = Array.from(pagesById.values()).filter(p => p && p.href);
-    /* v1.58.169: remove duplicados antigos vindos da Firebase/localStorage, sobretudo Etiquetas -> etiquetas.html. */
+    /* v1.58.172: remove duplicados antigos vindos da Firebase/localStorage, sobretudo Etiquetas -> etiquetas.html. */
     const seenHref = new Set();
     pages = pages.filter(function(p){
       const key = String(p.href || '').split('?')[0].split('#')[0].split('/').pop().toLowerCase();
@@ -149,7 +149,7 @@
   function createLink(page){
     const a = document.createElement('a');
     a.href = page.href;
-    a.dataset.icon = page.icon || '•';
+    a.dataset.icon = page.icon || 'â€¢';
     a.innerHTML = '<span class="sidebar-link-text"></span>';
     a.querySelector('.sidebar-link-text').textContent = page.label || page.href;
     const href = (page.href || '').split('?')[0].split('#')[0].split('/').pop().toLowerCase();
@@ -162,7 +162,7 @@
     if (!sidebar) return;
     const nav = sidebar.querySelector('.sidebar-nav-pro, nav') || document.createElement('nav');
     nav.className = 'sidebar-nav-pro';
-    nav.setAttribute('aria-label', 'Navegação principal');
+    nav.setAttribute('aria-label', 'NavegaÃ§Ã£o principal');
     nav.innerHTML = '';
     const groups = (layout.groups || []).filter(Boolean);
     const pages = (layout.pages || []).filter(p => p && p.visible !== false);
@@ -174,7 +174,7 @@
         sec.className = 'sidebar-favorites';
         sec.dataset.sidebarSection = 'favorites';
         sec.innerHTML = '<div class="sidebar-section-title"><span></span><strong></strong></div>';
-        sec.querySelector('span').textContent = group.icon || '⭐';
+        sec.querySelector('span').textContent = group.icon || 'â­';
         sec.querySelector('strong').textContent = group.label || 'Favoritos';
         groupPages.forEach(p => sec.appendChild(createLink(p)));
         nav.appendChild(sec);
@@ -184,8 +184,8 @@
       const section = document.createElement('section');
       section.className = 'sidebar-group';
       section.dataset.sidebarGroup = group.id;
-      section.innerHTML = '<button class="sidebar-group-toggle" type="button" aria-expanded="false"><span class="sidebar-group-left"><span class="sidebar-group-icon"></span><span class="sidebar-group-title"></span></span><span class="sidebar-group-chevron">›</span></button><div class="sidebar-group-links"></div>';
-      section.querySelector('.sidebar-group-icon').textContent = group.icon || '📁';
+      section.innerHTML = '<button class="sidebar-group-toggle" type="button" aria-expanded="false"><span class="sidebar-group-left"><span class="sidebar-group-icon"></span><span class="sidebar-group-title"></span></span><span class="sidebar-group-chevron">â€º</span></button><div class="sidebar-group-links"></div>';
+      section.querySelector('.sidebar-group-icon').textContent = group.icon || 'ðŸ“';
       section.querySelector('.sidebar-group-title').textContent = group.label || group.id;
       const links = section.querySelector('.sidebar-group-links');
       groupPages.forEach(p => links.appendChild(createLink(p)));
@@ -263,9 +263,9 @@
         return remote;
       }
       if (remote && hasLocal && (local.updatedAt || 0) > (remote.updatedAt || 0)) {
-        setStatus('Tens alterações locais mais recentes. Carrega em Guardar na Firebase para sincronizar.', 'warn');
+        setStatus('Tens alteraÃ§Ãµes locais mais recentes. Carrega em Guardar na Firebase para sincronizar.', 'warn');
       }
-    } catch(e){ console.warn('[SidebarEditor] remote load failed', e); setStatus('Não consegui ler a sidebar da Firebase. A usar cópia local.', 'warn'); }
+    } catch(e){ console.warn('[SidebarEditor] remote load failed', e); setStatus('NÃ£o consegui ler a sidebar da Firebase. A usar cÃ³pia local.', 'warn'); }
     return null;
   }
   async function saveLayout(layout, options){
@@ -285,13 +285,13 @@
       }
       catch(e){ console.warn('[SidebarEditor] remote save failed', e); setStatus('Guardou localmente, mas falhou ao guardar na Firebase: ' + (e.message || e), 'error'); }
     } else {
-      setStatus('Guardou localmente, mas a Firebase ainda não está disponível.', 'warn');
+      setStatus('Guardou localmente, mas a Firebase ainda nÃ£o estÃ¡ disponÃ­vel.', 'warn');
     }
     return clean;
   }
   async function reloadFromFirebase(){
     const remote = await loadRemoteOnce(true);
-    if (!remote) setStatus('Não encontrei layout guardado na Firebase.', 'warn');
+    if (!remote) setStatus('NÃ£o encontrei layout guardado na Firebase.', 'warn');
     return remote;
   }
   function pageOptions(groups, selected){
@@ -310,7 +310,7 @@
         <button type="button" class="secondary-btn" data-sidebar-action="reload-firebase">Recarregar Firebase</button>
         <button type="button" class="secondary-btn" data-sidebar-action="export">Exportar layout</button>
         <button type="button" class="secondary-btn" data-sidebar-action="import">Importar layout</button>
-        <button type="button" class="secondary-btn" data-sidebar-action="reset">Restaurar padrão</button>
+        <button type="button" class="secondary-btn" data-sidebar-action="reset">Restaurar padrÃ£o</button>
         <input type="file" id="sidebarImportFile" accept="application/json,.json" hidden>
       </div>
       <div id="sidebarEditorStatus" class="sidebar-editor-status" role="status"></div>
@@ -320,8 +320,8 @@
           <div class="sidebar-editor-list" data-sidebar-groups></div>
         </section>
         <section class="sidebar-editor-card sidebar-editor-pages-card">
-          <h4>Páginas</h4>
-          <p class="sidebar-editor-hint">Muda a aba, emoji e visibilidade de cada página.</p>
+          <h4>PÃ¡ginas</h4>
+          <p class="sidebar-editor-hint">Muda a aba, emoji e visibilidade de cada pÃ¡gina.</p>
           <div class="sidebar-editor-list" data-sidebar-pages></div>
         </section>
       </div>
@@ -335,8 +335,8 @@
         <input class="sidebar-editor-emoji" data-field="icon" value="${escapeAttr(g.icon || '')}" maxlength="4" title="Emoji">
         <input class="sidebar-editor-name" data-field="label" value="${escapeAttr(g.label || '')}" ${g.locked ? 'readonly' : ''}>
         <div class="sidebar-editor-row-actions">
-          <button type="button" data-sidebar-action="group-up" ${idx === 0 ? 'disabled' : ''}>↑</button>
-          <button type="button" data-sidebar-action="group-down" ${idx === layout.groups.length - 1 ? 'disabled' : ''}>↓</button>
+          <button type="button" data-sidebar-action="group-up" ${idx === 0 ? 'disabled' : ''}>â†‘</button>
+          <button type="button" data-sidebar-action="group-down" ${idx === layout.groups.length - 1 ? 'disabled' : ''}>â†“</button>
           <button type="button" class="danger" data-sidebar-action="delete-group" ${g.locked ? 'disabled' : ''}>Apagar</button>
         </div>`;
       groupHost.appendChild(row);
@@ -352,8 +352,8 @@
         <div class="sidebar-editor-page-title"><strong>${escapeHtml(p.label)}</strong><small>${escapeHtml(p.href)}</small></div>
         <select data-field="group">${pageOptions(layout.groups, p.group)}</select>
         <div class="sidebar-editor-row-actions">
-          <button type="button" data-sidebar-action="page-up" ${idx === 0 ? 'disabled' : ''}>↑</button>
-          <button type="button" data-sidebar-action="page-down" ${idx === layout.pages.length - 1 ? 'disabled' : ''}>↓</button>
+          <button type="button" data-sidebar-action="page-up" ${idx === 0 ? 'disabled' : ''}>â†‘</button>
+          <button type="button" data-sidebar-action="page-down" ${idx === layout.pages.length - 1 ? 'disabled' : ''}>â†“</button>
         </div>`;
       pageHost.appendChild(row);
     });
@@ -366,7 +366,7 @@
       const old = layout.groups.find(g => g.id === row.dataset.groupId) || {};
       groups.push(Object.assign({}, old, {
         id: row.dataset.groupId,
-        icon: row.querySelector('[data-field="icon"]').value.trim() || '📁',
+        icon: row.querySelector('[data-field="icon"]').value.trim() || 'ðŸ“',
         label: row.querySelector('[data-field="label"]').value.trim() || old.label || 'Aba',
         order: idx
       }));
@@ -377,7 +377,7 @@
       const visibleBox = row.querySelector('[data-field="visible"]');
       pages.push(Object.assign({}, old, {
         id: row.dataset.pageId,
-        icon: row.querySelector('[data-field="icon"]').value.trim() || old.icon || '•',
+        icon: row.querySelector('[data-field="icon"]').value.trim() || old.icon || 'â€¢',
         group: row.querySelector('[data-field="group"]').value,
         visible: visibleBox ? !!visibleBox.checked : true,
         order: idx
@@ -402,13 +402,13 @@
         <div class="sidebar-editor-modal" role="dialog" aria-modal="true" aria-label="Criar aba da sidebar">
           <div class="sidebar-editor-modal-head">
             <h3>Criar aba</h3>
-            <button type="button" class="sidebar-editor-modal-close" data-modal-action="cancel">×</button>
+            <button type="button" class="sidebar-editor-modal-close" data-modal-action="cancel">Ã—</button>
           </div>
           <label>Nome da aba
             <input type="text" id="sidebarNewGroupLabel" value="Nova Aba" autocomplete="off">
           </label>
           <label>Emoji da aba
-            <input type="text" id="sidebarNewGroupIcon" value="📁" maxlength="6" autocomplete="off">
+            <input type="text" id="sidebarNewGroupIcon" value="ðŸ“" maxlength="6" autocomplete="off">
           </label>
           <div class="sidebar-editor-modal-actions">
             <button type="button" class="secondary-btn" data-modal-action="cancel">Cancelar</button>
@@ -426,7 +426,7 @@
         if (action === 'confirm') {
           const label = (input.value || '').trim();
           if (!label) { input.focus(); return; }
-          close({ label, icon:(icon.value || '📁').trim() || '📁' });
+          close({ label, icon:(icon.value || 'ðŸ“').trim() || 'ðŸ“' });
         }
       });
       modal.addEventListener('keydown', (ev) => {
@@ -435,7 +435,7 @@
           ev.preventDefault();
           const label = (input.value || '').trim();
           if (!label) { input.focus(); return; }
-          close({ label, icon:(icon.value || '📁').trim() || '📁' });
+          close({ label, icon:(icon.value || 'ðŸ“').trim() || 'ðŸ“' });
         }
       });
       setTimeout(() => { input.focus(); input.select(); }, 40);
@@ -453,7 +453,7 @@
     let id = normaliseId(result.label);
     let n = 2;
     while (layout.groups.some(g => g.id === id)) id = normaliseId(result.label) + '-' + (n++);
-    layout.groups.push({ id, label:result.label, icon:result.icon || '📁', order:layout.groups.length, visible:true });
+    layout.groups.push({ id, label:result.label, icon:result.icon || 'ðŸ“', order:layout.groups.length, visible:true });
     await saveLayout(layout);
     showToast('Aba criada.', 'sucesso');
     return true;
@@ -472,7 +472,7 @@
         return;
       }
       if (action === 'reset') {
-        if (!confirm('Restaurar a sidebar padrão? Vai guardar também na Firebase.')) return;
+        if (!confirm('Restaurar a sidebar padrÃ£o? Vai guardar tambÃ©m na Firebase.')) return;
         await saveLayout(defaultLayout());
         return;
       }
@@ -509,7 +509,7 @@
         const id = groupRow.dataset.groupId;
         const group = layout.groups.find(g => g.id === id);
         if (!group || group.locked) return;
-        if (!confirm('Apagar esta aba? As páginas passam para Administração.')) return;
+        if (!confirm('Apagar esta aba? As pÃ¡ginas passam para AdministraÃ§Ã£o.')) return;
         layout.groups = layout.groups.filter(g => g.id !== id);
         layout.pages.forEach(p => { if (p.group === id) p.group = 'administracao'; });
         renderEditor(layout); return;
@@ -537,7 +537,7 @@
           setStatus('Layout importado e guardado na Firebase.', 'success');
         } catch(e) {
           console.warn('[SidebarEditor] import failed', e);
-          setStatus('Não consegui importar o layout: ' + (e.message || e), 'error');
+          setStatus('NÃ£o consegui importar o layout: ' + (e.message || e), 'error');
         }
       });
     }
@@ -572,3 +572,6 @@
   window.addEventListener('focus', () => setTimeout(() => loadRemoteOnce(false), 120));
   document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(() => loadRemoteOnce(false), 120); });
 })();
+
+
+

@@ -1,4 +1,4 @@
-/* AppBraga v1.58.169 — abre/fecha menus estáticos de navegação por área */
+﻿/* AppBraga v1.58.172 â€” abre/fecha menus estÃ¡ticos de navegaÃ§Ã£o por Ã¡rea */
 (function(){
   'use strict';
   function closeAll(except){
@@ -32,3 +32,4 @@
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wire); else wire();
   try{ new MutationObserver(wire).observe(document.documentElement, {childList:true, subtree:true}); }catch(e){}
 })();
+

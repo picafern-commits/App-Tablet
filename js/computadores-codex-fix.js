@@ -1,7 +1,7 @@
-(() => {
+﻿(() => {
   'use strict';
 
-  const VERSION = '1.58.169';
+  const VERSION = '1.58.172';
   const COLLECTION = 'computadores';
   const LEGACY_COLLECTION = 'pcs';
   const RECORDS_COLLECTION = 'computadoresIntervencoes';
@@ -20,7 +20,7 @@
     pageSize: 10,
     selectedId: '',
     editingId: null,
-    recordMode: 'Intervenção',
+    recordMode: 'IntervenÃ§Ã£o',
     unsubscribeComputers: null,
     unsubscribeLegacyComputers: null,
     unsubscribeRecords: null,
@@ -84,16 +84,16 @@
 
   function sampleComputers() {
     return [
-      ['PC-001','DELL5821901','Receção-01','Dell Optiplex','Receção','Ana','Operacional'],
-      ['PC-002','HP5821902','Expedição-02','HP ProDesk','Expedição','Rafael','Em uso'],
-      ['PC-003','LEN5821903','Balcão-01','Lenovo ThinkCentre','Loja','','Por configurar'],
-      ['PC-004','DELL5821904','Armazém-01','Dell Optiplex','Armazém','Ricardo','Em uso'],
-      ['PC-005','HP5821905','Direção-01','HP EliteDesk','Escritório','Sílvia','Em manutenção'],
-      ['PC-006','LEN5821906','Vendas-01','Lenovo ThinkCentre','Loja','João','Operacional'],
-      ['PC-007','DELL5821907','Marketing-01','Dell Optiplex','Escritório','Marta','Operacional'],
-      ['PC-008','HP5821908','Contabilidade-01','HP ProDesk','Escritório','Paulo','Em uso'],
-      ['PC-009','LEN5821909','Suporte-01','Lenovo ThinkCentre','TI','Tiago','Em manutenção'],
-      ['PC-010','DELL5821910','Sala Reuniões-01','Dell Optiplex','Escritório','','Por configurar']
+      ['PC-001','DELL5821901','ReceÃ§Ã£o-01','Dell Optiplex','ReceÃ§Ã£o','Ana','Operacional'],
+      ['PC-002','HP5821902','ExpediÃ§Ã£o-02','HP ProDesk','ExpediÃ§Ã£o','Rafael','Em uso'],
+      ['PC-003','LEN5821903','BalcÃ£o-01','Lenovo ThinkCentre','Loja','','Por configurar'],
+      ['PC-004','DELL5821904','ArmazÃ©m-01','Dell Optiplex','ArmazÃ©m','Ricardo','Em uso'],
+      ['PC-005','HP5821905','DireÃ§Ã£o-01','HP EliteDesk','EscritÃ³rio','SÃ­lvia','Em manutenÃ§Ã£o'],
+      ['PC-006','LEN5821906','Vendas-01','Lenovo ThinkCentre','Loja','JoÃ£o','Operacional'],
+      ['PC-007','DELL5821907','Marketing-01','Dell Optiplex','EscritÃ³rio','Marta','Operacional'],
+      ['PC-008','HP5821908','Contabilidade-01','HP ProDesk','EscritÃ³rio','Paulo','Em uso'],
+      ['PC-009','LEN5821909','Suporte-01','Lenovo ThinkCentre','TI','Tiago','Em manutenÃ§Ã£o'],
+      ['PC-010','DELL5821910','Sala ReuniÃµes-01','Dell Optiplex','EscritÃ³rio','','Por configurar']
     ].map(([codigo, serial, nome, modelo, local, user, estado], index) => ({
       id: `sample-${index + 1}`,
       codigo,
@@ -115,7 +115,7 @@
   function normalizeEstado(value, computer = {}) {
     const raw = lower(value || computer.estado || computer.status || computer.situacao || '');
     const assigned = !!(computer.userNome || computer.user || computer.utilizador || computer.assignedTo || computer.responsavel);
-    if (raw.includes('manut') || raw.includes('repar') || raw.includes('avari')) return 'Em manutenção';
+    if (raw.includes('manut') || raw.includes('repar') || raw.includes('avari')) return 'Em manutenÃ§Ã£o';
     if (raw.includes('config') || raw.includes('setup') || raw.includes('novo')) return 'Por configurar';
     if (raw.includes('inativo') || raw.includes('desativ') || raw.includes('abat')) return 'Inativo';
     if (raw.includes('uso') || raw.includes('utiliza') || raw.includes('atrib') || assigned) return 'Em uso';
@@ -135,7 +135,7 @@
 
   function estadoIcon(value) {
     const key = estadoKey(value);
-    return key === 'uso' ? '👤' : key === 'manutencao' ? '🛠' : key === 'configuracao' ? '⚙️' : key === 'inativo' ? '○' : '✓';
+    return key === 'uso' ? 'ðŸ‘¤' : key === 'manutencao' ? 'ðŸ› ' : key === 'configuracao' ? 'âš™ï¸' : key === 'inativo' ? 'â—‹' : 'âœ“';
   }
 
   function computerCode(c) { return c.codigo || c.idInterno || c.ref || c.pcId || c.id || c.hostname || c.nome || 'PC'; }
@@ -146,12 +146,12 @@
   function computerUser(c) { return c.userNome || c.user || c.utilizador || c.assignedTo || c.responsavel || ''; }
 
   function formatDate(value) {
-    if (!value) return '—';
+    if (!value) return 'â€”';
     let date = null;
     if (typeof value === 'object' && typeof value.toDate === 'function') date = value.toDate();
     else if (typeof value === 'number') date = new Date(value);
     else if (typeof value === 'string') date = new Date(value);
-    if (!date || Number.isNaN(date.getTime())) return '—';
+    if (!date || Number.isNaN(date.getTime())) return 'â€”';
     return date.toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
   }
 
@@ -241,7 +241,7 @@
       id: item.id || item.recordId || uid(),
       computerId,
       codigo: item.codigo || item.pcCodigo || item.computerCode || item.equipamento || item.hostname || '',
-      tipo: item.tipo || item.type || item.acao || 'Intervenção',
+      tipo: item.tipo || item.type || item.acao || 'IntervenÃ§Ã£o',
       estado: normalizeEstado(item.estado || item.estadoDepois || item.status || ''),
       user: item.user || item.userNome || item.utilizador || item.tecnico || item.responsavel || '',
       local: item.local || item.localizacao || item.location || '',
@@ -338,14 +338,14 @@
           <td><strong class="ck-linklike">${esc(computerCode(c))}</strong><small>SN: ${esc(computerSerial(c))}</small></td>
           <td><strong>${esc(computerName(c))}</strong><small>${esc(computerModel(c))}</small></td>
           <td>${esc(computerLocal(c))}</td>
-          <td>${esc(computerUser(c) || '—')}</td>
+          <td>${esc(computerUser(c) || 'â€”')}</td>
           <td><span class="ck-status cp-badge ${estadoClass(estado)}">${esc(estadoIcon(estado))} ${esc(estado)}</span></td>
           <td>${esc(formatDate(lastRecord(c)))}</td>
           <td>
             <div class="ck-actions">
-              <button class="ck-icon-btn" type="button" title="Ver" data-cp-action="view" data-id="${esc(c.id)}">⊙</button>
-              <button class="ck-icon-btn" type="button" title="Editar" data-cp-action="edit" data-id="${esc(c.id)}">✎</button>
-              <button class="ck-icon-btn" type="button" title="Mais" data-cp-action="menu" data-id="${esc(c.id)}">⋮</button>
+              <button class="ck-icon-btn" type="button" title="Ver" data-cp-action="view" data-id="${esc(c.id)}">âŠ™</button>
+              <button class="ck-icon-btn" type="button" title="Editar" data-cp-action="edit" data-id="${esc(c.id)}">âœŽ</button>
+              <button class="ck-icon-btn" type="button" title="Mais" data-cp-action="menu" data-id="${esc(c.id)}">â‹®</button>
             </div>
           </td>
         </tr>`;
@@ -367,7 +367,7 @@
       .sort((a, b) => recordTime({ createdAt: b.createdAt || b.created || b.data || b.updatedAt }) - recordTime({ createdAt: a.createdAt || a.created || a.data || a.updatedAt }));
     if (counter) counter.textContent = records.length;
     if (!records.length) {
-      wrap.innerHTML = `<div class="ck-empty">Ainda não existem registos de instalação. Guarda um computador com a checklist para aparecer aqui.</div>`;
+      wrap.innerHTML = `<div class="ck-empty">Ainda nÃ£o existem registos de instalaÃ§Ã£o. Guarda um computador com a checklist para aparecer aqui.</div>`;
       return;
     }
     wrap.innerHTML = records.map((pc) => {
@@ -399,15 +399,15 @@
     const node = $('cpPagination');
     if (!node) return;
     const btn = (label, page, disabled = false, active = false) => `<button type="button" class="${active ? 'active' : ''}" ${disabled ? 'disabled' : ''} data-cp-page="${page}">${label}</button>`;
-    let html = btn('«', Math.max(1, state.page - 1), state.page <= 1);
+    let html = btn('Â«', Math.max(1, state.page - 1), state.page <= 1);
     for (let p = 1; p <= totalPages; p++) {
       if (p > 1 && p < totalPages && Math.abs(p - state.page) > 1) {
-        if (!html.endsWith('<span>…</span>')) html += '<span>…</span>';
+        if (!html.endsWith('<span>â€¦</span>')) html += '<span>â€¦</span>';
         continue;
       }
       html += btn(String(p), p, false, p === state.page);
     }
-    html += btn('»', Math.min(totalPages, state.page + 1), state.page >= totalPages);
+    html += btn('Â»', Math.min(totalPages, state.page + 1), state.page >= totalPages);
     node.innerHTML = html;
   }
 
@@ -421,7 +421,7 @@
     };
     const alerts = counts.manutencao + counts.configuracao;
     const alertNode = $('cpAlertas');
-    if (alertNode) alertNode.innerHTML = alerts ? `${alerts} computador${alerts === 1 ? '' : 'es'} requer${alerts === 1 ? '' : 'em'} atenção.` : 'Sem alertas críticos neste momento.';
+    if (alertNode) alertNode.innerHTML = alerts ? `${alerts} computador${alerts === 1 ? '' : 'es'} requer${alerts === 1 ? '' : 'em'} atenÃ§Ã£o.` : 'Sem alertas crÃ­ticos neste momento.';
     const summary = $('cpResumoEstado');
     if (summary) {
       const row = (label, key, cls) => {
@@ -429,7 +429,7 @@
         const pct = state.computers.length ? ((n / total) * 100) : 0;
         return `<div class="cp-progress-row"><span>${esc(label)}</span><div class="cp-progress-track"><div class="cp-progress-bar ${cls || ''}" style="width:${pct}%"></div></div><strong>${n}</strong><small>${pct.toFixed(1)}%</small></div>`;
       };
-      summary.innerHTML = row('Operacionais','operacional','') + row('Em utilização','uso','uso') + row('Em manutenção','manutencao','manutencao') + row('Por configurar','configuracao','configuracao');
+      summary.innerHTML = row('Operacionais','operacional','') + row('Em utilizaÃ§Ã£o','uso','uso') + row('Em manutenÃ§Ã£o','manutencao','manutencao') + row('Por configurar','configuracao','configuracao');
     }
     const latest = $('cpUltimosRegistos');
     if (latest) {
@@ -437,8 +437,8 @@
       latest.innerHTML = rows.length ? rows.map((r) => {
         const cls = estadoKey(r.estado) === 'manutencao' ? 'bad' : estadoKey(r.estado) === 'configuracao' ? 'warn' : 'ok';
         const label = r.codigo || computerCode(findComputerById(r.computerId) || {}) || 'Computador';
-        return `<div class="cp-recent-row"><span class="cp-recent-dot ${cls}"></span><div class="cp-recent-main"><strong>${esc(r.tipo)} – ${esc(label)}</strong><small>${esc(r.notas || 'Registo de computador')}</small></div><small>${esc(formatDate(r.createdAt))}</small></div>`;
-      }).join('') : 'Sem intervenções registadas.';
+        return `<div class="cp-recent-row"><span class="cp-recent-dot ${cls}"></span><div class="cp-recent-main"><strong>${esc(r.tipo)} â€“ ${esc(label)}</strong><small>${esc(r.notas || 'Registo de computador')}</small></div><small>${esc(formatDate(r.createdAt))}</small></div>`;
+      }).join('') : 'Sem intervenÃ§Ãµes registadas.';
     }
   }
 
@@ -446,7 +446,7 @@
     const select = $('cpRecordComputer');
     if (!select) return;
     const current = select.value;
-    select.innerHTML = state.computers.map((c) => `<option value="${esc(c.id)}">${esc(computerCode(c))} — ${esc(computerName(c))}</option>`).join('');
+    select.innerHTML = state.computers.map((c) => `<option value="${esc(c.id)}">${esc(computerCode(c))} â€” ${esc(computerName(c))}</option>`).join('');
     if (state.computers.some((c) => c.id === current)) select.value = current;
   }
 
@@ -532,7 +532,7 @@
       render();
     } catch (err) {
       console.error(err);
-      toast('Não consegui guardar no Firebase. Guardei localmente.', 'error');
+      toast('NÃ£o consegui guardar no Firebase. Guardei localmente.', 'error');
       const list = loadLocal(LOCAL_COMPUTERS_KEY, []);
       list.push({ ...payload, id: state.editingId || uid(), createdAt: new Date().toISOString() });
       saveLocal(LOCAL_COMPUTERS_KEY, list);
@@ -559,14 +559,14 @@
     }
   }
 
-  function openRecordModal(mode = 'Intervenção', computer = null) {
+  function openRecordModal(mode = 'IntervenÃ§Ã£o', computer = null) {
     state.recordMode = mode;
-    setText('cpModalRegistoTitle', mode === 'Atribuição' ? 'Registar atribuição' : mode === 'Devolução' ? 'Registar devolução' : 'Registar intervenção');
-    setText('cpModalRegistoSubtitle', mode === 'Atribuição' ? 'Atribua o computador a um utilizador.' : mode === 'Devolução' ? 'Registe a devolução e deixe o computador operacional.' : 'Guarde o registo e atualize o estado do computador.');
+    setText('cpModalRegistoTitle', mode === 'AtribuiÃ§Ã£o' ? 'Registar atribuiÃ§Ã£o' : mode === 'DevoluÃ§Ã£o' ? 'Registar devoluÃ§Ã£o' : 'Registar intervenÃ§Ã£o');
+    setText('cpModalRegistoSubtitle', mode === 'AtribuiÃ§Ã£o' ? 'Atribua o computador a um utilizador.' : mode === 'DevoluÃ§Ã£o' ? 'Registe a devoluÃ§Ã£o e deixe o computador operacional.' : 'Guarde o registo e atualize o estado do computador.');
     fillRecordSelect();
     if (computer) $('cpRecordComputer').value = computer.id;
     $('cpRecordTipo').value = mode;
-    $('cpRecordEstado').value = mode === 'Atribuição' ? 'Em uso' : mode === 'Devolução' ? 'Operacional' : (computer ? normalizeEstado(computer.estado, computer) : 'Operacional');
+    $('cpRecordEstado').value = mode === 'AtribuiÃ§Ã£o' ? 'Em uso' : mode === 'DevoluÃ§Ã£o' ? 'Operacional' : (computer ? normalizeEstado(computer.estado, computer) : 'Operacional');
     $('cpRecordUser').value = computer ? computerUser(computer) : '';
     $('cpRecordData').value = inputDateTimeLocal();
     $('cpRecordLocal').value = computer ? computerLocal(computer) : '';
@@ -596,8 +596,8 @@
       estado: payload.estado,
       local: payload.local,
       localizacao: payload.local,
-      userNome: payload.estado === 'Operacional' && payload.tipo === 'Devolução' ? '' : payload.user,
-      user: payload.estado === 'Operacional' && payload.tipo === 'Devolução' ? '' : payload.user,
+      userNome: payload.estado === 'Operacional' && payload.tipo === 'DevoluÃ§Ã£o' ? '' : payload.user,
+      user: payload.estado === 'Operacional' && payload.tipo === 'DevoluÃ§Ã£o' ? '' : payload.user,
       lastRecordAt: createdAt,
       updatedAt: new Date().toISOString()
     };
@@ -629,16 +629,16 @@
   function openDetail(computer) {
     if (!computer) return;
     state.selectedId = computer.id;
-    setText('cpDetailTitle', `${computerCode(computer)} — ${computerName(computer)}`);
+    setText('cpDetailTitle', `${computerCode(computer)} â€” ${computerName(computer)}`);
     const estado = normalizeEstado(computer.estado, computer);
     const progress = installProgress({ passos: normalizeInstallSteps(computer.passos || computer.checklist || []) });
     $('cpDetailGrid').innerHTML = [
-      ['Código', computerCode(computer)], ['N.º Série', computerSerial(computer)], ['Nome', computerName(computer)], ['Modelo', computerModel(computer)],
-      ['Local', computerLocal(computer)], ['Utilizador', computerUser(computer) || '—'], ['Estado', estado], ['IP', computer.ip || '—'], ['SO / Licença', computer.os || computer.sistema || computer.licenca || '—'], ['Instalação', `${progress.done}/${progress.total} · ${progress.percent}%`], ['Notas', computer.notas || computer.obs || '—']
+      ['CÃ³digo', computerCode(computer)], ['N.Âº SÃ©rie', computerSerial(computer)], ['Nome', computerName(computer)], ['Modelo', computerModel(computer)],
+      ['Local', computerLocal(computer)], ['Utilizador', computerUser(computer) || 'â€”'], ['Estado', estado], ['IP', computer.ip || 'â€”'], ['SO / LicenÃ§a', computer.os || computer.sistema || computer.licenca || 'â€”'], ['InstalaÃ§Ã£o', `${progress.done}/${progress.total} Â· ${progress.percent}%`], ['Notas', computer.notas || computer.obs || 'â€”']
     ].map(([k,v]) => `<div><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join('');
     const stepHtml = `<div class="cp-detail-install"><div class="cp-install-progress compact"><span style="width:${progress.percent}%"></span></div><ul class="cp-install-steps compact">${progress.steps.map((step) => `<li class="${step.feito ? 'done' : 'open'}"><span></span>${esc(step.passo)}</li>`).join('')}</ul></div>`;
     const recs = recordsForComputer(computer).slice(0,6);
-    $('cpDetailRecords').innerHTML = stepHtml + (recs.length ? recs.map((r) => `<div class="ck-modal-list-row"><strong>${esc(r.tipo)} · ${esc(formatDate(r.createdAt))}</strong><span>${esc(r.notas || r.estado || 'Sem notas')}</span></div>`).join('') : '<div class="ck-empty">Sem registos recentes.</div>');
+    $('cpDetailRecords').innerHTML = stepHtml + (recs.length ? recs.map((r) => `<div class="ck-modal-list-row"><strong>${esc(r.tipo)} Â· ${esc(formatDate(r.createdAt))}</strong><span>${esc(r.notas || r.estado || 'Sem notas')}</span></div>`).join('') : '<div class="ck-empty">Sem registos recentes.</div>');
     openModal('cpModalDetalhe');
   }
 
@@ -662,7 +662,7 @@
     const dateEl = $('cpInstallData');
     const nome = text(nameEl?.value || '');
     let data = text(dateEl?.value || '');
-    if (!nome) { toast('Nome do computador obrigatório.', 'error'); return; }
+    if (!nome) { toast('Nome do computador obrigatÃ³rio.', 'error'); return; }
     if (!data) data = 'Sem Data';
     const passos = INSTALL_STEPS.map((step, index) => ({ passo: step, feito: !!$('cpStep' + index)?.checked }));
     const payload = {
@@ -712,7 +712,7 @@
 
   async function deleteInstallComputer(pc) {
     if (!pc) return;
-    if (!confirm(`Apagar o registo de instalação de ${computerName(pc)}?`)) return;
+    if (!confirm(`Apagar o registo de instalaÃ§Ã£o de ${computerName(pc)}?`)) return;
     const collection = pc.sourceCollection || (pc.legacy ? LEGACY_COLLECTION : COLLECTION);
     const database = db();
     try {
@@ -749,9 +749,9 @@
   function bindEvents() {
     $('cpBtnNovo')?.addEventListener('click', () => openComputerModal());
     $('cpSaveComputerBtn')?.addEventListener('click', saveComputer);
-    $('cpBtnAtribuir')?.addEventListener('click', () => openRecordModal('Atribuição'));
-    $('cpBtnDevolver')?.addEventListener('click', () => openRecordModal('Devolução'));
-    $('cpBtnIntervencao')?.addEventListener('click', () => openRecordModal('Intervenção'));
+    $('cpBtnAtribuir')?.addEventListener('click', () => openRecordModal('AtribuiÃ§Ã£o'));
+    $('cpBtnDevolver')?.addEventListener('click', () => openRecordModal('DevoluÃ§Ã£o'));
+    $('cpBtnIntervencao')?.addEventListener('click', () => openRecordModal('IntervenÃ§Ã£o'));
     $('cpBtnRelatorio')?.addEventListener('click', exportCsv);
     $('cpChecklistAllBtn')?.addEventListener('click', () => document.querySelectorAll('#cpFormChecklist input[type="checkbox"]').forEach((cb) => { cb.checked = true; }));
     $('cpChecklistClearBtn')?.addEventListener('click', () => document.querySelectorAll('#cpFormChecklist input[type="checkbox"]').forEach((cb) => { cb.checked = false; }));
@@ -787,14 +787,14 @@
       }
     });
     $('cpDetailEditBtn')?.addEventListener('click', () => { const c = findComputerById(state.selectedId); closeModal('cpModalDetalhe'); openComputerModal(c); });
-    $('cpDetailInterventionBtn')?.addEventListener('click', () => { const c = findComputerById(state.selectedId); closeModal('cpModalDetalhe'); openRecordModal('Intervenção', c); });
+    $('cpDetailInterventionBtn')?.addEventListener('click', () => { const c = findComputerById(state.selectedId); closeModal('cpModalDetalhe'); openRecordModal('IntervenÃ§Ã£o', c); });
   }
 
   function openComputerMenu(computer) {
-    const choice = prompt(`Ações para ${computerCode(computer)}:\n1 - Registar atribuição\n2 - Registar devolução\n3 - Registar intervenção\n4 - Apagar`, '3');
-    if (choice === '1') openRecordModal('Atribuição', computer);
-    else if (choice === '2') openRecordModal('Devolução', computer);
-    else if (choice === '3') openRecordModal('Intervenção', computer);
+    const choice = prompt(`AÃ§Ãµes para ${computerCode(computer)}:\n1 - Registar atribuiÃ§Ã£o\n2 - Registar devoluÃ§Ã£o\n3 - Registar intervenÃ§Ã£o\n4 - Apagar`, '3');
+    if (choice === '1') openRecordModal('AtribuiÃ§Ã£o', computer);
+    else if (choice === '2') openRecordModal('DevoluÃ§Ã£o', computer);
+    else if (choice === '3') openRecordModal('IntervenÃ§Ã£o', computer);
     else if (choice === '4') deleteComputer(computer);
   }
 
@@ -857,7 +857,7 @@
   function init() {
     try {
       document.documentElement.classList.add('cp-v15895-ready');
-      document.querySelectorAll('.ck-version').forEach((node) => { node.innerHTML = 'Versão&nbsp; v1.58.169'; });
+      document.querySelectorAll('.ck-version').forEach((node) => { node.innerHTML = 'VersÃ£o&nbsp; v1.58.172'; });
       document.querySelectorAll('.app-braga-version-fixed,.version-pill,.app-version-badge,#appVersionBadge').forEach((node) => {
         if (node && !node.classList.contains('ck-version')) node.style.display = 'none';
       });
@@ -874,3 +874,4 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })();
+

@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   "use strict";
 
   const COLLECTIONS = [
@@ -14,7 +14,7 @@
     { name: "radioWeeklyRecords", label: "Registo semanal", page: "radios.html", fields: ["weekLabel", "weekStart", "weekEnd", "createdBy"] },
     { name: "manutencoes", label: "Manutencao", page: "manutencao-impressoras.html", fields: ["modelo", "serie", "ip", "estado", "motivo", "user"] },
     { name: "informacoes", label: "Informacao", page: "informacoes.html", fields: ["titulo", "obs", "texto"] },
-    { name: "etiquetasWord", label: "Etiqueta Word", page: "etiquetas-word.html", fields: ["titulo", "data", "user", "descricao"] },
+    { name: "etiquetasWord", label: "Etiqueta Word", page: "/html/etiquetas-word.html?v=1.58.172", fields: ["titulo", "data", "user", "descricao"] },
     { name: "auditLogs", label: "Auditoria", page: "historico.html", fields: ["action", "path", "collection", "event", "title"] }
   ];
 
@@ -235,8 +235,8 @@
     const actions = document.createElement("div");
     actions.className = "enterprise-sidebar-window-actions";
     actions.innerHTML = `
-      <button class="enterprise-window-btn" type="button" data-enterprise-hide title="Segundo plano" aria-label="Segundo plano">⏸</button>
-      <button class="enterprise-window-btn enterprise-window-close" type="button" data-enterprise-close title="Fechar App" aria-label="Fechar App">⏻</button>
+      <button class="enterprise-window-btn" type="button" data-enterprise-hide title="Segundo plano" aria-label="Segundo plano">â¸</button>
+      <button class="enterprise-window-btn enterprise-window-close" type="button" data-enterprise-close title="Fechar App" aria-label="Fechar App">â»</button>
     `;
     sidebar.appendChild(actions);
     bindElectronWindowButtons(actions);
@@ -534,7 +534,7 @@
       if (node) node.textContent = String(value);
     };
     const manutencoes = Object.values(state.collectionCache.manutencoes || {})
-      .filter((item) => !/resolvido|fechado|concluido|concluído/i.test(String(item.estado || "")));
+      .filter((item) => !/resolvido|fechado|concluido|concluÃ­do/i.test(String(item.estado || "")));
     const audit = Object.values(state.collectionCache.auditLogs || {});
     set("dashboardOpsPushCount", "0");
     set("dashboardOpsMaintenanceCount", manutencoes.length);
@@ -665,3 +665,4 @@
     updateLowTonerFromPrinters
   };
 })();
+

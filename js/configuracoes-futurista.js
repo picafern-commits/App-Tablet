@@ -1,6 +1,6 @@
-/* AppBraga v1.58.169 — Configurações futurista funcional */
+﻿/* AppBraga v1.58.172 â€” ConfiguraÃ§Ãµes futurista funcional */
 (() => {
-  const VERSION = "v1.58.169";
+  const VERSION = "v1.58.172";
   const SETTINGS_KEY = "appbraga_configuracoes_futurista";
   const LOGS_KEY = "appbraga_configuracoes_logs";
   const DEFAULT_SETTINGS = {
@@ -72,7 +72,7 @@
       $("#cfgDbInfo")?.classList.add("ok");
       setText("cfgFirebaseState", "Conectada");
     } catch (error) {
-      console.warn("Config remote indisponível", error);
+      console.warn("Config remote indisponÃ­vel", error);
       setText("cfgDbInfo", "Fallback local");
       setText("cfgFirebaseState", "Fallback local");
     }
@@ -90,7 +90,7 @@
     }
   }
 
-  async function addLog(title, description = "Administrador", icon = "⚙") {
+  async function addLog(title, description = "Administrador", icon = "âš™") {
     const entry = { title, description, icon, createdAt: Date.now(), version: VERSION };
     logs.unshift(entry);
     logs = logs.slice(0, 80);
@@ -147,9 +147,9 @@
     readForm();
     saveLocal();
     const remote = await saveRemote();
-    await addLog("Configuração geral atualizada", remote ? "Guardado na Firebase" : "Guardado localmente", "⚙");
+    await addLog("ConfiguraÃ§Ã£o geral atualizada", remote ? "Guardado na Firebase" : "Guardado localmente", "âš™");
     updateKpis();
-    toast("Configurações guardadas.", "success");
+    toast("ConfiguraÃ§Ãµes guardadas.", "success");
   }
 
   function showTab(name) {
@@ -209,23 +209,23 @@
       }
       const mb = total / 1024 / 1024;
       return `${mb.toFixed(2)} MB local`;
-    } catch { return "—"; }
+    } catch { return "â€”"; }
   }
 
   function renderActivity() {
     const fallback = [
-      { title: "Configuração geral carregada", description: "Sistema", icon: "⚙", createdAt: Date.now() },
-      { title: "Tema padrão ativo", description: "AppBraga", icon: "🎨", createdAt: Date.now() - 3600000 },
-      { title: "Backup disponível", description: "Sistema", icon: "☁", createdAt: Date.now() - 7200000 }
+      { title: "ConfiguraÃ§Ã£o geral carregada", description: "Sistema", icon: "âš™", createdAt: Date.now() },
+      { title: "Tema padrÃ£o ativo", description: "AppBraga", icon: "ðŸŽ¨", createdAt: Date.now() - 3600000 },
+      { title: "Backup disponÃ­vel", description: "Sistema", icon: "â˜", createdAt: Date.now() - 7200000 }
     ];
     const rows = (logs.length ? logs : fallback).slice(0, 30);
     const html = rows.map((row) => {
-      const time = row.createdAt ? new Date(row.createdAt).toLocaleString("pt-PT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—";
-      return `<div class="cfg-activity-item"><i>${row.icon || "⚙"}</i><div><strong>${escapeHtml(row.title || "Atividade")}</strong><small>${escapeHtml(row.description || "Sistema")}</small></div><time>${time}</time></div>`;
+      const time = row.createdAt ? new Date(row.createdAt).toLocaleString("pt-PT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "â€”";
+      return `<div class="cfg-activity-item"><i>${row.icon || "âš™"}</i><div><strong>${escapeHtml(row.title || "Atividade")}</strong><small>${escapeHtml(row.description || "Sistema")}</small></div><time>${time}</time></div>`;
     }).join("");
     if ($("#cfgActivityRecent")) $("#cfgActivityRecent").innerHTML = rows.slice(0, 3).map((row) => {
-      const time = row.createdAt ? new Date(row.createdAt).toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" }) : "—";
-      return `<div class="cfg-activity-item"><i>${row.icon || "⚙"}</i><div><strong>${escapeHtml(row.title || "Atividade")}</strong><small>${escapeHtml(row.description || "Sistema")}</small></div><time>${time}</time></div>`;
+      const time = row.createdAt ? new Date(row.createdAt).toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" }) : "â€”";
+      return `<div class="cfg-activity-item"><i>${row.icon || "âš™"}</i><div><strong>${escapeHtml(row.title || "Atividade")}</strong><small>${escapeHtml(row.description || "Sistema")}</small></div><time>${time}</time></div>`;
     }).join("");
     if ($("#cfgActivityFull")) $("#cfgActivityFull").innerHTML = html;
   }
@@ -248,8 +248,8 @@
     readForm();
     const date = new Date().toISOString().slice(0, 10);
     downloadJson(`appbraga_configuracoes_${date}.json`, { app: "AppBraga", version: VERSION, exportedAt: new Date().toISOString(), settings, logs: logs.slice(0, 30) });
-    setText("cfgBackupStatus", "Configurações exportadas.");
-    addLog("Configurações exportadas", "Ficheiro JSON criado", "☁");
+    setText("cfgBackupStatus", "ConfiguraÃ§Ãµes exportadas.");
+    addLog("ConfiguraÃ§Ãµes exportadas", "Ficheiro JSON criado", "â˜");
   }
 
   async function importSettings(file) {
@@ -261,12 +261,12 @@
       applyForm();
       saveLocal();
       await saveRemote();
-      setText("cfgBackupStatus", "Configurações importadas.");
-      await addLog("Configurações importadas", file.name, "☁");
-      toast("Configurações importadas.", "success");
+      setText("cfgBackupStatus", "ConfiguraÃ§Ãµes importadas.");
+      await addLog("ConfiguraÃ§Ãµes importadas", file.name, "â˜");
+      toast("ConfiguraÃ§Ãµes importadas.", "success");
     } catch (error) {
       console.error(error);
-      toast("Erro ao importar configurações.", "error");
+      toast("Erro ao importar configuraÃ§Ãµes.", "error");
     }
   }
 
@@ -278,8 +278,8 @@
       }
       localStorage.setItem("appbraga_cache_cleared_at", String(Date.now()));
       setText("cfgCacheState", "Limpa");
-      await addLog("Cache limpa", "Cache local/service worker limpo", "🗑");
-      toast("Cache limpa. Recarrega a página se necessário.", "success");
+      await addLog("Cache limpa", "Cache local/service worker limpo", "ðŸ—‘");
+      toast("Cache limpa. Recarrega a pÃ¡gina se necessÃ¡rio.", "success");
     } catch (error) {
       console.error(error);
       toast("Erro ao limpar cache.", "error");
@@ -307,44 +307,44 @@
     $$('[data-cfg-hard-reload]').forEach((btn) => btn.addEventListener("click", () => location.reload(true)));
     $$('[data-cfg-close]').forEach((btn) => btn.addEventListener("click", hideModal));
     $("#cfgModal")?.addEventListener("click", (event) => { if (event.target?.id === "cfgModal") hideModal(); });
-    $$('[data-cfg-diagnostic]').forEach((btn) => btn.addEventListener("click", () => showModal("Diagnóstico do Sistema", "Estado técnico atual.", `<div class="cfg-card-grid two"><div class="cfg-mini-card"><strong>Firebase</strong><span>${escapeHtml($("#cfgFirebaseState")?.textContent || "—")}</span></div><div class="cfg-mini-card"><strong>Service Worker</strong><span>${escapeHtml($("#cfgSwState")?.textContent || "—")}</span></div><div class="cfg-mini-card"><strong>Storage</strong><span>${escapeHtml(estimateStorageText())}</span></div><div class="cfg-mini-card"><strong>Versão</strong><span>${VERSION}</span></div></div>`)));
+    $$('[data-cfg-diagnostic]').forEach((btn) => btn.addEventListener("click", () => showModal("DiagnÃ³stico do Sistema", "Estado tÃ©cnico atual.", `<div class="cfg-card-grid two"><div class="cfg-mini-card"><strong>Firebase</strong><span>${escapeHtml($("#cfgFirebaseState")?.textContent || "â€”")}</span></div><div class="cfg-mini-card"><strong>Service Worker</strong><span>${escapeHtml($("#cfgSwState")?.textContent || "â€”")}</span></div><div class="cfg-mini-card"><strong>Storage</strong><span>${escapeHtml(estimateStorageText())}</span></div><div class="cfg-mini-card"><strong>VersÃ£o</strong><span>${VERSION}</span></div></div>`)));
     $$('[data-cfg-permissions]').forEach((btn) => btn.addEventListener("click", () => showTab("utilizadores")));
-    $$('[data-cfg-shortcuts]').forEach((btn) => btn.addEventListener("click", () => showModal("Atalhos", "Atalhos úteis da AppBraga.", `<div class="cfg-card-grid two"><div class="cfg-mini-card"><strong>Ctrl + K</strong><span>Pesquisa global</span></div><div class="cfg-mini-card"><strong>Esc</strong><span>Fechar modais</span></div><div class="cfg-mini-card"><strong>Portal</strong><span>Voltar ao menu principal</span></div><div class="cfg-mini-card"><strong>Guardar</strong><span>Botões azuis aplicam alterações</span></div></div>`)));
-    $$('[data-cfg-new]').forEach((btn) => btn.addEventListener("click", () => showModal("Nova Configuração", "Criação rápida de chave/valor.", `<div class="cfg-form-grid two"><label><span>Chave</span><input id="cfgNewKey" placeholder="ex.: avisoInterno"></label><label><span>Valor</span><input id="cfgNewValue" placeholder="valor"></label></div><div class="cfg-actions-row" style="margin-top:14px"><button class="ck-btn primary" onclick="window.cfgSaveCustomSetting?.()">Guardar</button></div>`)));
+    $$('[data-cfg-shortcuts]').forEach((btn) => btn.addEventListener("click", () => showModal("Atalhos", "Atalhos Ãºteis da AppBraga.", `<div class="cfg-card-grid two"><div class="cfg-mini-card"><strong>Ctrl + K</strong><span>Pesquisa global</span></div><div class="cfg-mini-card"><strong>Esc</strong><span>Fechar modais</span></div><div class="cfg-mini-card"><strong>Portal</strong><span>Voltar ao menu principal</span></div><div class="cfg-mini-card"><strong>Guardar</strong><span>BotÃµes azuis aplicam alteraÃ§Ãµes</span></div></div>`)));
+    $$('[data-cfg-new]').forEach((btn) => btn.addEventListener("click", () => showModal("Nova ConfiguraÃ§Ã£o", "CriaÃ§Ã£o rÃ¡pida de chave/valor.", `<div class="cfg-form-grid two"><label><span>Chave</span><input id="cfgNewKey" placeholder="ex.: avisoInterno"></label><label><span>Valor</span><input id="cfgNewValue" placeholder="valor"></label></div><div class="cfg-actions-row" style="margin-top:14px"><button class="ck-btn primary" onclick="window.cfgSaveCustomSetting?.()">Guardar</button></div>`)));
     $$('[data-cfg-theme]').forEach((btn) => btn.addEventListener("click", async () => {
       const presets = { ocean: ["#0ea5e9", "#2563eb"], violet: ["#7c3aed", "#2563eb"], graphite: ["#64748b", "#0f172a"] };
       const p = presets[btn.dataset.cfgTheme] || presets.ocean;
       if ($("#appThemePrimary")) $("#appThemePrimary").value = p[0];
       if ($("#appThemeSecondary")) $("#appThemeSecondary").value = p[1];
-      await addLog("Tema alterado", btn.dataset.cfgTheme, "🎨");
+      await addLog("Tema alterado", btn.dataset.cfgTheme, "ðŸŽ¨");
     }));
-    $("#cfgBtnLogo")?.addEventListener("click", () => toast("A alteração direta do logótipo deve ser feita nos assets do projeto.", "info"));
-    $("#cfgBtnRemoveLogo")?.addEventListener("click", () => toast("Logótipo padrão mantido por segurança.", "info"));
+    $("#cfgBtnLogo")?.addEventListener("click", () => toast("A alteraÃ§Ã£o direta do logÃ³tipo deve ser feita nos assets do projeto.", "info"));
+    $("#cfgBtnRemoveLogo")?.addEventListener("click", () => toast("LogÃ³tipo padrÃ£o mantido por seguranÃ§a.", "info"));
     $("#cfgQuickLock")?.addEventListener("change", async () => {
-      readForm(); saveLocal(); await saveRemote(); await addLog("Bloqueio rápido atualizado", settings.quickLock ? "Ativo" : "Desativo", "🔒");
+      readForm(); saveLocal(); await saveRemote(); await addLog("Bloqueio rÃ¡pido atualizado", settings.quickLock ? "Ativo" : "Desativo", "ðŸ”’");
     });
     $$('[data-cfg-open-users]').forEach((btn) => btn.addEventListener("click", () => { location.href = "users.html"; }));
-    $$('[data-cfg-clear-logs]').forEach((btn) => btn.addEventListener("click", () => { if (confirm("Limpar registos locais de configuração?")) { logs = []; saveLocal(); renderActivity(); } }));
+    $$('[data-cfg-clear-logs]').forEach((btn) => btn.addEventListener("click", () => { if (confirm("Limpar registos locais de configuraÃ§Ã£o?")) { logs = []; saveLocal(); renderActivity(); } }));
     document.addEventListener("keydown", (event) => { if (event.key === "Escape") hideModal(); });
   }
 
   window.cfgSaveCustomSetting = async function cfgSaveCustomSetting() {
     const key = $("#cfgNewKey")?.value.trim();
     const value = $("#cfgNewValue")?.value.trim();
-    if (!key) return toast("Escreve a chave da configuração.", "error");
+    if (!key) return toast("Escreve a chave da configuraÃ§Ã£o.", "error");
     settings.custom = { ...(settings.custom || {}), [key]: value };
     saveLocal();
     await saveRemote();
-    await addLog("Configuração personalizada criada", key, "⚙");
+    await addLog("ConfiguraÃ§Ã£o personalizada criada", key, "âš™");
     hideModal();
-    toast("Configuração criada.", "success");
+    toast("ConfiguraÃ§Ã£o criada.", "success");
   };
 
   async function initServiceWorkerInfo() {
-    if (!("serviceWorker" in navigator)) return setText("cfgSwState", "Indisponível");
+    if (!("serviceWorker" in navigator)) return setText("cfgSwState", "IndisponÃ­vel");
     try {
       const reg = await navigator.serviceWorker.getRegistration();
-      setText("cfgSwState", reg ? "Ativo" : "Não registado");
+      setText("cfgSwState", reg ? "Ativo" : "NÃ£o registado");
     } catch { setText("cfgSwState", "Erro"); }
   }
 
@@ -364,3 +364,4 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
 })();
+

@@ -1,6 +1,6 @@
-/* AppBraga v1.58.169 — Adicionar Toner: KPIs e painéis ligados aos dados reais */
+﻿/* AppBraga v1.58.172 â€” Adicionar Toner: KPIs e painÃ©is ligados aos dados reais */
 (function(){
-  const VERSION = '1.58.169';
+  const VERSION = '1.58.172';
   const byId = (id) => document.getElementById(id);
   const norm = (v) => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
   const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -113,7 +113,7 @@
 
   function printerFromStock(item) {
     const eq = item?.equipamento || item?.modelo || item?.printer || item?.nome || 'Toner';
-    const loc = item?.localCurto || item?.localizacao || item?.local || item?.serie || item?.serial || 'Sem localização';
+    const loc = item?.localCurto || item?.localizacao || item?.local || item?.serie || item?.serial || 'Sem localizaÃ§Ã£o';
     return { eq:String(eq), loc:String(loc) };
   }
 
@@ -167,9 +167,9 @@
       const used = isUsed(item);
       return `<div class="row toner-recent-row">
         <span class="recent-main"><span class="dot ${getColorClass(cor)}"></span><strong>${esc(eq)}</strong><small>${esc(loc)}</small></span>
-        <small>${esc(colorLabel(cor))} • ${esc(item.quantidade || item.qtd || 1)} un.</small>
+        <small>${esc(colorLabel(cor))} â€¢ ${esc(item.quantidade || item.qtd || 1)} un.</small>
         <small>${esc(formatDate(item))}</small>
-        <b class="usage-pill ${used ? 'used' : 'available'}">${used ? 'Usado' : 'Não usado'}</b>
+        <b class="usage-pill ${used ? 'used' : 'available'}">${used ? 'Usado' : 'NÃ£o usado'}</b>
       </div>`;
     }).join('');
   }
@@ -211,7 +211,7 @@
       const loc = a.printer.localizacao || a.printer.local || a.printer.serie || '';
       return `<div class="warning-low-row">
         <span class="warn-dot ${critical ? 'red' : 'orange'}"></span>
-        <div class="warning-low-main"><strong>${esc(name)} — ${esc(a.label)}</strong><small>${esc(loc)}</small></div>
+        <div class="warning-low-main"><strong>${esc(name)} â€” ${esc(a.label)}</strong><small>${esc(loc)}</small></div>
         <b class="warning-percent ${critical ? 'critical' : 'low'}">${a.percent}%</b>
       </div>`;
     }).join('');
@@ -236,7 +236,7 @@
         if (arr.length) state.lastStockOk = arr;
         renderAll();
       }, () => { state.stock = asArray(globalValue('stockGlobal', [])); renderAll(); });
-    } catch(e) { console.warn('Adicionar Toner: stock realtime indisponível', e); }
+    } catch(e) { console.warn('Adicionar Toner: stock realtime indisponÃ­vel', e); }
     try {
       db.collection('etiquetasWord').onSnapshot(snap => {
         const arr = [];
@@ -246,7 +246,7 @@
         if (arr.length) state.lastEtiquetasOk = arr;
         renderAll();
       }, () => { state.etiquetas = asArray(globalValue('etiquetasWordGlobal', [])); renderAll(); });
-    } catch(e) { console.warn('Adicionar Toner: etiquetas realtime indisponível', e); }
+    } catch(e) { console.warn('Adicionar Toner: etiquetas realtime indisponÃ­vel', e); }
   }
 
   function attach() {
@@ -275,7 +275,7 @@
   else init();
 })();
 
-// Integração com AppBragaSystems para movimentos de toner.
+// IntegraÃ§Ã£o com AppBragaSystems para movimentos de toner.
 (function(){
   function collectTonerPayload(){
     return {
@@ -298,3 +298,4 @@
     }
   }, true);
 })();
+

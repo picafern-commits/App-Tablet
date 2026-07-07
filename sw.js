@@ -1,5 +1,5 @@
-const APP_BRAGA_SW = "appbraga-v1.58.169-github-electron-etiquetas-word-fix";
-const APP_BRAGA_VERSION = "1.58.169";
+﻿const APP_BRAGA_SW = "appbraga-v1.58.172-etiquetas-word-html-fix";
+const APP_BRAGA_VERSION = "1.58.172";
 
 const ROUTES = new Map([
   ["dashboard", "dashboard.html"],
@@ -7,8 +7,8 @@ const ROUTES = new Map([
   ["add-toner", "add-toner.html"],
   ["stock", "stock.html"],
   ["historico", "historico.html"],
-  ["etiquetas", "etiquetas-word.html"],
-  ["etiquetas-word", "etiquetas-word.html"],
+  ["etiquetas", "/html/etiquetas-word.html?v=1.58.172"],
+  ["etiquetas-word", "/html/etiquetas-word.html?v=1.58.172"],
   ["manutencao-impressoras", "manutencao-impressoras.html"],
   ["pistolas", "pistolas.html"],
   ["radios", "radios.html"],
@@ -46,6 +46,9 @@ function projectBase(url) {
   return "/" + parts.join("/") + "/";
 }
 function htmlTarget(url, file) {
+  if (/^\/html\//i.test(String(file || ""))) {
+    return new URL(file, url.origin).toString();
+  }
   const base = projectBase(url).replace(/\/\/+$/g, "/");
   return new URL(base + "html/" + file + "?v=" + APP_BRAGA_VERSION + "&legacy=sw-clean", url.origin).toString();
 }
@@ -96,13 +99,13 @@ self.addEventListener("push", (event) => {
     tag: payload.tag || data.tag || "app-braga",
     icon: "./icon-192.png",
     badge: "./icon-192.png",
-    data: { url: data.url || payload.url || "./html/index.html?v=1.58.169", requestId: data.requestId || payload.requestId || "" }
+    data: { url: data.url || payload.url || "./html/index.html?v=1.58.172", requestId: data.requestId || payload.requestId || "" }
   }));
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const target = event.notification.data?.url || "./html/index.html?v=1.58.169";
+  const target = event.notification.data?.url || "./html/index.html?v=1.58.172";
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientsList) => {
       for (const client of clientsList) {
@@ -112,3 +115,5 @@ self.addEventListener("notificationclick", (event) => {
     })
   );
 });
+
+

@@ -1,7 +1,8 @@
-{
-  "version": "1.58.169",
-  "name": "electron-etiquetas-word-fix",
+﻿{
+  "version": "1.58.172",
+  "name": "etiquetas-word-html-fix",
   "entry": "/html/index.html",
-  "cache": "appbraga-v1.58.169-github-electron-etiquetas-word-fix",
-  "note": "Corrige Etiquetas Word a abrir visual antigo por links/sidebar/Firebase/localStorage antigos."
+  "cache": "appbraga-v1.58.172-etiquetas-word-html-fix",
+  "note": "Corrige todos os links de Etiquetas Word para /html/etiquetas-word.html?v=1.58.172."
 }
+
