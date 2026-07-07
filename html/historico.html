@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+
+<html lang="pt">
+<head>
+<script src="../js/electron-cache-killer.js?v=1.58.168"></script>
+
+<script>
+(function(){
+  var v='1.58.168';
+  var key='appbraga-visual-clean-'+v;
+  try{
+    if(!sessionStorage.getItem(key)){
+      sessionStorage.setItem(key,'1');
+      if(window.caches) caches.keys().then(function(keys){ return Promise.all(keys.map(function(k){return caches.delete(k);})); }).catch(function(){});
+      if('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function(regs){ regs.forEach(function(r){ if(r.active) r.active.postMessage({type:'SKIP_WAITING'}); }); }).catch(function(){});
+    }
+  }catch(e){}
+})();
+</script>
+
+<meta charset="utf-8"/>
+<meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control"/>
+<meta content="no-cache" http-equiv="Pragma"/>
+<meta content="0" http-equiv="Expires"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Histórico</title>
+<meta content="#020817" name="theme-color"/>
+<link href="../manifest.json" rel="manifest"/>
+<link href="../icon-192.png" rel="icon" sizes="192x192" type="image/png"/>
+<link href="../icon-192.png" rel="apple-touch-icon"/>
+<link href="../css/historico-futurista.css?v=1.58.168" rel="stylesheet"/>
+<link href="../css/appbraga-clean-layout.css?v=1.58.168" rel="stylesheet"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="yes" name="mobile-web-app-capable"/>
+<meta content="App Braga" name="apple-mobile-web-app-title"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="telephone=no" name="format-detection"/>
+<link href="../css/appbraga-impressoras-padrao.css?v=1.58.168" rel="stylesheet"/>
+<link href="../css/appbraga-fixed-scale.css?v=1.58.168" rel="stylesheet"/>
+<link href="../css/appbraga-scroll-systems.css?v=1.58.168" rel="stylesheet"/>
+<link href="../css/appbraga-area-nav.css?v=1.58.168" rel="stylesheet"/>
+<link href="../css/appbraga-hero-logo-universal.css?v=1.58.168" rel="stylesheet"/>
+</head>
+<body class="historico-futurista">
+<div class="hist-page">
+<section aria-labelledby="histTitle" class="hist-hero">
+<div class="hist-hero-card">
+<a aria-label="Voltar ao Portal AppBraga" class="hist-hero-orbit appbraga-home-orbit-btn" href="index.html" title="Voltar ao Portal">
+<img alt="AppBraga" src="../assets/bragalis-home-logo-original.png?v=1.58.168"/>
+</a>
+<div aria-hidden="true" class="hist-hero-icon">↺</div>
+<div>
+<h1 id="histTitle">Histórico</h1>
+<p>Consulta de registos, movimentos, leituras e ações do sistema.</p>
+</div>
+<div class="ab-hero-area-actions ab-hero-area-back-only" data-area="Impressoras" data-area-nav-static="1"><a aria-label="Voltar ao portal Impressoras" class="ab-hero-area-btn" href="portal-impressoras.html" title="Voltar ao portal Impressoras">↩️</a></div></div>
+</section>
+<section aria-label="Resumo do histórico" class="hist-kpis">
+<article class="hist-kpi"><span class="kpi-icon blue">🧾</span><div><span>Registos totais</span><strong id="histKpiTotal">0</strong><small>Base histórica</small></div></article>
+<article class="hist-kpi"><span class="kpi-icon green">📅</span><div><span>Hoje</span><strong id="histKpiHoje">0</strong><small>Registos do dia</small></div></article>
+<article class="hist-kpi"><span class="kpi-icon cyan">📊</span><div><span>Esta semana</span><strong id="histKpiSemana">0</strong><small>Últimos 7 dias</small></div></article>
+<article class="hist-kpi"><span class="kpi-icon purple">↔</span><div><span>Movimentos stock</span><strong id="histKpiStock">0</strong><small>Entradas e saídas</small></div></article>
+<article class="hist-kpi"><span class="kpi-icon orange">🔧</span><div><span>Manutenções</span><strong id="histKpiManutencoes">0</strong><small>Intervenções</small></div></article>
+<article class="hist-kpi"><span class="kpi-icon blue">📄</span><div><span>Etiquetas geradas</span><strong id="histKpiEtiquetas">0</strong><small>Documentos</small></div></article>
+</section>
+<section class="hist-main-grid">
+<main class="hist-left">
+<article class="hist-panel hist-list-panel">
+<div class="hist-panel-head">
+<div class="panel-title">
+<span>🧾</span>
+<div><h2>Lista de histórico</h2><p>Registos consolidados do sistema.</p></div>
+</div>
+<div class="hist-filters">
+<input id="histSearch" placeholder="Pesquisar registo, referência ou equipamento..." type="text"/>
+<select id="histFilterArea">
+<option value="">Todas as áreas</option>
+<option value="Impressoras">Impressoras</option>
+<option value="Stock">Stock</option>
+<option value="Toners">Toners</option>
+<option value="Etiquetas">Etiquetas</option>
+<option value="Manutenção">Manutenção</option>
+</select>
+<select id="histFilterTipo">
+<option value="">Todos os tipos</option>
+<option value="Entrada">Entrada</option>
+<option value="Saída">Saída</option>
+<option value="Leitura realizada">Leitura realizada</option>
+<option value="Registo criado">Registo criado</option>
+<option value="Documento gerado">Documento gerado</option>
+<option value="Intervenção">Intervenção</option>
+</select>
+<button class="hist-btn" onclick="limparFiltrosHistoricoFuturista()" type="button">☰ Limpar</button>
+</div>
+</div>
+<div class="hist-table-wrap">
+<table class="hist-table">
+<thead>
+<tr>
+<th></th><th>Data/Hora</th><th>Área</th><th>Tipo</th><th>Equipamento / Referência</th><th>Local</th><th>Utilizador</th><th>Estado</th><th>Ações</th>
+</tr>
+</thead>
+<tbody id="histTableBody"><tr><td class="hist-empty-row" colspan="9">A carregar histórico...</td></tr></tbody>
+</table>
+</div>
+<div class="hist-table-footer">
+<span id="histTableInfo">A mostrar 0 registos</span>
+<div class="hist-pagination"><button type="button">‹</button><button class="active" type="button">1</button><button type="button">2</button><button type="button">3</button><button type="button">…</button><button type="button">›</button></div>
+<select id="histPerPage"><option value="10">10 por página</option><option value="25">25 por página</option><option value="50">50 por página</option></select>
+</div>
+</article>
+</main>
+<aside class="hist-right">
+<article class="hist-panel">
+<div class="hist-panel-head"><div class="panel-title"><span>⚡</span><div><h2>Ações rápidas</h2><p>Atalhos da área Histórico.</p></div></div></div>
+<div class="hist-quick-actions">
+<button onclick="location.href='add-toner.html'" type="button">➕ Adicionar Toner</button>
+<button onclick="location.href='stock.html'" type="button">📦 Stock</button>
+<button onclick="location.href='impressoras.html'" type="button">🖨️ Impressoras</button>
+<button onclick="location.href='etiquetas-word.html'" type="button">📄 Etiquetas Word</button>
+<button onclick="location.href='manutencao-impressoras.html'" type="button">🔧 Manutenção Impressoras</button>
+</div>
+</article>
+<article class="hist-panel"><div class="hist-panel-head"><div class="panel-title"><span>📊</span><div><h2>Resumo por área</h2><p>Total de registos por área.</p></div></div></div><div class="hist-bars" id="histAreaBars"></div></article>
+<article class="hist-panel"><div class="hist-panel-head"><div class="panel-title"><span>🔁</span><div><h2>Movimentos recentes</h2><p>Últimos movimentos registados.</p></div></div><button onclick="limparFiltrosHistoricoFuturista()" type="button">Ver todos →</button></div><div class="hist-movements-list" id="histMovementsList"></div></article>
+<article class="hist-panel"><div class="hist-panel-head"><div class="panel-title"><span>📄</span><div><h2>Etiquetas Word</h2><p>Documentos gerados recentemente.</p></div></div><button onclick="location.href='etiquetas-word.html'" type="button">Ver todas →</button></div><div class="hist-labels-list" id="histLabelsList"></div></article>
+</aside>
+</section>
+<div class="hist-hidden-legacy" id="countUsados">0</div>
+<div class="hist-hidden-legacy" id="listaHistorico"></div>
+<div class="modal-overlay" id="modalEditarHistorico" style="display:none;">
+<div class="modal-card">
+<div class="section-header"><div><h3>Editar Histórico</h3><p class="section-subtitle">Editar registo histórico</p></div></div>
+<div class="form-grid">
+<label><span>Equipamento</span><input id="editHistoricoEquipamento" type="text"/></label>
+<label><span>Cor</span><input id="editHistoricoCor" type="text"/></label>
+<label><span>Localização</span><input id="editHistoricoLocalizacao" type="text"/></label>
+<label><span>Lote</span><input id="editHistoricoLote" type="text"/></label>
+<label><span>SDS Ref</span><input id="editHistoricoSdsRef" type="text"/></label>
+<label><span>Data Scan</span><input id="editHistoricoData" type="text"/></label>
+<label><span>Data Folha</span><input id="editHistoricoDataFolha" type="text"/></label>
+</div>
+<div class="card-actions" style="margin-top:14px;">
+<button class="primary-btn" onclick="guardarEdicaoHistoricoModal()">Guardar</button>
+<button class="secondary-btn" onclick="fecharEdicaoHistoricoModal()">Cancelar</button>
+</div>
+</div>
+</div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="../js/app.js?v=1.58.168"></script>
+<script src="../js/appbraga-systems.js?v=1.58.168"></script>
+<script src="../js/core/helpers.js"></script>
+<script src="../js/historico-futurista.js?v=1.58.168"></script>
+<script src="../js/appbraga-scroll-systems.js?v=1.58.168"></script>
+<script src="../js/appbraga-area-nav.js?v=1.58.168"></script>
+</body>
+</html>

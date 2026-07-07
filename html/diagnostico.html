@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+
+<html lang="pt">
+<head>
+<script src="../js/electron-cache-killer.js?v=1.58.168"></script>
+
+<script>
+(function(){
+  var v='1.58.168';
+  var key='appbraga-visual-clean-'+v;
+  try{
+    if(!sessionStorage.getItem(key)){
+      sessionStorage.setItem(key,'1');
+      if(window.caches) caches.keys().then(function(keys){ return Promise.all(keys.map(function(k){return caches.delete(k);})); }).catch(function(){});
+      if('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function(regs){ regs.forEach(function(r){ if(r.active) r.active.postMessage({type:'SKIP_WAITING'}); }); }).catch(function(){});
+    }
+  }catch(e){}
+})();
+</script>
+
+<meta charset="utf-8"/>
+<meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control"/>
+<meta content="no-cache" http-equiv="Pragma"/>
+<meta content="0" http-equiv="Expires"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Diagnóstico</title>
+<meta content="#020817" name="theme-color"/>
+<link href="../manifest.json" rel="manifest"/>
+<link href="../icon-192.png" rel="icon" sizes="192x192" type="image/png"/>
+<link href="../icon-192.png" rel="apple-touch-icon"/>
+<link href="../css/appbraga-clean-layout.css?v=1.58.168" rel="stylesheet"/>
+<link href="../css/diagnostico-futurista.css?v=1.58.168" rel="stylesheet"/>
+<link href="../css/appbraga-hero-padrao.css?v=1.58.168" rel="stylesheet"/>
+<link href="../css/appbraga-scroll-systems.css?v=1.58.168" rel="stylesheet"/>
+<link href="../css/appbraga-impressoras-padrao.css?v=1.58.168" rel="stylesheet"/>
+<link href="../css/appbraga-fixed-scale.css?v=1.58.168" rel="stylesheet"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="yes" name="mobile-web-app-capable"/>
+<meta content="App Braga" name="apple-mobile-web-app-title"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="telephone=no" name="format-detection"/>
+<link href="../css/appbraga-area-nav.css?v=1.58.168" rel="stylesheet"/>
+<link href="../css/appbraga-hero-logo-universal.css?v=1.58.168" rel="stylesheet"/>
+</head>
+<body class="diagnostico-futurista-page">
+<div class="ck-page">
+<div class="ck-version">Versão  v1.58.168</div>
+<section aria-labelledby="diagTitle" class="ck-hero">
+<div class="ck-hero-inner">
+<a aria-label="Voltar ao Portal AppBraga" class="ck-hero-home" href="index.html" title="Voltar ao Portal">
+<img alt="AppBraga" src="../assets/bragalis-home-logo-original.png?v=1.58.168"/>
+</a>
+<div aria-hidden="true" class="ck-hero-icon"><span>〽️</span></div>
+<div class="ck-hero-copy">
+<h1 id="diagTitle">Diagnóstico</h1>
+<p>Diagnóstico inteligente de equipamentos e sistemas.</p>
+</div>
+<div class="ab-hero-area-actions ab-hero-area-back-only" data-area="Sistema" data-area-nav-static="1"><a aria-label="Voltar ao portal Sistema" class="ab-hero-area-btn" href="portal-sistema.html" title="Voltar ao portal Sistema">↩️</a></div></div>
+</section>
+<section aria-label="Resumo do diagnóstico" class="ck-kpis">
+<div class="ck-kpi blue"><span aria-hidden="true" class="ck-kpi-icon">🩺</span><div class="ck-kpi-label">Total Diagnósticos<strong id="diagKpiTotal">0</strong><small>Desde o início</small></div></div>
+<div class="ck-kpi green"><span aria-hidden="true" class="ck-kpi-icon ck-icon-check">✓</span><div class="ck-kpi-label">Concluídos<strong id="diagKpiConcluidos">0</strong><small id="diagPctConcluidos">0%</small></div></div>
+<div class="ck-kpi orange"><span aria-hidden="true" class="ck-kpi-icon">◷</span><div class="ck-kpi-label">Em Andamento<strong id="diagKpiAndamento">0</strong><small>Em análise</small></div></div>
+<div class="ck-kpi red"><span aria-hidden="true" class="ck-kpi-icon ck-icon-alert">!</span><div class="ck-kpi-label">Problemas<strong id="diagKpiProblemas">0</strong><small>Identificados</small></div></div>
+<div class="ck-kpi purple"><span aria-hidden="true" class="ck-kpi-icon">📅</span><div class="ck-kpi-label">Hoje<strong id="diagKpiHoje">0</strong><small>Diagnósticos</small></div></div>
+<div class="ck-kpi cyan"><span aria-hidden="true" class="ck-kpi-icon">🗓</span><div class="ck-kpi-label">Último<strong id="diagKpiUltimo">—</strong><small id="diagKpiUltimoSub">Sem registos</small></div></div>
+</section>
+<section class="ck-main diag-main">
+<div class="diag-left">
+<article class="ck-panel diag-new-panel">
+<div class="ck-panel-head">
+<div class="ck-panel-title">
+<span>🩺</span>
+<div>
+<h2>Novo Diagnóstico</h2>
+<p>Selecione o equipamento e inicie um novo diagnóstico inteligente.</p>
+</div>
+</div>
+</div>
+<div class="diag-new-grid">
+<label><span>Tipo de Equipamento</span><select id="diagTipo"><option value="">Selecione o tipo...</option><option>Impressora</option><option>Multifunções</option><option>Computador</option><option>Scanner</option><option>Rádio</option><option>Pistola CK65</option><option>Rede</option><option>Outro</option></select></label>
+<label><span>Equipamento / Nome</span><input id="diagEquipamento" placeholder="Selecione ou digite o equipamento..." type="text"/></label>
+<label><span>Localização</span><input id="diagLocal" placeholder="Selecione a localização..." type="text"/></label>
+<button class="ck-btn primary" id="diagBtnIniciar" type="button">⌁ Iniciar Diagnóstico</button>
+</div>
+</article>
+<article class="ck-panel">
+<div class="ck-panel-head diag-list-head">
+<div class="ck-panel-title">
+<span>🗂️</span>
+<div>
+<h2>Diagnósticos Recentes <em id="diagListCount">0</em></h2>
+<p>Os diagnósticos mais recentes realizados.</p>
+</div>
+</div>
+<div class="diag-filter-row">
+<input id="diagSearch" placeholder="Pesquisar diagnósticos..." type="search"/>
+<select id="diagFilterEstado"><option value="">Todos os estados</option><option value="concluido">Concluído</option><option value="andamento">Em andamento</option><option value="problema">Problema</option><option value="cancelado">Cancelado</option></select>
+</div>
+</div>
+<div class="ck-table-wrap">
+<table class="ck-table diag-table">
+<thead><tr><th>ID</th><th>Equipamento</th><th>Tipo</th><th>Localização</th><th>Estado</th><th>Resultado</th><th>Data/Hora</th><th>Ações</th></tr></thead>
+<tbody id="diagTableBody"></tbody>
+</table>
+</div>
+<div class="ck-table-footer">
+<div class="ck-footer-left"><div class="ck-page-size">Mostrar <select id="diagPageSize"><option value="5">5</option><option selected="" value="10">10</option><option value="20">20</option><option value="50">50</option></select> registos</div></div>
+<div class="ck-footer-right"><span id="diagTableSummary">0-0 de 0 registos</span><div class="ck-pagination" id="diagPagination"></div></div>
+</div>
+</article>
+<div class="diag-bottom-grid">
+<article class="ck-panel">
+<div class="ck-panel-head"><div class="ck-panel-title"><span>🍩</span><div><h3>Diagnósticos por Estado</h3><p>Distribuição dos diagnósticos por estado.</p></div></div></div>
+<div class="diag-donut-row"><div class="diag-donut" id="diagEstadoDonut"></div><div class="diag-legend" id="diagEstadoLegend"></div></div>
+</article>
+<article class="ck-panel">
+<div class="ck-panel-head"><div class="ck-panel-title"><span>🧩</span><div><h3>Tipos de Problemas Mais Comuns</h3><p>Principais problemas identificados.</p></div></div></div>
+<div class="diag-bars" id="diagProblemsBars"></div>
+</article>
+</div>
+</div>
+<aside class="ck-side diag-side">
+<article class="ck-panel">
+<div class="ck-panel-head"><div class="ck-panel-title"><span>⚡</span><div><h3>Ações Rápidas</h3><p>Ações rápidas para diagnósticos.</p></div></div></div>
+<div class="ck-quick-grid diag-quick-grid">
+<button class="ck-btn primary" id="diagBtnNovo" type="button">+ Novo Diagnóstico</button>
+<button class="ck-btn" id="diagBtnHistorico" type="button">▣ Histórico Completo</button>
+<button class="ck-btn" id="diagBtnModelos" type="button">▣ Modelos de Diagnóstico</button>
+<button class="ck-btn" id="diagBtnAgendar" type="button">▣ Agendar Diagnóstico</button>
+<button class="ck-btn" id="diagBtnConfig" type="button">⚙ Configurações</button>
+<button class="ck-btn" id="diagBtnExportar" type="button">⇩ Exportar Relatório</button>
+<button class="ck-btn" id="diagBtnCache" type="button">▣ Limpar Cache</button>
+</div>
+</article>
+<article class="ck-panel">
+<div class="ck-panel-head"><div class="ck-panel-title"><span>▣</span><div><h3>Resumo do Sistema</h3><p>Estado geral dos equipamentos.</p></div></div></div>
+<div class="diag-system-summary"><div class="diag-health" id="diagHealthRing"><strong>0%</strong><span>Sem dados</span></div><div class="diag-legend" id="diagHealthLegend"></div></div>
+</article>
+<article class="ck-panel">
+<div class="ck-panel-head"><div class="ck-panel-title"><span>🧰</span><div><h3>Equipamentos por Tipo</h3><p>Distribuição dos equipamentos.</p></div></div></div>
+<div class="diag-bars" id="diagTypeBars"></div>
+</article>
+<article class="ck-panel">
+<div class="ck-panel-head"><div class="ck-panel-title"><span>🛡️</span><div><h3>Últimos Alertas</h3><p>Alertas recentes do sistema.</p></div></div><button class="ck-btn small" id="diagBtnAlertas" type="button">Ver todos →</button></div>
+<div class="diag-feed" id="diagAlertsList"></div>
+</article>
+</aside>
+</section>
+</div>
+<div class="ck-modal" hidden="" id="diagModal">
+<div class="ck-modal-card">
+<div class="ck-modal-head"><div><h3 id="diagModalTitle">Diagnóstico</h3><p id="diagModalSub">Detalhes do diagnóstico.</p></div><button class="ck-icon-btn" data-close="diagModal" type="button">×</button></div>
+<div class="ck-modal-body" id="diagModalBody"></div>
+</div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="../js/app.js?v=1.58.168"></script>
+<script src="../js/appbraga-systems.js?v=1.58.168"></script>
+<script src="../js/appbraga-scroll-systems.js?v=1.58.168"></script>
+<script src="../js/diagnostico-futurista.js?v=1.58.168"></script>
+<script src="../js/appbraga-area-nav.js?v=1.58.168"></script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<script src="../js/electron-cache-killer.js?v=1.58.168"></script>
+
+<script>
+(function(){
+  var v='1.58.168';
+  var key='appbraga-visual-clean-'+v;
+  try{
+    if(!sessionStorage.getItem(key)){
+      sessionStorage.setItem(key,'1');
+      if(window.caches) caches.keys().then(function(keys){ return Promise.all(keys.map(function(k){return caches.delete(k);})); }).catch(function(){});
+      if('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function(regs){ regs.forEach(function(r){ if(r.active) r.active.postMessage({type:'SKIP_WAITING'}); }); }).catch(function(){});
+    }
+  }catch(e){}
+})();
+</script>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <title>Portal Equipamentos</title>
+  <meta name="theme-color" content="#020b1c">
+  <link rel="manifest" href="../manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png">
+  <link rel="apple-touch-icon" href="../icon-192.png">
+  <link rel="stylesheet" href="../css/portal-home.css?v=1.58.168">
+  <link rel="stylesheet" href="../css/portal-area.css?v=1.58.168">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="App Braga">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="format-detection" content="telephone=no">
+<link href="../css/appbraga-hero-logo-universal.css?v=1.58.168" rel="stylesheet"/>
+</head>
+<body class="portal-area-page">
+  <div class="portal-orb left" aria-hidden="true"></div>
+  <div class="portal-orb right" aria-hidden="true"></div>
+
+  <main class="portal-area-wrap">
+    <div class="portal-area-top portal-area-top-clean">
+      <span class="portal-area-version">v1.58.168</span>
+    </div>
+
+    <section class="portal-area-hero" aria-labelledby="areaTitle">
+      <div>
+        <a class="portal-area-logo appbraga-home-orbit-btn" href="index.html" aria-label="Voltar ao Portal Inicial" title="Voltar ao Portal Inicial"><img src="../assets/bragalis-home-logo-original.png?v=1.58.168" alt="AppBraga"></a>
+        <h1 id="areaTitle">Portal Equipamentos</h1>
+        <p>Acede rapidamente às páginas da área de equipamentos.</p>
+      </div>
+    </section>
+
+    <nav class="portal-area-grid" aria-label="Páginas de Portal Equipamentos">
+      <a class="portal-area-card" data-tone="blue" href="pistolas.html">
+        <div class="portal-area-card-icon" aria-hidden="true">▰</div>
+        <h2>Pistolas CK65</h2>
+        <p>Gestão e estado das pistolas</p>
+        <span class="portal-area-card-action" aria-hidden="true">→</span>
+      </a>
+      <a class="portal-area-card" data-tone="green" href="radios.html">
+        <div class="portal-area-card-icon" aria-hidden="true">📻</div>
+        <h2>Rádios</h2>
+        <p>Controlo e utilização dos rádios</p>
+        <span class="portal-area-card-action" aria-hidden="true">→</span>
+      </a>
+      <a class="portal-area-card" data-tone="purple" href="computadores.html">
+        <div class="portal-area-card-icon" aria-hidden="true">🖥️</div>
+        <h2>Computadores</h2>
+        <p>Gestão e estado dos computadores</p>
+        <span class="portal-area-card-action" aria-hidden="true">→</span>
+      </a>
+    </nav>
+
+    <footer class="portal-area-footer">Bragalis T.I • Navegação por áreas</footer>
+  </main>
+
+  <script src="../js/portal-area.js?v=1.58.168"></script>
+</body>
+</html>

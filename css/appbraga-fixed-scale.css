@@ -1,0 +1,525 @@
+/* AppBraga v1.58.168 — escala fixa global
+   Mantém textos, ícones e botões com tamanho estável independentemente da largura da janela. */
+:root{
+  --ab-fixed-page-min: 1280px;
+  --ab-hero-width: 900px;
+  --ab-hero-height: 102px;
+  --ab-hero-logo: 124px;
+  --ab-hero-logo-img: 92%;
+  --ab-hero-icon: 66px;
+  --ab-hero-title: 32px;
+  --ab-hero-subtitle: 14px;
+  --ab-kpi-height: 86px;
+  --ab-kpi-icon: 56px;
+  --ab-kpi-icon-font: 26px;
+  --ab-kpi-label: 14px;
+  --ab-kpi-number: 36px;
+  --ab-kpi-sub: 12px;
+  --ab-filter-height: 40px;
+  --ab-filter-font: 14px;
+  --ab-btn-height: 38px;
+  --ab-btn-font: 14px;
+  --ab-table-head: 12px;
+  --ab-table-body: 13px;
+  --ab-panel-title: 18px;
+  --ab-panel-sub: 12px;
+  --ab-side-title: 16px;
+}
+
+html, body{
+  min-width: var(--ab-fixed-page-min) !important;
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
+}
+
+body.radios-futurista-page,
+body.pistolas-ck65-page,
+body.computadores-futurista-page,
+body.tarefas-futurista-page,
+body.informacoes-futurista-page,
+body.portas-futurista-page,
+body.users-futurista-page,
+body.diretorio-futurista-page,
+body.equipas-futurista-page,
+body.impressoras-futurista,
+body.scanner-ia-page,
+body.diagnostico-futurista-page,
+body.notificacoes-futurista-page{
+  min-width: var(--ab-fixed-page-min) !important;
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+}
+
+.ck-page,.imp-page,.tasks-page,.users-page,.eq-page{
+  min-width: var(--ab-fixed-page-min) !important;
+  width: 100% !important;
+  max-width: none !important;
+  transform: none !important;
+  zoom: 1 !important;
+}
+
+/* HERO FIXO: deixa de escalar com vw/clamp/% */
+.ck-hero{
+  width: 100% !important;
+  min-width: var(--ab-fixed-page-min) !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  transform: none !important;
+  zoom: 1 !important;
+}
+.ck-hero-inner{
+  width: var(--ab-hero-width) !important;
+  min-width: var(--ab-hero-width) !important;
+  max-width: var(--ab-hero-width) !important;
+  min-height: var(--ab-hero-height) !important;
+  height: var(--ab-hero-height) !important;
+  padding: 18px 34px 18px 170px !important;
+  gap: 18px !important;
+  flex-wrap: nowrap !important;
+  transform: none !important;
+  zoom: 1 !important;
+}
+.ck-hero-home{
+  width: var(--ab-hero-logo) !important;
+  height: var(--ab-hero-logo) !important;
+  min-width: var(--ab-hero-logo) !important;
+  min-height: var(--ab-hero-logo) !important;
+  max-width: var(--ab-hero-logo) !important;
+  max-height: var(--ab-hero-logo) !important;
+  flex: 0 0 var(--ab-hero-logo) !important;
+  transform: translate(-50%,-50%) !important;
+  zoom: 1 !important;
+}
+.ck-hero-home img{
+  width: var(--ab-hero-logo-img) !important;
+  height: var(--ab-hero-logo-img) !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: var(--ab-hero-logo-img) !important;
+  max-height: var(--ab-hero-logo-img) !important;
+  transform: none !important;
+  zoom: 1 !important;
+}
+.ck-hero-icon{
+  width: var(--ab-hero-icon) !important;
+  height: var(--ab-hero-icon) !important;
+  min-width: var(--ab-hero-icon) !important;
+  min-height: var(--ab-hero-icon) !important;
+  max-width: var(--ab-hero-icon) !important;
+  max-height: var(--ab-hero-icon) !important;
+  flex: 0 0 var(--ab-hero-icon) !important;
+  font-size: 30px !important;
+  line-height: 1 !important;
+  transform: none !important;
+  zoom: 1 !important;
+}
+.ck-hero-icon span{font-size:30px !important;line-height:1 !important;transform:none !important;}
+.ck-hero-copy{min-width:0 !important;max-width:620px !important;flex:0 1 620px !important;transform:none !important;zoom:1 !important;}
+.ck-hero-copy h1,
+.ck-hero-title,
+.ck-hero h1{
+  font-size: var(--ab-hero-title) !important;
+  line-height: 1.05 !important;
+  font-weight: 950 !important;
+  letter-spacing: -.02em !important;
+  white-space: nowrap !important;
+  margin: 0 0 4px 0 !important;
+  transform: none !important;
+  zoom: 1 !important;
+}
+.ck-hero-copy p,
+.ck-hero-subtitle,
+.ck-hero p{
+  font-size: var(--ab-hero-subtitle) !important;
+  line-height: 1.18 !important;
+  white-space: nowrap !important;
+  margin: 0 !important;
+  transform: none !important;
+  zoom: 1 !important;
+}
+
+/* KPIs FIXOS */
+.ck-kpis,.imp-kpis{
+  grid-template-columns: repeat(6,minmax(170px,1fr)) !important;
+  gap: 14px !important;
+  transform:none !important;
+  zoom:1 !important;
+}
+.ck-kpi,.imp-kpi{
+  min-height: var(--ab-kpi-height) !important;
+  height: var(--ab-kpi-height) !important;
+  padding: 16px 18px !important;
+  gap: 14px !important;
+  flex-wrap: nowrap !important;
+  transform:none !important;
+  zoom:1 !important;
+}
+.ck-kpi-icon,.imp-kpi-icon{
+  width: var(--ab-kpi-icon) !important;
+  height: var(--ab-kpi-icon) !important;
+  min-width: var(--ab-kpi-icon) !important;
+  min-height: var(--ab-kpi-icon) !important;
+  flex: 0 0 var(--ab-kpi-icon) !important;
+  font-size: var(--ab-kpi-icon-font) !important;
+  line-height: 1 !important;
+  transform:none !important;
+  zoom:1 !important;
+}
+.ck-kpi-label,.imp-kpi-label,
+.ck-kpi span:last-child,.imp-kpi span:last-child{
+  font-size: var(--ab-kpi-label) !important;
+  line-height: 1.12 !important;
+  min-width: 0 !important;
+  transform:none !important;
+  zoom:1 !important;
+}
+.ck-kpi strong,.imp-kpi strong{
+  display:block !important;
+  font-size: var(--ab-kpi-number) !important;
+  line-height: 1 !important;
+  letter-spacing: -.03em !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 220px !important;
+  transform:none !important;
+  zoom:1 !important;
+}
+.ck-kpi small,.imp-kpi small{
+  font-size: var(--ab-kpi-sub) !important;
+  line-height: 1.1 !important;
+  white-space: nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  transform:none !important;
+  zoom:1 !important;
+}
+
+/* PAINÉIS, TÍTULOS E TEXTO FIXOS */
+.ck-panel-title > span,.imp-panel-title > span,.ck-side-title > span{
+  width: 38px !important;height: 38px !important;min-width:38px !important;min-height:38px !important;flex:0 0 38px !important;
+  font-size: 20px !important;line-height:1 !important;transform:none !important;zoom:1 !important;
+}
+.ck-panel-title h2,.ck-panel-title h3,.imp-panel-title h2,.imp-panel-title h3,.ck-side-title h3{
+  font-size: var(--ab-panel-title) !important;
+  line-height: 1.12 !important;
+  white-space: nowrap !important;
+  margin:0 !important;
+  transform:none !important;
+  zoom:1 !important;
+}
+.ck-panel-title p,.imp-panel-title p,.ck-side-title p,
+.ck-panel-head p,.ck-side-head p{
+  font-size: var(--ab-panel-sub) !important;
+  line-height:1.12 !important;
+  margin:2px 0 0 !important;
+  transform:none !important;
+  zoom:1 !important;
+}
+
+/* FILTROS E CAMPOS FIXOS */
+.ck-filters input,.ck-filters select,.ck-filters button,
+.filters-row input,.filters-row select,.filters-row button,
+.ck-search,.ck-select,.ck-btn-clear{
+  height: var(--ab-filter-height) !important;
+  min-height: var(--ab-filter-height) !important;
+  font-size: var(--ab-filter-font) !important;
+  line-height: 1 !important;
+  transform:none !important;
+  zoom:1 !important;
+}
+.ck-filters{gap:10px !important;align-items:center !important;}
+
+/* BOTÕES FIXOS */
+.ck-btn,.ck-primary,.ck-row-btn,.ck-action,.ck-quick-btn,
+button[class*="btn"],a[class*="btn"]{
+  min-height: var(--ab-btn-height) !important;
+  height: var(--ab-btn-height) !important;
+  font-size: var(--ab-btn-font) !important;
+  line-height: 1 !important;
+  font-weight: 850 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  transform:none !important;
+  zoom:1 !important;
+}
+.ck-quick-actions .ck-btn,
+.ck-side .ck-btn,
+.ck-actions-grid .ck-btn,
+.eq-actions-grid .ck-btn{
+  width: 100% !important;
+  min-height: var(--ab-btn-height) !important;
+  height: var(--ab-btn-height) !important;
+}
+.ck-row-actions button,.imp-actions button,.actions-cell button,.dir-actions button,.eq-actions button,.us-actions button{
+  width: 38px !important;
+  min-width:38px !important;
+  max-width:38px !important;
+  height: 38px !important;
+  min-height:38px !important;
+  max-height:38px !important;
+  padding:0 !important;
+  font-size:14px !important;
+  flex:0 0 38px !important;
+}
+
+/* TABELAS FIXAS */
+.ck-table,.imp-table,.table-card table{
+  table-layout: fixed !important;
+  width: 100% !important;
+  transform:none !important;
+  zoom:1 !important;
+}
+.ck-table thead th,.imp-table thead th,.table-card thead th{
+  font-size: var(--ab-table-head) !important;
+  line-height:1.15 !important;
+  white-space: nowrap !important;
+  transform:none !important;
+  zoom:1 !important;
+}
+.ck-table tbody td,.imp-table tbody td,.table-card tbody td{
+  font-size: var(--ab-table-body) !important;
+  line-height:1.22 !important;
+  transform:none !important;
+  zoom:1 !important;
+}
+.ck-badge,.badge,.status-pill,.priority-pill{
+  font-size:12px !important;
+  line-height:1 !important;
+  min-height:26px !important;
+  height:26px !important;
+  padding:0 10px !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  white-space:nowrap !important;
+}
+
+/* Rodapé/listagem/paginação fixos */
+.ck-table-footer,.tasks-footer{
+  min-height:56px !important;
+  font-size:14px !important;
+  transform:none !important;
+  zoom:1 !important;
+}
+.ck-page-size,.ck-footer-left,.ck-footer-right{font-size:14px !important;}
+.ck-page-size select{width:70px !important;min-width:70px !important;height:38px !important;font-size:14px !important;}
+.ck-pagination button,.ck-page-btn{
+  width:38px !important;min-width:38px !important;height:38px !important;min-height:38px !important;
+  font-size:14px !important;line-height:1 !important;
+}
+
+/* Cards laterais e gráficos/listas */
+.ck-side,.imp-side,.tasks-side{gap:14px !important;}
+.ck-side .ck-panel,.imp-side .imp-panel,.tasks-side .ck-panel{min-width:0 !important;}
+.ck-side h3,.imp-side h3,.tasks-side h3{font-size:var(--ab-side-title) !important;line-height:1.12 !important;}
+.ck-side p,.imp-side p,.tasks-side p,.ck-side li,.imp-side li,.tasks-side li{font-size:13px !important;line-height:1.25 !important;}
+
+/* Mata escalas responsivas antigas */
+.ck-hero *, .ck-kpis *, .ck-main *, .ck-panel *, .ck-side *, .imp-kpis *, .imp-main-grid *, .tasks-main-grid *{
+  -webkit-text-size-adjust:100% !important;
+  text-size-adjust:100% !important;
+}
+
+@media (max-width: 1600px), (max-width: 1400px), (max-width: 1200px), (max-width: 992px){
+  html, body{min-width:var(--ab-fixed-page-min) !important;overflow-x:auto !important;}
+  .ck-page,.imp-page,.tasks-page,.users-page,.eq-page{min-width:var(--ab-fixed-page-min) !important;}
+  .ck-hero-inner{width:var(--ab-hero-width) !important;min-width:var(--ab-hero-width) !important;max-width:var(--ab-hero-width) !important;height:var(--ab-hero-height) !important;}
+  .ck-hero-copy h1,.ck-hero-title,.ck-hero h1{font-size:var(--ab-hero-title) !important;}
+  .ck-hero-copy p,.ck-hero-subtitle,.ck-hero p{font-size:var(--ab-hero-subtitle) !important;}
+  .ck-kpi strong,.imp-kpi strong{font-size:var(--ab-kpi-number) !important;}
+  .ck-kpi-label,.imp-kpi-label,.ck-kpi span:last-child,.imp-kpi span:last-child{font-size:var(--ab-kpi-label) !important;}
+  .ck-btn,.ck-primary,.ck-row-btn,.ck-action,.ck-quick-btn,button[class*="btn"],a[class*="btn"]{font-size:var(--ab-btn-font) !important;height:var(--ab-btn-height) !important;}
+  .ck-table thead th,.imp-table thead th,.table-card thead th{font-size:var(--ab-table-head) !important;}
+  .ck-table tbody td,.imp-table tbody td,.table-card tbody td{font-size:var(--ab-table-body) !important;}
+}
+
+
+/* AppBraga v1.58.168 — Scanner IA ligado ao padrão global e scroll corrigido */
+body.scanner-ia-page,
+body.diagnostico-futurista-page,
+body.notificacoes-futurista-page{
+  min-width:var(--ab-fixed-page-min)!important;
+  overflow-x:auto!important;
+  overflow-y:auto!important;
+}
+body.scanner-ia-page .ck-page{
+  min-width:var(--ab-fixed-page-min)!important;
+  width:100%!important;
+  max-width:none!important;
+  overflow:visible!important;
+  transform:none!important;
+  zoom:1!important;
+}
+body.scanner-ia-page .ck-hero{
+  width:100%!important;
+  min-width:var(--ab-fixed-page-min)!important;
+  display:flex!important;
+  justify-content:center!important;
+  align-items:center!important;
+  margin:4px auto 14px!important;
+  padding:0!important;
+  transform:none!important;
+  zoom:1!important;
+}
+body.scanner-ia-page .ck-hero-inner{
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:18px!important;
+  width:var(--ab-hero-width)!important;
+  min-width:var(--ab-hero-width)!important;
+  max-width:var(--ab-hero-width)!important;
+  min-height:var(--ab-hero-height)!important;
+  height:var(--ab-hero-height)!important;
+  padding:18px 34px 18px 170px!important;
+  border-radius:20px!important;
+  box-sizing:border-box!important;
+  background:linear-gradient(90deg, rgba(8,31,66,.98), rgba(8,24,49,.92))!important;
+  border:1px solid rgba(72,143,255,.46)!important;
+  box-shadow:0 0 0 1px rgba(14,61,139,.35) inset, 0 0 24px rgba(36,120,255,.28)!important;
+  overflow:hidden!important;
+  flex-wrap:nowrap!important;
+  transform:none!important;
+  zoom:1!important;
+}
+body.scanner-ia-page .ck-hero-inner::before{
+  content:''!important;
+  position:absolute!important;
+  inset:0!important;
+  background:linear-gradient(90deg, transparent 0, rgba(42,146,255,.08) 30%, rgba(42,146,255,.03) 60%, transparent 100%), radial-gradient(circle at 82% 28%, rgba(26,151,255,.12), transparent 22%)!important;
+  pointer-events:none!important;
+}
+body.scanner-ia-page .ck-hero-inner::after{
+  content:''!important;
+  position:absolute!important;
+  left:50%!important;
+  bottom:0!important;
+  transform:translateX(-50%)!important;
+  width:240px!important;
+  height:3px!important;
+  background:radial-gradient(circle, rgba(69,181,255,.95), rgba(69,181,255,.15) 70%, transparent 100%)!important;
+}
+body.scanner-ia-page .ck-hero-home{
+  position:absolute!important;
+  width:var(--ab-hero-logo)!important;
+  height:var(--ab-hero-logo)!important;
+  min-width:var(--ab-hero-logo)!important;
+  min-height:var(--ab-hero-logo)!important;
+  max-width:var(--ab-hero-logo)!important;
+  max-height:var(--ab-hero-logo)!important;
+  left:86px!important;
+  top:50%!important;
+  right:auto!important;
+  bottom:auto!important;
+  transform:translate(-50%,-50%)!important;
+  border-radius:50%!important;
+  display:grid!important;
+  place-items:center!important;
+  z-index:2!important;
+  border:1px solid rgba(64,130,255,.25)!important;
+  background:transparent!important;
+  box-shadow:0 0 0 13px rgba(17,47,97,.18),0 0 0 27px rgba(17,47,97,.08)!important;
+  overflow:hidden!important;
+  text-decoration:none!important;
+  padding:0!important;
+  flex:none!important;
+}
+body.scanner-ia-page .ck-hero-home img{
+  display:block!important;
+  width:92%!important;
+  height:92%!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:92%!important;
+  max-height:92%!important;
+  object-fit:contain!important;
+  filter:drop-shadow(0 0 14px rgba(57,165,255,.35))!important;
+  transform:none!important;
+  zoom:1!important;
+}
+body.scanner-ia-page .ck-hero-icon{
+  position:relative!important;
+  z-index:1!important;
+  width:var(--ab-hero-icon)!important;
+  height:var(--ab-hero-icon)!important;
+  min-width:var(--ab-hero-icon)!important;
+  min-height:var(--ab-hero-icon)!important;
+  max-width:var(--ab-hero-icon)!important;
+  max-height:var(--ab-hero-icon)!important;
+  flex:0 0 var(--ab-hero-icon)!important;
+  border-radius:50%!important;
+  display:grid!important;
+  place-items:center!important;
+  background:radial-gradient(circle at 30% 30%, #8d4dff, #2438ff 70%)!important;
+  box-shadow:0 0 30px rgba(98,84,255,.33)!important;
+  color:#fff!important;
+  font-size:30px!important;
+  line-height:1!important;
+  letter-spacing:0!important;
+  padding:0!important;
+  margin:0!important;
+  transform:none!important;
+  zoom:1!important;
+}
+body.scanner-ia-page .ck-hero-icon span{
+  display:block!important;
+  font-size:30px!important;
+  line-height:1!important;
+  transform:none!important;
+  filter:none!important;
+}
+body.scanner-ia-page .ck-hero-copy{
+  position:relative!important;
+  z-index:3!important;
+  min-width:0!important;
+  max-width:620px!important;
+  flex:0 1 620px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  text-align:left!important;
+  margin:0!important;
+  padding:0!important;
+  transform:none!important;
+  zoom:1!important;
+}
+body.scanner-ia-page .ck-hero-copy h1{
+  margin:0 0 4px!important;
+  padding:0!important;
+  font-size:var(--ab-hero-title)!important;
+  line-height:1.05!important;
+  letter-spacing:-.02em!important;
+  color:#fff!important;
+  text-align:left!important;
+  white-space:nowrap!important;
+  font-weight:950!important;
+  transform:none!important;
+  zoom:1!important;
+}
+body.scanner-ia-page .ck-hero-copy p{
+  margin:0!important;
+  padding:0!important;
+  font-size:var(--ab-hero-subtitle)!important;
+  line-height:1.18!important;
+  color:#d2def2!important;
+  text-align:left!important;
+  white-space:nowrap!important;
+  transform:none!important;
+  zoom:1!important;
+}
+
+/* AppBraga v1.58.168 — escala fixa consolidada */
+.ck-hero-title,.imp-hero-title,.ck-hero h1,.imp-hero h1{font-size:34px !important;line-height:1.05 !important;}
+.ck-hero-subtitle,.imp-hero-subtitle,.ck-hero p,.imp-hero p{font-size:15px !important;line-height:1.25 !important;}
+.ck-kpi strong,.imp-kpi strong{font-size:34px !important;line-height:1 !important;}
+.ck-kpi-icon,.imp-kpi-icon{width:56px !important;height:56px !important;min-width:56px !important;min-height:56px !important;}
+.ck-btn,.imp-btn,.quick-btn,.action-btn{font-size:14px !important;min-height:42px !important;height:42px !important;}
+.ck-table th,.ck-table td,.imp-table th,.imp-table td{font-size:14px !important;}

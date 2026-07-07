@@ -1,0 +1,819 @@
+/* AppBraga v1.58.168 — Hero único partilhado
+   Todas as páginas novas com .ck-hero usam exatamente o mesmo hero da página Rádios.
+   Aqui só mudam o ícone, título e subtítulo no HTML. */
+body.radios-futurista-page .ck-hero,
+body.pistolas-ck65-page .ck-hero,
+body.computadores-futurista-page .ck-hero,
+body.tarefas-futurista-page .ck-hero,
+body.informacoes-futurista-page .ck-hero,
+body.notificacoes-futurista-page .ck-hero,
+body.users-futurista-page .ck-hero,
+body.equipas-futurista-page .ck-hero,
+body.equipas-futurista-page .ck-hero{
+  display:flex!important;
+  justify-content:center!important;
+  align-items:center!important;
+  width:100%!important;
+  margin:4px auto 14px!important;
+  padding:0!important;
+}
+
+body.radios-futurista-page .ck-hero-inner,
+body.pistolas-ck65-page .ck-hero-inner,
+body.computadores-futurista-page .ck-hero-inner,
+body.tarefas-futurista-page .ck-hero-inner,
+body.informacoes-futurista-page .ck-hero-inner,
+body.notificacoes-futurista-page .ck-hero-inner,
+body.users-futurista-page .ck-hero-inner,
+body.equipas-futurista-page .ck-hero-inner,
+body.equipas-futurista-page .ck-hero-inner{
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:18px!important;
+  width:min(900px,58vw)!important;
+  min-width:670px!important;
+  min-height:102px!important;
+  height:auto!important;
+  padding:18px 34px 18px 170px!important;
+  border-radius:20px!important;
+  box-sizing:border-box!important;
+  background:linear-gradient(90deg, rgba(8,31,66,.98), rgba(8,24,49,.92))!important;
+  border:1px solid rgba(72,143,255,.46)!important;
+  box-shadow:0 0 0 1px rgba(14,61,139,.35) inset, 0 0 24px rgba(36,120,255,.28)!important;
+  overflow:hidden!important;
+}
+
+body.radios-futurista-page .ck-hero-inner::before,
+body.pistolas-ck65-page .ck-hero-inner::before,
+body.computadores-futurista-page .ck-hero-inner::before,
+body.tarefas-futurista-page .ck-hero-inner::before,
+body.informacoes-futurista-page .ck-hero-inner::before,
+body.notificacoes-futurista-page .ck-hero-inner::before,
+body.users-futurista-page .ck-hero-inner::before,
+body.equipas-futurista-page .ck-hero-inner::before,
+body.equipas-futurista-page .ck-hero-inner::before{
+  content:''!important;
+  position:absolute!important;
+  inset:0!important;
+  background:linear-gradient(90deg, transparent 0, rgba(42,146,255,.08) 30%, rgba(42,146,255,.03) 60%, transparent 100%), radial-gradient(circle at 82% 28%, rgba(26,151,255,.12), transparent 22%)!important;
+  pointer-events:none!important;
+}
+
+body.radios-futurista-page .ck-hero-inner::after,
+body.pistolas-ck65-page .ck-hero-inner::after,
+body.computadores-futurista-page .ck-hero-inner::after,
+body.tarefas-futurista-page .ck-hero-inner::after,
+body.informacoes-futurista-page .ck-hero-inner::after,
+body.notificacoes-futurista-page .ck-hero-inner::after,
+body.users-futurista-page .ck-hero-inner::after,
+body.equipas-futurista-page .ck-hero-inner::after,
+body.equipas-futurista-page .ck-hero-inner::after{
+  content:''!important;
+  position:absolute!important;
+  left:50%!important;
+  bottom:0!important;
+  transform:translateX(-50%)!important;
+  width:240px!important;
+  height:3px!important;
+  background:radial-gradient(circle, rgba(69,181,255,.95), rgba(69,181,255,.15) 70%, transparent 100%)!important;
+}
+
+body.radios-futurista-page .ck-hero-home,
+body.pistolas-ck65-page .ck-hero-home,
+body.computadores-futurista-page .ck-hero-home,
+body.tarefas-futurista-page .ck-hero-home,
+body.informacoes-futurista-page .ck-hero-home,
+body.notificacoes-futurista-page .ck-hero-home,
+body.users-futurista-page .ck-hero-home,
+body.equipas-futurista-page .ck-hero-home,
+body.equipas-futurista-page .ck-hero-home{
+  position:absolute!important;
+  width:124px!important;
+  height:124px!important;
+  min-width:124px!important;
+  min-height:124px!important;
+  max-width:124px!important;
+  max-height:124px!important;
+  left:86px!important;
+  top:50%!important;
+  right:auto!important;
+  bottom:auto!important;
+  transform:translate(-50%,-50%)!important;
+  border-radius:50%!important;
+  display:grid!important;
+  place-items:center!important;
+  z-index:2!important;
+  border:1px solid rgba(64,130,255,.25)!important;
+  background:transparent!important;
+  box-shadow:0 0 0 13px rgba(17,47,97,.18),0 0 0 27px rgba(17,47,97,.08)!important;
+  overflow:hidden!important;
+  text-decoration:none!important;
+  padding:0!important;
+  flex:none!important;
+}
+
+body.radios-futurista-page .ck-hero-home img,
+body.pistolas-ck65-page .ck-hero-home img,
+body.computadores-futurista-page .ck-hero-home img,
+body.tarefas-futurista-page .ck-hero-home img,
+body.informacoes-futurista-page .ck-hero-home img,
+body.notificacoes-futurista-page .ck-hero-home img,
+body.users-futurista-page .ck-hero-home img,
+body.equipas-futurista-page .ck-hero-home img,
+body.equipas-futurista-page .ck-hero-home img{
+  display:block!important;
+  width:92%!important;
+  height:92%!important;
+  max-width:92%!important;
+  max-height:92%!important;
+  object-fit:contain!important;
+  filter:drop-shadow(0 0 14px rgba(57,165,255,.35))!important;
+}
+
+body.radios-futurista-page .ck-hero-icon,
+body.pistolas-ck65-page .ck-hero-icon,
+body.computadores-futurista-page .ck-hero-icon,
+body.tarefas-futurista-page .ck-hero-icon,
+body.informacoes-futurista-page .ck-hero-icon,
+body.notificacoes-futurista-page .ck-hero-icon,
+body.users-futurista-page .ck-hero-icon,
+body.equipas-futurista-page .ck-hero-icon,
+body.equipas-futurista-page .ck-hero-icon{
+  position:relative!important;
+  z-index:1!important;
+  width:66px!important;
+  height:66px!important;
+  min-width:66px!important;
+  min-height:66px!important;
+  max-width:66px!important;
+  max-height:66px!important;
+  flex:0 0 66px!important;
+  border-radius:50%!important;
+  display:grid!important;
+  place-items:center!important;
+  background:radial-gradient(circle at 30% 30%, #8d4dff, #2438ff 70%)!important;
+  box-shadow:0 0 30px rgba(98,84,255,.33)!important;
+  color:#fff!important;
+  font-size:1.9rem!important;
+  line-height:1!important;
+  letter-spacing:0!important;
+  padding:0!important;
+  margin:0!important;
+}
+
+body.radios-futurista-page .ck-hero-icon span,
+body.pistolas-ck65-page .ck-hero-icon span,
+body.computadores-futurista-page .ck-hero-icon span,
+body.tarefas-futurista-page .ck-hero-icon span,
+body.informacoes-futurista-page .ck-hero-icon span,
+body.notificacoes-futurista-page .ck-hero-icon span{
+  display:block!important;
+  font-size:1.9rem!important;
+  line-height:1!important;
+  transform:none!important;
+  filter:none!important;
+}
+
+body.radios-futurista-page .ck-hero-icon::before,
+body.radios-futurista-page .ck-hero-icon::after,
+body.pistolas-ck65-page .ck-hero-icon::before,
+body.pistolas-ck65-page .ck-hero-icon::after,
+body.computadores-futurista-page .ck-hero-icon::before,
+body.computadores-futurista-page .ck-hero-icon::after,
+body.tarefas-futurista-page .ck-hero-icon::before,
+body.tarefas-futurista-page .ck-hero-icon::after,
+body.informacoes-futurista-page .ck-hero-icon::before,
+body.notificacoes-futurista-page .ck-hero-icon::before,
+body.informacoes-futurista-page .ck-hero-icon::after,
+body.notificacoes-futurista-page .ck-hero-icon::after{
+  display:none!important;
+}
+
+body.radios-futurista-page .ck-hero-copy,
+body.pistolas-ck65-page .ck-hero-copy,
+body.computadores-futurista-page .ck-hero-copy,
+body.tarefas-futurista-page .ck-hero-copy,
+body.informacoes-futurista-page .ck-hero-copy,
+body.notificacoes-futurista-page .ck-hero-copy,
+body.users-futurista-page .ck-hero-copy,
+body.equipas-futurista-page .ck-hero-copy,
+body.equipas-futurista-page .ck-hero-copy{
+  position:relative!important;
+  z-index:3!important;
+  min-width:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  text-align:left!important;
+  margin:0!important;
+  padding:0!important;
+}
+
+body.radios-futurista-page .ck-hero-copy h1,
+body.pistolas-ck65-page .ck-hero-copy h1,
+body.computadores-futurista-page .ck-hero-copy h1,
+body.tarefas-futurista-page .ck-hero-copy h1,
+body.informacoes-futurista-page .ck-hero-copy h1,
+body.notificacoes-futurista-page .ck-hero-copy h1,
+body.users-futurista-page .ck-hero-copy h1,
+body.equipas-futurista-page .ck-hero-copy h1,
+body.equipas-futurista-page .ck-hero-copy h1{
+  margin:0 0 6px!important;
+  padding:0!important;
+  font-size:2.3rem!important;
+  line-height:1!important;
+  letter-spacing:-.03em!important;
+  color:#fff!important;
+  text-align:left!important;
+  white-space:nowrap!important;
+}
+
+body.radios-futurista-page .ck-hero-copy p,
+body.pistolas-ck65-page .ck-hero-copy p,
+body.computadores-futurista-page .ck-hero-copy p,
+body.tarefas-futurista-page .ck-hero-copy p,
+body.informacoes-futurista-page .ck-hero-copy p,
+body.notificacoes-futurista-page .ck-hero-copy p,
+body.users-futurista-page .ck-hero-copy p,
+body.equipas-futurista-page .ck-hero-copy p,
+body.equipas-futurista-page .ck-hero-copy p{
+  margin:0!important;
+  padding:0!important;
+  font-size:.96rem!important;
+  line-height:1.2!important;
+  color:#d2def2!important;
+  text-align:left!important;
+  white-space:nowrap!important;
+}
+
+body.radios-futurista-page .ck-hero-inner,
+body.radios-futurista-page .ck-hero-home,
+body.radios-futurista-page .ck-hero-icon,
+body.radios-futurista-page .ck-hero-copy h1,
+body.radios-futurista-page .ck-hero-copy p,
+body.pistolas-ck65-page .ck-hero-inner,
+body.pistolas-ck65-page .ck-hero-home,
+body.pistolas-ck65-page .ck-hero-icon,
+body.pistolas-ck65-page .ck-hero-copy h1,
+body.pistolas-ck65-page .ck-hero-copy p,
+body.computadores-futurista-page .ck-hero-inner,
+body.computadores-futurista-page .ck-hero-home,
+body.computadores-futurista-page .ck-hero-icon,
+body.computadores-futurista-page .ck-hero-copy h1,
+body.computadores-futurista-page .ck-hero-copy p,
+body.tarefas-futurista-page .ck-hero-inner,
+body.tarefas-futurista-page .ck-hero-home,
+body.tarefas-futurista-page .ck-hero-icon,
+body.tarefas-futurista-page .ck-hero-copy h1,
+body.tarefas-futurista-page .ck-hero-copy p,
+body.informacoes-futurista-page .ck-hero-inner,
+body.notificacoes-futurista-page .ck-hero-inner,
+body.informacoes-futurista-page .ck-hero-home,
+body.notificacoes-futurista-page .ck-hero-home,
+body.informacoes-futurista-page .ck-hero-icon,
+body.notificacoes-futurista-page .ck-hero-icon,
+body.informacoes-futurista-page .ck-hero-copy h1,
+body.notificacoes-futurista-page .ck-hero-copy h1,
+body.informacoes-futurista-page .ck-hero-copy p,
+body.notificacoes-futurista-page .ck-hero-copy p,
+body.users-futurista-page .ck-hero-copy p,
+body.equipas-futurista-page .ck-hero-copy p,
+body.equipas-futurista-page .ck-hero-copy p{
+  transition:none!important;
+}
+
+@media(max-width:1500px){
+  body.radios-futurista-page .ck-hero-inner,
+  body.pistolas-ck65-page .ck-hero-inner,
+  body.computadores-futurista-page .ck-hero-inner,
+  body.tarefas-futurista-page .ck-hero-inner,
+  body.informacoes-futurista-page .ck-hero-inner,
+body.notificacoes-futurista-page .ck-hero-inner,
+body.users-futurista-page .ck-hero-inner,
+body.equipas-futurista-page .ck-hero-inner,
+body.equipas-futurista-page .ck-hero-inner{
+    width:min(920px,76vw)!important;
+    min-width:0!important;
+  }
+}
+
+@media(max-width:900px){
+  body.radios-futurista-page .ck-hero-inner,
+  body.pistolas-ck65-page .ck-hero-inner,
+  body.computadores-futurista-page .ck-hero-inner,
+  body.tarefas-futurista-page .ck-hero-inner,
+  body.informacoes-futurista-page .ck-hero-inner,
+body.notificacoes-futurista-page .ck-hero-inner,
+body.users-futurista-page .ck-hero-inner,
+body.equipas-futurista-page .ck-hero-inner,
+body.equipas-futurista-page .ck-hero-inner{
+    width:100%!important;
+    min-width:0!important;
+    display:grid!important;
+    justify-items:center!important;
+    text-align:center!important;
+    gap:12px!important;
+    padding:18px!important;
+  }
+  body.radios-futurista-page .ck-hero-home,
+  body.pistolas-ck65-page .ck-hero-home,
+  body.computadores-futurista-page .ck-hero-home,
+  body.tarefas-futurista-page .ck-hero-home,
+  body.informacoes-futurista-page .ck-hero-home,
+body.notificacoes-futurista-page .ck-hero-home,
+body.users-futurista-page .ck-hero-home,
+body.equipas-futurista-page .ck-hero-home,
+body.equipas-futurista-page .ck-hero-home{display:none!important;}
+  body.radios-futurista-page .ck-hero-copy,
+  body.pistolas-ck65-page .ck-hero-copy,
+  body.computadores-futurista-page .ck-hero-copy,
+  body.tarefas-futurista-page .ck-hero-copy,
+  body.informacoes-futurista-page .ck-hero-copy,
+body.notificacoes-futurista-page .ck-hero-copy,
+body.users-futurista-page .ck-hero-copy,
+body.equipas-futurista-page .ck-hero-copy,
+body.equipas-futurista-page .ck-hero-copy{align-items:center!important;text-align:center!important;}
+  body.radios-futurista-page .ck-hero-copy h1,
+  body.pistolas-ck65-page .ck-hero-copy h1,
+  body.computadores-futurista-page .ck-hero-copy h1,
+  body.tarefas-futurista-page .ck-hero-copy h1,
+  body.informacoes-futurista-page .ck-hero-copy h1,
+body.notificacoes-futurista-page .ck-hero-copy h1,
+body.users-futurista-page .ck-hero-copy h1,
+body.equipas-futurista-page .ck-hero-copy h1,
+body.equipas-futurista-page .ck-hero-copy h1{font-size:2rem!important;text-align:center!important;white-space:normal!important;}
+  body.radios-futurista-page .ck-hero-copy p,
+  body.pistolas-ck65-page .ck-hero-copy p,
+  body.computadores-futurista-page .ck-hero-copy p,
+  body.tarefas-futurista-page .ck-hero-copy p,
+  body.informacoes-futurista-page .ck-hero-copy p,
+body.notificacoes-futurista-page .ck-hero-copy p,
+body.users-futurista-page .ck-hero-copy p,
+body.equipas-futurista-page .ck-hero-copy p,
+body.equipas-futurista-page .ck-hero-copy p{font-size:.9rem!important;text-align:center!important;white-space:normal!important;}
+}
+
+
+/* v1.58.168 — Portas de Rede no mesmo hero padrão único */
+body.portas-rede-page .ck-hero{display:flex!important;justify-content:center!important;align-items:center!important;width:100%!important;margin:4px auto 14px!important;padding:0!important;}
+body.portas-rede-page .ck-hero-inner{position:relative!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:18px!important;width:min(900px,58vw)!important;min-width:670px!important;min-height:102px!important;height:auto!important;padding:18px 34px 18px 170px!important;border-radius:20px!important;box-sizing:border-box!important;background:linear-gradient(90deg,rgba(8,31,66,.98),rgba(8,24,49,.92))!important;border:1px solid rgba(72,143,255,.46)!important;box-shadow:0 0 0 1px rgba(14,61,139,.35) inset,0 0 24px rgba(36,120,255,.28)!important;overflow:hidden!important;}
+body.portas-rede-page .ck-hero-inner::before{content:''!important;position:absolute!important;inset:0!important;background:linear-gradient(90deg,transparent 0,rgba(42,146,255,.08) 30%,rgba(42,146,255,.03) 60%,transparent 100%),radial-gradient(circle at 82% 28%,rgba(26,151,255,.12),transparent 22%)!important;pointer-events:none!important;}
+body.portas-rede-page .ck-hero-inner::after{content:''!important;position:absolute!important;left:50%!important;bottom:0!important;transform:translateX(-50%)!important;width:240px!important;height:3px!important;background:radial-gradient(circle,rgba(69,181,255,.95),rgba(69,181,255,.15) 70%,transparent 100%)!important;}
+body.portas-rede-page .ck-hero-home{position:absolute!important;width:124px!important;height:124px!important;min-width:124px!important;min-height:124px!important;max-width:124px!important;max-height:124px!important;left:86px!important;top:50%!important;right:auto!important;bottom:auto!important;transform:translate(-50%,-50%)!important;border-radius:50%!important;display:grid!important;place-items:center!important;z-index:2!important;border:1px solid rgba(64,130,255,.25)!important;background:transparent!important;box-shadow:0 0 0 13px rgba(17,47,97,.18),0 0 0 27px rgba(17,47,97,.08)!important;overflow:hidden!important;text-decoration:none!important;padding:0!important;flex:none!important;}
+body.portas-rede-page .ck-hero-home img{display:block!important;width:92%!important;height:92%!important;max-width:92%!important;max-height:92%!important;object-fit:contain!important;filter:drop-shadow(0 0 14px rgba(57,165,255,.35))!important;}
+body.portas-rede-page .ck-hero-icon{position:relative!important;z-index:1!important;width:66px!important;height:66px!important;min-width:66px!important;min-height:66px!important;max-width:66px!important;max-height:66px!important;flex:0 0 66px!important;border-radius:50%!important;display:grid!important;place-items:center!important;background:radial-gradient(circle at 30% 30%,#38c9ff,#2438ff 70%)!important;box-shadow:0 0 30px rgba(98,84,255,.33)!important;color:#fff!important;font-size:1.9rem!important;line-height:1!important;letter-spacing:0!important;padding:0!important;margin:0!important;}
+body.portas-rede-page .ck-hero-icon span{display:block!important;font-size:1.9rem!important;line-height:1!important;transform:none!important;filter:none!important;}
+body.portas-rede-page .ck-hero-copy{position:relative!important;z-index:1!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;min-width:0!important;margin:0!important;padding:0!important;}
+body.portas-rede-page .ck-hero-copy h1{margin:0 0 4px!important;padding:0!important;font-size:2rem!important;line-height:1.04!important;letter-spacing:-.03em!important;color:#fff!important;font-weight:1000!important;text-align:left!important;}
+body.portas-rede-page .ck-hero-copy p{margin:0!important;padding:0!important;color:#d2def2!important;font-size:.93rem!important;line-height:1.28!important;font-weight:500!important;text-align:left!important;}
+@media(max-width:760px){body.portas-rede-page .ck-hero-inner{min-width:0!important;width:100%!important;padding:18px 18px 18px 118px!important}body.portas-rede-page .ck-hero-home{left:56px!important;width:96px!important;height:96px!important}body.portas-rede-page .ck-hero-icon{width:54px!important;height:54px!important;min-width:54px!important;min-height:54px!important}body.portas-rede-page .ck-hero-copy h1{font-size:1.55rem!important}}
+
+/* v1.58.168 — Users usa o mesmo hero padrão das páginas novas/Portas */
+body.users-futurista-page .ck-hero,
+body.equipas-futurista-page .ck-hero,
+body.equipas-futurista-page .ck-hero{display:flex!important;justify-content:center!important;align-items:center!important;width:100%!important;margin:4px auto 14px!important;padding:0!important;}
+body.users-futurista-page .ck-hero-inner,
+body.equipas-futurista-page .ck-hero-inner,
+body.equipas-futurista-page .ck-hero-inner{position:relative!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:18px!important;width:min(900px,58vw)!important;min-width:670px!important;min-height:102px!important;height:auto!important;padding:18px 34px 18px 170px!important;border-radius:20px!important;box-sizing:border-box!important;background:linear-gradient(90deg,rgba(8,31,66,.98),rgba(8,24,49,.92))!important;border:1px solid rgba(72,143,255,.46)!important;box-shadow:0 0 0 1px rgba(14,61,139,.35) inset,0 0 24px rgba(36,120,255,.28)!important;overflow:hidden!important;}
+body.users-futurista-page .ck-hero-inner::before,
+body.equipas-futurista-page .ck-hero-inner::before,
+body.equipas-futurista-page .ck-hero-inner::before{content:''!important;position:absolute!important;inset:0!important;background:linear-gradient(90deg,transparent 0,rgba(42,146,255,.08) 30%,rgba(42,146,255,.03) 60%,transparent 100%),radial-gradient(circle at 82% 28%,rgba(26,151,255,.12),transparent 22%)!important;pointer-events:none!important;}
+body.users-futurista-page .ck-hero-inner::after,
+body.equipas-futurista-page .ck-hero-inner::after,
+body.equipas-futurista-page .ck-hero-inner::after{content:''!important;position:absolute!important;left:50%!important;bottom:0!important;transform:translateX(-50%)!important;width:240px!important;height:3px!important;background:radial-gradient(circle,rgba(69,181,255,.95),rgba(69,181,255,.15) 70%,transparent 100%)!important;}
+body.users-futurista-page .ck-hero-home,
+body.equipas-futurista-page .ck-hero-home,
+body.equipas-futurista-page .ck-hero-home{position:absolute!important;width:124px!important;height:124px!important;min-width:124px!important;min-height:124px!important;max-width:124px!important;max-height:124px!important;left:86px!important;top:50%!important;right:auto!important;bottom:auto!important;transform:translate(-50%,-50%)!important;border-radius:50%!important;display:grid!important;place-items:center!important;z-index:2!important;border:1px solid rgba(64,130,255,.25)!important;background:transparent!important;box-shadow:0 0 0 13px rgba(17,47,97,.18),0 0 0 27px rgba(17,47,97,.08)!important;overflow:hidden!important;text-decoration:none!important;padding:0!important;flex:none!important;}
+body.users-futurista-page .ck-hero-home img,
+body.equipas-futurista-page .ck-hero-home img,
+body.equipas-futurista-page .ck-hero-home img{display:block!important;width:92%!important;height:92%!important;max-width:92%!important;max-height:92%!important;object-fit:contain!important;filter:drop-shadow(0 0 14px rgba(57,165,255,.35))!important;}
+body.users-futurista-page .ck-hero-icon,
+body.equipas-futurista-page .ck-hero-icon,
+body.equipas-futurista-page .ck-hero-icon{position:relative!important;z-index:1!important;width:66px!important;height:66px!important;min-width:66px!important;min-height:66px!important;max-width:66px!important;max-height:66px!important;flex:0 0 66px!important;border-radius:50%!important;display:grid!important;place-items:center!important;background:radial-gradient(circle at 30% 30%,#38c9ff,#2438ff 70%)!important;box-shadow:0 0 30px rgba(98,84,255,.33)!important;color:#fff!important;font-size:1.9rem!important;line-height:1!important;letter-spacing:0!important;padding:0!important;margin:0!important;}
+body.users-futurista-page .ck-hero-icon span,
+body.equipas-futurista-page .ck-hero-icon span,
+body.equipas-futurista-page .ck-hero-icon span{display:block!important;font-size:1.9rem!important;line-height:1!important;transform:none!important;filter:none!important;}
+body.users-futurista-page .ck-hero-copy,
+body.equipas-futurista-page .ck-hero-copy,
+body.equipas-futurista-page .ck-hero-copy{position:relative!important;z-index:1!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;min-width:0!important;text-align:left!important;margin:0!important;padding:0!important;}
+body.users-futurista-page .ck-hero-copy h1,
+body.equipas-futurista-page .ck-hero-copy h1,
+body.equipas-futurista-page .ck-hero-copy h1{margin:0!important;padding:0!important;color:#fff!important;font-size:2rem!important;font-weight:1000!important;line-height:1.05!important;letter-spacing:-.035em!important;text-shadow:0 3px 18px rgba(0,0,0,.3)!important;white-space:nowrap!important;}
+body.users-futurista-page .ck-hero-copy p,
+body.equipas-futurista-page .ck-hero-copy p,
+body.equipas-futurista-page .ck-hero-copy p{margin:5px 0 0!important;padding:0!important;color:#dce9ff!important;font-size:.86rem!important;font-weight:600!important;line-height:1.2!important;white-space:nowrap!important;}
+
+
+/* v1.58.168 — Hero padrão final também aplicado a Diretório e Portas.
+   Regra carregada no fim para impedir logos gigantes/overrides locais. */
+body.radios-futurista-page .ck-hero,
+body.pistolas-ck65-page .ck-hero,
+body.computadores-futurista-page .ck-hero,
+body.tarefas-futurista-page .ck-hero,
+body.informacoes-futurista-page .ck-hero,
+body.notificacoes-futurista-page .ck-hero,
+body.portas-rede-page .ck-hero,
+body.users-futurista-page .ck-hero,
+body.equipas-futurista-page .ck-hero,
+body.diretorio-futurista-page .ck-hero{
+  display:flex!important;
+  justify-content:center!important;
+  align-items:center!important;
+  width:100%!important;
+  margin:4px auto 14px!important;
+  padding:0!important;
+  min-height:0!important;
+}
+body.radios-futurista-page .ck-hero-inner,
+body.pistolas-ck65-page .ck-hero-inner,
+body.computadores-futurista-page .ck-hero-inner,
+body.tarefas-futurista-page .ck-hero-inner,
+body.informacoes-futurista-page .ck-hero-inner,
+body.notificacoes-futurista-page .ck-hero-inner,
+body.portas-rede-page .ck-hero-inner,
+body.users-futurista-page .ck-hero-inner,
+body.equipas-futurista-page .ck-hero-inner,
+body.diretorio-futurista-page .ck-hero-inner{
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:18px!important;
+  width:min(900px,58vw)!important;
+  min-width:670px!important;
+  min-height:102px!important;
+  height:auto!important;
+  padding:18px 34px 18px 170px!important;
+  border-radius:20px!important;
+  box-sizing:border-box!important;
+  background:linear-gradient(90deg, rgba(8,31,66,.98), rgba(8,24,49,.92))!important;
+  border:1px solid rgba(72,143,255,.46)!important;
+  box-shadow:0 0 0 1px rgba(14,61,139,.35) inset, 0 0 24px rgba(36,120,255,.28)!important;
+  overflow:hidden!important;
+}
+body.radios-futurista-page .ck-hero-inner::before,
+body.pistolas-ck65-page .ck-hero-inner::before,
+body.computadores-futurista-page .ck-hero-inner::before,
+body.tarefas-futurista-page .ck-hero-inner::before,
+body.informacoes-futurista-page .ck-hero-inner::before,
+body.notificacoes-futurista-page .ck-hero-inner::before,
+body.portas-rede-page .ck-hero-inner::before,
+body.users-futurista-page .ck-hero-inner::before,
+body.equipas-futurista-page .ck-hero-inner::before,
+body.diretorio-futurista-page .ck-hero-inner::before{
+  content:''!important;
+  position:absolute!important;
+  inset:0!important;
+  background:linear-gradient(90deg, transparent 0, rgba(42,146,255,.08) 30%, rgba(42,146,255,.03) 60%, transparent 100%), radial-gradient(circle at 82% 28%, rgba(26,151,255,.12), transparent 22%)!important;
+  pointer-events:none!important;
+}
+body.radios-futurista-page .ck-hero-inner::after,
+body.pistolas-ck65-page .ck-hero-inner::after,
+body.computadores-futurista-page .ck-hero-inner::after,
+body.tarefas-futurista-page .ck-hero-inner::after,
+body.informacoes-futurista-page .ck-hero-inner::after,
+body.notificacoes-futurista-page .ck-hero-inner::after,
+body.portas-rede-page .ck-hero-inner::after,
+body.users-futurista-page .ck-hero-inner::after,
+body.equipas-futurista-page .ck-hero-inner::after,
+body.diretorio-futurista-page .ck-hero-inner::after{
+  content:''!important;
+  position:absolute!important;
+  left:50%!important;
+  bottom:0!important;
+  transform:translateX(-50%)!important;
+  width:240px!important;
+  height:3px!important;
+  background:radial-gradient(circle, rgba(69,181,255,.95), rgba(69,181,255,.15) 70%, transparent 100%)!important;
+}
+body.radios-futurista-page .ck-hero-home,
+body.pistolas-ck65-page .ck-hero-home,
+body.computadores-futurista-page .ck-hero-home,
+body.tarefas-futurista-page .ck-hero-home,
+body.informacoes-futurista-page .ck-hero-home,
+body.notificacoes-futurista-page .ck-hero-home,
+body.portas-rede-page .ck-hero-home,
+body.users-futurista-page .ck-hero-home,
+body.equipas-futurista-page .ck-hero-home,
+body.diretorio-futurista-page .ck-hero-home{
+  position:absolute!important;
+  width:124px!important;
+  height:124px!important;
+  min-width:124px!important;
+  min-height:124px!important;
+  max-width:124px!important;
+  max-height:124px!important;
+  left:86px!important;
+  top:50%!important;
+  right:auto!important;
+  bottom:auto!important;
+  transform:translate(-50%,-50%)!important;
+  border-radius:50%!important;
+  display:grid!important;
+  place-items:center!important;
+  z-index:2!important;
+  border:1px solid rgba(64,130,255,.25)!important;
+  background:transparent!important;
+  box-shadow:0 0 0 13px rgba(17,47,97,.18),0 0 0 27px rgba(17,47,97,.08)!important;
+  overflow:hidden!important;
+  text-decoration:none!important;
+  padding:0!important;
+  margin:0!important;
+  flex:none!important;
+}
+body.radios-futurista-page .ck-hero-home img,
+body.pistolas-ck65-page .ck-hero-home img,
+body.computadores-futurista-page .ck-hero-home img,
+body.tarefas-futurista-page .ck-hero-home img,
+body.informacoes-futurista-page .ck-hero-home img,
+body.notificacoes-futurista-page .ck-hero-home img,
+body.portas-rede-page .ck-hero-home img,
+body.users-futurista-page .ck-hero-home img,
+body.equipas-futurista-page .ck-hero-home img,
+body.diretorio-futurista-page .ck-hero-home img{
+  display:block!important;
+  width:92%!important;
+  height:92%!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:92%!important;
+  max-height:92%!important;
+  object-fit:contain!important;
+  filter:drop-shadow(0 0 14px rgba(57,165,255,.35))!important;
+  position:static!important;
+  transform:none!important;
+  border-radius:0!important;
+  margin:0!important;
+}
+body.radios-futurista-page .ck-hero-icon,
+body.pistolas-ck65-page .ck-hero-icon,
+body.computadores-futurista-page .ck-hero-icon,
+body.tarefas-futurista-page .ck-hero-icon,
+body.informacoes-futurista-page .ck-hero-icon,
+body.notificacoes-futurista-page .ck-hero-icon,
+body.portas-rede-page .ck-hero-icon,
+body.users-futurista-page .ck-hero-icon,
+body.equipas-futurista-page .ck-hero-icon,
+body.diretorio-futurista-page .ck-hero-icon{
+  position:relative!important;
+  z-index:1!important;
+  width:66px!important;
+  height:66px!important;
+  min-width:66px!important;
+  min-height:66px!important;
+  max-width:66px!important;
+  max-height:66px!important;
+  flex:0 0 66px!important;
+  border-radius:50%!important;
+  display:grid!important;
+  place-items:center!important;
+  background:radial-gradient(circle at 30% 30%, #8d4dff, #2438ff 70%)!important;
+  box-shadow:0 0 30px rgba(98,84,255,.33)!important;
+  color:#fff!important;
+  font-size:1.9rem!important;
+  line-height:1!important;
+  letter-spacing:0!important;
+  padding:0!important;
+  margin:0!important;
+}
+body.radios-futurista-page .ck-hero-icon span,
+body.pistolas-ck65-page .ck-hero-icon span,
+body.computadores-futurista-page .ck-hero-icon span,
+body.tarefas-futurista-page .ck-hero-icon span,
+body.informacoes-futurista-page .ck-hero-icon span,
+body.portas-rede-page .ck-hero-icon span,
+body.users-futurista-page .ck-hero-icon span,
+body.equipas-futurista-page .ck-hero-icon span,
+body.diretorio-futurista-page .ck-hero-icon span{
+  display:block!important;
+  font-size:1.9rem!important;
+  line-height:1!important;
+  transform:none!important;
+  filter:none!important;
+}
+body.radios-futurista-page .ck-hero-icon::before,
+body.radios-futurista-page .ck-hero-icon::after,
+body.pistolas-ck65-page .ck-hero-icon::before,
+body.pistolas-ck65-page .ck-hero-icon::after,
+body.computadores-futurista-page .ck-hero-icon::before,
+body.computadores-futurista-page .ck-hero-icon::after,
+body.tarefas-futurista-page .ck-hero-icon::before,
+body.tarefas-futurista-page .ck-hero-icon::after,
+body.informacoes-futurista-page .ck-hero-icon::before,
+body.notificacoes-futurista-page .ck-hero-icon::before,
+body.informacoes-futurista-page .ck-hero-icon::after,
+body.portas-rede-page .ck-hero-icon::before,
+body.portas-rede-page .ck-hero-icon::after,
+body.users-futurista-page .ck-hero-icon::before,
+body.equipas-futurista-page .ck-hero-icon::before,
+body.users-futurista-page .ck-hero-icon::after,
+body.equipas-futurista-page .ck-hero-icon::after,
+body.diretorio-futurista-page .ck-hero-icon::before,
+body.diretorio-futurista-page .ck-hero-icon::after{
+  display:none!important;
+}
+body.radios-futurista-page .ck-hero-copy,
+body.pistolas-ck65-page .ck-hero-copy,
+body.computadores-futurista-page .ck-hero-copy,
+body.tarefas-futurista-page .ck-hero-copy,
+body.informacoes-futurista-page .ck-hero-copy,
+body.notificacoes-futurista-page .ck-hero-copy,
+body.portas-rede-page .ck-hero-copy,
+body.users-futurista-page .ck-hero-copy,
+body.equipas-futurista-page .ck-hero-copy,
+body.diretorio-futurista-page .ck-hero-copy{
+  position:relative!important;
+  z-index:3!important;
+  min-width:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  text-align:left!important;
+  margin:0!important;
+  padding:0!important;
+}
+body.radios-futurista-page .ck-hero-copy h1,
+body.pistolas-ck65-page .ck-hero-copy h1,
+body.computadores-futurista-page .ck-hero-copy h1,
+body.tarefas-futurista-page .ck-hero-copy h1,
+body.informacoes-futurista-page .ck-hero-copy h1,
+body.notificacoes-futurista-page .ck-hero-copy h1,
+body.portas-rede-page .ck-hero-copy h1,
+body.users-futurista-page .ck-hero-copy h1,
+body.equipas-futurista-page .ck-hero-copy h1,
+body.diretorio-futurista-page .ck-hero-copy h1{
+  margin:0 0 6px!important;
+  padding:0!important;
+  font-size:2.3rem!important;
+  line-height:1!important;
+  letter-spacing:-.03em!important;
+  color:#fff!important;
+  text-align:left!important;
+  white-space:nowrap!important;
+}
+body.radios-futurista-page .ck-hero-copy p,
+body.pistolas-ck65-page .ck-hero-copy p,
+body.computadores-futurista-page .ck-hero-copy p,
+body.tarefas-futurista-page .ck-hero-copy p,
+body.informacoes-futurista-page .ck-hero-copy p,
+body.notificacoes-futurista-page .ck-hero-copy p,
+body.portas-rede-page .ck-hero-copy p,
+body.users-futurista-page .ck-hero-copy p,
+body.equipas-futurista-page .ck-hero-copy p,
+body.diretorio-futurista-page .ck-hero-copy p{
+  margin:0!important;
+  padding:0!important;
+  font-size:.96rem!important;
+  line-height:1.2!important;
+  color:#d2def2!important;
+  text-align:left!important;
+  white-space:nowrap!important;
+}
+@media(max-width:1500px){
+  body.radios-futurista-page .ck-hero-inner,
+  body.pistolas-ck65-page .ck-hero-inner,
+  body.computadores-futurista-page .ck-hero-inner,
+  body.tarefas-futurista-page .ck-hero-inner,
+  body.informacoes-futurista-page .ck-hero-inner,
+body.notificacoes-futurista-page .ck-hero-inner,
+  body.portas-rede-page .ck-hero-inner,
+  body.users-futurista-page .ck-hero-inner,
+body.equipas-futurista-page .ck-hero-inner,
+  body.diretorio-futurista-page .ck-hero-inner{width:min(920px,76vw)!important;min-width:0!important;}
+}
+@media(max-width:900px){
+  body.radios-futurista-page .ck-hero-inner,
+  body.pistolas-ck65-page .ck-hero-inner,
+  body.computadores-futurista-page .ck-hero-inner,
+  body.tarefas-futurista-page .ck-hero-inner,
+  body.informacoes-futurista-page .ck-hero-inner,
+body.notificacoes-futurista-page .ck-hero-inner,
+  body.portas-rede-page .ck-hero-inner,
+  body.users-futurista-page .ck-hero-inner,
+body.equipas-futurista-page .ck-hero-inner,
+  body.diretorio-futurista-page .ck-hero-inner{width:100%!important;padding:16px 18px 16px 126px!important;gap:14px!important;}
+  body.radios-futurista-page .ck-hero-home,
+  body.pistolas-ck65-page .ck-hero-home,
+  body.computadores-futurista-page .ck-hero-home,
+  body.tarefas-futurista-page .ck-hero-home,
+  body.informacoes-futurista-page .ck-hero-home,
+body.notificacoes-futurista-page .ck-hero-home,
+  body.portas-rede-page .ck-hero-home,
+  body.users-futurista-page .ck-hero-home,
+body.equipas-futurista-page .ck-hero-home,
+  body.diretorio-futurista-page .ck-hero-home{width:92px!important;height:92px!important;min-width:92px!important;min-height:92px!important;left:63px!important;}
+  body.radios-futurista-page .ck-hero-icon,
+  body.pistolas-ck65-page .ck-hero-icon,
+  body.computadores-futurista-page .ck-hero-icon,
+  body.tarefas-futurista-page .ck-hero-icon,
+  body.informacoes-futurista-page .ck-hero-icon,
+body.notificacoes-futurista-page .ck-hero-icon,
+  body.portas-rede-page .ck-hero-icon,
+  body.users-futurista-page .ck-hero-icon,
+body.equipas-futurista-page .ck-hero-icon,
+  body.diretorio-futurista-page .ck-hero-icon{width:54px!important;height:54px!important;min-width:54px!important;min-height:54px!important;flex-basis:54px!important;font-size:1.45rem!important;}
+  body.radios-futurista-page .ck-hero-copy h1,
+  body.pistolas-ck65-page .ck-hero-copy h1,
+  body.computadores-futurista-page .ck-hero-copy h1,
+  body.tarefas-futurista-page .ck-hero-copy h1,
+  body.informacoes-futurista-page .ck-hero-copy h1,
+body.notificacoes-futurista-page .ck-hero-copy h1,
+  body.portas-rede-page .ck-hero-copy h1,
+  body.users-futurista-page .ck-hero-copy h1,
+body.equipas-futurista-page .ck-hero-copy h1,
+  body.diretorio-futurista-page .ck-hero-copy h1{font-size:1.75rem!important;}
+  body.radios-futurista-page .ck-hero-copy p,
+  body.pistolas-ck65-page .ck-hero-copy p,
+  body.computadores-futurista-page .ck-hero-copy p,
+  body.tarefas-futurista-page .ck-hero-copy p,
+  body.informacoes-futurista-page .ck-hero-copy p,
+body.notificacoes-futurista-page .ck-hero-copy p,
+  body.portas-rede-page .ck-hero-copy p,
+  body.users-futurista-page .ck-hero-copy p,
+body.equipas-futurista-page .ck-hero-copy p,
+  body.diretorio-futurista-page .ck-hero-copy p{white-space:normal!important;font-size:.86rem!important;}
+}
+
+
+/* AppBraga v1.58.168 — Equipas Semanais incluída no hero padrão único */
+body.equipas-futurista-page .ck-hero{
+  display:flex!important;justify-content:center!important;align-items:center!important;width:100%!important;margin:4px auto 14px!important;padding:0!important;
+}
+body.equipas-futurista-page .ck-hero-inner{
+  position:relative!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:18px!important;
+  width:min(900px,58vw)!important;min-width:670px!important;min-height:102px!important;height:auto!important;
+  padding:18px 34px 18px 170px!important;border-radius:20px!important;box-sizing:border-box!important;
+  background:linear-gradient(90deg, rgba(8,31,66,.98), rgba(8,24,49,.92))!important;
+  border:1px solid rgba(72,143,255,.46)!important;box-shadow:0 0 0 1px rgba(14,61,139,.35) inset, 0 0 24px rgba(36,120,255,.28)!important;
+  overflow:hidden!important;
+}
+body.equipas-futurista-page .ck-hero-inner::before{content:''!important;position:absolute!important;inset:0!important;background:linear-gradient(90deg, transparent 0, rgba(42,146,255,.08) 30%, rgba(42,146,255,.03) 60%, transparent 100%), radial-gradient(circle at 82% 28%, rgba(26,151,255,.12), transparent 22%)!important;pointer-events:none!important;}
+body.equipas-futurista-page .ck-hero-inner::after{content:''!important;position:absolute!important;left:50%!important;bottom:0!important;transform:translateX(-50%)!important;width:240px!important;height:3px!important;background:radial-gradient(circle, rgba(69,181,255,.95), rgba(69,181,255,.15) 70%, transparent 100%)!important;}
+body.equipas-futurista-page .ck-hero-home{
+  position:absolute!important;width:124px!important;height:124px!important;min-width:124px!important;min-height:124px!important;max-width:124px!important;max-height:124px!important;
+  left:86px!important;top:50%!important;right:auto!important;bottom:auto!important;transform:translate(-50%,-50%)!important;border-radius:50%!important;
+  display:grid!important;place-items:center!important;z-index:2!important;border:1px solid rgba(64,130,255,.25)!important;background:transparent!important;
+  box-shadow:0 0 0 13px rgba(17,47,97,.18),0 0 0 27px rgba(17,47,97,.08)!important;overflow:hidden!important;text-decoration:none!important;padding:0!important;flex:none!important;
+}
+body.equipas-futurista-page .ck-hero-home img{display:block!important;width:92%!important;height:92%!important;max-width:92%!important;max-height:92%!important;object-fit:contain!important;filter:drop-shadow(0 0 14px rgba(57,165,255,.35))!important;}
+body.equipas-futurista-page .ck-hero-icon{position:relative!important;z-index:1!important;width:66px!important;height:66px!important;min-width:66px!important;min-height:66px!important;max-width:66px!important;max-height:66px!important;flex:0 0 66px!important;border-radius:50%!important;display:grid!important;place-items:center!important;background:radial-gradient(circle at 30% 30%, #8d4dff, #2438ff 70%)!important;box-shadow:0 0 30px rgba(98,84,255,.33)!important;color:#fff!important;font-size:1.9rem!important;line-height:1!important;letter-spacing:0!important;padding:0!important;margin:0!important;}
+body.equipas-futurista-page .ck-hero-icon span{display:block!important;font-size:1.9rem!important;line-height:1!important;transform:none!important;filter:none!important;}
+body.equipas-futurista-page .ck-hero-icon::before,body.equipas-futurista-page .ck-hero-icon::after{display:none!important;}
+body.equipas-futurista-page .ck-hero-copy{position:relative!important;z-index:3!important;min-width:0!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;text-align:left!important;margin:0!important;padding:0!important;}
+body.equipas-futurista-page .ck-hero-copy h1{margin:0 0 6px!important;padding:0!important;font-size:2.3rem!important;line-height:1!important;letter-spacing:-.03em!important;color:#fff!important;text-align:left!important;white-space:nowrap!important;}
+body.equipas-futurista-page .ck-hero-copy p{margin:0!important;padding:0!important;font-size:.96rem!important;line-height:1.2!important;color:#d2def2!important;text-align:left!important;white-space:nowrap!important;}
+@media(max-width:900px){
+ body.equipas-futurista-page .ck-hero-inner{width:calc(100vw - 24px)!important;min-width:0!important;padding:16px 18px 16px 122px!important;}
+ body.equipas-futurista-page .ck-hero-home{width:96px!important;height:96px!important;min-width:96px!important;min-height:96px!important;left:64px!important;}
+ body.equipas-futurista-page .ck-hero-icon{width:54px!important;height:54px!important;min-width:54px!important;min-height:54px!important;font-size:1.55rem!important;}
+ body.equipas-futurista-page .ck-hero-copy h1{font-size:1.65rem!important;}
+ body.equipas-futurista-page .ck-hero-copy p{font-size:.82rem!important;white-space:normal!important;}
+}
+
+/* v1.58.168 — Equipas: o botão/logo do hero mantém o azul original e não fica branco. */
+body.equipas-futurista-page .ck-hero-home{
+  background:transparent!important;
+  isolation:isolate!important;
+  mix-blend-mode:normal!important;
+}
+body.equipas-futurista-page .ck-hero-home img{
+  width:100%!important;
+  height:100%!important;
+  max-width:100%!important;
+  max-height:100%!important;
+  object-fit:contain!important;
+  opacity:1!important;
+  mix-blend-mode:normal!important;
+  filter:drop-shadow(0 0 16px rgba(57,165,255,.45))!important;
+}
+
+/* v1.58.168 — Diagnóstico incluído no hero padrão único */
+body.diagnostico-futurista-page .ck-hero{display:flex!important;justify-content:center!important;align-items:center!important;width:100%!important;margin:4px auto 14px!important;padding:0!important;}
+body.diagnostico-futurista-page .ck-hero-inner{position:relative!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:18px!important;width:min(900px,58vw)!important;min-width:670px!important;min-height:102px!important;height:auto!important;padding:18px 34px 18px 170px!important;border-radius:20px!important;box-sizing:border-box!important;background:linear-gradient(90deg, rgba(8,31,66,.98), rgba(8,24,49,.92))!important;border:1px solid rgba(72,143,255,.46)!important;box-shadow:0 0 0 1px rgba(14,61,139,.35) inset, 0 0 24px rgba(36,120,255,.28)!important;overflow:hidden!important;}
+body.diagnostico-futurista-page .ck-hero-inner::before{content:''!important;position:absolute!important;inset:0!important;background:linear-gradient(90deg, transparent 0, rgba(42,146,255,.08) 30%, rgba(42,146,255,.03) 60%, transparent 100%), radial-gradient(circle at 82% 28%, rgba(26,151,255,.12), transparent 22%)!important;pointer-events:none!important;}
+body.diagnostico-futurista-page .ck-hero-inner::after{content:''!important;position:absolute!important;left:50%!important;bottom:0!important;transform:translateX(-50%)!important;width:240px!important;height:3px!important;background:radial-gradient(circle, rgba(69,181,255,.95), rgba(69,181,255,.15) 70%, transparent 100%)!important;}
+body.diagnostico-futurista-page .ck-hero-home{position:absolute!important;width:124px!important;height:124px!important;min-width:124px!important;min-height:124px!important;max-width:124px!important;max-height:124px!important;left:86px!important;top:50%!important;right:auto!important;bottom:auto!important;transform:translate(-50%,-50%)!important;border-radius:50%!important;display:grid!important;place-items:center!important;z-index:2!important;border:1px solid rgba(64,130,255,.25)!important;background:transparent!important;box-shadow:0 0 0 13px rgba(17,47,97,.18),0 0 0 27px rgba(17,47,97,.08)!important;overflow:hidden!important;text-decoration:none!important;padding:0!important;flex:none!important;}
+body.diagnostico-futurista-page .ck-hero-home img{display:block!important;width:92%!important;height:92%!important;max-width:92%!important;max-height:92%!important;object-fit:contain!important;filter:drop-shadow(0 0 14px rgba(57,165,255,.35))!important;}
+body.diagnostico-futurista-page .ck-hero-icon{position:relative!important;z-index:1!important;width:66px!important;height:66px!important;min-width:66px!important;min-height:66px!important;max-width:66px!important;max-height:66px!important;flex:0 0 66px!important;border-radius:50%!important;display:grid!important;place-items:center!important;background:radial-gradient(circle at 30% 30%, #8d4dff, #2438ff 70%)!important;box-shadow:0 0 30px rgba(98,84,255,.33)!important;color:#fff!important;font-size:1.9rem!important;line-height:1!important;letter-spacing:0!important;padding:0!important;margin:0!important;}
+body.diagnostico-futurista-page .ck-hero-icon span{display:block!important;font-size:1.9rem!important;line-height:1!important;transform:none!important;filter:none!important;}
+body.diagnostico-futurista-page .ck-hero-copy{position:relative!important;z-index:1!important;min-width:0!important;flex:0 1 auto!important;text-align:left!important;margin:0!important;padding:0!important;}
+body.diagnostico-futurista-page .ck-hero-copy h1{margin:0!important;padding:0!important;color:#fff!important;font-size:2rem!important;line-height:1.04!important;font-weight:1000!important;letter-spacing:-.02em!important;white-space:nowrap!important;}
+body.diagnostico-futurista-page .ck-hero-copy p{margin:6px 0 0!important;padding:0!important;color:#cfe0f6!important;font-size:.96rem!important;line-height:1.24!important;font-weight:700!important;white-space:nowrap!important;}
+@media(max-width:900px){body.diagnostico-futurista-page .ck-hero-inner{width:100%!important;min-width:0!important;padding:18px 22px 18px 145px!important}body.diagnostico-futurista-page .ck-hero-home{left:72px!important;width:108px!important;height:108px!important;min-width:108px!important;min-height:108px!important}body.diagnostico-futurista-page .ck-hero-copy h1{font-size:1.7rem!important}body.diagnostico-futurista-page .ck-hero-copy p{font-size:.86rem!important}}
+
+/* v1.58.168 — Configurações no hero padrão único */
+body.configuracoes-futurista-page .ck-hero{display:flex!important;justify-content:center!important;align-items:center!important;width:100%!important;margin:4px auto 14px!important;padding:0!important;}
+body.configuracoes-futurista-page .ck-hero-inner{position:relative!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:18px!important;width:min(900px,58vw)!important;min-width:670px!important;min-height:102px!important;height:auto!important;padding:18px 34px 18px 170px!important;border-radius:20px!important;box-sizing:border-box!important;background:linear-gradient(90deg,rgba(8,31,66,.98),rgba(8,24,49,.92))!important;border:1px solid rgba(72,143,255,.46)!important;box-shadow:0 0 0 1px rgba(14,61,139,.35) inset,0 0 24px rgba(36,120,255,.28)!important;overflow:hidden!important;}
+body.configuracoes-futurista-page .ck-hero-inner::before{content:''!important;position:absolute!important;inset:0!important;background:linear-gradient(90deg,transparent 0,rgba(42,146,255,.08) 30%,rgba(42,146,255,.03) 60%,transparent 100%),radial-gradient(circle at 82% 28%,rgba(26,151,255,.12),transparent 22%)!important;pointer-events:none!important;}
+body.configuracoes-futurista-page .ck-hero-inner::after{content:''!important;position:absolute!important;left:50%!important;bottom:0!important;transform:translateX(-50%)!important;width:240px!important;height:3px!important;background:radial-gradient(circle,rgba(69,181,255,.95),rgba(69,181,255,.15) 70%,transparent 100%)!important;}
+body.configuracoes-futurista-page .ck-hero-home{position:absolute!important;width:124px!important;height:124px!important;min-width:124px!important;min-height:124px!important;max-width:124px!important;max-height:124px!important;left:86px!important;top:50%!important;right:auto!important;bottom:auto!important;transform:translate(-50%,-50%)!important;border-radius:50%!important;display:grid!important;place-items:center!important;z-index:2!important;border:1px solid rgba(64,130,255,.25)!important;background:transparent!important;box-shadow:0 0 0 13px rgba(17,47,97,.18),0 0 0 27px rgba(17,47,97,.08)!important;overflow:hidden!important;text-decoration:none!important;padding:0!important;flex:none!important;}
+body.configuracoes-futurista-page .ck-hero-home img{display:block!important;width:92%!important;height:92%!important;max-width:92%!important;max-height:92%!important;object-fit:contain!important;filter:drop-shadow(0 0 14px rgba(57,165,255,.35))!important;}
+body.configuracoes-futurista-page .ck-hero-icon{position:relative!important;z-index:1!important;width:66px!important;height:66px!important;min-width:66px!important;min-height:66px!important;max-width:66px!important;max-height:66px!important;flex:0 0 66px!important;border-radius:50%!important;display:grid!important;place-items:center!important;background:radial-gradient(circle at 30% 30%,#8d4dff,#2438ff 70%)!important;box-shadow:0 0 30px rgba(98,84,255,.33)!important;color:#fff!important;font-size:1.9rem!important;line-height:1!important;}
+body.configuracoes-futurista-page .ck-hero-copy{position:relative!important;z-index:1!important;min-width:0!important;text-align:left!important;display:block!important;flex:0 1 auto!important;}
+body.configuracoes-futurista-page .ck-hero-copy h1{margin:0!important;font-size:34px!important;line-height:1.02!important;font-weight:950!important;color:#fff!important;letter-spacing:-.03em!important;white-space:nowrap!important;text-shadow:0 0 22px rgba(255,255,255,.16)!important;}
+body.configuracoes-futurista-page .ck-hero-copy p{margin:5px 0 0!important;font-size:15px!important;line-height:1.2!important;color:#d6e6f9!important;font-weight:700!important;white-space:nowrap!important;}
+@media(max-width:980px){body.configuracoes-futurista-page .ck-hero-inner{width:100%!important;min-width:0!important;padding-left:130px!important;}body.configuracoes-futurista-page .ck-hero-home{left:66px!important;width:104px!important;height:104px!important;min-width:104px!important;min-height:104px!important;}body.configuracoes-futurista-page .ck-hero-copy h1{font-size:28px!important}}

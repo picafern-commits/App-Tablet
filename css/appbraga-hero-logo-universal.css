@@ -1,0 +1,185 @@
+/* AppBraga v1.58.168 — logo hero universal
+   Mantém o símbolo AppBraga/Bragalis exatamente no padrão do Dashboard. */
+:root{
+  --ab-hero-logo-left:92px;
+  --ab-hero-logo-size:134px;
+  --ab-hero-logo-img:92%;
+  --ab-hero-logo-pad-left:210px;
+}
+
+:where(.dash-hero-inner,.imp-hero-inner,.toner-hero-card,.stock-hero-card,.hist-hero-card,.etq-hero-card,.mnt-hero-card,.ck-hero-inner){
+  position:relative!important;
+  overflow:visible!important;
+}
+
+:where(.imp-hero-inner,.toner-hero-card,.stock-hero-card,.hist-hero-card,.etq-hero-card,.mnt-hero-card,.ck-hero-inner){
+  padding-left:var(--ab-hero-logo-pad-left)!important;
+}
+
+:where(.dash-hero-orbit,.imp-hero-orbit,.toner-hero-orbit,.stock-hero-orbit,.hist-hero-orbit,.etq-hero-orbit,.mnt-hero-orbit,.ck-hero-home){
+  position:absolute!important;
+  left:var(--ab-hero-logo-left)!important;
+  top:50%!important;
+  right:auto!important;
+  bottom:auto!important;
+  transform:translate(-50%,-50%)!important;
+  width:var(--ab-hero-logo-size)!important;
+  height:var(--ab-hero-logo-size)!important;
+  min-width:var(--ab-hero-logo-size)!important;
+  min-height:var(--ab-hero-logo-size)!important;
+  max-width:var(--ab-hero-logo-size)!important;
+  max-height:var(--ab-hero-logo-size)!important;
+  border-radius:50%!important;
+  display:grid!important;
+  place-items:center!important;
+  flex:none!important;
+  padding:0!important;
+  margin:0!important;
+  overflow:hidden!important;
+  text-decoration:none!important;
+  z-index:8!important;
+  border:1px solid rgba(64,130,255,.25)!important;
+  background:transparent!important;
+  box-shadow:0 0 0 16px rgba(17,47,97,.18),0 0 0 32px rgba(17,47,97,.08),0 0 34px rgba(57,165,255,.22)!important;
+}
+
+:where(.dash-hero-orbit,.imp-hero-orbit,.toner-hero-orbit,.stock-hero-orbit,.hist-hero-orbit,.etq-hero-orbit,.mnt-hero-orbit,.ck-hero-home) img{
+  display:block!important;
+  width:var(--ab-hero-logo-img)!important;
+  height:var(--ab-hero-logo-img)!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:var(--ab-hero-logo-img)!important;
+  max-height:var(--ab-hero-logo-img)!important;
+  object-fit:contain!important;
+  border-radius:50%!important;
+  transform:none!important;
+  filter:drop-shadow(0 0 14px rgba(57,165,255,.35))!important;
+  pointer-events:none!important;
+}
+
+:where(.dash-hero-orbit,.imp-hero-orbit,.toner-hero-orbit,.stock-hero-orbit,.hist-hero-orbit,.etq-hero-orbit,.mnt-hero-orbit,.ck-hero-home)::before,
+:where(.dash-hero-orbit,.imp-hero-orbit,.toner-hero-orbit,.stock-hero-orbit,.hist-hero-orbit,.etq-hero-orbit,.mnt-hero-orbit,.ck-hero-home)::after{
+  pointer-events:none!important;
+}
+
+@media(max-width:760px){
+  :root{
+    --ab-hero-logo-left:58px;
+    --ab-hero-logo-size:96px;
+    --ab-hero-logo-pad-left:128px;
+  }
+}
+
+/* AppBraga v1.58.168 — normalizar logo/botão do hero em todas as páginas
+   O botão/logo do Portal Inicial fica sempre no mesmo corte/posição do padrão Rádios/Dashboard. */
+:root{
+  --ab-hero-logo-left:92px;
+  --ab-hero-logo-size:132px;
+  --ab-hero-logo-img:78px;
+  --ab-hero-logo-pad-left:170px;
+  --ab-hero-logo-pad-right:96px;
+}
+
+:where(.imp-hero-inner,.toner-hero-card,.stock-hero-card,.hist-hero-card,.etq-hero-card,.mnt-hero-card,.ck-hero-inner,.page-hero-card){
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:18px!important;
+  width:min(900px,58vw)!important;
+  min-width:670px!important;
+  max-width:900px!important;
+  min-height:102px!important;
+  height:auto!important;
+  padding:18px var(--ab-hero-logo-pad-right) 18px var(--ab-hero-logo-pad-left)!important;
+  border-radius:20px!important;
+  box-sizing:border-box!important;
+  overflow:visible!important;
+}
+
+:where(.imp-hero-orbit,.toner-hero-orbit,.stock-hero-orbit,.hist-hero-orbit,.etq-hero-orbit,.mnt-hero-orbit,.ck-hero-home,.page-hero-home){
+  position:absolute!important;
+  left:var(--ab-hero-logo-left)!important;
+  top:50%!important;
+  right:auto!important;
+  bottom:auto!important;
+  transform:translate(-50%,-50%)!important;
+  width:var(--ab-hero-logo-size)!important;
+  height:var(--ab-hero-logo-size)!important;
+  min-width:var(--ab-hero-logo-size)!important;
+  min-height:var(--ab-hero-logo-size)!important;
+  max-width:var(--ab-hero-logo-size)!important;
+  max-height:var(--ab-hero-logo-size)!important;
+  border-radius:50%!important;
+  display:grid!important;
+  place-items:center!important;
+  flex:none!important;
+  padding:0!important;
+  margin:0!important;
+  overflow:hidden!important;
+  z-index:8!important;
+  border:1px solid rgba(64,130,255,.25)!important;
+  background:transparent!important;
+  box-shadow:0 0 0 15px rgba(17,47,97,.18),0 0 0 31px rgba(17,47,97,.08),0 0 34px rgba(57,165,255,.22)!important;
+}
+
+:where(.imp-hero-orbit,.toner-hero-orbit,.stock-hero-orbit,.hist-hero-orbit,.etq-hero-orbit,.mnt-hero-orbit,.ck-hero-home,.page-hero-home) img{
+  width:var(--ab-hero-logo-img)!important;
+  height:var(--ab-hero-logo-img)!important;
+  max-width:var(--ab-hero-logo-img)!important;
+  max-height:var(--ab-hero-logo-img)!important;
+  object-fit:contain!important;
+  border-radius:50%!important;
+}
+
+/* O botão de voltar ao portal da área fica igual em todas as páginas e não mexe no logo. */
+:where(.imp-hero-inner,.toner-hero-card,.stock-hero-card,.hist-hero-card,.etq-hero-card,.mnt-hero-card,.ck-hero-inner,.page-hero-card) .ab-hero-area-actions{
+  position:absolute!important;
+  right:18px!important;
+  top:50%!important;
+  transform:translateY(-50%)!important;
+  width:52px!important;
+  height:52px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  z-index:20!important;
+}
+
+:where(.imp-hero-inner,.toner-hero-card,.stock-hero-card,.hist-hero-card,.etq-hero-card,.mnt-hero-card,.ck-hero-inner,.page-hero-card) .ab-hero-area-btn{
+  width:52px!important;
+  height:52px!important;
+  min-width:52px!important;
+  min-height:52px!important;
+  max-width:52px!important;
+  max-height:52px!important;
+}
+
+@media(max-width:900px){
+  :root{
+    --ab-hero-logo-left:64px;
+    --ab-hero-logo-size:96px;
+    --ab-hero-logo-img:58px;
+    --ab-hero-logo-pad-left:128px;
+    --ab-hero-logo-pad-right:72px;
+  }
+  :where(.imp-hero-inner,.toner-hero-card,.stock-hero-card,.hist-hero-card,.etq-hero-card,.mnt-hero-card,.ck-hero-inner,.page-hero-card){
+    width:min(100%,calc(100vw - 24px))!important;
+    min-width:0!important;
+    max-width:none!important;
+  }
+  :where(.imp-hero-inner,.toner-hero-card,.stock-hero-card,.hist-hero-card,.etq-hero-card,.mnt-hero-card,.ck-hero-inner,.page-hero-card) .ab-hero-area-actions{
+    right:12px!important;
+    width:46px!important;
+    height:46px!important;
+  }
+  :where(.imp-hero-inner,.toner-hero-card,.stock-hero-card,.hist-hero-card,.etq-hero-card,.mnt-hero-card,.ck-hero-inner,.page-hero-card) .ab-hero-area-btn{
+    width:46px!important;
+    height:46px!important;
+    min-width:46px!important;
+    min-height:46px!important;
+    max-width:46px!important;
+    max-height:46px!important;
+  }
+}
