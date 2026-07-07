@@ -1,0 +1,9 @@
+{
+  "version": "1.58.168",
+  "build": "github-pages-electron-raiz-limpa-so-html",
+  "updated": "2026-07-07",
+  "entry": "/html/index.html",
+  "electron_entry": "/html/index.html?v=1.58.168",
+  "cache": "appbraga-v1.58.168-github-electron-so-novo",
+  "notes": "Raiz limpa: removidos HTMLs antigos/ponte da pasta principal. Só /index.html fica na raiz para abrir /html/index.html. Páginas oficiais ficam apenas em /html. Service worker sem cache antiga."
+}
