@@ -1,7 +1,7 @@
-/* AppBraga v1.58.168 — Users futurista funcional */
+/* AppBraga v1.58.169 — Users futurista funcional */
 (function(){
   'use strict';
-  const VERSION='1.58.168';
+  const VERSION='1.58.169';
   const USERS_KEY='appbraga.users.fallback.v111';
   const LOGS_KEY='appbraga.users.logs.v111';
   const ROLE_COLORS=['#8b5cf6','#1f88ff','#39d66f','#ffae2b','#ff4e63','#5eead4'];

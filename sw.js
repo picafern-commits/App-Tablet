@@ -1,5 +1,5 @@
-const APP_BRAGA_SW = "appbraga-v1.58.168-github-electron-so-novo";
-const APP_BRAGA_VERSION = "1.58.168";
+const APP_BRAGA_SW = "appbraga-v1.58.169-github-electron-etiquetas-word-fix";
+const APP_BRAGA_VERSION = "1.58.169";
 
 const ROUTES = new Map([
   ["dashboard", "dashboard.html"],
@@ -96,13 +96,13 @@ self.addEventListener("push", (event) => {
     tag: payload.tag || data.tag || "app-braga",
     icon: "./icon-192.png",
     badge: "./icon-192.png",
-    data: { url: data.url || payload.url || "./html/index.html?v=1.58.168", requestId: data.requestId || payload.requestId || "" }
+    data: { url: data.url || payload.url || "./html/index.html?v=1.58.169", requestId: data.requestId || payload.requestId || "" }
   }));
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const target = event.notification.data?.url || "./html/index.html?v=1.58.168";
+  const target = event.notification.data?.url || "./html/index.html?v=1.58.169";
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientsList) => {
       for (const client of clientsList) {

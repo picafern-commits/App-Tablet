@@ -52,7 +52,7 @@
 
   function updateDerived(){
     /*
-      v1.58.168
+      v1.58.169
       O dashboard passou a ter contadores reais ligados por listeners Firebase.
       Esta função antiga lia métricas escondidas/temporárias e voltava a escrever
       zeros ou traços por cima dos números certos a cada intervalo, causando o
@@ -107,13 +107,13 @@
 })();
 
 
-// v1.58.168 — estado global para dashboard
+// v1.58.169 — estado global para dashboard
 window.addEventListener("appbraga:systems:update", function(ev){
   try { window.__appbragaSystemsDashboard = ev.detail || {}; } catch(e) {}
 });
 
 
-/* v1.58.168 — Dashboard: dados reais estáveis sem flicker nos contadores */
+/* v1.58.169 — Dashboard: dados reais estáveis sem flicker nos contadores */
 (function(){
   'use strict';
 

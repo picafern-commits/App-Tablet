@@ -1,6 +1,6 @@
 (function(){
   'use strict';
-  const VERSION = '1.58.168';
+  const VERSION = '1.58.169';
   const TEAMS_COLLECTION = 'equipasSemanais';
   const LEGACY_TEAMS_COLLECTION = 'weeklyTeams';
   const CONFIG_COLLECTION = 'config';

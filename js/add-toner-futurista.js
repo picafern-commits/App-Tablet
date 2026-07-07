@@ -1,6 +1,6 @@
-/* AppBraga v1.58.168 — Adicionar Toner: KPIs e painéis ligados aos dados reais */
+/* AppBraga v1.58.169 — Adicionar Toner: KPIs e painéis ligados aos dados reais */
 (function(){
-  const VERSION = '1.58.168';
+  const VERSION = '1.58.169';
   const byId = (id) => document.getElementById(id);
   const norm = (v) => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
   const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));

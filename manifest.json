@@ -1,7 +1,7 @@
 {
   "name": "App Braga",
   "short_name": "App Braga",
-  "start_url": "./html/index.html?v=1.58.168",
+  "start_url": "./html/index.html?v=1.58.169",
   "scope": "./",
   "display": "fullscreen",
   "display_override": [

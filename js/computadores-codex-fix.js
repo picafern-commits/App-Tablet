@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '1.58.168';
+  const VERSION = '1.58.169';
   const COLLECTION = 'computadores';
   const LEGACY_COLLECTION = 'pcs';
   const RECORDS_COLLECTION = 'computadoresIntervencoes';
@@ -857,7 +857,7 @@
   function init() {
     try {
       document.documentElement.classList.add('cp-v15895-ready');
-      document.querySelectorAll('.ck-version').forEach((node) => { node.innerHTML = 'Versão&nbsp; v1.58.168'; });
+      document.querySelectorAll('.ck-version').forEach((node) => { node.innerHTML = 'Versão&nbsp; v1.58.169'; });
       document.querySelectorAll('.app-braga-version-fixed,.version-pill,.app-version-badge,#appVersionBadge').forEach((node) => {
         if (node && !node.classList.contains('ck-version')) node.style.display = 'none';
       });

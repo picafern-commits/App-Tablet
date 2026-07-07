@@ -1,7 +1,7 @@
 
 (() => {
   'use strict';
-  const VERSION = '1.58.168';
+  const VERSION = '1.58.169';
   const COLLECTION = 'personalTasks';
   const LOCAL_KEY = 'appbraga_tarefas_fallback_v1';
   const PAGE = { items: [], filtered: [], page: 1, pageSize: 10, unsubscribe: null, dbReady: false, minhasOnly: false };

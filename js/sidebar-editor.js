@@ -5,7 +5,7 @@
   const LEGACY_STORAGE_KEYS = ['appBraga.sidebar.customLayout.v1568','appBraga.sidebar.customLayout.v1567','appBraga.sidebar.customLayout.v1566'];
   const FIRESTORE_COLLECTION = 'config';
   const FIRESTORE_DOC = 'sidebarLayout';
-  const CURRENT_VERSION = '1.58.153';
+  const CURRENT_VERSION = '1.58.169';
 
   const DEFAULT_PAGES = [
     { id:'dashboard', label:'Dashboard', href:'index.html', icon:'🏠', group:'favoritos', locked:true },
@@ -43,6 +43,30 @@
     return String(text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') || ('grupo-' + Date.now());
   }
   function defaultLayout(){ return { version:CURRENT_VERSION, updatedAt:Date.now(), source:'default', groups:clone(DEFAULT_GROUPS), pages:clone(DEFAULT_PAGES) }; }
+
+  function normalizePageHref(page){
+    if (!page || typeof page !== 'object') return page;
+    const clean = Object.assign({}, page);
+    const rawHref = String(clean.href || '').trim();
+    const file = rawHref.split('?')[0].split('#')[0].split('/').pop().toLowerCase();
+    const rawId = String(clean.id || '').toLowerCase();
+    const rawLabel = String(clean.label || '').toLowerCase();
+    const isEtiquetasLegacy = file === 'etiquetas.html'
+      || file === 'etiqueta.html'
+      || file === 'etiquetas-word.html'
+      || rawId === 'etiquetas'
+      || rawId === 'etiquetas-word'
+      || rawLabel.includes('etiquetas word')
+      || rawLabel === 'etiquetas';
+    if (isEtiquetasLegacy) {
+      clean.id = 'etiquetas-word';
+      clean.label = clean.label || 'Etiquetas Word';
+      clean.href = 'etiquetas-word.html';
+      clean.icon = clean.icon || '🏷️';
+      clean.group = clean.group || 'operacao';
+    }
+    return clean;
+  }
   function readLocal(){
     try {
       const current = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
@@ -92,15 +116,26 @@
     });
     let groups = Array.from(groupsById.values());
     const groupIds = new Set(groups.map(g => g.id));
-    const pagesById = new Map(base.pages.map(p => [p.id, p]));
-    (layout.pages || []).forEach(p => {
+    const pagesById = new Map(base.pages.map(p => [p.id, normalizePageHref(p)]));
+    (layout.pages || []).forEach(raw => {
+      const p = normalizePageHref(raw);
       if (!p || !p.id) return;
       const original = pagesById.get(p.id) || {};
-      const next = Object.assign({}, original, p, { id:p.id });
+      const next = normalizePageHref(Object.assign({}, original, p, { id:p.id }));
       if (!groupIds.has(next.group)) next.group = 'administracao';
-      pagesById.set(p.id, next);
+      pagesById.set(next.id, next);
     });
     let pages = Array.from(pagesById.values()).filter(p => p && p.href);
+    /* v1.58.169: remove duplicados antigos vindos da Firebase/localStorage, sobretudo Etiquetas -> etiquetas.html. */
+    const seenHref = new Set();
+    pages = pages.filter(function(p){
+      const key = String(p.href || '').split('?')[0].split('#')[0].split('/').pop().toLowerCase();
+      const id = String(p.id || '').toLowerCase();
+      const dedupe = (id === 'etiquetas' ? 'etiquetas-word' : id) + '|' + key;
+      if (seenHref.has(dedupe)) return false;
+      seenHref.add(dedupe);
+      return true;
+    });
     if (!pages.some(p => p.id === 'dashboard')) pages.unshift(base.pages[0]);
     if (!pages.some(p => p.id === 'config')) pages.push(base.pages.find(p => p.id === 'config'));
     groups.forEach((g, idx) => { if (typeof g.order !== 'number') g.order = idx; });

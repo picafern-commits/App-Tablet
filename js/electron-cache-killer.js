@@ -1,8 +1,8 @@
-/* AppBraga v1.58.168 — limpeza forte GitHub Pages + Electron.
+/* AppBraga v1.58.169 — limpeza forte GitHub Pages + Electron.
    Mantém Firebase/sistemas. Só elimina cache/rotas/visual antigo. */
 (function(){
   'use strict';
-  var VERSION = '1.58.168';
+  var VERSION = '1.58.169';
   var CLEAN_KEY = 'appbraga-hard-clean-' + VERSION;
   var ROUTES = {
     'index': 'index.html',
@@ -121,4 +121,55 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', detectOldVisualAndRedirect);
   else detectOldVisualAndRedirect();
+})();
+
+/* v1.58.169 — correção final Etiquetas Word: mata links antigos vindos da sidebar/Firebase/localStorage. */
+(function(){
+  'use strict';
+  var VERSION = '1.58.169';
+  function parts(url){ try { return new URL(url, location.href).pathname.split('/').filter(Boolean); } catch(e){ return []; } }
+  function hasHtml(url){ return parts(url).indexOf('html') >= 0; }
+  function fileOf(url){ var p = parts(url); return (p[p.length - 1] || '').toLowerCase(); }
+  function projectBase(){
+    var p = location.pathname.split('/').filter(Boolean);
+    var i = p.indexOf('html');
+    if (i >= 0) return '/' + p.slice(0, i).join('/') + (i ? '/' : '');
+    if (!p.length) return '/';
+    var last = p[p.length - 1] || '';
+    if (/\.html?$/i.test(last)) return '/' + p.slice(0, -1).join('/') + (p.length > 1 ? '/' : '/');
+    return '/' + p.join('/') + '/';
+  }
+  function target(){
+    if (location.protocol === 'file:') return 'etiquetas-word.html?v=' + VERSION + '&fix=etiquetas-word';
+    var base = projectBase();
+    return location.origin + base + 'html/etiquetas-word.html?v=' + VERSION + '&fix=etiquetas-word';
+  }
+  function isOldEtiquetasUrl(url){
+    var f = fileOf(url);
+    if (f !== 'etiquetas.html' && f !== 'etiquetas-word.html') return false;
+    return f === 'etiquetas.html' || !hasHtml(url);
+  }
+  function fixElementLinks(){
+    document.querySelectorAll('a[href], [data-go], [data-direct]').forEach(function(el){
+      ['href','data-go','data-direct'].forEach(function(attr){
+        var val = el.getAttribute(attr);
+        if (!val) return;
+        if (/etiquetas\.html/i.test(val) || (/etiquetas-word\.html/i.test(val) && /^\s*(\.\.\/|\/)/.test(val))) {
+          el.setAttribute(attr, 'etiquetas-word.html');
+        }
+      });
+    });
+  }
+  document.addEventListener('click', function(ev){
+    var a = ev.target && ev.target.closest && ev.target.closest('a[href]');
+    if (!a) return;
+    if (isOldEtiquetasUrl(a.getAttribute('href'))) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      location.href = target();
+    }
+  }, true);
+  document.addEventListener('DOMContentLoaded', fixElementLinks);
+  if (document.readyState !== 'loading') fixElementLinks();
+  try { new MutationObserver(fixElementLinks).observe(document.documentElement, { childList:true, subtree:true, attributes:true, attributeFilter:['href','data-go','data-direct'] }); } catch(e) {}
 })();

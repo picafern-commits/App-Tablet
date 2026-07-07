@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '1.58.168';
+  const VERSION = '1.58.169';
   const COLLECTION = 'portas';
   const HISTORY_COLLECTION = 'portasHistorico';
   const LOCAL_KEY = 'appbraga_portas_rede_fallback_v158109';

@@ -1,8 +1,8 @@
-/* AppBraga v1.58.168 — Scanner IA futurista funcional */
+/* AppBraga v1.58.169 — Scanner IA futurista funcional */
 (() => {
   'use strict';
 
-  const VERSION = '1.58.168';
+  const VERSION = '1.58.169';
   const COLLECTION = 'scannerIaDigitalizacoes';
   const LOCAL_KEY = 'appbraga_scanner_ia_history_v158125';
   const state = { original:null, processed:null, selectedFile:null, selectedMeta:null, ocrText:'', items:[], page:1, pageSize:10, unsub:null, processing:false };
