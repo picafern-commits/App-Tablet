@@ -1,5 +1,5 @@
-/* AppBraga v1.58.169 — logo hero universal
-   Mantém o símbolo AppBraga/Bragalis exatamente no padrão do Dashboard. */
+﻿/* AppBraga v1.58.172 â€” logo hero universal
+   MantÃ©m o sÃ­mbolo AppBraga/Bragalis exatamente no padrÃ£o do Dashboard. */
 :root{
   --ab-hero-logo-left:92px;
   --ab-hero-logo-size:134px;
@@ -71,8 +71,8 @@
   }
 }
 
-/* AppBraga v1.58.169 — normalizar logo/botão do hero em todas as páginas
-   O botão/logo do Portal Inicial fica sempre no mesmo corte/posição do padrão Rádios/Dashboard. */
+/* AppBraga v1.58.172 â€” normalizar logo/botÃ£o do hero em todas as pÃ¡ginas
+   O botÃ£o/logo do Portal Inicial fica sempre no mesmo corte/posiÃ§Ã£o do padrÃ£o RÃ¡dios/Dashboard. */
 :root{
   --ab-hero-logo-left:92px;
   --ab-hero-logo-size:132px;
@@ -133,7 +133,7 @@
   border-radius:50%!important;
 }
 
-/* O botão de voltar ao portal da área fica igual em todas as páginas e não mexe no logo. */
+/* O botÃ£o de voltar ao portal da Ã¡rea fica igual em todas as pÃ¡ginas e nÃ£o mexe no logo. */
 :where(.imp-hero-inner,.toner-hero-card,.stock-hero-card,.hist-hero-card,.etq-hero-card,.mnt-hero-card,.ck-hero-inner,.page-hero-card) .ab-hero-area-actions{
   position:absolute!important;
   right:18px!important;
@@ -183,3 +183,4 @@
     max-height:46px!important;
   }
 }
+

@@ -1,4 +1,4 @@
-:root{--ck-bg:#030918;--ck-bg2:#07142c;--ck-panel:#071a35cc;--ck-panel2:#0a1f41ee;--ck-line:rgba(77,151,255,.28);--ck-glow:rgba(49,130,255,.35);--ck-text:#f2f7ff;--ck-muted:#9ab3d8;--ck-blue:#2a8cff;--ck-cyan:#33d4ff;--ck-green:#55df72;--ck-red:#ff5567;--ck-orange:#ff9f2f;--ck-yellow:#ffd24f;--ck-purple:#9056ff;--ck-purple2:#6f41ff;}
+﻿:root{--ck-bg:#030918;--ck-bg2:#07142c;--ck-panel:#071a35cc;--ck-panel2:#0a1f41ee;--ck-line:rgba(77,151,255,.28);--ck-glow:rgba(49,130,255,.35);--ck-text:#f2f7ff;--ck-muted:#9ab3d8;--ck-blue:#2a8cff;--ck-cyan:#33d4ff;--ck-green:#55df72;--ck-red:#ff5567;--ck-orange:#ff9f2f;--ck-yellow:#ffd24f;--ck-purple:#9056ff;--ck-purple2:#6f41ff;}
 html,body{min-height:100%;background:radial-gradient(circle at 50% 0%, #09204a 0%, #040d1f 42%, #020711 100%) fixed;color:var(--ck-text)}
 body.diagnostico-futurista-page{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;overflow-x:hidden;overflow-y:auto!important}
 body.diagnostico-futurista-page::before,body.diagnostico-futurista-page::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0}body.diagnostico-futurista-page::before{background:linear-gradient(rgba(36,87,163,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(36,87,163,.18) 1px,transparent 1px),radial-gradient(circle at 20% 18%,rgba(26,160,255,.08),transparent 22%),radial-gradient(circle at 80% 72%,rgba(26,160,255,.08),transparent 24%);background-size:48px 48px,48px 48px,100% 100%,100% 100%;opacity:.38}body.diagnostico-futurista-page::after{background:radial-gradient(ellipse at 0% 45%,rgba(43,149,255,.15),transparent 35%),radial-gradient(ellipse at 100% 35%,rgba(119,78,255,.13),transparent 35%);opacity:.9}
@@ -8,7 +8,7 @@ body.diagnostico-futurista-page::before,body.diagnostico-futurista-page::after{c
 @media(max-width:1500px){.ck-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.ck-main{grid-template-columns:1fr}.ck-side{grid-template-columns:1fr 1fr}.diag-new-grid{grid-template-columns:1fr 1fr 1fr}.diag-new-grid button{grid-column:1/-1}.diag-filter-row{min-width:420px}}@media(max-width:1100px){.ck-side{grid-template-columns:1fr}.diag-bottom-grid,.diag-donut-row,.diag-system-summary{grid-template-columns:1fr}.diag-filter-row{grid-template-columns:1fr;min-width:260px}}@media(max-width:760px){.ck-page{padding:14px 14px 96px}.ck-kpis{grid-template-columns:1fr}.diag-new-grid{grid-template-columns:1fr}.ck-quick-grid{grid-template-columns:1fr}.ck-table-footer{flex-direction:column;align-items:flex-start}.diag-detail-grid{grid-template-columns:1fr}.ck-btn{width:100%}}
 
 
-/* v1.58.169 — ajustes finais: botão compacto Últimos Alertas */
+/* v1.58.172 â€” ajustes finais: botÃ£o compacto Ãšltimos Alertas */
 body.diagnostico-futurista-page #diagBtnAlertas{
   width:auto!important;
   min-width:128px!important;
@@ -20,3 +20,4 @@ body.diagnostico-futurista-page #diagBtnAlertas{
   line-height:1!important;
   flex:0 0 auto!important;
 }
+

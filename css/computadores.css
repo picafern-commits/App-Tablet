@@ -1,4 +1,4 @@
-:root{
+﻿:root{
   --ck-bg:#030918;
   --ck-bg2:#07142c;
   --ck-panel:#071a35cc;
@@ -191,7 +191,7 @@ body.radios-futurista-page::after{background:
 }
 
 
-/* v1.58.169 — CK65 mais fiel ao estilo real da app */
+/* v1.58.172 â€” CK65 mais fiel ao estilo real da app */
 body.radios-futurista-page .version-badge,
 body.radios-futurista-page .app-version-badge,
 body.radios-futurista-page #appVersionBadge,
@@ -367,7 +367,7 @@ body.radios-futurista-page .ck-mini-table{
   padding-right:16px!important;
 }
 
-/* Ícone de pistola desenhado em CSS para não depender de emoji */
+/* Ãcone de pistola desenhado em CSS para nÃ£o depender de emoji */
 .ck-svg-gun,
 .ck-icon-gun-small{
   position:relative!important;
@@ -506,7 +506,7 @@ body.radios-futurista-page .ck-mini-table{
 }
 
 
-/* v1.58.169 — CK65 scroll corrigido + lista mais bonita */
+/* v1.58.172 â€” CK65 scroll corrigido + lista mais bonita */
 html,
 html:has(body.radios-futurista-page),
 body.radios-futurista-page{
@@ -724,7 +724,7 @@ body.radios-futurista-page .ck-page-btn.active{
   background:linear-gradient(180deg,#1f83ff,#1749ff)!important;
 }
 
-/* Ajustar coluna direita para não cortar no ecrã */
+/* Ajustar coluna direita para nÃ£o cortar no ecrÃ£ */
 body.radios-futurista-page .ck-side .ck-panel{
   min-height:0!important;
 }
@@ -737,7 +737,7 @@ body.radios-futurista-page .ck-mini-table{
   padding-bottom:14px!important;
 }
 
-/* Evita duplicação visual do badge antigo da versão no canto */
+/* Evita duplicaÃ§Ã£o visual do badge antigo da versÃ£o no canto */
 body.radios-futurista-page .ck-version + .ck-version,
 body.radios-futurista-page .ck-version ~ .version-badge{
   display:none!important;
@@ -765,7 +765,7 @@ body.radios-futurista-page .ck-version ~ .version-badge{
 }
 
 
-/* v1.58.169 — CK65 hero igual às outras páginas */
+/* v1.58.172 â€” CK65 hero igual Ã s outras pÃ¡ginas */
 body.radios-futurista-page .ck-hero{
   display:flex!important;
   justify-content:center!important;
@@ -788,7 +788,7 @@ body.radios-futurista-page .ck-hero-inner{
   box-sizing:border-box!important;
 }
 
-/* Círculo/botão do logo igual ao padrão das outras páginas */
+/* CÃ­rculo/botÃ£o do logo igual ao padrÃ£o das outras pÃ¡ginas */
 body.radios-futurista-page .ck-hero-home{
   position:absolute!important;
   width:124px!important;
@@ -815,7 +815,7 @@ body.radios-futurista-page .ck-hero-home img{
   filter:drop-shadow(0 0 14px rgba(57,165,255,.35))!important;
 }
 
-/* Ícone da página com o mesmo tamanho das restantes páginas */
+/* Ãcone da pÃ¡gina com o mesmo tamanho das restantes pÃ¡ginas */
 body.radios-futurista-page .ck-hero-icon{
   width:66px!important;
   min-width:66px!important;
@@ -826,7 +826,7 @@ body.radios-futurista-page .ck-hero-icon{
   flex:0 0 66px!important;
 }
 
-/* Texto do hero igual ao padrão */
+/* Texto do hero igual ao padrÃ£o */
 body.radios-futurista-page .ck-hero-copy{
   position:relative!important;
   z-index:3!important;
@@ -893,7 +893,7 @@ body.radios-futurista-page .ck-hero-copy p{
 }
 
 
-/* ===== Rádios v1.58.169 ajustes próprios ===== */
+/* ===== RÃ¡dios v1.58.172 ajustes prÃ³prios ===== */
 .rd-icon-radio{font-size:2.35rem;color:#fff;text-shadow:0 0 18px rgba(255,255,255,.75);}
 .ck-kpi::after{content:"";position:absolute;right:18px;bottom:28px;width:92px;height:24px;border-radius:999px;opacity:.9;background:linear-gradient(135deg,transparent 0 12%,currentColor 13% 16%,transparent 17% 30%,currentColor 31% 34%,transparent 35% 48%,currentColor 49% 52%,transparent 53% 68%,currentColor 69% 72%,transparent 73%);filter:drop-shadow(0 0 6px currentColor);}
 .ck-kpi.blue{color:var(--ck-blue)}.ck-kpi.green{color:var(--ck-green)}.ck-kpi.orange{color:var(--ck-orange)}.ck-kpi.red{color:var(--ck-red)}.ck-kpi.yellow{color:var(--ck-yellow)}.ck-kpi.purple{color:var(--ck-purple)}
@@ -917,7 +917,7 @@ body.radios-futurista-page .ck-hero-copy p{
 .ck-dot.disponivel{color:var(--ck-green)}.ck-dot.uso{color:var(--ck-blue)}.ck-dot.carga{color:var(--ck-yellow)}.ck-dot.avariada{color:var(--ck-red)}.ck-dot.manutencao{color:var(--ck-orange)}
 .ck-mini-row small{grid-column:2;color:var(--ck-muted);font-size:.78rem;margin-top:-6px}.ck-detail-item small{display:block;color:var(--ck-muted);font-size:.78rem;margin-bottom:5px}.ck-modal-list-item span{display:block;color:var(--ck-muted);margin:4px 0}.ck-page-dots{display:inline-flex;align-items:center;padding:0 2px;color:var(--ck-muted);font-weight:900}
 
-/* ===== Rádios v1.58.169 — Registos semanais fora da lista ===== */
+/* ===== RÃ¡dios v1.58.172 â€” Registos semanais fora da lista ===== */
 body.radios-futurista-page .rd-left-stack{
   display:grid!important;
   gap:14px!important;
@@ -1181,7 +1181,7 @@ body.radios-futurista-page .rd-check input{
   }
 }
 
-/* ===== Computadores v1.58.169 ===== */
+/* ===== Computadores v1.58.172 ===== */
 body.computadores-futurista-page .ck-hero-icon{background:radial-gradient(circle at 35% 25%,rgba(168,85,247,.95),rgba(88,28,135,.78));}
 body.computadores-futurista-page .ck-hero-icon::after{content:'';position:absolute;inset:10px;border-radius:999px;border:1px solid rgba(255,255,255,.18);}
 body.computadores-futurista-page .cp-icon-pc{font-size:28px;filter:drop-shadow(0 8px 18px rgba(168,85,247,.45));}
@@ -1218,7 +1218,7 @@ body.computadores-futurista-page .ck-table th:nth-child(7){width:12%;}
 .cp-progress-row small{color:#a8bfd9;text-align:right;font-weight:800;}
 @media (max-width: 1100px){body.computadores-futurista-page .ck-table{min-width:1050px}.cp-progress-row{grid-template-columns:100px 1fr 28px 44px;}}
 
-/* v1.58.169 - Sistema antigo de instalação de computadores integrado de forma clean */
+/* v1.58.172 - Sistema antigo de instalaÃ§Ã£o de computadores integrado de forma clean */
 .cp-install-system{
   display:grid;
   grid-template-columns:minmax(0,1fr);
@@ -1410,7 +1410,7 @@ body.computadores-futurista-page .ck-table th:nth-child(7){width:12%;}
 }
 
 
-/* ===== Computadores v1.58.169 - sistema antigo integrado no modal novo + scroll corrigido ===== */
+/* ===== Computadores v1.58.172 - sistema antigo integrado no modal novo + scroll corrigido ===== */
 html,
 body,
 body.computadores-futurista-page{
@@ -1525,7 +1525,7 @@ body.computadores-futurista-page .cp-install-steps.compact{
 }
 
 
-/* ===== Computadores v1.58.169 — alinhamento visual final + hero padrão ===== */
+/* ===== Computadores v1.58.172 â€” alinhamento visual final + hero padrÃ£o ===== */
 body.computadores-futurista-page .version-badge,
 body.computadores-futurista-page .app-version-badge,
 body.computadores-futurista-page #appVersionBadge,
@@ -1845,7 +1845,7 @@ body.computadores-futurista-page .cp-recent-main small{font-size:.76rem!importan
 }
 
 
-/* ===== Computadores v1.58.169 — correção final visual, hero padrão, botões e scroll ===== */
+/* ===== Computadores v1.58.172 â€” correÃ§Ã£o final visual, hero padrÃ£o, botÃµes e scroll ===== */
 html,
 body.computadores-futurista-page{
   width:100%!important;
@@ -2218,7 +2218,7 @@ body.computadores-futurista-page .cp-modal-check-item{min-height:44px!important;
   body.computadores-futurista-page .cp-modal-checklist{grid-template-columns:1fr!important;}
 }
 
-/* ===== Computadores v1.58.169 — hero exatamente no padrão Impressoras ===== */
+/* ===== Computadores v1.58.172 â€” hero exatamente no padrÃ£o Impressoras ===== */
 body.computadores-futurista-page .ck-hero{
   display:flex!important;
   justify-content:center!important;
@@ -2343,7 +2343,7 @@ body.computadores-futurista-page .ck-hero-copy p{
 }
 
 
-/* ===== Computadores v1.58.169 — hero/botão 100% no padrão das páginas novas ===== */
+/* ===== Computadores v1.58.172 â€” hero/botÃ£o 100% no padrÃ£o das pÃ¡ginas novas ===== */
 body.computadores-futurista-page .ck-hero{
   display:flex!important;
   justify-content:center!important;
@@ -2490,9 +2490,9 @@ body.computadores-futurista-page .ck-hero-copy p{
 }
 
 
-/* ===== Computadores v1.58.169 — HERO IGUAL AO DAS IMPRESSORAS/CK65 =====
-   Usa classes imp-* no HTML para não apanhar regras antigas ck-*.
-   Mantém só o ícone da página diferente. */
+/* ===== Computadores v1.58.172 â€” HERO IGUAL AO DAS IMPRESSORAS/CK65 =====
+   Usa classes imp-* no HTML para nÃ£o apanhar regras antigas ck-*.
+   MantÃ©m sÃ³ o Ã­cone da pÃ¡gina diferente. */
 body.computadores-futurista-page .imp-hero.cp-standard-hero{
   display:flex!important;
   justify-content:center!important;
@@ -2647,10 +2647,10 @@ body.computadores-futurista-page .cp-standard-hero-copy p{
 }
 
 
-/* ===== Computadores v1.58.169 — HERO COPIADO DO PADRÃO IMPRESSORAS =====
-   A página carrega impressoras-futurista.css e usa o mesmo HTML/classes:
+/* ===== Computadores v1.58.172 â€” HERO COPIADO DO PADRÃƒO IMPRESSORAS =====
+   A pÃ¡gina carrega impressoras-futurista.css e usa o mesmo HTML/classes:
    .imp-hero > .imp-hero-inner > .imp-hero-orbit + .imp-hero-icon + texto.
-   Aqui só protegemos contra CSS antigo dos computadores a interferir. */
+   Aqui sÃ³ protegemos contra CSS antigo dos computadores a interferir. */
 body.computadores-futurista-page.impressoras-futurista .imp-hero{
   display:flex!important;
   justify-content:center!important;
@@ -2752,9 +2752,9 @@ body.computadores-futurista-page.impressoras-futurista .imp-hero p{
 }
 
 
-/* ===== v1.58.169 — HERO COMPUTADORES CLONADO 1:1 DO PADRÃO IMPRESSORAS =====
-   Correção definitiva: o conteúdo deixa de depender do tamanho do título.
-   Logo, ícone, título e subtítulo ficam em coordenadas fixas iguais ao hero de Impressoras. */
+/* ===== v1.58.172 â€” HERO COMPUTADORES CLONADO 1:1 DO PADRÃƒO IMPRESSORAS =====
+   CorreÃ§Ã£o definitiva: o conteÃºdo deixa de depender do tamanho do tÃ­tulo.
+   Logo, Ã­cone, tÃ­tulo e subtÃ­tulo ficam em coordenadas fixas iguais ao hero de Impressoras. */
 body.computadores-futurista-page.impressoras-futurista .imp-hero.cp-hero-force{
   display:flex!important;
   justify-content:center!important;
@@ -2899,7 +2899,7 @@ body.computadores-futurista-page.impressoras-futurista .imp-hero.cp-hero-force .
 }
 
 
-/* ===== v1.58.169 — ajuste final: botão circular do hero no mesmo tamanho das páginas padrão ===== */
+/* ===== v1.58.172 â€” ajuste final: botÃ£o circular do hero no mesmo tamanho das pÃ¡ginas padrÃ£o ===== */
 body.computadores-futurista-page.impressoras-futurista .imp-hero.cp-hero-force .imp-hero-inner.cp-hero-inner-force{
   width:min(100%,1060px)!important;
   min-height:108px!important;
@@ -2919,7 +2919,7 @@ body.computadores-futurista-page.impressoras-futurista .imp-hero.cp-hero-force .
   width:92%!important;
   height:92%!important;
 }
-/* Este é o “botão/ícone” da página no hero. Estava maior visualmente que Impressoras. */
+/* Este Ã© o â€œbotÃ£o/Ã­coneâ€ da pÃ¡gina no hero. Estava maior visualmente que Impressoras. */
 body.computadores-futurista-page.impressoras-futurista .imp-hero.cp-hero-force .imp-hero-icon.cp-hero-icon-force{
   left:318px!important;
   width:86px!important;
@@ -2945,7 +2945,7 @@ body.computadores-futurista-page.impressoras-futurista .imp-hero.cp-hero-force .
 }
 
 
-/* v1.58.169 — HERO PADRÃO IGUAL À PÁGINA RÁDIOS */
+/* v1.58.172 â€” HERO PADRÃƒO IGUAL Ã€ PÃGINA RÃDIOS */
 body.computadores-futurista-page .ck-hero{
   display:flex!important;
   justify-content:center!important;
@@ -3083,7 +3083,7 @@ body.computadores-futurista-page .ck-hero-copy p{
 }
 
 
-/* v1.58.169 - Computadores: filtros contidos e sem botão Portal */
+/* v1.58.172 - Computadores: filtros contidos e sem botÃ£o Portal */
 body.computadores-futurista-page .ck-panel-head{
   min-width:0!important;
   overflow:hidden!important;
@@ -3129,3 +3129,4 @@ body.computadores-futurista-page .ck-back{
     grid-template-columns:1fr!important;
   }
 }
+

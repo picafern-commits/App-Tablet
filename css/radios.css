@@ -1,4 +1,4 @@
-:root{
+﻿:root{
   --ck-bg:#030918;
   --ck-bg2:#07142c;
   --ck-panel:#071a35cc;
@@ -191,7 +191,7 @@ body.radios-futurista-page::after{background:
 }
 
 
-/* v1.58.169 — CK65 mais fiel ao estilo real da app */
+/* v1.58.172 â€” CK65 mais fiel ao estilo real da app */
 body.radios-futurista-page .version-badge,
 body.radios-futurista-page .app-version-badge,
 body.radios-futurista-page #appVersionBadge,
@@ -367,7 +367,7 @@ body.radios-futurista-page .ck-mini-table{
   padding-right:16px!important;
 }
 
-/* Ícone de pistola desenhado em CSS para não depender de emoji */
+/* Ãcone de pistola desenhado em CSS para nÃ£o depender de emoji */
 .ck-svg-gun,
 .ck-icon-gun-small{
   position:relative!important;
@@ -506,7 +506,7 @@ body.radios-futurista-page .ck-mini-table{
 }
 
 
-/* v1.58.169 — CK65 scroll corrigido + lista mais bonita */
+/* v1.58.172 â€” CK65 scroll corrigido + lista mais bonita */
 html,
 html:has(body.radios-futurista-page),
 body.radios-futurista-page{
@@ -724,7 +724,7 @@ body.radios-futurista-page .ck-page-btn.active{
   background:linear-gradient(180deg,#1f83ff,#1749ff)!important;
 }
 
-/* Ajustar coluna direita para não cortar no ecrã */
+/* Ajustar coluna direita para nÃ£o cortar no ecrÃ£ */
 body.radios-futurista-page .ck-side .ck-panel{
   min-height:0!important;
 }
@@ -737,7 +737,7 @@ body.radios-futurista-page .ck-mini-table{
   padding-bottom:14px!important;
 }
 
-/* Evita duplicação visual do badge antigo da versão no canto */
+/* Evita duplicaÃ§Ã£o visual do badge antigo da versÃ£o no canto */
 body.radios-futurista-page .ck-version + .ck-version,
 body.radios-futurista-page .ck-version ~ .version-badge{
   display:none!important;
@@ -765,7 +765,7 @@ body.radios-futurista-page .ck-version ~ .version-badge{
 }
 
 
-/* v1.58.169 — CK65 hero igual às outras páginas */
+/* v1.58.172 â€” CK65 hero igual Ã s outras pÃ¡ginas */
 body.radios-futurista-page .ck-hero{
   display:flex!important;
   justify-content:center!important;
@@ -788,7 +788,7 @@ body.radios-futurista-page .ck-hero-inner{
   box-sizing:border-box!important;
 }
 
-/* Círculo/botão do logo igual ao padrão das outras páginas */
+/* CÃ­rculo/botÃ£o do logo igual ao padrÃ£o das outras pÃ¡ginas */
 body.radios-futurista-page .ck-hero-home{
   position:absolute!important;
   width:124px!important;
@@ -815,7 +815,7 @@ body.radios-futurista-page .ck-hero-home img{
   filter:drop-shadow(0 0 14px rgba(57,165,255,.35))!important;
 }
 
-/* Ícone da página com o mesmo tamanho das restantes páginas */
+/* Ãcone da pÃ¡gina com o mesmo tamanho das restantes pÃ¡ginas */
 body.radios-futurista-page .ck-hero-icon{
   width:66px!important;
   min-width:66px!important;
@@ -826,7 +826,7 @@ body.radios-futurista-page .ck-hero-icon{
   flex:0 0 66px!important;
 }
 
-/* Texto do hero igual ao padrão */
+/* Texto do hero igual ao padrÃ£o */
 body.radios-futurista-page .ck-hero-copy{
   position:relative!important;
   z-index:3!important;
@@ -893,7 +893,7 @@ body.radios-futurista-page .ck-hero-copy p{
 }
 
 
-/* ===== Rádios v1.58.169 ajustes próprios ===== */
+/* ===== RÃ¡dios v1.58.172 ajustes prÃ³prios ===== */
 .rd-icon-radio{font-size:2.35rem;color:#fff;text-shadow:0 0 18px rgba(255,255,255,.75);}
 .ck-kpi::after{content:"";position:absolute;right:18px;bottom:28px;width:92px;height:24px;border-radius:999px;opacity:.9;background:linear-gradient(135deg,transparent 0 12%,currentColor 13% 16%,transparent 17% 30%,currentColor 31% 34%,transparent 35% 48%,currentColor 49% 52%,transparent 53% 68%,currentColor 69% 72%,transparent 73%);filter:drop-shadow(0 0 6px currentColor);}
 .ck-kpi.blue{color:var(--ck-blue)}.ck-kpi.green{color:var(--ck-green)}.ck-kpi.orange{color:var(--ck-orange)}.ck-kpi.red{color:var(--ck-red)}.ck-kpi.yellow{color:var(--ck-yellow)}.ck-kpi.purple{color:var(--ck-purple)}
@@ -917,7 +917,7 @@ body.radios-futurista-page .ck-hero-copy p{
 .ck-dot.disponivel{color:var(--ck-green)}.ck-dot.uso{color:var(--ck-blue)}.ck-dot.carga{color:var(--ck-yellow)}.ck-dot.avariada{color:var(--ck-red)}.ck-dot.manutencao{color:var(--ck-orange)}
 .ck-mini-row small{grid-column:2;color:var(--ck-muted);font-size:.78rem;margin-top:-6px}.ck-detail-item small{display:block;color:var(--ck-muted);font-size:.78rem;margin-bottom:5px}.ck-modal-list-item span{display:block;color:var(--ck-muted);margin:4px 0}.ck-page-dots{display:inline-flex;align-items:center;padding:0 2px;color:var(--ck-muted);font-weight:900}
 
-/* ===== Rádios v1.58.169 — Registos semanais fora da lista ===== */
+/* ===== RÃ¡dios v1.58.172 â€” Registos semanais fora da lista ===== */
 body.radios-futurista-page .rd-left-stack{
   display:grid!important;
   gap:14px!important;
@@ -1182,7 +1182,7 @@ body.radios-futurista-page .rd-check input{
 }
 
 
-/* v1.58.169 — Rádios ajustes finais: botões laterais compactos e sem botão Portal */
+/* v1.58.172 â€” RÃ¡dios ajustes finais: botÃµes laterais compactos e sem botÃ£o Portal */
 body.radios-futurista-page .ck-back{
   display:none!important;
 }
@@ -1215,3 +1215,4 @@ body.radios-futurista-page .ck-panel .ck-panel-head .ck-panel-title{
   min-width:0!important;
   flex:1 1 auto!important;
 }
+

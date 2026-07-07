@@ -1,4 +1,4 @@
-/* AppBraga v1.58.169 — Diretório futurista funcional */
+﻿/* AppBraga v1.58.172 â€” DiretÃ³rio futurista funcional */
 :root{
   --dir-bg:#020817;
   --dir-card:rgba(8,24,52,.78);
@@ -82,7 +82,7 @@ body.diretorio-futurista-page{margin:0;color:var(--dir-text);font-family:Inter,s
 @media (max-width:760px){.diretorio-futurista-page .ck-page{width:calc(100vw - 18px);padding-top:14px}.diretorio-futurista-page .ck-kpis{grid-template-columns:1fr}.diretorio-futurista-page .ck-side{grid-template-columns:1fr}.diretorio-futurista-page .dir-filter-row{grid-template-columns:1fr}.diretorio-futurista-page .ck-form-grid{grid-template-columns:1fr}.diretorio-futurista-page .ck-detail-grid{grid-template-columns:1fr}.diretorio-futurista-page .dir-donut-wrap{grid-template-columns:1fr}.diretorio-futurista-page .ck-quick-grid{grid-template-columns:1fr}.diretorio-futurista-page .ck-table-footer{align-items:flex-start;flex-direction:column}.diretorio-futurista-page .ck-footer-right{width:100%;justify-content:space-between;flex-wrap:wrap}.diretorio-futurista-page .ck-version{position:absolute}}
 
 
-/* v1.58.169 — Diretório: layout full-page + lista agrupada por armazém e secção, sem mexer no hero */
+/* v1.58.172 â€” DiretÃ³rio: layout full-page + lista agrupada por armazÃ©m e secÃ§Ã£o, sem mexer no hero */
 html:has(body.diretorio-futurista-page),
 body.diretorio-futurista-page{
   min-height:100%;
@@ -257,7 +257,7 @@ body.diretorio-futurista-page .dir-contact-row:hover td{
 }
 
 
-/* v1.58.169 — Diretório: grupos colapsáveis por armazém + secção */
+/* v1.58.172 â€” DiretÃ³rio: grupos colapsÃ¡veis por armazÃ©m + secÃ§Ã£o */
 body.diretorio-futurista-page .dir-group-armazem td{
   padding:0!important;
   background:linear-gradient(90deg,rgba(14,165,233,.24),rgba(37,99,235,.12),rgba(2,9,24,.16))!important;
@@ -317,7 +317,7 @@ body.diretorio-futurista-page .dir-group-armazem.is-collapsed .dir-armazem-toggl
 }
 
 
-/* v1.58.169 — Diretório: apagar todos com confirmação segura */
+/* v1.58.172 â€” DiretÃ³rio: apagar todos com confirmaÃ§Ã£o segura */
 body.diretorio-futurista-page .dir-danger-wide{
   grid-column:1 / -1;
   border-color:rgba(239,68,68,.48)!important;
@@ -403,7 +403,7 @@ body.diretorio-futurista-page #dirBtnConfirmarApagarTodos:disabled{
 }
 
 
-/* v1.58.169 — Diretório: remover Portal, compactar Ver todos e melhorar resumo por armazém */
+/* v1.58.172 â€” DiretÃ³rio: remover Portal, compactar Ver todos e melhorar resumo por armazÃ©m */
 body.diretorio-futurista-page .ck-back{display:none!important;}
 body.diretorio-futurista-page .ck-panel-head #dirBtnVerAlertas,
 body.diretorio-futurista-page .ck-panel-head #dirBtnVerAtualizacoes{
@@ -421,3 +421,4 @@ body.diretorio-futurista-page .dir-legend-row small{display:none!important;}
 body.diretorio-futurista-page .dir-legend-row span:nth-child(2){overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;}
 body.diretorio-futurista-page .dir-legend-row strong::after{content:' contactos';font-size:11px;color:#9fb6d8;margin-left:4px;font-weight:800;}
 body.diretorio-futurista-page .dir-legend-row.dir-total-row strong::after{content:'';}
+

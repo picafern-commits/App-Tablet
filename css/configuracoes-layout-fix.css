@@ -1,5 +1,5 @@
-/* AppBraga v1.58.169 - Configurações layout final
-   Ajuste visual pós-padrão global. Não mexe nos sistemas. */
+﻿/* AppBraga v1.58.172 - ConfiguraÃ§Ãµes layout final
+   Ajuste visual pÃ³s-padrÃ£o global. NÃ£o mexe nos sistemas. */
 
 body.configuracoes-futurista-page{
   min-height:100dvh!important;
@@ -21,7 +21,7 @@ body.configuracoes-futurista-page .ck-page{
   box-sizing:border-box!important;
 }
 
-/* Mantém o hero global, mas impede o logo de virar “bolha branca” nesta página */
+/* MantÃ©m o hero global, mas impede o logo de virar â€œbolha brancaâ€ nesta pÃ¡gina */
 body.configuracoes-futurista-page .ck-hero-home,
 body.configuracoes-futurista-page .ck-hero-home:before,
 body.configuracoes-futurista-page .ck-hero-home:after{
@@ -81,7 +81,7 @@ body.configuracoes-futurista-page .ck-kpi-label{
   font-size:12px!important;
 }
 
-/* Estrutura igual ao estilo das páginas novas: conteúdo grande à esquerda + lateral à direita */
+/* Estrutura igual ao estilo das pÃ¡ginas novas: conteÃºdo grande Ã  esquerda + lateral Ã  direita */
 body.configuracoes-futurista-page .ck-main.cfg-main{
   display:grid!important;
   grid-template-columns:minmax(0,2.05fr) minmax(390px,.95fr)!important;
@@ -181,7 +181,7 @@ body.configuracoes-futurista-page .cfg-tab{
   text-overflow:ellipsis!important;
 }
 
-/* Formulários limpos e com largura certa */
+/* FormulÃ¡rios limpos e com largura certa */
 body.configuracoes-futurista-page .cfg-form-card{
   width:100%!important;
   margin-top:12px!important;
@@ -236,7 +236,7 @@ body.configuracoes-futurista-page textarea{
   font-weight:800!important;
 }
 
-/* Botões no padrão Impressoras: azul principal, escuros secundários, todos alinhados */
+/* BotÃµes no padrÃ£o Impressoras: azul principal, escuros secundÃ¡rios, todos alinhados */
 body.configuracoes-futurista-page .ck-btn{
   height:38px!important;
   min-height:38px!important;
@@ -278,7 +278,7 @@ body.configuracoes-futurista-page .cfg-quick-grid .ck-btn{
   width:100%!important;
 }
 
-/* Toggle cards com ícones/texto no sítio certo */
+/* Toggle cards com Ã­cones/texto no sÃ­tio certo */
 body.configuracoes-futurista-page .cfg-toggle-grid{
   grid-template-columns:1fr 1fr!important;
   gap:10px!important;
@@ -365,3 +365,4 @@ body.configuracoes-futurista-page .ck-back{
   body.configuracoes-futurista-page .ck-panel-head{align-items:flex-start!important;flex-direction:column!important;}
   body.configuracoes-futurista-page .ck-btn{width:100%!important;}
 }
+

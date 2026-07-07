@@ -1,5 +1,5 @@
-/* AppBraga v1.58.169 — escala fixa global
-   Mantém textos, ícones e botões com tamanho estável independentemente da largura da janela. */
+﻿/* AppBraga v1.58.172 â€” escala fixa global
+   MantÃ©m textos, Ã­cones e botÃµes com tamanho estÃ¡vel independentemente da largura da janela. */
 :root{
   --ab-fixed-page-min: 1280px;
   --ab-hero-width: 900px;
@@ -198,7 +198,7 @@ body.notificacoes-futurista-page{
   zoom:1 !important;
 }
 
-/* PAINÉIS, TÍTULOS E TEXTO FIXOS */
+/* PAINÃ‰IS, TÃTULOS E TEXTO FIXOS */
 .ck-panel-title > span,.imp-panel-title > span,.ck-side-title > span{
   width: 38px !important;height: 38px !important;min-width:38px !important;min-height:38px !important;flex:0 0 38px !important;
   font-size: 20px !important;line-height:1 !important;transform:none !important;zoom:1 !important;
@@ -233,7 +233,7 @@ body.notificacoes-futurista-page{
 }
 .ck-filters{gap:10px !important;align-items:center !important;}
 
-/* BOTÕES FIXOS */
+/* BOTÃ•ES FIXOS */
 .ck-btn,.ck-primary,.ck-row-btn,.ck-action,.ck-quick-btn,
 button[class*="btn"],a[class*="btn"]{
   min-height: var(--ab-btn-height) !important;
@@ -300,7 +300,7 @@ button[class*="btn"],a[class*="btn"]{
   white-space:nowrap !important;
 }
 
-/* Rodapé/listagem/paginação fixos */
+/* RodapÃ©/listagem/paginaÃ§Ã£o fixos */
 .ck-table-footer,.tasks-footer{
   min-height:56px !important;
   font-size:14px !important;
@@ -314,7 +314,7 @@ button[class*="btn"],a[class*="btn"]{
   font-size:14px !important;line-height:1 !important;
 }
 
-/* Cards laterais e gráficos/listas */
+/* Cards laterais e grÃ¡ficos/listas */
 .ck-side,.imp-side,.tasks-side{gap:14px !important;}
 .ck-side .ck-panel,.imp-side .imp-panel,.tasks-side .ck-panel{min-width:0 !important;}
 .ck-side h3,.imp-side h3,.tasks-side h3{font-size:var(--ab-side-title) !important;line-height:1.12 !important;}
@@ -340,7 +340,7 @@ button[class*="btn"],a[class*="btn"]{
 }
 
 
-/* AppBraga v1.58.169 — Scanner IA ligado ao padrão global e scroll corrigido */
+/* AppBraga v1.58.172 â€” Scanner IA ligado ao padrÃ£o global e scroll corrigido */
 body.scanner-ia-page,
 body.diagnostico-futurista-page,
 body.notificacoes-futurista-page{
@@ -516,10 +516,11 @@ body.scanner-ia-page .ck-hero-copy p{
   zoom:1!important;
 }
 
-/* AppBraga v1.58.169 — escala fixa consolidada */
+/* AppBraga v1.58.172 â€” escala fixa consolidada */
 .ck-hero-title,.imp-hero-title,.ck-hero h1,.imp-hero h1{font-size:34px !important;line-height:1.05 !important;}
 .ck-hero-subtitle,.imp-hero-subtitle,.ck-hero p,.imp-hero p{font-size:15px !important;line-height:1.25 !important;}
 .ck-kpi strong,.imp-kpi strong{font-size:34px !important;line-height:1 !important;}
 .ck-kpi-icon,.imp-kpi-icon{width:56px !important;height:56px !important;min-width:56px !important;min-height:56px !important;}
 .ck-btn,.imp-btn,.quick-btn,.action-btn{font-size:14px !important;min-height:42px !important;height:42px !important;}
 .ck-table th,.ck-table td,.imp-table th,.imp-table td{font-size:14px !important;}
+

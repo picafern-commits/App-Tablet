@@ -1,4 +1,4 @@
-/* AppBraga v1.58.169 — Navegação por área visível dentro do hero */
+﻿/* AppBraga v1.58.172 â€” NavegaÃ§Ã£o por Ã¡rea visÃ­vel dentro do hero */
 :root{
   --ab-area-btn-size: 38px;
   --ab-area-gap: 8px;
@@ -132,7 +132,7 @@
   color:#5eefff !important;
   font-weight:1000 !important;
 }
-/* Desativa restos da tentativa anterior para não duplicar nem esconder nada */
+/* Desativa restos da tentativa anterior para nÃ£o duplicar nem esconder nada */
 .appbraga-area-nav:not(.ab-legacy-keep){display:none !important;}
 @media(max-width:900px){
   .ab-hero-area-actions{right:10px !important;}
@@ -142,7 +142,7 @@
 }
 
 
-/* AppBraga v1.58.169 — manter só o botão de voltar à área, maior e sem menu */
+/* AppBraga v1.58.172 â€” manter sÃ³ o botÃ£o de voltar Ã  Ã¡rea, maior e sem menu */
 :root{
   --ab-area-btn-size:52px;
   --ab-area-gap:0px;
@@ -182,3 +182,4 @@
   .ab-hero-area-actions{right:12px !important;width:46px !important;height:46px !important;}
   .ab-hero-area-btn{width:46px !important;height:46px !important;min-width:46px !important;min-height:46px !important;max-width:46px !important;max-height:46px !important;font-size:21px !important;border-radius:15px !important;}
 }
+

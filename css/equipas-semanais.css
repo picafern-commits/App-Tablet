@@ -1,4 +1,4 @@
-:root{
+﻿:root{
   --eq-bg:#020817;--eq-panel:#061935cc;--eq-panel2:#071d3dcc;--eq-line:#1d5fb3;--eq-line-soft:rgba(74,151,255,.32);
   --eq-text:#f5f9ff;--eq-muted:#9fb5d4;--eq-blue:#20a7ff;--eq-cyan:#22d3ee;--eq-green:#43e57f;--eq-yellow:#ffd342;--eq-orange:#ff9f1a;--eq-red:#ff4b68;--eq-purple:#8b5cf6;
 }
@@ -15,7 +15,7 @@ body.equipas-futurista-page{margin:0;font-family:Inter,system-ui,-apple-system,S
 @media (max-width:850px){.eq-page{padding:18px 12px 72px}.ck-kpis{grid-template-columns:1fr 1fr}.ck-side{grid-template-columns:1fr}.ck-panel-head{align-items:flex-start;flex-direction:column}.ck-search-row{grid-template-columns:1fr;width:100%}.eq-quick-grid{grid-template-columns:1fr}.ck-form-grid.two,.eq-detail-grid{grid-template-columns:1fr}.ck-table{min-width:980px}.eq-donut-row{grid-template-columns:1fr}.eq-donut{margin:auto}.ck-table-footer{flex-direction:column;align-items:stretch}.ck-footer-right{justify-content:space-between}.ck-modal{padding:12px}}
 
 
-/* v1.58.169 — ajuste visual Equipas sem mexer no hero */
+/* v1.58.172 â€” ajuste visual Equipas sem mexer no hero */
 body.equipas-futurista-page .eq-page{width:100%!important;max-width:none!important;margin:0!important;padding:24px 28px 104px!important;}
 body.equipas-futurista-page .ck-kpis{margin-top:14px!important;}
 body.equipas-futurista-page .eq-main{display:grid!important;grid-template-columns:minmax(0,1fr) 540px!important;gap:12px!important;align-items:start!important;width:100%!important;}
@@ -28,7 +28,7 @@ body.equipas-futurista-page .ck-table-footer{display:flex!important;align-items:
 @media(max-width:900px){body.equipas-futurista-page .eq-page{padding:18px 12px 104px!important;}body.equipas-futurista-page .ck-side{grid-template-columns:1fr!important;}}
 
 
-/* v1.58.169 — Equipas: remover Portal e compactar botão Ver todos */
+/* v1.58.172 â€” Equipas: remover Portal e compactar botÃ£o Ver todos */
 body.equipas-futurista-page .ck-back{display:none!important;}
 body.equipas-futurista-page .ck-panel-head #eqBtnVerAtualizacoes{
   width:auto!important;min-width:104px!important;max-width:128px!important;height:32px!important;
@@ -36,3 +36,4 @@ body.equipas-futurista-page .ck-panel-head #eqBtnVerAtualizacoes{
   flex:0 0 auto!important;white-space:nowrap!important;
 }
 body.equipas-futurista-page .ck-panel-head{align-items:center!important;}
+

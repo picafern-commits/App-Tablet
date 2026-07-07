@@ -1,4 +1,4 @@
-
+﻿
 :root{
   --etq-bg:#020817;
   --etq-panel:rgba(7,25,54,.97);
@@ -555,7 +555,7 @@ body.etiquetas-futurista::after{
 }
 
 
-/* v1.58.169 — correção definitiva dos ícones dos KPI */
+/* v1.58.172 â€” correÃ§Ã£o definitiva dos Ã­cones dos KPI */
 .etiquetas-futurista .etq-kpi{
   align-items:center !important;
 }
@@ -640,3 +640,4 @@ body.etiquetas-futurista::after{
   background:linear-gradient(145deg, rgba(196,154,255,.20), rgba(5,20,42,.82)) !important;
   box-shadow:0 0 0 1px rgba(196,154,255,.34) inset, 0 0 22px rgba(196,154,255,.18) !important;
 }
+

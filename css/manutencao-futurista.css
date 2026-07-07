@@ -1,4 +1,4 @@
-
+﻿
 :root{--mnt-bg:#020817;--mnt-panel:rgba(7,25,54,.97);--mnt-panel2:rgba(5,18,37,.96);--mnt-line:rgba(77,151,255,.30);--mnt-text:#f3f8ff;--mnt-muted:#9eb5d5;--mnt-blue:#148cff;--mnt-cyan:#22d3ff;--mnt-green:#35df68;--mnt-orange:#ffae2f;--mnt-red:#ff5168;--mnt-purple:#d450ff;--mnt-yellow:#ffd447}
 *{box-sizing:border-box}
 html,body.manutencao-futurista{margin:0;min-height:100%;height:auto!important;overflow-x:hidden!important;overflow-y:auto!important;background:radial-gradient(circle at 50% 0%,#09204a 0%,#040d1f 42%,#020711 100%) fixed!important;color:var(--mnt-text);font-family:Inter,Segoe UI,Arial,sans-serif}
@@ -47,7 +47,7 @@ body.manutencao-futurista::after{background:radial-gradient(ellipse at 0% 45%,rg
 @media (max-width:900px){.mnt-page{padding:14px}.mnt-hero-card{width:100%;display:grid;justify-items:center;text-align:center;gap:16px;padding:22px}.mnt-hero-orbit{display:none}.mnt-hero h1{font-size:2.2rem}.mnt-hero p{font-size:1.05rem}.mnt-kpis,.mnt-filters,.mnt-form,.mnt-timeline{grid-template-columns:1fr}.mnt-panel-head{display:grid}.mnt-list-row,.mnt-bar{grid-template-columns:1fr}.mnt-timeline::after{display:none}.mnt-time-card::after{display:none}}
 
 
-/* v1.58.169 — Manutenção: layout ajustado para base Cloudflare */
+/* v1.58.172 â€” ManutenÃ§Ã£o: layout ajustado para base Cloudflare */
 body.manutencao-futurista{
   overflow-y:auto!important;
 }
@@ -60,7 +60,7 @@ body.manutencao-futurista .mnt-page{
   gap:10px!important;
 }
 
-/* Hero mais proporcional, sem roubar altura ao conteúdo */
+/* Hero mais proporcional, sem roubar altura ao conteÃºdo */
 body.manutencao-futurista .mnt-hero{
   margin:0 auto 4px!important;
 }
@@ -96,7 +96,7 @@ body.manutencao-futurista .mnt-hero p{
   font-size:.88rem!important;
 }
 
-/* KPIs mais cheios e legíveis */
+/* KPIs mais cheios e legÃ­veis */
 body.manutencao-futurista .mnt-kpis{
   gap:10px!important;
   margin:0!important;
@@ -136,7 +136,7 @@ body.manutencao-futurista .mnt-kpi .spark{
   opacity:.75!important;
 }
 
-/* Grelha principal: mais equilibrada e a ocupar melhor o ecrã */
+/* Grelha principal: mais equilibrada e a ocupar melhor o ecrÃ£ */
 body.manutencao-futurista .mnt-main-grid{
   grid-template-columns:minmax(0,2.55fr) minmax(410px,.98fr)!important;
   gap:10px!important;
@@ -150,7 +150,7 @@ body.manutencao-futurista .mnt-right{
   min-height:0!important;
 }
 
-/* Painéis compactos */
+/* PainÃ©is compactos */
 body.manutencao-futurista .mnt-panel{
   border-radius:15px!important;
 }
@@ -178,7 +178,7 @@ body.manutencao-futurista .mnt-panel p{
   font-size:.67rem!important;
 }
 
-/* Filtros e botões */
+/* Filtros e botÃµes */
 body.manutencao-futurista .mnt-filters{
   grid-template-columns:minmax(210px,1fr) 138px 134px 134px auto!important;
   gap:7px!important;
@@ -234,7 +234,7 @@ body.manutencao-futurista .mnt-row-actions{
   gap:6px!important;
 }
 
-/* Timeline: deixa de criar uma linha vazia gigante quando só há 1/2 registos */
+/* Timeline: deixa de criar uma linha vazia gigante quando sÃ³ hÃ¡ 1/2 registos */
 body.manutencao-futurista .mnt-timeline{
   display:flex!important;
   align-items:stretch!important;
@@ -353,7 +353,7 @@ body.manutencao-futurista .mnt-bar-line{
   height:7px!important;
 }
 
-/* Quando há poucos registos, evitar painéis gigantes vazios */
+/* Quando hÃ¡ poucos registos, evitar painÃ©is gigantes vazios */
 body.manutencao-futurista .mnt-table-panel{
   min-height:0!important;
 }
@@ -367,7 +367,7 @@ body.manutencao-futurista .mnt-left > .mnt-panel:nth-child(2){
   min-height:180px!important;
 }
 
-/* Formulário */
+/* FormulÃ¡rio */
 body.manutencao-futurista .mnt-form{
   padding:12px 14px 14px!important;
   gap:9px!important;
@@ -387,7 +387,7 @@ body.manutencao-futurista .mnt-form textarea{
   min-height:62px!important;
 }
 
-/* Responsivo desktop médio */
+/* Responsivo desktop mÃ©dio */
 @media (max-width:1500px){
   body.manutencao-futurista .mnt-main-grid{
     grid-template-columns:1fr!important;
@@ -401,7 +401,7 @@ body.manutencao-futurista .mnt-form textarea{
   }
 }
 
-/* Tablet/telemóvel */
+/* Tablet/telemÃ³vel */
 @media (max-width:900px){
   body.manutencao-futurista .mnt-page{
     padding:12px!important;
@@ -437,7 +437,7 @@ body.manutencao-futurista .mnt-form textarea{
 }
 
 
-/* v1.58.169 — correção de ícones e labels na página Manutenção */
+/* v1.58.172 â€” correÃ§Ã£o de Ã­cones e labels na pÃ¡gina ManutenÃ§Ã£o */
 body.manutencao-futurista .mnt-kpi > div{
   min-width:0!important;
 }
@@ -486,3 +486,4 @@ body.manutencao-futurista .panel-title > span{
   font-size:.96rem!important;
   line-height:1!important;
 }
+

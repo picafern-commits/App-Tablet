@@ -1,4 +1,4 @@
-/* v1.58.169 — Impressoras: estabilizar visual e ligar cards inferiores a dados reais */
+﻿/* v1.58.172 â€” Impressoras: estabilizar visual e ligar cards inferiores a dados reais */
 body.impressoras-futurista.imp-loading .imp-page{
   opacity:0 !important;
   visibility:hidden !important;
@@ -197,3 +197,4 @@ body.impressoras-futurista .imp-modal-open{
 body.impressoras-futurista.imp-modal-open{
   overflow:hidden !important;
 }
+

@@ -1,4 +1,4 @@
-:root{
+﻿:root{
   --ck-bg:#030918;
   --ck-bg2:#07142c;
   --ck-panel:#071a35cc;
@@ -191,7 +191,7 @@ body.pistolas-ck65-page::after{background:
 }
 
 
-/* v1.58.169 — CK65 mais fiel ao estilo real da app */
+/* v1.58.172 â€” CK65 mais fiel ao estilo real da app */
 body.pistolas-ck65-page .version-badge,
 body.pistolas-ck65-page .app-version-badge,
 body.pistolas-ck65-page #appVersionBadge,
@@ -367,7 +367,7 @@ body.pistolas-ck65-page .ck-mini-table{
   padding-right:16px!important;
 }
 
-/* Ícone de pistola desenhado em CSS para não depender de emoji */
+/* Ãcone de pistola desenhado em CSS para nÃ£o depender de emoji */
 .ck-svg-gun,
 .ck-icon-gun-small{
   position:relative!important;
@@ -506,7 +506,7 @@ body.pistolas-ck65-page .ck-mini-table{
 }
 
 
-/* v1.58.169 — CK65 scroll corrigido + lista mais bonita */
+/* v1.58.172 â€” CK65 scroll corrigido + lista mais bonita */
 html,
 html:has(body.pistolas-ck65-page),
 body.pistolas-ck65-page{
@@ -724,7 +724,7 @@ body.pistolas-ck65-page .ck-page-btn.active{
   background:linear-gradient(180deg,#1f83ff,#1749ff)!important;
 }
 
-/* Ajustar coluna direita para não cortar no ecrã */
+/* Ajustar coluna direita para nÃ£o cortar no ecrÃ£ */
 body.pistolas-ck65-page .ck-side .ck-panel{
   min-height:0!important;
 }
@@ -737,7 +737,7 @@ body.pistolas-ck65-page .ck-mini-table{
   padding-bottom:14px!important;
 }
 
-/* Evita duplicação visual do badge antigo da versão no canto */
+/* Evita duplicaÃ§Ã£o visual do badge antigo da versÃ£o no canto */
 body.pistolas-ck65-page .ck-version + .ck-version,
 body.pistolas-ck65-page .ck-version ~ .version-badge{
   display:none!important;
@@ -765,7 +765,7 @@ body.pistolas-ck65-page .ck-version ~ .version-badge{
 }
 
 
-/* v1.58.169 — CK65 hero igual às outras páginas */
+/* v1.58.172 â€” CK65 hero igual Ã s outras pÃ¡ginas */
 body.pistolas-ck65-page .ck-hero{
   display:flex!important;
   justify-content:center!important;
@@ -788,7 +788,7 @@ body.pistolas-ck65-page .ck-hero-inner{
   box-sizing:border-box!important;
 }
 
-/* Círculo/botão do logo igual ao padrão das outras páginas */
+/* CÃ­rculo/botÃ£o do logo igual ao padrÃ£o das outras pÃ¡ginas */
 body.pistolas-ck65-page .ck-hero-home{
   position:absolute!important;
   width:124px!important;
@@ -815,7 +815,7 @@ body.pistolas-ck65-page .ck-hero-home img{
   filter:drop-shadow(0 0 14px rgba(57,165,255,.35))!important;
 }
 
-/* Ícone da página com o mesmo tamanho das restantes páginas */
+/* Ãcone da pÃ¡gina com o mesmo tamanho das restantes pÃ¡ginas */
 body.pistolas-ck65-page .ck-hero-icon{
   width:66px!important;
   min-width:66px!important;
@@ -826,7 +826,7 @@ body.pistolas-ck65-page .ck-hero-icon{
   flex:0 0 66px!important;
 }
 
-/* Texto do hero igual ao padrão */
+/* Texto do hero igual ao padrÃ£o */
 body.pistolas-ck65-page .ck-hero-copy{
   position:relative!important;
   z-index:3!important;
@@ -893,7 +893,7 @@ body.pistolas-ck65-page .ck-hero-copy p{
 }
 
 
-/* v1.58.169 — Ajustes finais CK65: ícone KPI centrado, botões Ver todos compactos e sem botão Portal */
+/* v1.58.172 â€” Ajustes finais CK65: Ã­cone KPI centrado, botÃµes Ver todos compactos e sem botÃ£o Portal */
 body.pistolas-ck65-page .ck-kpi-icon.ck-icon-gun-small{
   width:44px!important;
   min-width:44px!important;
@@ -952,3 +952,4 @@ body.pistolas-ck65-page #ckBtnVerIntervencoes{
 body.pistolas-ck65-page .ck-back{
   display:none!important;
 }
+

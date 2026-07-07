@@ -1,4 +1,4 @@
-:root{
+﻿:root{
   --portal-bg:#020b1c;
   --portal-bg2:#041a3b;
   --portal-panel:rgba(6,29,64,.70);
@@ -107,8 +107,8 @@ body.portal-home{
 .portal-brand:visited{color:#fff;}
 
 
-/* v1.58.169 — navegação por seleção: primeiro clique só seleciona o card.
-   As opções internas só ficam clicáveis no card ativo. */
+/* v1.58.172 â€” navegaÃ§Ã£o por seleÃ§Ã£o: primeiro clique sÃ³ seleciona o card.
+   As opÃ§Ãµes internas sÃ³ ficam clicÃ¡veis no card ativo. */
 .portal-card:not(.is-selected) .portal-links a,
 .portal-card:not(.is-selected) .portal-action{
   pointer-events:none;
@@ -146,7 +146,7 @@ body.portal-home{
   transform:translateY(0);
 }
 .portal-card.is-selected::after{
-  content:"Escolhe uma página";
+  content:"Escolhe uma pÃ¡gina";
   position:absolute;
   right:18px;
   top:18px;
@@ -162,14 +162,14 @@ body.portal-home{
   .portal-card:not(.is-selected)::after,
   .portal-card.is-selected::after{position:static;margin-left:auto;margin-bottom:8px;}
 }
-/* v1.58.169 — o card Impressoras abre diretamente a nova central da área. */
+/* v1.58.172 â€” o card Impressoras abre diretamente a nova central da Ã¡rea. */
 .portal-card-direct{cursor:pointer;}
 .portal-card-direct:not(.is-selected) .portal-action{opacity:1;pointer-events:none;}
 .portal-card-direct:not(.is-selected)::after{content:"Abrir";}
 .portal-card-direct:hover .portal-action{border-color:rgba(71,166,255,.72);box-shadow:0 0 24px rgba(47,140,255,.20);}
 
 
-/* v1.58.169 — Portal: card Impressoras volta a ter todas as páginas da área */
+/* v1.58.172 â€” Portal: card Impressoras volta a ter todas as pÃ¡ginas da Ã¡rea */
 .portal-card-impressoras .portal-links{
   gap:6px;
   margin-bottom:16px;
@@ -197,7 +197,7 @@ body.portal-home{
 }
 
 .portal-card-impressoras.is-selected::after{
-  content:"Escolhe uma página";
+  content:"Escolhe uma pÃ¡gina";
 }
 
 /* o comportamento direto deixou de existir neste card */
@@ -212,7 +212,7 @@ body.portal-home{
 }
 
 
-/* v1.58.169 — Portal full screen clean/encaixado */
+/* v1.58.172 â€” Portal full screen clean/encaixado */
 body.portal-home{
   min-height:100vh!important;
   overflow:hidden!important;
@@ -374,7 +374,7 @@ body.portal-home{
 }
 
 
-/* v1.58.169 — Portal Inicial: ajustes pedidos pelo Ricardo */
+/* v1.58.172 â€” Portal Inicial: ajustes pedidos pelo Ricardo */
 .portal-header{
   display:none!important;
 }
@@ -441,3 +441,4 @@ body.portal-home{
     padding-top:26px!important;
   }
 }
+

@@ -1,10 +1,10 @@
-
+﻿
 /*
-  AppBraga Clean Layout v1.58.169
+  AppBraga Clean Layout v1.58.172
   Regra comum:
-  - páginas sem barra antiga
-  - conteúdo ocupa o ecrã completo
-  - cards compactos, alinhados e sem espaço morto exagerado
+  - pÃ¡ginas sem barra antiga
+  - conteÃºdo ocupa o ecrÃ£ completo
+  - cards compactos, alinhados e sem espaÃ§o morto exagerado
   - hero consistente
 */
 :root{
@@ -31,7 +31,7 @@ body.portal-home{
   background-attachment:fixed!important;
 }
 
-/* Remove botões flutuantes antigos de portal quando aparecem em páginas novas */
+/* Remove botÃµes flutuantes antigos de portal quando aparecem em pÃ¡ginas novas */
 .dashboard-back,
 a.dashboard-back,
 .back-portal,
@@ -40,7 +40,7 @@ a.dashboard-back,
   display:none!important;
 }
 
-/* Páginas internas já criadas */
+/* PÃ¡ginas internas jÃ¡ criadas */
 .etq-page,
 .mnt-page,
 .f-page,
@@ -219,7 +219,7 @@ a.dashboard-back,
   grid-template-columns:minmax(0,2.15fr) minmax(360px,.85fr)!important;
 }
 
-/* Painéis/cards */
+/* PainÃ©is/cards */
 .etq-panel,
 .mnt-panel,
 .f-panel,
@@ -292,7 +292,7 @@ a.dashboard-back,
   padding:6px 0!important;
 }
 
-/* Timeline manutenção mais clean */
+/* Timeline manutenÃ§Ã£o mais clean */
 .mnt-timeline{
   grid-template-columns:repeat(5,minmax(130px,1fr))!important;
   gap:28px!important;
@@ -406,7 +406,7 @@ a.dashboard-back,
 }
 
 
-/* v1.58.169 — hero padrão global em todas as páginas */
+/* v1.58.172 â€” hero padrÃ£o global em todas as pÃ¡ginas */
 body.dashboard-futurista-body .dashboard-futurista,
 body.impressoras-futurista .imp-page,
 body.stock-futurista .stock-page,
@@ -567,3 +567,4 @@ body.manutencao-futurista .mnt-hero p{
     font-size:.9rem!important;
   }
 }
+

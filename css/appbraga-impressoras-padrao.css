@@ -1,5 +1,5 @@
-/* AppBraga v1.58.169 — padrão visual único baseado na página Impressoras
-   Aplica o mesmo esquema de botões, texto, cores, cards, tabelas e scroll às páginas novas. */
+﻿/* AppBraga v1.58.172 â€” padrÃ£o visual Ãºnico baseado na pÃ¡gina Impressoras
+   Aplica o mesmo esquema de botÃµes, texto, cores, cards, tabelas e scroll Ã s pÃ¡ginas novas. */
 :root{
   --app-imp-bg:#030918;
   --app-imp-bg2:#061328;
@@ -90,7 +90,7 @@ body.impressoras-futurista::after{
   box-sizing:border-box !important;
 }
 
-/* KPIs — igual à linguagem visual das Impressoras */
+/* KPIs â€” igual Ã  linguagem visual das Impressoras */
 .ck-kpis,.imp-kpis{
   display:grid !important;
   grid-template-columns:repeat(6,minmax(150px,1fr)) !important;
@@ -129,7 +129,7 @@ body.impressoras-futurista::after{
 .ck-kpi strong,.imp-kpi strong{display:block !important;font-size:3.0rem !important;line-height:1 !important;margin:2px 0 0 !important;letter-spacing:-.03em !important;color:#fff !important;}
 .ck-kpi small,.imp-kpi small{color:var(--app-imp-muted) !important;font-size:.86rem !important;line-height:1.15 !important;}
 
-/* Layout principal e painéis */
+/* Layout principal e painÃ©is */
 .ck-main,.imp-main-grid,.tasks-main-grid{
   display:grid !important;grid-template-columns:minmax(0,2.05fr) minmax(390px,.95fr) !important;gap:14px !important;align-items:start !important;width:100% !important;max-width:none !important;
 }
@@ -169,7 +169,7 @@ body.impressoras-futurista::after{
 .ck-form-grid textarea,.imp-modal textarea{height:auto !important;min-height:86px !important;padding:12px 14px !important;resize:vertical !important;}
 .ck-search-row input::placeholder,.imp-search-row input::placeholder{color:#8fa6c8 !important;}
 
-/* Botões */
+/* BotÃµes */
 .ck-btn,.imp-btn,button.ck-btn,button.imp-btn,
 .rd-weekly-actions .ck-btn,.ck-actions-list .ck-btn,.ck-quick-grid .ck-btn,.imp-quick-grid .imp-btn{
   display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;
@@ -215,7 +215,7 @@ body.impressoras-futurista::after{
 }
 .ck-pagination button.active,.ck-page-btn.active{background:#fff !important;color:#071327 !important;box-shadow:0 0 18px rgba(91,171,255,.26) !important;}
 
-/* Ações de linha */
+/* AÃ§Ãµes de linha */
 .ck-row-actions,.imp-actions,.actions-cell,.dir-actions,.eq-actions,.us-actions{
   display:flex !important;align-items:center !important;justify-content:flex-end !important;gap:8px !important;white-space:nowrap !important;
 }
@@ -244,7 +244,7 @@ button[data-action],button[data-cp-action],button[data-rd-action],button[data-di
 .ck-mini-row,.imp-mini-row,.ck-list-row{display:grid !important;grid-template-columns:1fr auto !important;gap:14px !important;align-items:center !important;padding:10px 0 !important;border-top:1px solid rgba(255,255,255,.05) !important;}
 .ck-mini-row:first-child,.imp-mini-row:first-child,.ck-list-row:first-child{border-top:none !important;}
 
-/* Modais e formulários */
+/* Modais e formulÃ¡rios */
 .ck-modal,.imp-modal{z-index:99999 !important;}
 .ck-modal-card,.modal-card,.ck-modal-content{
   background:linear-gradient(180deg,#071a35,#051225) !important;border:1px solid rgba(77,151,255,.34) !important;border-radius:18px !important;color:#fff !important;box-shadow:0 24px 80px rgba(0,0,0,.50) !important;
@@ -277,10 +277,10 @@ button[data-action],button[data-cp-action],button[data-rd-action],button[data-di
   .ck-table-footer{flex-direction:column !important;align-items:flex-start !important;}
 }
 
-/* AppBraga v1.58.169 — limpeza visual segura: todas as páginas novas usam o mesmo esquema base.
-   Não remove sistemas; apenas impede que visual antigo/sidebar/topbar antiga volte a mandar nas páginas novas. */
+/* AppBraga v1.58.172 â€” limpeza visual segura: todas as pÃ¡ginas novas usam o mesmo esquema base.
+   NÃ£o remove sistemas; apenas impede que visual antigo/sidebar/topbar antiga volte a mandar nas pÃ¡ginas novas. */
 :root{
-  --appbraga-version-tag:"v1.58.169";
+  --appbraga-version-tag:"v1.58.172";
 }
 body.add-toner-futurista,
 body.dashboard-futurista-body,
@@ -342,7 +342,7 @@ body.manutencao-futurista::after{
   radial-gradient(ellipse at 0% 45%, rgba(43,149,255,.15), transparent 35%),
   radial-gradient(ellipse at 100% 35%, rgba(43,149,255,.12), transparent 35%);opacity:.9;
 }
-/* Neutraliza estruturas visuais antigas apenas nas páginas novas. */
+/* Neutraliza estruturas visuais antigas apenas nas pÃ¡ginas novas. */
 body.add-toner-futurista .sidebar,
 body.dashboard-futurista-body .sidebar,
 body.configuracoes-futurista-page .sidebar,
@@ -399,7 +399,7 @@ body.pistolas-ck65-page .topbar,
 body.impressoras-futurista .topbar{
   display:none !important;
 }
-/* Corrige ícones/textos/botões para não herdarem visual antigo. */
+/* Corrige Ã­cones/textos/botÃµes para nÃ£o herdarem visual antigo. */
 .ck-btn,.imp-btn,.quick-btn,.action-btn,.cfg-action-btn,.not-action-btn,.scan-action-btn{
   border-radius:10px !important;
   border:1px solid rgba(85,143,216,.28) !important;
@@ -412,3 +412,4 @@ body.impressoras-futurista .topbar{
   border-color:rgba(74,211,255,.55) !important;
   color:#fff !important;
 }
+
